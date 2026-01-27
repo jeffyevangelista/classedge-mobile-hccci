@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@import "uniwind";
+@import "heroui-native/styles";
+
+/* Path to the heroui-native lib inside node_modules from the root of your project */
+@source "./node_modules/heroui-native/lib";
+
+@theme {
+  /* 1. Sets the default 'font-sans' utility to Poppins */
+  --font-sans: "Poppins-Regular";
+
+  /* 2. Maps HeroUI's internal typography tokens to your font */
+  /* Most HeroUI components use these variables internally */
+  --font-normal: "Poppins-Regular";
+  --font-medium: "Poppins-Medium";
+  --font-semibold: "Poppins-SemiBold";
+  --font-bold: "Poppins-Bold";
+}
