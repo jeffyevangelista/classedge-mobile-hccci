@@ -63,11 +63,6 @@ const LogoutButton = () => {
               </Dialog.Description>
             </View>
             <View className="flex-row justify-end gap-3">
-              <Dialog.Close asChild>
-                <Button variant="ghost" size="sm">
-                  <Button.Label>Cancel</Button.Label>
-                </Button>
-              </Dialog.Close>
               <Button variant="danger" size="sm" onPress={handleLogout}>
                 <Button.Label>Logout</Button.Label>
               </Button>

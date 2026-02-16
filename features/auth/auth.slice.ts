@@ -50,22 +50,26 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
       return;
     }
 
-    const { id, exp, needsOnboarding, needsPasswordSetup, role } =
+    const { user_id, exp, needs_onboarding, needs_password_setup, role } =
       jwtDecode<DecodedToken>(accessToken);
 
-    if (!id || !exp) {
+    if (!user_id || !exp) {
       console.warn("[AUTH] Invalid token: missing id or exp");
       return;
     }
     const expiresAt = exp * 1000;
-    const authUser = { id, needsOnboarding, needsPasswordSetup, role };
+    const authUser = {
+      id: user_id,
+      needs_onboarding,
+      needs_password_setup,
+      role,
+    };
 
     await Promise.all([
       setSSItem(ACCESS_TOKEN_KEY, accessToken),
       setSSItem(AUTH_USER_KEY, authUser),
       setASItem(ASYNC_STORAGE_KEYS.EXPIRES_AT, expiresAt),
     ]);
-    console.log("[AUTH] Successfully saved to storage");
 
     set({
       accessToken,

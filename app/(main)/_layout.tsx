@@ -1,3 +1,4 @@
+import BackButton from "@/components/BackButton";
 import { Stack } from "expo-router";
 
 const MainLayout = () => {

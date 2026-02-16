@@ -1,10 +1,10 @@
 import Screen from "@/components/screen";
-import { Text } from "react-native";
+import ProfileInformation from "@/features/profile/components/ProfileInformation";
 
 const ProfileInfoScreen = () => {
   return (
     <Screen>
-      <Text>ProfileInfoScreen</Text>
+      <ProfileInformation />
     </Screen>
   );
 };

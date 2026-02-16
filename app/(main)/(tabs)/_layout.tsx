@@ -1,8 +1,9 @@
 import TabIcon from "@/components/TabIcon";
+import { useNotificationCount } from "@/features/notifications/notifications.hooks";
+
 import SyncCenter from "@/features/sync/components/SyncCenter";
 import { colors } from "@/utils/colors";
 import { Tabs } from "expo-router";
-import { Avatar, Button } from "heroui-native";
 import {
   BellIcon,
   BookOpenIcon,
@@ -12,17 +13,14 @@ import {
 import { Platform, View } from "react-native";
 
 const TabsLayout = () => {
+  const { data } = useNotificationCount();
+
   return (
     <Tabs
       screenOptions={{
         headerShadowVisible: false,
         animation: "shift",
         headerTitleAlign: "left",
-        headerRight: () => (
-          <View className="mr-2">
-            <SyncCenter />
-          </View>
-        ),
         tabBarInactiveTintColor: colors.primary[400],
         headerTitleStyle: {
           fontFamily: "Poppins-SemiBold",
@@ -61,6 +59,11 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="courses"
         options={{
+          headerRight: () => (
+            <View className="mr-2">
+              <SyncCenter />
+            </View>
+          ),
           tabBarIcon: ({ focused, color }) => (
             <TabIcon
               focused={focused}
@@ -93,6 +96,7 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="notifications"
         options={{
+          tabBarBadge: data?.count && data.count > 0 ? data.count : undefined,
           tabBarIcon: ({ focused, color }) => (
             <TabIcon focused={focused} color={color} IconElement={BellIcon} />
           ),

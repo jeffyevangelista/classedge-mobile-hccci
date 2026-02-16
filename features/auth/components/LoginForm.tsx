@@ -1,14 +1,25 @@
-import { Button, Spinner, TextField, useThemeColor } from "heroui-native";
+import {
+  Button,
+  FieldError,
+  Input,
+  Label,
+  Spinner,
+  TextField,
+  useThemeColor,
+  useToast,
+} from "heroui-native";
 import { useState } from "react";
-import { Alert, Pressable, TouchableOpacity, View } from "react-native";
-import { EyeIcon, EyeSlashIcon } from "react-native-heroicons/outline";
+import { Pressable, TouchableOpacity, View } from "react-native";
+
 import { useLogin } from "../auth.hooks";
 import { Icon } from "@/components/Icon";
 import { AppText } from "@/components/AppText";
 import { colors } from "@/utils/colors";
+import { EyeIcon, EyeSlashIcon } from "phosphor-react-native";
 
 const LoginForm = () => {
-  const [email, setEmail] = useState("");
+  const { toast } = useToast();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { mutateAsync: login, isPending, isError, error } = useLogin();
@@ -16,36 +27,40 @@ const LoginForm = () => {
 
   const handleLogin = async () => {
     try {
-      await login({ email, password });
+      await login({ username, password });
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      toast.show({
+        variant: "danger",
+        label: "Error",
+        description: error?.message,
+      });
     }
   };
 
   return (
-    <View className="p-2.5 md:p-5 gap-3">
+    <View className="p-2.5 md:p-5 gap-3 w-full max-w-3xl">
       {/* Changed gap-4 to gap-3 */}
       <TextField>
-        <TextField.Label>Email</TextField.Label>
-        <TextField.Input
+        <Label>Email</Label>
+        <Input
           keyboardType="email-address"
           autoCapitalize="none"
           placeholder="juandelacruz@hccci.edu.ph"
-          value={email}
-          onChangeText={setEmail}
+          value={username}
+          onChangeText={setUsername}
         />
 
         {isError && (
-          <TextField.ErrorMessage>
+          <FieldError>
             {error?.message || "Please enter a valid email"}
-          </TextField.ErrorMessage>
+          </FieldError>
         )}
       </TextField>
       <View className="gap-1">
         <TextField>
-          <TextField.Label>Password</TextField.Label>
+          <Label>Password</Label>
           <View className="w-full flex-row items-center">
-            <TextField.Input
+            <Input
               value={password}
               onChangeText={setPassword}
               className="flex-1 pr-10"

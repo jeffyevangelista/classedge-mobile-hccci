@@ -1,28 +1,23 @@
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import Image from "@/components/Image";
-import { type Subject, subjects } from "@/powersync/schema";
-import { db } from "@/powersync/system";
-import { toCompilableQuery } from "@powersync/drizzle-driver";
-import { useQuery } from "@powersync/react-native";
 import { FlashList } from "@shopify/flash-list";
-import { eq } from "drizzle-orm";
 import { Link } from "expo-router";
-import { Card, TextField } from "heroui-native";
+import { Card, Input, TextField } from "heroui-native";
 import { MagnifyingGlassIcon } from "phosphor-react-native";
-import { Alert, Pressable, useWindowDimensions, View } from "react-native";
+import { Pressable, useWindowDimensions, View } from "react-native";
+import { API_BASE_URL } from "@/utils/env";
+import { useStudentCourses } from "../courses.hooks";
+import { StudentEnrolledCourses } from "../courses.types";
+
+import { useQueryClient } from "@tanstack/react-query";
+
+const MIN_CARD_WIDTH = 280;
 
 const CourseList = () => {
   const { width } = useWindowDimensions();
-  const MIN_CARD_WIDTH = 280; // The "Sweet Spot" for readability
-
-  // Calculate how many columns fit based on available width
-  // Math.max(1, ...) ensures we never have 0 columns
   const numColumns = Math.max(1, Math.floor(width / MIN_CARD_WIDTH));
-
-  const { data, isLoading } = useQuery(
-    toCompilableQuery(db.select().from(subjects)),
-  );
+  const { data } = useStudentCourses();
 
   return (
     <View className="w-full max-w-6xl mx-auto flex-1  ">
@@ -30,7 +25,7 @@ const CourseList = () => {
         ListHeaderComponent={
           <TextField className=" p-1 md:max-w-xl md:mx-auto w-full">
             <View className="w-full flex-row items-center">
-              <TextField.Input
+              <Input
                 className="flex-1 pr-10 shadow-none "
                 placeholder="Find a course"
               />
@@ -45,17 +40,22 @@ const CourseList = () => {
         data={data}
         className="p-2.5"
         contentContainerStyle={{ paddingBottom: 15 }}
-        renderItem={({ item }) => <Course item={item} />}
+        renderItem={({ item }) => (
+          <Course item={item} numColumns={numColumns} />
+        )}
       />
     </View>
   );
 };
 
-const Course = ({ item }: { item: Subject }) => {
-  const { width } = useWindowDimensions();
-  const MIN_CARD_WIDTH = 280; // The "Sweet Spot" for readability
-
-  const numColumns = Math.max(1, Math.floor(width / MIN_CARD_WIDTH));
+const Course = ({
+  item,
+  numColumns,
+}: {
+  item: StudentEnrolledCourses;
+  numColumns: number;
+}) => {
+  const queryClient = useQueryClient();
 
   return (
     <Link
@@ -64,27 +64,33 @@ const Course = ({ item }: { item: Subject }) => {
       asChild
     >
       <Pressable>
-        <Card className="p-0">
+        <Card className="p-0 shadow">
           <Card.Body className="gap-2.5">
             <Image
-              source={require("@/assets/placeholder/bg-placeholder.png")}
-              className="rounded-t-3xl w-full aspect-video border"
+              source={
+                item.subjectId.subjectPhoto
+                  ? {
+                      uri: `${API_BASE_URL}/media/${item.subjectId.subjectPhoto}`,
+                    }
+                  : require("@/assets/placeholder/bg-placeholder.png")
+              }
+              className="rounded-t-3xl w-full aspect-video"
               contentFit="cover"
+              cachePolicy="disk"
             />
             <View className="px-4 pb-4">
-              {/* Added a fixed height container here */}
               <View className="md:h-14">
                 <AppText
                   numberOfLines={2}
                   className="font-semibold text-lg md:text-md leading-6"
                 >
-                  {item.name}
+                  {item.subjectId.subjectName}
                 </AppText>
               </View>
-
-              {/* This will now stay aligned across all cards */}
               <AppText numberOfLines={1} className="text-sm text-gray-500">
-                Room {item.roomNumber} · {item.teacherName}
+                {item.subjectId.roomNumber} ·{" "}
+                {item.subjectId.assignTeacherId.firstName}{" "}
+                {item.subjectId.assignTeacherId.lastName}
               </AppText>
             </View>
           </Card.Body>

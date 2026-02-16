@@ -1,3 +1,4 @@
+import BackButton from "@/components/BackButton";
 import { colors } from "@/utils/colors";
 import { Stack } from "expo-router";
 import React from "react";
@@ -12,7 +13,13 @@ const ProfileLayout = () => {
         headerShadowVisible: false,
       }}
     >
-      <Stack.Screen name="index" options={{ title: "Profile" }} />
+      <Stack.Screen
+        name="index"
+        options={{
+          headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
+          title: "Profile",
+        }}
+      />
       <Stack.Screen
         name="academic-records"
         options={{ title: "Academic Records" }}

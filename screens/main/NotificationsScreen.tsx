@@ -1,5 +1,5 @@
 import Screen from "@/components/screen";
-import NotificationList from "@/features/notifications/NotificationList";
+import NotificationList from "@/features/notifications/components/NotificationList";
 
 const NotificationsScreen = () => {
   return (

@@ -1,10 +1,10 @@
 import Screen from "@/components/screen";
-import { Text, View } from "react-native";
+import ClassScheduleList from "@/features/profile/components/ClassScheduleList";
 
 const ClassScheduleScreen = () => {
   return (
-    <Screen>
-      <Text>ClassScheduleScreen</Text>
+    <Screen withPadding>
+      <ClassScheduleList />
     </Screen>
   );
 };

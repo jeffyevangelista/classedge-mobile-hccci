@@ -1,7 +1,7 @@
 import CalendarScreen from "@/screens/main/CalendarScreen";
 
-const CalendarRoute = () => {
+const calendar = () => {
   return <CalendarScreen />;
 };
 
-export default CalendarRoute;
+export default calendar;

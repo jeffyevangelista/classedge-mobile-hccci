@@ -26,30 +26,32 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    const { setAccessToken, refreshToken } = useStore.getState();
-
-    console.log({ status: error.response?.status, refreshToken });
+    const { setAccessToken, refreshToken, clearCredentials } =
+      useStore.getState();
 
     if (
       (error.response?.status === 401 || error.response?.status === 403) &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      originalRequest.url !== "/auth/refresh/"
     ) {
       originalRequest._retry = true;
+      console.log("token expired");
 
       if (refreshToken) {
-        console.log("refreshing");
-
+        console.log("refreshing", { refreshToken });
         try {
-          console.log("triggered");
+          const { access } = await refresh(refreshToken);
 
-          const { accessToken } = await refresh(refreshToken);
-
-          setAccessToken(accessToken);
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          setAccessToken(access);
+          originalRequest.headers.Authorization = `Bearer ${access}`;
           return api(originalRequest);
-        } catch (error) {
-          Alert.alert("Error", "Failed to refresh token");
-          return Promise.reject(error);
+        } catch (refreshError) {
+          await clearCredentials();
+          Alert.alert(
+            "Session Expired",
+            "Your session has expired. Please log in again.",
+          );
+          return Promise.reject(refreshError);
         }
       }
     }

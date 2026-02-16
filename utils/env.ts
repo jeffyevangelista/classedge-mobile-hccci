@@ -1,4 +1,5 @@
-export const API_URL = process.env.EXPO_PUBLIC_API_URL || "";
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "";
+export const API_URL = `${process.env.EXPO_PUBLIC_API_URL}/api` || "";
 export const POWERSYNC_ENDPOINT =
   process.env.EXPO_PUBLIC_POWERSYNC_ENDPOINT || "";
 export const ACCESS_TOKEN_KEY = process.env.EXPO_PUBLIC_ACCESS_TOKEN_KEY || "";

@@ -1,11 +1,12 @@
-import { View, Text } from "react-native";
+import Screen from "@/components/screen";
+import MaterialDetailsScreen from "@/screens/main/courses/course/material/MaterialDetailsScreen";
 
-const MaterialDetailsROute = () => {
+const MaterialDetailsRoute = () => {
   return (
-    <View>
-      <Text>MaterialDetailsROute</Text>
-    </View>
+    <Screen>
+      <MaterialDetailsScreen />
+    </Screen>
   );
 };
 
-export default MaterialDetailsROute;
+export default MaterialDetailsRoute;

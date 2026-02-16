@@ -1,10 +1,16 @@
 import { getPowerSyncToken } from "@/features/auth/auth.apis";
 import { API_URL, POWERSYNC_ENDPOINT } from "@/utils/env";
+import useStore from "@/lib/store";
 import {
   type AbstractPowerSyncDatabase,
   type PowerSyncBackendConnector,
   UpdateType,
 } from "@powersync/react-native";
+import { createBaseLogger, LogLevel } from "@powersync/react-native";
+
+// const logger = createBaseLogger();
+// logger.useDefaults(); // Console output
+// logger.setLevel(LogLevel.DEBUG);
 
 export class Connector implements PowerSyncBackendConnector {
   async fetchCredentials() {
@@ -27,44 +33,42 @@ export class Connector implements PowerSyncBackendConnector {
       return;
     }
 
+    const { accessToken } = useStore.getState();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+
     try {
       for (const op of transaction.crud) {
         // op.opData contains the columns (name, etc.)
         // op.id is the automatically managed 'id' column
-        const record = { ...op.opData, id: op.id };
+        const record = { ...op.opData, id: Number(op.id) };
 
         switch (op.op) {
           case UpdateType.PUT:
             // For 'PUT', typically use an UPSERT on your backend
             await fetch(`${API_URL}/${op.table}`, {
               method: "POST",
-              headers: {
-                // DO NOT omit this. Without it, Express won't trigger the JSON parser.
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
+              headers,
               body: JSON.stringify(record),
             });
             break;
           case UpdateType.PATCH:
-            await fetch(`${API_URL}/${op.table}/${op.id}`, {
+            await fetch(`${API_URL}/${op.table}/${op.id}/`, {
               method: "PATCH",
-              headers: {
-                // DO NOT omit this. Without it, Express won't trigger the JSON parser.
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
+              headers,
               body: JSON.stringify(op.opData),
             });
             break;
           case UpdateType.DELETE:
-            await fetch(`${API_URL}/${op.table}/${op.id}`, {
+            await fetch(`${API_URL}/${op.table}/${op.id}/`, {
               method: "DELETE",
-              headers: {
-                // DO NOT omit this. Without it, Express won't trigger the JSON parser.
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
+              headers,
             });
             break;
         }

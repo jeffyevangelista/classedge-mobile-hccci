@@ -5,11 +5,10 @@ const CourseLayout = () => {
   return (
     <Stack
       screenOptions={{
-        headerShown: false,
         headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
       }}
     >
-      <Stack.Screen name="[courseId]" />
+      <Stack.Screen name="[courseId]" options={{ headerShown: false }} />
       <Stack.Screen name="course-details" />
     </Stack>
   );

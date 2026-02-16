@@ -13,6 +13,7 @@ import { StatusBar } from "expo-status-bar";
 import { Spinner, useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -66,16 +67,18 @@ export default function RootLayout() {
   }
 
   return (
-    <RootProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Protected guard={!isAuthenticated}>
-          <Stack.Screen name="(auth)" />
-        </Stack.Protected>
-        <Stack.Protected guard={isAuthenticated}>
-          <Stack.Screen name="(main)" />
-        </Stack.Protected>
-      </Stack>
-      <StatusBar style="dark" />
-    </RootProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <RootProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Protected guard={!isAuthenticated}>
+            <Stack.Screen name="(auth)" />
+          </Stack.Protected>
+          <Stack.Protected guard={isAuthenticated}>
+            <Stack.Screen name="(main)" />
+          </Stack.Protected>
+        </Stack>
+        <StatusBar style="dark" />
+      </RootProvider>
+    </GestureHandlerRootView>
   );
 }

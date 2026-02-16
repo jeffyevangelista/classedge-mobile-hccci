@@ -1,11 +1,9 @@
 import Screen from "@/components/screen";
-import AddCourseForm from "@/features/courses/AddCourseForm";
-import CourseList from "@/features/courses/CourseList";
+import CourseList from "@/features/courses/components/CourseList";
 
 const CoursesScreen = () => {
   return (
     <Screen>
-      <AddCourseForm />
       <CourseList />
     </Screen>
   );

@@ -1,19 +1,17 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Link } from "expo-router";
 import { FlashList } from "@shopify/flash-list";
-import { Avatar, Card } from "heroui-native";
+import { Card } from "heroui-native";
 import { BookOpenIcon } from "phosphor-react-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
-import Image from "@/components/Image";
 import Screen from "@/components/screen";
-import AnnouncementList from "@/features/announcements/AnnouncementList";
+import AnnouncementList from "@/features/home/components/AnnouncementList";
 import SyncBanner from "@/features/sync/components/SyncBanner";
-import SyncCenter from "@/features/sync/components/SyncCenter";
 import { colors } from "@/utils/colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Header from "@/features/home/components/Header";
 
 // Move static types and data outside the component
 type PendingAssessment = {
@@ -50,9 +48,6 @@ const PENDING_ASSESSMENTS: PendingAssessment[] = [
   },
 ];
 
-const COURSES = [1, 2, 3, 4];
-
-// Sub-component for individual Assessment items to keep the main render clean
 const AssessmentItem = React.memo(({ item }: { item: PendingAssessment }) => (
   <Card className="w-72 md:w-80 lg:w-96 mr-3">
     <Card.Body className="flex flex-row items-center gap-2.5">
@@ -70,7 +65,6 @@ const AssessmentItem = React.memo(({ item }: { item: PendingAssessment }) => (
 ));
 
 const HomeScreen = () => {
-  // Memoize the render function for FlashList
   const renderAssessment = useCallback(
     ({ item }: { item: PendingAssessment }) => <AssessmentItem item={item} />,
     [],
@@ -78,33 +72,12 @@ const HomeScreen = () => {
 
   const { top } = useSafeAreaInsets();
 
-  console.log(top);
-
   return (
     <Screen>
       <ScrollView style={{ paddingTop: top }} removeClippedSubviews={true}>
         <View className="gap-6 w-full max-w-3xl mx-auto pt-2.5 pb-10">
           {/* Header Section */}
-          <View className="px-5 flex flex-row justify-between items-center">
-            <Link href="/(main)/profile">
-              <View className="flex flex-row items-center gap-3">
-                <Avatar size="sm" alt="user-profile">
-                  <Avatar.Image
-                    source={{ uri: "https://example.com/avatar.jpg" }}
-                  />
-                  <Avatar.Fallback>JD</Avatar.Fallback>
-                </Avatar>
-                <View>
-                  <AppText className="text-gray-500">Good Morning,</AppText>
-                  <AppText weight="semibold" className="text-2xl leading-none">
-                    User
-                  </AppText>
-                </View>
-              </View>
-            </Link>
-            <SyncCenter />
-          </View>
-
+          <Header />
           <View className="px-5 gap-5">
             <SyncBanner />
             <Card
@@ -132,34 +105,6 @@ const HomeScreen = () => {
 
           {/* Courses & Announcements */}
           <View className="px-5 gap-5">
-            <View className="gap-3">
-              <AppText weight="semibold" className="text-lg">
-                My Courses
-              </AppText>
-              <View className="flex-row flex-wrap gap-3">
-                {COURSES.map((course) => (
-                  <Card key={course} className="flex-1 min-w-[46%] p-2">
-                    <Image
-                      contentFit="cover"
-                      className="rounded-xl overflow-hidden h-24 mb-2"
-                      source={{
-                        uri: `https://picsum.photos/seed/${course}/400/300`,
-                      }}
-                    />
-                    <AppText weight="semibold" className="text-base">
-                      Course {course}
-                    </AppText>
-                    <AppText
-                      className="text-xs text-gray-500"
-                      numberOfLines={2}
-                    >
-                      Standardized description for student enrollment.
-                    </AppText>
-                  </Card>
-                ))}
-              </View>
-            </View>
-
             <View className="gap-3">
               <AppText weight="semibold" className="text-lg">
                 Announcements

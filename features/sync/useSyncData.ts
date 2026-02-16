@@ -5,7 +5,8 @@ export const useSyncData = () => {
   const {
     lastSyncedAt,
     connected,
-
+    connecting,
+    hasSynced,
     dataFlowStatus: {
       uploading,
       downloading,
@@ -40,12 +41,14 @@ export const useSyncData = () => {
   const unsyncedCount = pendingChanges.length;
 
   return {
+    hasSynced,
     pendingChanges,
     unsyncedCount,
     lastSyncedAt,
     uploading,
     downloading,
     connected,
+    connecting,
     downloadError,
     downloadProgress,
     internalStreamSubscriptions,

@@ -1,4 +1,4 @@
-import CoursesScreen from "@/screens/main/CoursesScreen";
+import CoursesScreen from "@/screens/main/courses/CoursesScreen";
 
 const CoursesRoute = () => {
   return <CoursesScreen />;

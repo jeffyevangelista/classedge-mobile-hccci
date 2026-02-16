@@ -33,14 +33,44 @@ const SheetItem = ({ item }: { item: any }) => {
 // 1. Isolated Content Component
 // This component handles the data. When data changes, ONLY this renders.
 const SyncSheetContent = () => {
-  const { pendingChanges, lastSyncedAt } = useSyncData();
+  const {
+    hasSynced,
+    unsyncedCount,
+    pendingChanges,
+    lastSyncedAt,
+    downloading,
+    uploading,
+    connected,
+    connecting,
+  } = useSyncData();
 
   return (
     <>
       <BottomSheet.Title>Sync Center</BottomSheet.Title>
-      <BottomSheet.Description>
-        Last Synced: {lastSyncedAt?.toLocaleString() ?? "Never"}
-      </BottomSheet.Description>
+      <View className="flex-col gap-2">
+        <AppText className="text-xs text-gray-500">
+          Connection Status:{" "}
+          {connected ? (
+            <AppText className="text-xs text-green-500">Connected</AppText>
+          ) : (
+            <AppText className="text-xs text-red-500">Disconnected</AppText>
+          )}
+        </AppText>
+        <AppText className="text-xs text-gray-500">
+          Sync Status:{" "}
+          {/* {(uploading && <AppText>Uploading</AppText>) ||
+            (downloading && <AppText>Downloading</AppText>) || (
+              <AppText>Synced</AppText>
+            )} */}
+          {uploading && <AppText>Uploading</AppText>}
+          {downloading && <AppText>Downloading</AppText>}
+          {hasSynced && <AppText>Synced</AppText>}
+          {unsyncedCount > 0 && <AppText>{unsyncedCount} Unsynced</AppText>}
+        </AppText>
+        <AppText className="text-xs text-gray-500">
+          Last Synced: {lastSyncedAt?.toLocaleString() ?? "Never"}
+        </AppText>
+      </View>
       <View className="mt-5 flex-1">
         <FlatList
           ListEmptyComponent={
