@@ -1,8 +1,14 @@
 import useStore from "@/lib/store";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Alert } from "react-native";
-import { forgotPassword, login, resetPassword, verifyOtp } from "./auth.apis";
+import {
+  forgotPassword,
+  login,
+  msLogin,
+  resetPassword,
+  verifyOtp,
+} from "./auth.apis";
 import type { AuthResponse, LoginCredentials } from "./auth.types";
 
 export const useLogin = () => {
@@ -60,5 +66,41 @@ export const useResetPassword = () => {
     mutationKey: ["reset-password"],
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       resetPassword(email, password),
+  });
+};
+
+export const useMsLogin = (token: string | null) => {
+  const router = useRouter();
+  const { setAccessToken, setRefreshToken, clearCredentials } =
+    useStore.getState();
+  return useQuery({
+    queryKey: ["ms-login"],
+    queryFn: async () => {
+      const data = await msLogin(token);
+
+      if (data) {
+        try {
+          await Promise.all([
+            setAccessToken(data.access),
+            setRefreshToken(data.refresh),
+          ]);
+          router.replace("/(main)/(tabs)");
+        } catch (error) {
+          // Clear any partial credentials if role validation fails
+          await clearCredentials();
+
+          // Show native alert for role validation errors
+          const errorMessage =
+            error instanceof Error ? error.message : "Authentication failed";
+          Alert.alert("Access Denied", errorMessage, [{ text: "OK" }]);
+
+          throw error;
+        }
+      }
+
+      return data;
+    },
+
+    enabled: !!token,
   });
 };

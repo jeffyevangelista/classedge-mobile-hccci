@@ -4,7 +4,7 @@ import { Avatar } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import SyncCenter from "../../sync/components/SyncCenter";
 import { useUserDetails } from "../../profile/profile.hooks";
-import { API_BASE_URL, API_URL } from "@/utils/env";
+import { env } from "@/utils/env";
 
 const Header = () => {
   const { data: userDetails } = useUserDetails();
@@ -17,7 +17,9 @@ const Header = () => {
             <Avatar.Image
               source={
                 userDetails?.studentPhoto
-                  ? { uri: `${API_BASE_URL}/media/${userDetails.studentPhoto}` }
+                  ? {
+                      uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${userDetails.studentPhoto}`,
+                    }
                   : require("@/assets/placeholder/avatar-placeholder.png")
               }
             />

@@ -6,7 +6,7 @@ import { Link } from "expo-router";
 import { Card, Input, TextField } from "heroui-native";
 import { MagnifyingGlassIcon } from "phosphor-react-native";
 import { Pressable, useWindowDimensions, View } from "react-native";
-import { API_BASE_URL } from "@/utils/env";
+import { env } from "@/utils/env";
 import { useStudentCourses } from "../courses.hooks";
 import { StudentEnrolledCourses } from "../courses.types";
 
@@ -70,7 +70,7 @@ const Course = ({
               source={
                 item.subjectId.subjectPhoto
                   ? {
-                      uri: `${API_BASE_URL}/media/${item.subjectId.subjectPhoto}`,
+                      uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${item.subjectId.subjectPhoto}`,
                     }
                   : require("@/assets/placeholder/bg-placeholder.png")
               }

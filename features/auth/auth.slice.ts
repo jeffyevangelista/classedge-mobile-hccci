@@ -8,11 +8,7 @@ import {
   getSSItem,
   setSSItem,
 } from "@/lib/storage/secure-storage";
-import {
-  ACCESS_TOKEN_KEY,
-  AUTH_USER_KEY,
-  REFRESH_TOKEN_KEY,
-} from "@/utils/env";
+import { env } from "@/utils/env";
 import { ASYNC_STORAGE_KEYS } from "@/utils/storage-keys";
 import { jwtDecode } from "jwt-decode";
 import type { StateCreator } from "zustand";
@@ -69,8 +65,8 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
     };
 
     await Promise.all([
-      setSSItem(ACCESS_TOKEN_KEY, accessToken),
-      setSSItem(AUTH_USER_KEY, authUser),
+      setSSItem(env.EXPO_PUBLIC_ACCESS_TOKEN_KEY, accessToken),
+      setSSItem(env.EXPO_PUBLIC_AUTH_USER_KEY, authUser),
       setASItem(ASYNC_STORAGE_KEYS.EXPIRES_AT, expiresAt),
     ]);
 
@@ -82,14 +78,14 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
     });
   },
   setRefreshToken: async (refreshToken: string) => {
-    await setSSItem(REFRESH_TOKEN_KEY, refreshToken);
+    await setSSItem(env.EXPO_PUBLIC_REFRESH_TOKEN_KEY, refreshToken);
     set({ refreshToken });
   },
   clearCredentials: async () => {
     await Promise.all([
-      deleteSSItem(ACCESS_TOKEN_KEY),
-      deleteSSItem(REFRESH_TOKEN_KEY),
-      deleteSSItem(AUTH_USER_KEY),
+      deleteSSItem(env.EXPO_PUBLIC_ACCESS_TOKEN_KEY),
+      deleteSSItem(env.EXPO_PUBLIC_REFRESH_TOKEN_KEY),
+      deleteSSItem(env.EXPO_PUBLIC_AUTH_USER_KEY),
       deleteASItem(ASYNC_STORAGE_KEYS.EXPIRES_AT),
     ]);
     set(() => ({ ...initialState }));
@@ -98,9 +94,9 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
     try {
       const [accessToken, refreshToken, authUserStr, expiresAtStr] =
         await Promise.all([
-          getSSItem(ACCESS_TOKEN_KEY),
-          getSSItem(REFRESH_TOKEN_KEY),
-          getSSItem(AUTH_USER_KEY),
+          getSSItem(env.EXPO_PUBLIC_ACCESS_TOKEN_KEY),
+          getSSItem(env.EXPO_PUBLIC_REFRESH_TOKEN_KEY),
+          getSSItem(env.EXPO_PUBLIC_AUTH_USER_KEY),
           getASItem<number | null>(ASYNC_STORAGE_KEYS.EXPIRES_AT),
         ]);
 

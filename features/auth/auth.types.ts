@@ -15,6 +15,8 @@ export type AuthUser = {
 export type AuthResponse = {
   access: string;
   refresh: string;
+  access_expiry: number;
+  refresh_expiry: number;
 };
 
 export type DecodedToken = JwtPayload & {

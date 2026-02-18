@@ -18,7 +18,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useCourseDetails, useCourseStudents } from "../courses.hooks";
 import { AppText } from "@/components/AppText";
 import Image from "@/components/Image";
-import { API_BASE_URL } from "@/utils/env";
+import { env } from "@/utils/env";
 import { LinearGradient } from "expo-linear-gradient";
 import { FlashList } from "@shopify/flash-list";
 
@@ -36,7 +36,7 @@ const CourseDetailsHeader = ({ courseDetails }: CourseDetailsHeaderProps) => {
           source={
             courseDetails?.subjectId.subjectPhoto
               ? {
-                  uri: `${API_BASE_URL}/media/${courseDetails?.subjectId.subjectPhoto}`,
+                  uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${courseDetails?.subjectId.subjectPhoto}`,
                 }
               : require("@/assets/placeholder/bg-placeholder.png")
           }
@@ -105,7 +105,7 @@ const StudentItem = ({ student, index }: StudentItemProps) => {
         {student.studentPhoto ? (
           <Image
             source={{
-              uri: `${API_BASE_URL}/media/${student.studentPhoto}`,
+              uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${student.studentPhoto}`,
             }}
             className="w-12 h-12 rounded-full"
             contentFit="cover"

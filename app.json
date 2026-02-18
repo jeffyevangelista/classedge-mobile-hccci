@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "classedge-mobile",
-    "slug": "classedge-mobile",
+    "name": "classedge",
+    "slug": "classedge",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "classedgemobile",
+    "scheme": "classedge",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.jeffigy.classedgemobile"
+      "bundleIdentifier": "com.jeffigy.classedge"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.jeffigy.classedgemobile"
+      "package": "com.jeffigy.classedge"
     },
     "web": {
       "output": "static",
@@ -38,7 +38,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#f9f9f9"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

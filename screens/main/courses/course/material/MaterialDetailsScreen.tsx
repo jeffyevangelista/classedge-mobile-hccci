@@ -4,7 +4,7 @@ import { useLocalSearchParams } from "expo-router";
 import { AppText } from "@/components/AppText";
 import Screen from "@/components/screen";
 import { Card } from "heroui-native";
-import { API_BASE_URL } from "@/utils/env";
+import { env } from "@/utils/env";
 
 const MaterialDetailsScreen = () => {
   const { materialId } = useLocalSearchParams();
@@ -62,7 +62,9 @@ const MaterialDetailsScreen = () => {
                 Attached File
               </AppText>
               <Image
-                source={{ uri: `${API_BASE_URL}/media/${data.file}` }}
+                source={{
+                  uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${data.file}`,
+                }}
                 style={{ width: "100%", height: 300, borderRadius: 8 }}
                 resizeMode="contain"
               />

@@ -1,5 +1,5 @@
 import { getPowerSyncToken } from "@/features/auth/auth.apis";
-import { API_URL, POWERSYNC_ENDPOINT } from "@/utils/env";
+import { env } from "@/utils/env";
 import useStore from "@/lib/store";
 import {
   type AbstractPowerSyncDatabase,
@@ -17,7 +17,7 @@ export class Connector implements PowerSyncBackendConnector {
     const res = await getPowerSyncToken();
 
     return {
-      endpoint: POWERSYNC_ENDPOINT,
+      endpoint: env.EXPO_PUBLIC_POWERSYNC_ENDPOINT,
       token: res.token,
     };
   }
@@ -52,21 +52,21 @@ export class Connector implements PowerSyncBackendConnector {
         switch (op.op) {
           case UpdateType.PUT:
             // For 'PUT', typically use an UPSERT on your backend
-            await fetch(`${API_URL}/${op.table}`, {
+            await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}`, {
               method: "POST",
               headers,
               body: JSON.stringify(record),
             });
             break;
           case UpdateType.PATCH:
-            await fetch(`${API_URL}/${op.table}/${op.id}/`, {
+            await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`, {
               method: "PATCH",
               headers,
               body: JSON.stringify(op.opData),
             });
             break;
           case UpdateType.DELETE:
-            await fetch(`${API_URL}/${op.table}/${op.id}/`, {
+            await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`, {
               method: "DELETE",
               headers,
             });

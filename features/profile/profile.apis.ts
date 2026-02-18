@@ -1,4 +1,4 @@
-import { api } from "@/lib/axios";
+import api from "@/lib/axios";
 import { ClassSchedule } from "./profile.types";
 
 export const getClassSchedule = async ({

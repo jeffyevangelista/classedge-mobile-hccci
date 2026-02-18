@@ -2,7 +2,7 @@ import { View, Text } from "react-native";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import { Avatar } from "heroui-native";
 import { AppText } from "@/components/AppText";
-import { API_BASE_URL } from "@/utils/env";
+import { env } from "@/utils/env";
 
 const HeaderComponent = () => {
   const { data: userDetails } = useUserDetails();
@@ -20,7 +20,9 @@ const HeaderComponent = () => {
           <Avatar.Image
             source={
               userDetails?.studentPhoto
-                ? { uri: `${API_BASE_URL}/media/${userDetails.studentPhoto}` }
+                ? {
+                    uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${userDetails.studentPhoto}`,
+                  }
                 : require("@/assets/placeholder/avatar-placeholder.png")
             }
           />

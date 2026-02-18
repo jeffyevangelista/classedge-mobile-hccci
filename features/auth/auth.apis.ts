@@ -1,5 +1,5 @@
-import { api } from "@/lib/axios";
-import type { LoginCredentials } from "./auth.types";
+import api from "@/lib/axios";
+import type { AuthResponse, LoginCredentials } from "./auth.types";
 
 export const login = async (loginCredentials: LoginCredentials) => {
   return (await api.post("/auth/login/", loginCredentials)).data;
@@ -19,4 +19,14 @@ export const verifyOtp = async (email: string, otp: string) => {
 
 export const resetPassword = async (email: string, password: string) => {
   return (await api.post("/auth/reset-password/", { email, password })).data;
+};
+
+export const msLogin = async (token: string | null): Promise<AuthResponse> => {
+  return (
+    await api.get(`/auth/microsoft/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  ).data;
 };
