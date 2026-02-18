@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import { memo, useCallback } from "react";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { FlashList } from "@shopify/flash-list";
@@ -48,7 +48,7 @@ const PENDING_ASSESSMENTS: PendingAssessment[] = [
   },
 ];
 
-const AssessmentItem = React.memo(({ item }: { item: PendingAssessment }) => (
+const AssessmentItem = memo(({ item }: { item: PendingAssessment }) => (
   <Card className="w-72 md:w-80 lg:w-96 mr-3">
     <Card.Body className="flex flex-row items-center gap-2.5">
       <View className="p-2 bg-emerald-100 rounded-full">

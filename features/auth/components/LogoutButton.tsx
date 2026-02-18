@@ -5,7 +5,7 @@ import {
   useThemeColor,
   useToast,
 } from "heroui-native";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useLogout } from "../auth.hooks";
 import { View } from "react-native";
 import { powersync } from "@/powersync/system";

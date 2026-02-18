@@ -1,21 +1,18 @@
 import {
   View,
-  Text,
   Pressable,
   Platform,
   useWindowDimensions,
-  ScrollView,
   ActivityIndicator,
 } from "react-native";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { BottomSheet } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import {
   InfoIcon,
-  UserCircle,
-  MapPin,
-  Clock,
-  Users,
+  UserCircleIcon,
+  MapPinIcon,
+  UsersIcon,
 } from "phosphor-react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useCourseDetails, useCourseStudents } from "../courses.hooks";
@@ -70,7 +67,7 @@ const CourseInfoCard = ({ courseDetails }: CourseDetailsHeaderProps) => {
     <View className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 mb-6 mx-1">
       <View className="flex-row items-center mb-3">
         <View className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 items-center justify-center mr-3">
-          <Icon as={UserCircle} size={24} color="#3b82f6" />
+          <Icon as={UserCircleIcon} size={24} color="#3b82f6" />
         </View>
         <View className="flex-1">
           <AppText className="text-xs text-gray-500 mb-1">Instructor</AppText>
@@ -83,7 +80,7 @@ const CourseInfoCard = ({ courseDetails }: CourseDetailsHeaderProps) => {
 
       <View className="flex-row items-center mb-3">
         <View className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 items-center justify-center mr-3">
-          <Icon as={MapPin} size={24} color="#22c55e" />
+          <Icon as={MapPinIcon} size={24} color="#22c55e" />
         </View>
         <View className="flex-1">
           <AppText className="text-xs text-gray-500 mb-1">Room</AppText>
@@ -116,7 +113,7 @@ const StudentItem = ({ student, index }: StudentItemProps) => {
           />
         ) : (
           <View className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 items-center justify-center">
-            <Icon as={UserCircle} size={32} color="#9ca3af" />
+            <Icon as={UserCircleIcon} size={32} color="#9ca3af" />
           </View>
         )}
         <View className="absolute -bottom-1 -right-1 bg-blue-500 rounded-full w-5 h-5 items-center justify-center">
@@ -145,7 +142,7 @@ const StudentListHeader = ({ count }: StudentListHeaderProps) => {
   return (
     <View className="flex-row items-center mb-4 mx-1">
       <View className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 items-center justify-center mr-3">
-        <Icon as={Users} size={24} color="#f97316" />
+        <Icon as={UsersIcon} size={24} color="#f97316" />
       </View>
       <AppText className="text-xl font-bold">Enrolled Students</AppText>
       <View className="ml-auto bg-orange-100 dark:bg-orange-900 px-3 py-1 rounded-full">
@@ -219,7 +216,7 @@ const CourseDetailsSheet = () => {
                   </View>
                 ) : (
                   <View className="py-8 items-center mx-1">
-                    <Icon as={Users} size={48} color="#d1d5db" />
+                    <Icon as={UsersIcon} size={48} color="#d1d5db" />
                     <AppText className="text-gray-400 mt-2">
                       No students enrolled yet
                     </AppText>

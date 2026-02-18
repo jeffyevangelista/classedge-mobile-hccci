@@ -1,5 +1,4 @@
-import { View, Text, ScrollView, Image } from "react-native";
-import React from "react";
+import { View, ScrollView, Image } from "react-native";
 import { useCourseMaterial } from "@/features/courses/courses.hooks";
 import { useLocalSearchParams } from "expo-router";
 import { AppText } from "@/components/AppText";

@@ -2,7 +2,7 @@ import useStore from "@/lib/store";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Alert } from "react-native";
-import { login } from "./auth.apis";
+import { forgotPassword, login, resetPassword, verifyOtp } from "./auth.apis";
 import type { AuthResponse, LoginCredentials } from "./auth.types";
 
 export const useLogin = () => {
@@ -33,5 +33,32 @@ export const useLogout = () => {
     onError: (error) => {
       Alert.alert("Logout failed:", error.message);
     },
+  });
+};
+
+export const useForgotPassword = () => {
+  const { setEmail } = useStore.getState();
+  return useMutation({
+    mutationKey: ["forgot-password"],
+    mutationFn: ({ email }: { email: string }) => forgotPassword(email),
+    onSuccess: (_, { email }: { email: string }) => {
+      setEmail(email);
+    },
+  });
+};
+
+export const useVerifyOtp = () => {
+  return useMutation({
+    mutationKey: ["verify-otp"],
+    mutationFn: ({ email, otp }: { email: string; otp: string }) =>
+      verifyOtp(email, otp),
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationKey: ["reset-password"],
+    mutationFn: ({ email, password }: { email: string; password: string }) =>
+      resetPassword(email, password),
   });
 };

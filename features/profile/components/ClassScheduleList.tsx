@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import React, { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useClassSchedule } from "../profile.hooks";
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
@@ -30,7 +30,7 @@ const ClassScheduleList = () => {
     }
   }, [netInfo.isConnected, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isError) {
       console.log("Sync error:", error);
       toast.show({

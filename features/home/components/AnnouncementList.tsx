@@ -1,5 +1,4 @@
 import { View, ScrollView } from "react-native";
-import React from "react";
 import { FlashList } from "@shopify/flash-list";
 import { Avatar, Card, Separator } from "heroui-native";
 import { AppText } from "@/components/AppText";

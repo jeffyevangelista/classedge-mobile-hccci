@@ -1,4 +1,3 @@
-import React from "react";
 import Screen from "@/components/screen";
 import LoginForm from "@/features/auth/components/LoginForm";
 import { useWindowDimensions } from "react-native";

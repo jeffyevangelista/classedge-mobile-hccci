@@ -1,7 +1,6 @@
 import BackButton from "@/components/BackButton";
 import { colors } from "@/utils/colors";
 import { Stack } from "expo-router";
-import React from "react";
 
 const ProfileLayout = () => {
   return (

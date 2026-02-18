@@ -1,5 +1,4 @@
 import { View, Text } from "react-native";
-import React from "react";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import { Avatar } from "heroui-native";
 import { AppText } from "@/components/AppText";

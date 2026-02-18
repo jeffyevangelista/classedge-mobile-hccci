@@ -1,13 +1,11 @@
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
-
 dayjs.extend(isBetween);
 import { Link } from "expo-router";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
-  StyleSheet,
   Text,
   useWindowDimensions,
   View,

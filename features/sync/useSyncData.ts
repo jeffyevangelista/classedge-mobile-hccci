@@ -1,4 +1,3 @@
-import React from "react";
 import { useQuery, useStatus } from "@powersync/react-native";
 
 export const useSyncData = () => {

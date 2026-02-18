@@ -9,15 +9,14 @@ import {
   useToast,
 } from "heroui-native";
 import { useState } from "react";
-import { Pressable, TouchableOpacity, View } from "react-native";
-
+import { Pressable, View } from "react-native";
 import { useLogin } from "../auth.hooks";
 import { Icon } from "@/components/Icon";
-import { AppText } from "@/components/AppText";
-import { colors } from "@/utils/colors";
 import { EyeIcon, EyeSlashIcon } from "phosphor-react-native";
+import { useRouter } from "expo-router";
 
 const LoginForm = () => {
+  const router = useRouter();
   const { toast } = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -38,7 +37,7 @@ const LoginForm = () => {
   };
 
   return (
-    <View className="p-2.5 md:p-5 gap-3 w-full max-w-3xl">
+    <View className="p-2.5 md:p-5 gap-3 w-full max-w-md">
       {/* Changed gap-4 to gap-3 */}
       <TextField>
         <Label>Email</Label>
@@ -56,7 +55,7 @@ const LoginForm = () => {
           </FieldError>
         )}
       </TextField>
-      <View className="gap-1">
+      <View className="gap-2">
         <TextField>
           <Label>Password</Label>
           <View className="w-full flex-row items-center">
@@ -79,16 +78,19 @@ const LoginForm = () => {
             </Pressable>
           </View>
         </TextField>
-        <TouchableOpacity className="self-end py-1">
-          <AppText style={{ fontSize: 12, color: colors.primary[600] }}>
-            Forgot Password
-          </AppText>
-        </TouchableOpacity>
+        <Button
+          onPress={() => router.push("/forgot-password")}
+          variant="ghost"
+          size="sm"
+          className="self-end"
+        >
+          <Button.Label>Forgot Password</Button.Label>
+        </Button>
       </View>
       <Button
         isDisabled={isPending}
         size="lg"
-        className="mt-2" // Reduced mt-4 to mt-2
+        className="mt-2"
         onPress={handleLogin}
       >
         {isPending ? (

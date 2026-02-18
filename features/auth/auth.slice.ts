@@ -24,6 +24,7 @@ type AuthState = {
   authUser: AuthUser | null;
   isAuthenticated: boolean;
   expiresAt: number | null;
+  email: string | null;
 };
 
 type AuthAction = {
@@ -31,6 +32,7 @@ type AuthAction = {
   setRefreshToken: (refreshToken: string) => void;
   clearCredentials: () => Promise<void>;
   restoreSession: () => Promise<void>;
+  setEmail: (email: string) => void;
 };
 
 export type AuthSlice = AuthState & AuthAction;
@@ -41,6 +43,7 @@ const initialState: AuthState = {
   expiresAt: null,
   isAuthenticated: false,
   authUser: null,
+  email: null,
 };
 
 const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
@@ -122,6 +125,9 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
       console.warn("Session restore failed:", error);
       set(() => ({ ...initialState }));
     }
+  },
+  setEmail: (email: string) => {
+    set({ email });
   },
 });
 

@@ -1,10 +1,4 @@
-import React, {
-  useMemo,
-  useState,
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
+import { useMemo, useCallback, useEffect, useRef } from "react";
 import { BottomSheet, Card } from "heroui-native";
 import { FlatList, useWindowDimensions, View } from "react-native";
 import { AppText } from "@/components/AppText";

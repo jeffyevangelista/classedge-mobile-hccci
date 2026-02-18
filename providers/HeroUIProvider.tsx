@@ -5,6 +5,11 @@ const config: HeroUINativeConfig = {
   devInfo: {
     stylingPrinciples: false,
   },
+  toast: {
+    defaultProps: {
+      placement: "top",
+    },
+  },
 };
 
 export default function HeroUIProvider({

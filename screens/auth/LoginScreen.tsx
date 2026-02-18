@@ -75,7 +75,7 @@ const LoginScreen = () => {
 
         <View className="items-center">
           <AppText className="text-xs text-gray-500 text-center px-4">
-            By signing up, you agree to our{" "}
+            By Continuing, you agree to our{" "}
             <Link style={{ color: colors.primary[500] }} href={"/"}>
               Terms of Service
             </Link>{" "}

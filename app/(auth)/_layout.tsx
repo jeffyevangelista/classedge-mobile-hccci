@@ -20,6 +20,22 @@ const AuthLayout = () => {
           headerTitle: "",
         }}
       />
+      <Stack.Screen
+        name="forgot-password/index"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="forgot-password/otp-verification"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="forgot-password/password-reset"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="forgot-password/reset-success"
+        options={{ headerShown: false }}
+      />
     </Stack>
   );
 };

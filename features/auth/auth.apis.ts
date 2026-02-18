@@ -8,3 +8,15 @@ export const login = async (loginCredentials: LoginCredentials) => {
 export const getPowerSyncToken = async () => {
   return (await api.post("/powersync/token/")).data;
 };
+
+export const forgotPassword = async (email: string) => {
+  return (await api.post("/auth/request-otp/", { email })).data;
+};
+
+export const verifyOtp = async (email: string, otp: string) => {
+  return (await api.post("/auth/verify-otp/", { email, otp })).data;
+};
+
+export const resetPassword = async (email: string, password: string) => {
+  return (await api.post("/auth/reset-password/", { email, password })).data;
+};

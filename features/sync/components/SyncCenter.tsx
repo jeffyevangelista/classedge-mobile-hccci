@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button, Spinner } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import {

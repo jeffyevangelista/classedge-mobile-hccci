@@ -1,5 +1,5 @@
 import { FlatList, Pressable, View } from "react-native";
-import React from "react";
+
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { AppText } from "@/components/AppText";
 import { useCourseTimeline } from "../courses.hooks";

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useSyncData } from "../useSyncData";
 import { Spinner } from "heroui-native";
 import { Icon } from "@/components/Icon";
