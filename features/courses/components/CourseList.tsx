@@ -4,7 +4,6 @@ import Image from "@/components/Image";
 import { FlashList } from "@shopify/flash-list";
 import { Link } from "expo-router";
 import { Card, Input, TextField } from "heroui-native";
-import { MagnifyingGlassIcon } from "phosphor-react-native";
 import { Pressable, useWindowDimensions, View } from "react-native";
 import { env } from "@/utils/env";
 import { useStudentCourses } from "../courses.hooks";

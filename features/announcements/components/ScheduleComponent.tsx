@@ -2,7 +2,7 @@ import { View, Text } from "react-native";
 import React, { useMemo } from "react";
 import { useClock } from "@/hooks/useClock";
 import { useClassSchedule } from "@/features/profile/profile.hooks";
-import { Card } from "heroui-native";
+import { Card, Skeleton } from "heroui-native";
 import { colors } from "@/utils/colors";
 
 const ScheduleComponent = () => {
@@ -10,7 +10,7 @@ const ScheduleComponent = () => {
 
   const currentDay = now.getDay();
 
-  const { data, isError, error } = useClassSchedule();
+  const { data, isError, error, isLoading } = useClassSchedule();
 
   const { currentClass, nextClass, todayHasClasses } = useMemo(() => {
     if (!data)
@@ -61,56 +61,61 @@ const ScheduleComponent = () => {
   };
 
   return (
-    <Card className="w-full h-44 rounded-3xl p-6 flex-column justify-between shadow-lg bg-accent">
-      <View>
-        <View className="flex-row justify-between items-center">
-          <Text className="text-white/70 uppercase text-[10px] font-bold tracking-widest">
-            {getHeaderLabel()}
-          </Text>
-          <Text className="text-white/50 text-[10px]">
-            {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-          </Text>
-        </View>
-
-        <Text
-          className="text-white text-2xl font-bold mt-2 leading-7"
-          numberOfLines={2}
-        >
-          {currentClass
-            ? currentClass.subject.subjectId.subjectName
-            : nextClass?.subject.subjectId.subjectName || "Rest & Recharge"}
-        </Text>
-
-        <Text className="text-white/80 text-sm mt-1">
-          {currentClass
-            ? `📍 ${currentClass.subject.subjectId.roomNumber}`
-            : nextClass
-              ? `📍 ${nextClass.subject.subjectId.roomNumber}`
-              : "No more academic tasks"}
-        </Text>
-      </View>
-
-      <View className="flex-row justify-between items-end border-t border-white/10 pt-3">
+    <Skeleton isLoading={isLoading}>
+      <Card className="w-full h-44 rounded-3xl p-6 flex-column justify-between shadow-lg bg-accent">
         <View>
-          <Text className="text-white/60 text-[10px] mb-0.5">Schedule</Text>
-          <Text className="text-white font-semibold">
-            {currentClass
-              ? `${currentClass.scheduleStartTime.slice(0, 5)} - ${currentClass.scheduleEndTime.slice(0, 5)}`
-              : nextClass
-                ? `${nextClass.scheduleStartTime.slice(0, 5)} start`
-                : "--:--"}
-          </Text>
-        </View>
-
-        {currentClass && nextClass && (
-          <View className="bg-white/20 px-3 py-1.5 rounded-xl">
-            <Text className="text-white text-[10px] font-medium">
-              Next: {nextClass.subject.subjectId.subjectCode || "Class"}
+          <View className="flex-row justify-between items-center">
+            <Text className="text-white/70 uppercase text-[10px] font-bold tracking-widest">
+              {getHeaderLabel()}
+            </Text>
+            <Text className="text-white/50 text-[10px]">
+              {now.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </Text>
           </View>
-        )}
-      </View>
-    </Card>
+
+          <Text
+            className="text-white text-2xl font-bold mt-2 leading-7"
+            numberOfLines={2}
+          >
+            {currentClass
+              ? currentClass.subject.subjectId.subjectName
+              : nextClass?.subject.subjectId.subjectName || "Rest & Recharge"}
+          </Text>
+
+          <Text className="text-white/80 text-sm mt-1">
+            {currentClass
+              ? `📍 ${currentClass.subject.subjectId.roomNumber}`
+              : nextClass
+                ? `📍 ${nextClass.subject.subjectId.roomNumber}`
+                : "No more academic tasks"}
+          </Text>
+        </View>
+
+        <View className="flex-row justify-between items-end border-t border-white/10 pt-3">
+          <View>
+            <Text className="text-white/60 text-[10px] mb-0.5">Schedule</Text>
+            <Text className="text-white font-semibold">
+              {currentClass
+                ? `${currentClass.scheduleStartTime.slice(0, 5)} - ${currentClass.scheduleEndTime.slice(0, 5)}`
+                : nextClass
+                  ? `${nextClass.scheduleStartTime.slice(0, 5)} start`
+                  : "--:--"}
+            </Text>
+          </View>
+
+          {currentClass && nextClass && (
+            <View className="bg-white/20 px-3 py-1.5 rounded-xl">
+              <Text className="text-white text-[10px] font-medium">
+                Next: {nextClass.subject.subjectId.subjectCode || "Class"}
+              </Text>
+            </View>
+          )}
+        </View>
+      </Card>
+    </Skeleton>
   );
 };
 

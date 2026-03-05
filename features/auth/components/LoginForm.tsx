@@ -12,7 +12,6 @@ import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { useLogin } from "../auth.hooks";
 import { Icon } from "@/components/Icon";
-import { EyeIcon, EyeSlashIcon } from "phosphor-react-native";
 import { useRouter } from "expo-router";
 
 const LoginForm = () => {
@@ -71,7 +70,7 @@ const LoginForm = () => {
               onPress={() => setShowPassword(!showPassword)}
             >
               <Icon
-                as={showPassword ? EyeIcon : EyeSlashIcon}
+                name={showPassword ? "EyeIcon" : "EyeSlashIcon"}
                 size={20}
                 color="gray"
               />

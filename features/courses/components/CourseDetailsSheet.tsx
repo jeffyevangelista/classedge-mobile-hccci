@@ -8,12 +8,7 @@ import {
 import { useMemo } from "react";
 import { BottomSheet } from "heroui-native";
 import { Icon } from "@/components/Icon";
-import {
-  InfoIcon,
-  UserCircleIcon,
-  MapPinIcon,
-  UsersIcon,
-} from "phosphor-react-native";
+
 import { useLocalSearchParams } from "expo-router";
 import { useCourseDetails, useCourseStudents } from "../courses.hooks";
 import { AppText } from "@/components/AppText";

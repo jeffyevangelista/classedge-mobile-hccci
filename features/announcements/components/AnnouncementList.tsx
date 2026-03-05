@@ -1,9 +1,9 @@
 import { Pressable, ScrollView, View } from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import { Avatar, Card, Separator, Spinner } from "heroui-native";
+import { Avatar, Card, Separator, Skeleton } from "heroui-native";
 import { AppText } from "@/components/AppText";
+import { ErrorComponent } from "@/components/ErrorComponent";
 import { Icon } from "@/components/Icon";
-import { ClockIcon, MapPinIcon } from "phosphor-react-native";
 import {
   formatDate,
   formatTime,
@@ -17,13 +17,14 @@ const AnnouncementList = () => {
   const { data, isError, error, isLoading, refetch, isRefetching } =
     useAnnouncementsWithEvents();
 
-  if (isLoading) return <Spinner />;
-  if (isError) return <AppText>{error.message}</AppText>;
+  if (isLoading) return <AnnouncementSkeleton />;
+  if (isError)
+    return <ErrorComponent message={error.message} onRetry={refetch} />;
 
   return (
     <FlashList
       scrollEnabled={false}
-      ListEmptyComponent={<AppText>No Announcements</AppText>}
+      ListEmptyComponent={<AppText>No Announcements Yet</AppText>}
       data={data}
       onRefresh={refetch}
       refreshing={isRefetching}
@@ -61,7 +62,9 @@ const AnnouncementList = () => {
               <AppText weight="semibold" className="text-lg">
                 {item.title}
               </AppText>
-              <AppText>{item.description}</AppText>
+              <AppText className="text-justify leading-relaxed">
+                {item.description}
+              </AppText>
               {item.events.length > 0 && (
                 <AppText weight="semibold" className="text-md">
                   Associated Events
@@ -118,6 +121,41 @@ const EventCard = ({ event }: { event: Event }) => {
         eventId={event.id}
       />
     </>
+  );
+};
+
+const AnnouncementSkeleton = () => {
+  return (
+    <FlashList
+      scrollEnabled={false}
+      data={[1, 2, 3]}
+      renderItem={() => (
+        <View className="mb-2 max-w-3xl sm:mx-auto w-full px-5">
+          <Card className="shadow-none">
+            <Card.Header>
+              <View className="flex-row items-center gap-2">
+                <Skeleton className="w-8 h-8 rounded-full" />
+                <View className="flex-1">
+                  <Skeleton className="h-4 w-32 mb-1 rounded" />
+                  <Skeleton className="h-3 w-20 rounded" />
+                </View>
+              </View>
+            </Card.Header>
+            <Separator className="my-2 bg-gray-300" />
+            <Card.Body className="gap-2.5">
+              <Skeleton className="h-5 w-3/4 rounded" />
+              <Skeleton className="h-4 w-full mb-1 rounded" />
+              <Skeleton className="h-4 w-full mb-1 rounded" />
+              <Skeleton className="h-4 w-2/3 rounded" />
+              <View className="flex-row gap-2 mt-2">
+                <Skeleton className="h-16 flex-1 rounded" />
+                <Skeleton className="h-16 flex-1 rounded" />
+              </View>
+            </Card.Body>
+          </Card>
+        </View>
+      )}
+    />
   );
 };
 

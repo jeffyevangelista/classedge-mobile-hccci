@@ -9,8 +9,6 @@ import { useState } from "react";
 import { useLogout } from "../auth.hooks";
 import { View } from "react-native";
 import { powersync } from "@/powersync/system";
-import { Icon } from "@/components/Icon";
-import { SignOutIcon } from "phosphor-react-native";
 
 const LogoutButton = () => {
   const [isOpen, setIsOpen] = useState(false);

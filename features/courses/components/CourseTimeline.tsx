@@ -4,7 +4,6 @@ import { AppText } from "@/components/AppText";
 import { useCourseTimeline } from "../courses.hooks";
 import { Card } from "heroui-native";
 import { Icon } from "@/components/Icon";
-import { BookOpenTextIcon, PencilLineIcon } from "phosphor-react-native";
 import { useFormattedDate } from "@/hooks/userFormattedDate";
 
 const CourseTimeline = () => {

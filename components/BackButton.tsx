@@ -1,7 +1,6 @@
 import { RelativePathString, useRouter } from "expo-router";
 import { ColorValue, Platform, Pressable } from "react-native";
 import { Icon } from "./Icon";
-import { ArrowLeftIcon } from "phosphor-react-native";
 
 interface BackButtonProps {
   tintColor?: ColorValue;

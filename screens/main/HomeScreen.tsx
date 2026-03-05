@@ -6,9 +6,7 @@ import ScheduleComponent from "@/features/announcements/components/ScheduleCompo
 import PendingAssessmentList from "@/features/courses/components/PendingAssessmentList";
 import Header from "@/features/home/components/Header";
 import SyncBanner from "@/features/sync/components/SyncBanner";
-
 import { powersync } from "@/powersync/system";
-import { WifiHighIcon, WifiSlashIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   Alert,

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useSyncData } from "../useSyncData";
 import { Spinner } from "heroui-native";
 import { Icon } from "@/components/Icon";
-import { WarningCircleIcon } from "phosphor-react-native";
 import { Button } from "heroui-native";
 import { useThemeColor } from "heroui-native";
 import SyncSheet from "./SyncSheet";

@@ -9,7 +9,6 @@ import { Notification } from "@/powersync/schema";
 import { Link } from "expo-router";
 import { readNotification } from "../notifications.service";
 import { Icon } from "@/components/Icon";
-import { BellSlashIcon } from "phosphor-react-native";
 
 const NotificationList = () => {
   const { data, isLoading, isError, error, isRefetching, refetch } =
@@ -77,7 +76,6 @@ const NotificationItem = ({
 
   return (
     <Link
-      className={`rounded ${isReadBool ? "border-b border-gray-200" : "mb-1"}`}
       href={
         entityType === "lesson"
           ? `/material/${entityId}`

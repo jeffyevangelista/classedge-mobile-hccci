@@ -5,14 +5,6 @@ import SyncCenter from "@/features/sync/components/SyncCenter";
 import useStore from "@/lib/store";
 import { colors } from "@/utils/colors";
 import { Tabs } from "expo-router";
-import {
-  BellIcon,
-  BinocularsIcon,
-  BookOpenIcon,
-  CalendarBlankIcon,
-  ChalkboardTeacherIcon,
-  HouseIcon,
-} from "phosphor-react-native";
 import { Platform, View } from "react-native";
 
 const TabsLayout = () => {
@@ -25,14 +17,11 @@ const TabsLayout = () => {
         headerShadowVisible: false,
         animation: "shift",
         headerTitleAlign: "left",
-        tabBarInactiveTintColor: colors.primary[400],
         headerTitleStyle: {
           fontFamily: "Poppins-SemiBold",
           fontSize: Platform.OS === "ios" ? 28 : 32,
           color: "#000",
         },
-        tabBarActiveTintColor: colors.primary[500],
-        headerTintColor: colors.primary[500],
         tabBarLabelStyle: {
           fontFamily: "Poppins-Medium",
         },
@@ -45,7 +34,6 @@ const TabsLayout = () => {
         headerStyle: {
           elevation: 0,
           shadowOpacity: 0,
-          backgroundColor: colors.backgroundColor,
         },
       }}
     >

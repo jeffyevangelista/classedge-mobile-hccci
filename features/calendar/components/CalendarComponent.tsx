@@ -17,7 +17,6 @@ import { formatDate } from "./date-formatter";
 import { AppText } from "@/components/AppText";
 import { Card, Surface } from "heroui-native";
 import { Icon } from "@/components/Icon";
-import { CalendarDotsIcon, PencilLineIcon } from "phosphor-react-native";
 import EventDetailModal from "./EventDetailModal";
 
 type CustomMarkedDate = {
