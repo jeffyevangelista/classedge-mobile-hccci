@@ -10,6 +10,7 @@ import {
   verifyOtp,
 } from "./auth.apis";
 import type { AuthResponse, LoginCredentials } from "./auth.types";
+import { useToast } from "heroui-native";
 
 export const useLogin = () => {
   const router = useRouter();
@@ -73,6 +74,8 @@ export const useMsLogin = (token: string | null) => {
   const router = useRouter();
   const { setAccessToken, setRefreshToken, clearCredentials } =
     useStore.getState();
+  const { toast } = useToast();
+
   return useQuery({
     queryKey: ["ms-login"],
     queryFn: async () => {
@@ -85,6 +88,7 @@ export const useMsLogin = (token: string | null) => {
             setRefreshToken(data.refresh),
           ]);
           router.replace("/(main)/(tabs)");
+          return data; // Return the data for React Query
         } catch (error) {
           // Clear any partial credentials if role validation fails
           await clearCredentials();
@@ -92,13 +96,15 @@ export const useMsLogin = (token: string | null) => {
           // Show native alert for role validation errors
           const errorMessage =
             error instanceof Error ? error.message : "Authentication failed";
-          Alert.alert("Access Denied", errorMessage, [{ text: "OK" }]);
-
-          throw error;
+          toast.show({
+            variant: "danger",
+            label: "Something went wrong",
+            description: errorMessage,
+          });
+          throw error; // Re-throw to mark query as failed
         }
       }
-
-      return data;
+      throw new Error("No data returned from login");
     },
 
     enabled: !!token,

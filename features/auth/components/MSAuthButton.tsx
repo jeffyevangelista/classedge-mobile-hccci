@@ -107,6 +107,7 @@ const MSAuthButton = () => {
       setAuthInProgress(false);
     }
   };
+
   return (
     <Button
       className="w-full"

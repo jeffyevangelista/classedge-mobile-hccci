@@ -1,4 +1,9 @@
-import { assessmentTable, materialsTable } from "@/powersync/schema";
+import {
+  assessmentTable,
+  coursesTable,
+  materialsTable,
+  studentEnrolledCoursesTable,
+} from "@/powersync/schema";
 import { db } from "@/powersync/system";
 import { desc, eq, sql } from "drizzle-orm";
 import { union } from "drizzle-orm/sqlite-core";
@@ -65,6 +70,13 @@ export const getCourseMaterial = (materialId: string) => {
   return db.query.materialsTable.findFirst({
     where: (materialsTable, { eq }) =>
       eq(materialsTable.id, Number(materialId)),
+  });
+};
+
+export const getCourseAssessment = (assessmentId: string) => {
+  return db.query.assessmentTable.findFirst({
+    where: (assessmentTable, { eq }) =>
+      eq(assessmentTable.id, Number(assessmentId)),
   });
 };
 

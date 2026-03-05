@@ -1,11 +1,17 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import { Avatar } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { env } from "@/utils/env";
 
 const HeaderComponent = () => {
-  const { data: userDetails } = useUserDetails();
+  const { data, isLoading, isError, error } = useUserDetails();
+
+  if (isLoading) return <AppText>Loading...</AppText>;
+  if (isError) return <AppText>{error.message}</AppText>;
+
+  const userDetails = data?.[0];
+
   return (
     <View className="items-center">
       <View className="p-1 border-3 border-blue-500  rounded-full">

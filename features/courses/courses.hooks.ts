@@ -1,12 +1,15 @@
 import useStore from "@/lib/store";
 import { useQuery } from "@powersync/tanstack-react-query";
 import {
+  getCourseAssessment,
   getCourseDetails,
   getCourseMaterial,
   getCourseStudents,
   getCourseTimeline,
   getStudentCourses,
 } from "./courses.service";
+import { getPendingAssessments } from "./courses.apis";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export const useStudentCourses = () => {
   const { authUser } = useStore.getState();
@@ -21,7 +24,10 @@ export const useStudentCourses = () => {
 export const useCourseTimeline = (courseId: string) => {
   return useQuery({
     queryKey: ["course_timeline", courseId],
-    queryFn: async () => getCourseTimeline(courseId),
+    queryFn: async () => {
+      const course = await getCourseDetails(courseId);
+      return await getCourseTimeline(course?.subjectId.id.toString()!);
+    },
   });
 };
 
@@ -44,5 +50,20 @@ export const useCourseStudents = (subjectId: number | undefined) => {
     queryKey: ["course-students", subjectId],
     enabled: !!subjectId,
     queryFn: () => getCourseStudents(subjectId!),
+  });
+};
+
+export const usePendingAssessments = (subjectId: string | null) => {
+  return useQuery({
+    queryKey: ["pending-assessments", subjectId],
+    queryFn: () => getPendingAssessments({ subjectId }),
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useCourseAssessment = (assessmentId: string) => {
+  return useQuery({
+    queryKey: ["course-assessment", assessmentId],
+    queryFn: () => getCourseAssessment(assessmentId),
   });
 };

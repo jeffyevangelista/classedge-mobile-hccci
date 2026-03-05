@@ -2,22 +2,23 @@ import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
 import { Link } from "expo-router";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   Text,
   useWindowDimensions,
   View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
-
-import { useCalendarItems } from "../calendar.hooks";
+import { useEvents } from "../calendar.hooks";
 import { formatDate } from "./date-formatter";
 import { AppText } from "@/components/AppText";
-import { Card } from "heroui-native";
+import { Card, Surface } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import { CalendarDotsIcon, PencilLineIcon } from "phosphor-react-native";
+import EventDetailModal from "./EventDetailModal";
 
 type CustomMarkedDate = {
   marked?: boolean;
@@ -38,9 +39,55 @@ type CustomMarkedDate = {
 
 type MarkedDates = Record<string, CustomMarkedDate>;
 
+const EventCard = ({ item }: { item: any }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <React.Fragment key={item.id}>
+      <Pressable onPress={() => setIsOpen(true)}>
+        <View className=" mx-auto w-full max-w-3xl">
+          <Card className="mb-1 flex-row items-center ">
+            <View className=" flex-row flex-1">
+              <View className={"rounded-full p-2.5 bg-teal-50"}>
+                <Icon
+                  className={"h-6 w-6 text-teal-600"}
+                  as={CalendarDotsIcon}
+                />
+              </View>
+              <View className="flex-1">
+                <Text
+                  className="text-neutral-900 font-poppins-semibold text-lg flex-1"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {item.title}
+                </Text>
+                <View className="flex-row items-center">
+                  <Text
+                    className="text-neutral-500 text-xs"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {formatDate(item.startDate)} - {formatDate(item.endDate)}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </Card>
+        </View>
+      </Pressable>
+      <EventDetailModal
+        isOpen={isOpen}
+        setOpenChange={setIsOpen}
+        eventId={item.id}
+      />
+    </React.Fragment>
+  );
+};
+
 const CalendarComponent = () => {
   const { data, isLoading, isError, error, refetch, isRefetching } =
-    useCalendarItems();
+    useEvents();
   const today = dayjs().format("YYYY-MM-DD");
   const { width } = useWindowDimensions();
 
@@ -52,6 +99,7 @@ const CalendarComponent = () => {
     const cellSize = Math.floor(availableWidth / 7);
     return Math.min(cellSize, 52);
   }, [width]);
+
   if (isLoading)
     return (
       <View className="h-full items-center justify-center">
@@ -73,8 +121,8 @@ const CalendarComponent = () => {
     // ------------------------------------------------
     data.forEach((item) => {
       if (item.type === "event") {
-        const start = dayjs(item.start_date);
-        const end = dayjs(item.end_date);
+        const start = dayjs(item.startDate);
+        const end = dayjs(item.endDate);
 
         const diff = end.diff(start, "day");
 
@@ -97,7 +145,7 @@ const CalendarComponent = () => {
     // ------------------------------------------------
     data.forEach((item) => {
       if (item.type === "activity") {
-        const endDate = dayjs(item.end).format("YYYY-MM-DD");
+        const endDate = dayjs(item.endDate).format("YYYY-MM-DD");
 
         if (!marks[endDate]) marks[endDate] = {};
 
@@ -142,14 +190,14 @@ const CalendarComponent = () => {
 
     return data.filter((item) => {
       if (item.type === "activity") {
-        const actDate = dayjs(item.end).format("YYYY-MM-DD");
+        const actDate = dayjs(item.endDate).format("YYYY-MM-DD");
         return actDate === selectedDate;
       }
 
       if (item.type === "event") {
         return dayjs(selectedDate).isBetween(
-          item.start_date,
-          item.end_date,
+          item.startDate,
+          item.endDate,
           "day",
           "[]",
         );
@@ -161,66 +209,70 @@ const CalendarComponent = () => {
 
   return (
     <ScrollView>
-      <Calendar
-        markingType="period"
-        markedDates={markedDates}
-        onDayPress={(day) => setSelectedDate(day.dateString)}
-        theme={
-          {
-            arrowColor: "#146BB5",
-            textDayFontSize: Math.max(14, dayCellSize * 0.35),
-            textDayFontWeight: "400",
-            textDayHeaderFontSize: Math.max(12, dayCellSize * 0.3),
-            textDayHeaderFontWeight: "600",
-            "stylesheet.day.basic": {
-              base: {
-                width: dayCellSize,
-                height: dayCellSize,
-                alignItems: "center",
-                justifyContent: "center",
-              },
-              text: {
-                marginTop: 0,
-                fontSize: Math.max(14, dayCellSize * 0.35),
-                fontWeight: "400",
-              },
-            },
-            "stylesheet.calendar.header": {
-              dayTextAtIndex0: {
-                color: "#146BB5",
-                fontWeight: "600",
-              },
-              dayTextAtIndex1: {
-                color: "#146BB5",
-                fontWeight: "600",
-              },
-              dayTextAtIndex2: {
-                color: "#146BB5",
-                fontWeight: "600",
-              },
-              dayTextAtIndex3: {
-                color: "#146BB5",
-                fontWeight: "600",
-              },
-              dayTextAtIndex4: {
-                color: "#146BB5",
-                fontWeight: "600",
-              },
-              dayTextAtIndex5: {
-                color: "#146BB5",
-                fontWeight: "600",
-              },
-              dayTextAtIndex6: {
-                color: "#146BB5",
-                fontWeight: "600",
-              },
-            },
-          } as any
-        }
-        style={{
-          paddingHorizontal: 10,
-        }}
-      />
+      <View className="p-2.5 max-w-3xl mx-auto w-full">
+        <Surface>
+          <Calendar
+            markingType="period"
+            markedDates={markedDates}
+            onDayPress={(day) => setSelectedDate(day.dateString)}
+            theme={
+              {
+                arrowColor: "#146BB5",
+                textDayFontSize: Math.max(14, dayCellSize * 0.35),
+                textDayFontWeight: "400",
+                textDayHeaderFontSize: Math.max(12, dayCellSize * 0.3),
+                textDayHeaderFontWeight: "600",
+                "stylesheet.day.basic": {
+                  base: {
+                    width: dayCellSize,
+                    height: dayCellSize,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  },
+                  text: {
+                    marginTop: 0,
+                    fontSize: Math.max(14, dayCellSize * 0.35),
+                    fontWeight: "400",
+                  },
+                },
+                "stylesheet.calendar.header": {
+                  dayTextAtIndex0: {
+                    color: "#146BB5",
+                    fontWeight: "600",
+                  },
+                  dayTextAtIndex1: {
+                    color: "#146BB5",
+                    fontWeight: "600",
+                  },
+                  dayTextAtIndex2: {
+                    color: "#146BB5",
+                    fontWeight: "600",
+                  },
+                  dayTextAtIndex3: {
+                    color: "#146BB5",
+                    fontWeight: "600",
+                  },
+                  dayTextAtIndex4: {
+                    color: "#146BB5",
+                    fontWeight: "600",
+                  },
+                  dayTextAtIndex5: {
+                    color: "#146BB5",
+                    fontWeight: "600",
+                  },
+                  dayTextAtIndex6: {
+                    color: "#146BB5",
+                    fontWeight: "600",
+                  },
+                },
+              } as any
+            }
+            style={{
+              paddingHorizontal: 10,
+            }}
+          />
+        </Surface>
+      </View>
 
       {/* Items under calendar */}
       <View className="mt-5 mx-5">
@@ -260,7 +312,7 @@ const CalendarComponent = () => {
                             numberOfLines={1}
                             ellipsizeMode="tail"
                           >
-                            Due {formatDate(item.end)}
+                            Due {formatDate(item.endDate)}
                           </Text>
                         </View>
                       </View>
@@ -271,39 +323,7 @@ const CalendarComponent = () => {
             }
 
             if (item.type === "event") {
-              return (
-                <View key={item.title} className=" mx-auto w-full">
-                  <Card className="mb-1 flex-row items-center active:bg-blue-50/50 border-neutral-200 border">
-                    <View className=" flex-row flex-1">
-                      <View className={"rounded-full p-2.5 bg-teal-50"}>
-                        <Icon
-                          className={"h-6 w-6 text-teal-600"}
-                          as={CalendarDotsIcon}
-                        />
-                      </View>
-                      <View className="flex-1">
-                        <Text
-                          className="text-neutral-900 font-poppins-semibold text-lg flex-1"
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
-                        >
-                          {item.title}
-                        </Text>
-                        <View className="flex-row items-center">
-                          <Text
-                            className="text-neutral-500 text-xs"
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                          >
-                            {formatDate(item.start_date)} -{" "}
-                            {formatDate(item.end_date)}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </Card>
-                </View>
-              );
+              return <EventCard key={item.id} item={item} />;
             }
 
             return null;

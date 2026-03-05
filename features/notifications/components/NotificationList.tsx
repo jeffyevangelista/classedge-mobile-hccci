@@ -1,130 +1,74 @@
-import { AppText } from "@/components/AppText";
+import { View, Text, Pressable, RefreshControl } from "react-native";
+import { useNotifications } from "../notifications.hooks";
 import { FlashList } from "@shopify/flash-list";
-import { Link } from "expo-router";
-import { Avatar, Button, Spinner, useToast } from "heroui-native";
-import { Pressable, StyleSheet, View } from "react-native";
-import { useNotifications, useReadNotification } from "../notifications.hooks";
-import { Notification } from "../notifications.types";
+import { AppText } from "@/components/AppText";
+import { Avatar, Card, SkeletonGroup } from "heroui-native";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { queryClient } from "@/providers/QueryProvider";
-import { useCallback, useEffect } from "react";
-import { useNetInfo } from "@react-native-community/netinfo";
-import useStore from "@/lib/store";
+import { Notification } from "@/powersync/schema";
+import { Link } from "expo-router";
+import { readNotification } from "../notifications.service";
+import { Icon } from "@/components/Icon";
+import { BellSlashIcon } from "phosphor-react-native";
 
 const NotificationList = () => {
-  const netInfo = useNetInfo();
-  const { toast } = useToast();
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isRefetching,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  } = useNotifications();
-
-  const loadMore = useCallback(async () => {
-    // Only attempt to fetch more if online
-    if (netInfo.isConnected && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [netInfo.isConnected, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  useEffect(() => {
-    if (isError) {
-      console.log("Sync error:", error);
-      toast.show({
-        variant: "danger",
-        label: "Error",
-        description: "Could not update notifications.",
-      });
-    }
-  }, [isError, error]);
-
-  const notifications = data?.pages.flatMap((page) => page.results) ?? [];
-
-  if (isLoading && notifications.length === 0) {
+  const { data, isLoading, isError, error, isRefetching, refetch } =
+    useNotifications();
+  if (isLoading) {
     return (
-      <View style={styles.center}>
-        <Spinner size="lg" />
-      </View>
-    );
-  }
-
-  if (isError && notifications.length === 0) {
-    return (
-      <View style={styles.center}>
-        <AppText>Error loading notifications.</AppText>
-        <Button onPress={() => refetch()}>
-          <Button.Label>Retry</Button.Label>
-        </Button>
-      </View>
-    );
-  }
-
-  const renderFooter = () => {
-    if (isFetchingNextPage) {
-      return <Spinner style={{ padding: 20 }} />;
-    }
-
-    if (hasNextPage && !netInfo.isConnected) {
-      return (
-        <View style={styles.footerInfo}>
-          <AppText style={styles.footerText}>
-            You are offline. Cannot load more notifications.
-          </AppText>
+      <SkeletonGroup className="flex-row items-center gap-3 px-4">
+        <SkeletonGroup.Item className="h-12 w-12 rounded-full" />
+        <View className="flex-1 gap-1.5">
+          <SkeletonGroup.Item className="h-4 w-full rounded-md" />
+          <SkeletonGroup.Item className="h-3 w-1/8 rounded-md" />
         </View>
-      );
-    }
+      </SkeletonGroup>
+    );
+  }
 
-    return null;
-  };
+  if (isError) return <Text>Error: {error.message}</Text>;
 
   return (
     <FlashList
-      className="mx-auto w-full max-w-3xl"
-      keyExtractor={(item) => item.id.toString()}
-      data={notifications}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefetching} // Visual spinner shows while refetching
+          onRefresh={refetch} // Triggered on pull
+        />
+      }
       ListEmptyComponent={
-        <AppText className="text-center">No notifications</AppText>
+        <View className="items-center justify-center py-10 gap-5">
+          <View className="p-5 rounded-full bg-blue-100">
+            <Icon as={BellSlashIcon} size={100} className="text-blue-600" />
+          </View>
+          <AppText className="text-center text-xl">
+            You have no notifications yet
+          </AppText>
+        </View>
       }
       renderItem={({ item }) => <NotificationItem {...item} />}
-      onEndReached={loadMore}
-      onEndReachedThreshold={0.5}
-      ListFooterComponent={renderFooter}
-      // --- Pull to Refresh ---
-      onRefresh={refetch}
-      refreshing={isRefetching}
+      data={data}
     />
   );
 };
 
 const NotificationItem = ({
-  entity_type,
-  is_read,
-  entity_id,
-  message,
-  created_at,
+  createdAt,
+  isRead,
   id,
-  created_by_photo,
+  message,
+  createdById,
+  entityType,
+  entityId,
 }: Notification) => {
-  const { mutateAsync: readNotification, isPending } = useReadNotification();
-
   dayjs.extend(relativeTime);
 
-  const formattedTime = dayjs(created_at).fromNow();
-  const isReadBool = is_read === true;
+  const formattedTime = dayjs(createdAt).fromNow();
+  const isReadBool = isRead === 1;
 
   const handleReadNotification = async () => {
     try {
-      await readNotification(id);
-      queryClient.invalidateQueries({
-        queryKey: ["notifications", "notifications-count"],
-      });
+      await readNotification(id.toString());
       console.log("Notification read successfully");
     } catch (error: any) {
       console.log("failed to update notification", error.message);
@@ -135,9 +79,9 @@ const NotificationItem = ({
     <Link
       className={`rounded ${isReadBool ? "border-b border-gray-200" : "mb-1"}`}
       href={
-        entity_type === "lesson"
-          ? `/material/${entity_id}`
-          : `/assessment/${entity_id}`
+        entityType === "lesson"
+          ? `/material/${entityId}`
+          : `/assessment/${entityId}`
       }
       asChild
     >
@@ -151,29 +95,27 @@ const NotificationItem = ({
         <Avatar alt="avatar">
           <Avatar.Image
             source={
-              created_by_photo
-                ? { uri: created_by_photo }
+              createdById.studentPhoto
+                ? { uri: createdById.studentPhoto }
                 : require("@/assets/placeholder/avatar-placeholder.png")
             }
           />
-          <Avatar.Fallback>UN</Avatar.Fallback>
+          <Avatar.Fallback>{createdById.firstName.charAt(0)}</Avatar.Fallback>
         </Avatar>
 
-        {/* Content Section */}
         <View className="flex-1 ml-3">
           <AppText
             weight={isReadBool ? "regular" : "bold"}
             className={`text-sm ${isReadBool ? "text-slate-500" : "text-slate-900"}`}
             numberOfLines={2}
           >
-            {message}
+            {createdById.firstName} {createdById.lastName} added {message}
           </AppText>
           <AppText className="text-[11px] text-slate-400 mt-1 uppercase font-medium">
             {formattedTime}
           </AppText>
         </View>
 
-        {/* Dot Indicator */}
         {!isReadBool && (
           <View className="w-2.5 h-2.5 rounded-full bg-blue-600 self-center ml-2" />
         )}
@@ -182,74 +124,4 @@ const NotificationItem = ({
   );
 };
 
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  card: {
-    marginBottom: 12,
-  },
-  cardBody: {
-    gap: 12,
-  },
-  header: {
-    gap: 4,
-  },
-  subjectName: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#1a1a1a",
-  },
-  teacherName: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
-  },
-  separator: {
-    marginVertical: 4,
-  },
-  detailsContainer: {
-    gap: 8,
-  },
-  detailRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#444",
-    minWidth: 50,
-  },
-  value: {
-    fontSize: 14,
-    color: "#666",
-    flex: 1,
-  },
-  daysContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    marginTop: 4,
-  },
-  dayChip: {
-    marginRight: 0,
-  },
-  item: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-  },
-  footerInfo: {
-    padding: 20,
-    alignItems: "center",
-  },
-  footerText: {
-    color: "gray",
-    textAlign: "center",
-  },
-});
 export default NotificationList;

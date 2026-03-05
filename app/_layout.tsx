@@ -1,4 +1,5 @@
 import "@/global.css";
+import useGreeting from "@/hooks/useGreeting";
 import useStore from "@/lib/store";
 import RootProvider from "@/providers/RootProvider";
 import {
@@ -10,9 +11,9 @@ import {
 } from "@expo-google-fonts/poppins";
 import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Spinner, useThemeColor } from "heroui-native";
+import { useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { AppState, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();

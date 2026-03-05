@@ -1,10 +1,4 @@
-import notifications from "@/app/(main)/(tabs)/notifications";
-import {
-  type InferInsertModel,
-  type InferSelectModel,
-  relations,
-  sql,
-} from "drizzle-orm";
+import { type InferSelectModel, relations, sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 const utcNow = sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'NOW'))`;
@@ -54,6 +48,7 @@ export const coursesTable = sqliteTable("subject_subject", {
   isCte: integer("is_cte").notNull(),
   duration: text("duration").notNull(),
   assignTeacherId: integer("assign_teacher_id").notNull(),
+  subjectType: text("subject_type").notNull(),
 });
 
 export const subjectRelations = relations(coursesTable, ({ one }) => ({
@@ -85,6 +80,29 @@ export const studentEnrolledCoursesTable = sqliteTable(
   },
 );
 
+export const courseScheduleTable = sqliteTable("subject_schedule", {
+  id: integer("id").primaryKey(),
+  scheduleStartTime: text("schedule_start_time").notNull(),
+  scheduleEndTime: text("schedule_end_time").notNull(),
+  daysOfWeek: text("days_of_week").notNull(),
+  subjectId: integer("subject_id").notNull(),
+  isActiveSemester: integer("is_active_semester").notNull(),
+});
+
+export const courseScheduleRelations = relations(
+  courseScheduleTable,
+  ({ one }) => ({
+    subjectId: one(coursesTable, {
+      fields: [courseScheduleTable.subjectId],
+      references: [coursesTable.id],
+    }),
+    enrollment: one(studentEnrolledCoursesTable, {
+      fields: [courseScheduleTable.subjectId],
+      references: [studentEnrolledCoursesTable.subjectId],
+    }),
+  }),
+);
+
 export const materialsTable = sqliteTable("module_module", {
   id: integer("id").primaryKey(),
   fileName: text("file_name").notNull(),
@@ -99,7 +117,7 @@ export const materialsTable = sqliteTable("module_module", {
 
 export const studentEnrolledCoursesRelations = relations(
   studentEnrolledCoursesTable,
-  ({ one }) => ({
+  ({ one, many }) => ({
     subjectId: one(coursesTable, {
       fields: [studentEnrolledCoursesTable.subjectId],
       references: [coursesTable.id],
@@ -108,6 +126,7 @@ export const studentEnrolledCoursesRelations = relations(
       fields: [studentEnrolledCoursesTable.semesterId],
       references: [academicTermsTable.id],
     }),
+    schedules: many(courseScheduleTable),
   }),
 );
 
@@ -132,41 +151,70 @@ export const notificationRelations = relations(
   }),
 );
 
+export const eventsTable = sqliteTable("calendars_event", {
+  id: integer("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  time: text("time").notNull(),
+  location: text("location").notNull(),
+  createdAt: text("created_at").notNull(),
+  createdById: integer("created_by_id").notNull(),
+  endDate: text("end_date").notNull(),
+  startDate: text("start_date").notNull(),
+});
+
+export const eventRelations = relations(eventsTable, ({ one, many }) => ({
+  createdById: one(accountDetailsTable, {
+    fields: [eventsTable.createdById],
+    references: [accountDetailsTable.userId],
+  }),
+
+  announcements: many(announcementEventJoin),
+}));
+
 export const announcementsTable = sqliteTable("calendars_announcement", {
   id: integer("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description").notNull(),
+  date: text("date").notNull(),
   createdAt: text("created_at").notNull(),
   createdById: integer("created_by_id").notNull(),
 });
 
 export const announcementRelations = relations(
   announcementsTable,
-  ({ one }) => ({
+  ({ one, many }) => ({
     createdById: one(accountDetailsTable, {
       fields: [announcementsTable.createdById],
       references: [accountDetailsTable.userId],
     }),
+    // This allows you to access the join table from an announcement
+    events: many(announcementEventJoin),
   }),
 );
 
-export const eventsTable = sqliteTable("calendars_event", {
-  id: integer("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  date: text("date").notNull(),
-  time: text("time").notNull(),
-  location: text("location").notNull(),
-  createdAt: text("created_at").notNull(),
-  createdById: integer("created_by_id").notNull(),
-});
+export const announcementEventJoin = sqliteTable(
+  "calendars_announcement_events",
+  {
+    id: integer("id").primaryKey(),
+    announcementId: integer("announcement_id").notNull(),
+    eventId: integer("event_id").notNull(),
+  },
+);
 
-export const eventRelations = relations(eventsTable, ({ one }) => ({
-  createdById: one(accountDetailsTable, {
-    fields: [eventsTable.createdById],
-    references: [accountDetailsTable.userId],
+export const announcementEventRelations = relations(
+  announcementEventJoin,
+  ({ one }) => ({
+    announcement: one(announcementsTable, {
+      fields: [announcementEventJoin.announcementId],
+      references: [announcementsTable.id],
+    }),
+    event: one(eventsTable, {
+      fields: [announcementEventJoin.eventId],
+      references: [eventsTable.id],
+    }),
   }),
-}));
+);
 
 export const assessmentTable = sqliteTable("activity_activity", {
   id: integer("id").primaryKey(),
@@ -194,30 +242,41 @@ export const assessmentRelations = relations(assessmentTable, ({ one }) => ({
   }),
 }));
 
-export const courseVisitsTable = sqliteTable("course_visits", {
+const attemptsTable = sqliteTable("activity_retakerecord", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  courseId: integer("course_id").notNull(),
-  visitedAt: text("visited_at").notNull(),
+  retakerNumber: integer("retaker_number").notNull(),
+  score: integer("score").notNull(),
+  retakeTime: text("retake_time").notNull(),
+  startedAt: text("started_at").notNull(),
+  willEndAt: text("will_end_at").notNull(),
 });
 
-export const courseVisitsRelations = relations(
-  courseVisitsTable,
-  ({ one }) => ({
-    courseId: one(coursesTable, {
-      fields: [courseVisitsTable.courseId],
-      references: [coursesTable.id],
-    }),
-  }),
-);
+const attemptAnswerTable = sqliteTable("activity_retakerecorddetail", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  studentAnswer: text("student_answer").notNull(),
+  score: integer("score").notNull(),
+  submissionTime: text("submission_time").notNull(),
+  uploadFile: text("upload_file").notNull(),
+  activityQuestionId: integer("activity_question_id").notNull(),
+  retakeRecordId: integer("retake_record_id").notNull(),
+  studentId: integer("student_id").notNull(),
+});
 
-const courseVisitsWithOptions = {
-  tableDefinition: courseVisitsTable,
-  options: {
-    localOnly: true,
-  },
-};
+const assessmentQuestionsTable = sqliteTable("activity_questionchoice", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  activityId: integer("activity_id").notNull(),
+  choiceText: text("choice_text").notNull(),
+  isLeftSide: text("is_left_side").notNull(),
+  questionId: integer("question_id").notNull(),
+});
 
 export const drizzleSchema = {
+  courseScheduleTable,
+  courseScheduleRelations,
+  eventsTable,
+  announcementEventRelations,
+  eventRelations,
+  announcementEventJoin,
   accountsTable,
   accountDetailsTable,
   accountsDetailsRelations,
@@ -233,9 +292,13 @@ export const drizzleSchema = {
   materialsTable,
   assessmentTable,
   assessmentRelations,
-  courseVisitsTable: courseVisitsWithOptions,
-  courseVisitsRelations,
 };
 
 export type Subject = InferSelectModel<typeof coursesTable>;
 export type Assessment = InferSelectModel<typeof assessmentTable>;
+export type AccountDetails = InferSelectModel<typeof accountDetailsTable>;
+export type Notification = InferSelectModel<typeof notificationsTable> & {
+  createdById: AccountDetails;
+};
+
+export type Event = InferSelectModel<typeof eventsTable>;

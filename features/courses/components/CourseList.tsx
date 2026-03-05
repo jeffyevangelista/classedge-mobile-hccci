@@ -10,8 +10,6 @@ import { env } from "@/utils/env";
 import { useStudentCourses } from "../courses.hooks";
 import { StudentEnrolledCourses } from "../courses.types";
 
-import { useQueryClient } from "@tanstack/react-query";
-
 const MIN_CARD_WIDTH = 280;
 
 const CourseList = () => {
@@ -22,19 +20,6 @@ const CourseList = () => {
   return (
     <View className="w-full max-w-6xl mx-auto flex-1  ">
       <FlashList
-        ListHeaderComponent={
-          <TextField className=" p-1 md:max-w-xl md:mx-auto w-full">
-            <View className="w-full flex-row items-center">
-              <Input
-                className="flex-1 pr-10 shadow-none "
-                placeholder="Find a course"
-              />
-              <Pressable className="absolute right-4">
-                <Icon as={MagnifyingGlassIcon} />
-              </Pressable>
-            </View>
-          </TextField>
-        }
         key={numColumns}
         numColumns={numColumns}
         data={data}
@@ -55,8 +40,6 @@ const Course = ({
   item: StudentEnrolledCourses;
   numColumns: number;
 }) => {
-  const queryClient = useQueryClient();
-
   return (
     <Link
       href={`/course/${item.id}`}
@@ -88,9 +71,7 @@ const Course = ({
                 </AppText>
               </View>
               <AppText numberOfLines={1} className="text-sm text-gray-500">
-                {item.subjectId.roomNumber} ·{" "}
-                {item.subjectId.assignTeacherId.firstName}{" "}
-                {item.subjectId.assignTeacherId.lastName}
+                {item.subjectId.subjectType} · {item.subjectId.roomNumber}
               </AppText>
             </View>
           </Card.Body>

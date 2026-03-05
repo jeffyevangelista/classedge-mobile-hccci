@@ -1,4 +1,5 @@
 import api from "@/lib/axios";
+import axios from "axios";
 import type { AuthResponse, LoginCredentials } from "./auth.types";
 
 export const login = async (loginCredentials: LoginCredentials) => {

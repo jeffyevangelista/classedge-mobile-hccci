@@ -15,10 +15,8 @@ import { SignOutIcon } from "phosphor-react-native";
 const LogoutButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-  const themeColorAccentForeground = useThemeColor("accent-foreground");
-  const themeColorDangerSoftForeground = useThemeColor(
-    "danger-soft-foreground",
-  );
+  const themeColorAccentForeground = useThemeColor("danger-foreground");
+
   const { mutateAsync, isPending } = useLogout();
 
   const handleLogout = async () => {
@@ -38,15 +36,13 @@ const LogoutButton = () => {
     <>
       <Button
         isDisabled={isPending}
-        variant="danger-soft"
-        className="w-full"
+        variant="ghost"
         onPress={() => setIsOpen(true)}
       >
         {isPending ? (
           <Spinner color={themeColorAccentForeground} />
         ) : (
           <>
-            <Icon as={SignOutIcon} color={themeColorDangerSoftForeground} />
             <Button.Label>Logout</Button.Label>
           </>
         )}

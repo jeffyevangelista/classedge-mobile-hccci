@@ -1,10 +1,11 @@
-import { View, Text } from "react-native";
+import Screen from "@/components/screen";
+import AssessmentDetailsScreen from "@/screens/main/courses/course/assessment/AssessmentDetailsScreen";
 
 const AssessmentDetailsRoute = () => {
   return (
-    <View>
-      <Text>AssessmentDetailsRoute</Text>
-    </View>
+    <Screen>
+      <AssessmentDetailsScreen />
+    </Screen>
   );
 };
 

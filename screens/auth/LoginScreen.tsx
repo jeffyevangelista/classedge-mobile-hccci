@@ -35,8 +35,9 @@ const LoginScreen = () => {
           backgroundColor: colors.backgroundColor,
         }}
       >
-        <View className="flex-1 items-center justify-center w-full max-w-md mx-auto">
-          <View className={`items-center ${isSmallScreen ? "mb-6" : "mb-10"}`}>
+        {/* logo title, and auth */}
+        <View className="flex-1 items-center justify-center w-full max-w-md mx-auto ">
+          <View className={`items-center mb-48 md:mb-56 lg:mb-64`}>
             <Image
               source={require("@/assets/logo.png")}
               className={
@@ -54,11 +55,6 @@ const LoginScreen = () => {
 
           <View className="w-full gap-4">
             <MSAuthButton />
-
-            <View className="flex-row items-center justify-center my-2">
-              <AppText className="text-xs text-gray-400 mx-3">OR</AppText>
-            </View>
-
             <Button
               className="w-full"
               variant="outline"

@@ -76,9 +76,7 @@ const ProfileNavItem = ({ title, href, icon }: ProfileNavProps) => {
           <View
             className={`flex-row items-center p-4 rounded-2xl border border-transparent`}
           >
-            <View className="p-2 bg-white rounded-xl shadow-sm">
-              <Icon as={icon} size={22} className="text-blue-500" />
-            </View>
+            <Icon as={icon} size={28} className="text-blue-500" />
 
             <AppText
               weight="semibold"

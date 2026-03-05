@@ -1,49 +1,24 @@
-import {
-  keepPreviousData,
-  useInfiniteQuery,
-  useQuery,
-  useMutation,
-} from "@tanstack/react-query";
+import { useQuery } from "@powersync/tanstack-react-query";
+import useStore from "@/lib/store";
 
 import {
   getNotificationCount,
   getNotifications,
-  readNotification,
-} from "./notifications.apis";
-import { queryClient } from "@/providers/QueryProvider";
+} from "./notifications.service";
+import { toCompilableQuery } from "@powersync/drizzle-driver";
 
 export const useNotifications = () => {
-  return useInfiniteQuery({
+  const { authUser } = useStore.getState();
+  return useQuery({
     queryKey: ["notifications"],
-    queryFn: ({ pageParam = 1 }) => getNotifications({ pageParam }),
-    getNextPageParam: (lastPage) => {
-      if (lastPage.next) {
-        const url = new URL(lastPage.next);
-        const page = url.searchParams.get("page");
-        return page ? parseInt(page, 10) : undefined;
-      }
-      return undefined;
-    },
-    initialPageParam: 1,
-    placeholderData: keepPreviousData,
-  });
-};
-
-export const useReadNotification = () => {
-  return useMutation({
-    mutationKey: ["read-notification"],
-    mutationFn: (id: number) => readNotification(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["notifications", "notification-count"],
-      });
-    },
+    query: toCompilableQuery(getNotifications(authUser?.id.toString()!)),
   });
 };
 
 export const useNotificationCount = () => {
+  const { authUser } = useStore.getState();
   return useQuery({
     queryKey: ["notification-count"],
-    queryFn: () => getNotificationCount(),
+    query: toCompilableQuery(getNotificationCount(authUser?.id.toString()!)),
   });
 };

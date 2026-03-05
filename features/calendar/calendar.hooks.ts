@@ -1,9 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
-import { getCalendarItems } from "./calendar.apis";
+import { useQuery } from "@powersync/tanstack-react-query";
+import { getEvent, getEvents } from "./calendar.service";
+import { toCompilableQuery } from "@powersync/drizzle-driver";
 
-export const useCalendarItems = () => {
+export const useEvents = () => {
   return useQuery({
-    queryKey: ["calendar-items"],
-    queryFn: getCalendarItems,
+    queryKey: ["events"],
+    query: toCompilableQuery(getEvents()),
+  });
+};
+
+export const useEvent = (eventId: number) => {
+  return useQuery({
+    queryKey: ["event", eventId],
+    query: toCompilableQuery(getEvent(eventId)),
   });
 };

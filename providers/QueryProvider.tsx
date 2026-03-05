@@ -1,6 +1,7 @@
 import { createAsyncStoragePersister } from "@/lib/storage/asyncStoragePersister";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { DevToolsBubble } from "react-native-react-query-devtools";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,6 +21,7 @@ const QueryProvider = ({ children }: { children: React.ReactNode }) => {
       persistOptions={{ persister }}
     >
       {children}
+      <DevToolsBubble queryClient={queryClient} />
     </PersistQueryClientProvider>
   );
 };

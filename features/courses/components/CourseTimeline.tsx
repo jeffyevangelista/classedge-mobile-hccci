@@ -1,15 +1,10 @@
 import { FlatList, Pressable, View } from "react-native";
-
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { AppText } from "@/components/AppText";
 import { useCourseTimeline } from "../courses.hooks";
 import { Card } from "heroui-native";
 import { Icon } from "@/components/Icon";
-import {
-  BookOpenTextIcon,
-  FileTextIcon,
-  PencilLineIcon,
-} from "phosphor-react-native";
+import { BookOpenTextIcon, PencilLineIcon } from "phosphor-react-native";
 import { useFormattedDate } from "@/hooks/userFormattedDate";
 
 const CourseTimeline = () => {
@@ -25,11 +20,15 @@ const CourseTimeline = () => {
     <FlatList
       style={{ flex: 1 }}
       data={data}
+      scrollEnabled={false}
       ListEmptyComponent={
-        <AppText>No materials found for this course.</AppText>
+        <AppText className="text-center text-gray-500">
+          No content found for this course.
+        </AppText>
       }
       renderItem={({ item }) => <ListItem item={item} />}
       keyExtractor={(item) => `#${item.id}-${item.type}`}
+      className="pt-5"
     />
   );
 };
@@ -45,7 +44,10 @@ const AssessmentCard = ({ item }: { item: any }) => {
 
   const router = useRouter();
   return (
-    <Pressable onPress={() => router.push(`/assessment/${item.id}`)}>
+    <Pressable
+      onPress={() => router.push(`/assessment/${item.id}`)}
+      className="w-full max-w-3xl mx-auto"
+    >
       <Card className="rounded-2xl flex-row items-center gap-2 shadow-none mb-2">
         <View className="p-2 bg-orange-50 rounded-full">
           <Icon as={PencilLineIcon} size={24} className="text-orange-500" />
@@ -72,7 +74,10 @@ const MaterialCard = ({ item }: { item: any }) => {
   const formattedDate = useFormattedDate(item.startDate);
   const router = useRouter();
   return (
-    <Pressable onPress={() => router.push(`/material/${item.id}`)}>
+    <Pressable
+      onPress={() => router.push(`/material/${item.id}`)}
+      className="w-full max-w-3xl mx-auto"
+    >
       <Card className="rounded-2xl flex-row items-center gap-2 shadow-none mb-2">
         <View className="p-2 bg-emerald-50 rounded-full">
           <Icon as={BookOpenTextIcon} size={24} className="text-emerald-500" />

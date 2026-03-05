@@ -1,13 +1,30 @@
-import { View, Text } from "react-native";
+import { AppState, View } from "react-native";
 import { Link } from "expo-router";
 import { Avatar } from "heroui-native";
 import { AppText } from "@/components/AppText";
-import SyncCenter from "../../sync/components/SyncCenter";
-import { useUserDetails } from "../../profile/profile.hooks";
+import { useUserDetails } from "@/features/profile/profile.hooks";
 import { env } from "@/utils/env";
+import { useEffect, useState } from "react";
+import useGreeting from "@/hooks/useGreeting";
 
 const Header = () => {
-  const { data: userDetails } = useUserDetails();
+  const { data, isLoading, isError, error } = useUserDetails();
+  const [greeting, setGreeting] = useState(useGreeting());
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        setGreeting(useGreeting()); // Re-check the time
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  if (isLoading) return <AppText>Loading...</AppText>;
+  if (isError) return <AppText>{error.message}</AppText>;
+
+  const userDetails = data?.[0];
 
   return (
     <View className="px-5 flex flex-row justify-between items-center">
@@ -29,11 +46,10 @@ const Header = () => {
             </Avatar.Fallback>
           </Avatar>
           <View>
-            <AppText className="text-gray-500">Good Morning,</AppText>
+            <AppText className="text-gray-500">{greeting},</AppText>
             <AppText weight="semibold" className="text-2xl leading-tight">
               {userDetails?.firstName
-                ? userDetails.firstName.split(" ")[0].charAt(0).toUpperCase() +
-                  userDetails.firstName.split(" ")[0].slice(1).toLowerCase()
+                ? userDetails.firstName.split(" ")[0]
                 : ""}
             </AppText>
           </View>
