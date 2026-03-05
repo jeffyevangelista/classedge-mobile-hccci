@@ -8,7 +8,6 @@ import { Button } from "heroui-native";
 import { useWindowDimensions, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { EnvelopeIcon } from "phosphor-react-native";
 
 const LoginScreen = () => {
   const { height } = useWindowDimensions();
@@ -21,7 +20,7 @@ const LoginScreen = () => {
 
   return (
     <KeyboardAwareScrollView
-      style={{ flex: 1, backgroundColor: colors.backgroundColor }}
+      style={{ flex: 1 }}
       contentContainerStyle={{
         flexGrow: 1,
       }}
@@ -32,7 +31,6 @@ const LoginScreen = () => {
           paddingTop: dynamicTopPadding,
           paddingBottom: insets.bottom + 20,
           paddingHorizontal: 20,
-          backgroundColor: colors.backgroundColor,
         }}
       >
         {/* logo title, and auth */}
@@ -61,7 +59,7 @@ const LoginScreen = () => {
               size="lg"
               onPress={() => router.push("/(auth)/login-email")}
             >
-              <Icon as={EnvelopeIcon} size={28} />
+              <Icon name="EnvelopeIcon" size={28} />
               <Button.Label className="text-primary-500">
                 Continue with Email
               </Button.Label>

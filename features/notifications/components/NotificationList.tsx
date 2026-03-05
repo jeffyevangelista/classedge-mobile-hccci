@@ -39,7 +39,7 @@ const NotificationList = () => {
       ListEmptyComponent={
         <View className="items-center justify-center py-10 gap-5">
           <View className="p-5 rounded-full bg-blue-100">
-            <Icon as={BellSlashIcon} size={100} className="text-blue-600" />
+            <Icon name="BellSlashIcon" size={100} className="text-blue-600" />
           </View>
           <AppText className="text-center text-xl">
             You have no notifications yet

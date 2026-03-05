@@ -59,7 +59,7 @@ const HomeScreen = () => {
         }}
       >
         <Icon
-          as={connected ? WifiHighIcon : WifiSlashIcon}
+          name={connected ? WifiHighIcon : WifiSlashIcon}
           color="black"
           size={20}
           style={{ padding: 5 }}

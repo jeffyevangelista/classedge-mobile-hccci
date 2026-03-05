@@ -50,7 +50,7 @@ const AssessmentCard = ({ item }: { item: any }) => {
     >
       <Card className="rounded-2xl flex-row items-center gap-2 shadow-none mb-2">
         <View className="p-2 bg-orange-50 rounded-full">
-          <Icon as={PencilLineIcon} size={24} className="text-orange-500" />
+          <Icon name="PencilLineIcon" size={24} className="text-orange-500" />
         </View>
         <View>
           <AppText
@@ -80,7 +80,11 @@ const MaterialCard = ({ item }: { item: any }) => {
     >
       <Card className="rounded-2xl flex-row items-center gap-2 shadow-none mb-2">
         <View className="p-2 bg-emerald-50 rounded-full">
-          <Icon as={BookOpenTextIcon} size={24} className="text-emerald-500" />
+          <Icon
+            name="BookOpenTextIcon"
+            size={24}
+            className="text-emerald-500"
+          />
         </View>
         <View>
           <AppText

@@ -1,11 +1,8 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import React, { memo, useCallback, useEffect } from "react";
+import { View, StyleSheet, ScrollView } from "react-native";
+import React, { memo } from "react";
 import { usePendingAssessments } from "../courses.hooks";
 import { AppText } from "@/components/AppText";
-import { FlashList } from "@shopify/flash-list";
-import { useNetInfo } from "@react-native-community/netinfo";
-import { Button, Card, Spinner, useToast } from "heroui-native";
-import { BookOpenIcon } from "phosphor-react-native";
+import { Card, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import { Assessment } from "../courses.types";
 
@@ -16,81 +13,10 @@ const PendingAssessmentList = ({
   subjectId: string | null;
   horizontal: boolean;
 }) => {
-  const netInfo = useNetInfo();
-  const { toast } = useToast();
-  const { data, isError, error, isLoading, refetch, isRefetching } =
-    usePendingAssessments(subjectId);
+  const { data, isError, error, isLoading } = usePendingAssessments(subjectId);
 
-  // useEffect(() => {
-  //   if (isError) {
-  //     console.log("Sync error:", error);
-  //     toast.show({
-  //       variant: "danger",
-  //       label: "Error",
-  //       description: "Could not update schedules.",
-  //     });
-  //   }
-  // }, [isError, error]);
-
-  // if (isLoading && data.length === 0) {
-  //   return (
-  //     <View style={styles.center}>
-  //       <Spinner size="lg" />
-  //     </View>
-  //   );
-  // }
-
-  // if (isError && data.length === 0) {
-  //   return (
-  //     <View style={styles.center}>
-  //       <AppText>Error loading schedules.</AppText>
-  //       <Button onPress={() => refetch()}>
-  //         <Button.Label>Retry</Button.Label>
-  //       </Button>
-  //     </View>
-  //   );
-  // }
-
-  if (isLoading) return <AppText>Loading...</AppText>;
-  if (isError) return <AppText>{error.message}</AppText>;
-
-  if (!data || data.length === 0) return <AppText>No Assessments</AppText>;
-
-  // const renderFooter = () => {
-  //   if (isFetchingNextPage) {
-  //     return <Spinner style={{ padding: 20 }} />;
-  //   }
-
-  //   if (hasNextPage && !netInfo.isConnected) {
-  //     return (
-  //       <View style={styles.footerInfo}>
-  //         <AppText style={styles.footerText}>
-  //           You are offline. Cannot load more schedules.
-  //         </AppText>
-  //       </View>
-  //     );
-  //   }
-
-  //   return null;
-  // };
-
-  return (
-    <View>
-      {/* <FlashList
-        className="h-24"
-        ListEmptyComponent={<AppText>No Assessments</AppText>}
-        data={assessments}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter}
-        onRefresh={refetch}
-        refreshing={isRefetching}
-        keyExtractor={(item: any) => item.id}
-        renderItem={({ item }) => <AssessmentItem item={item} />}
-        horizontal={true}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20 }}
-      /> */}
+  if (isLoading) {
+    return (
       <ScrollView
         horizontal={horizontal}
         showsHorizontalScrollIndicator={false}
@@ -98,12 +24,42 @@ const PendingAssessmentList = ({
           paddingHorizontal: 20,
         }}
       >
-        {Array.isArray(data) &&
-          data.map((assessment) => (
-            <AssessmentItem key={assessment.id} item={assessment} />
+        {Array(5)
+          .fill(0)
+          .map((_, index) => (
+            <LoadingSkeleton key={index} />
           ))}
       </ScrollView>
-    </View>
+    );
+  }
+  if (isError) return <AppText>{error.message}</AppText>;
+
+  if (!data || data.length === 0)
+    return (
+      <View className=" w-full items-center justify-center max-w-2xl mx-auto">
+        <View className="p-2 bg-emerald-100 rounded-full">
+          <Icon name="ConfettiIcon" size={32} className="text-emerald-500" />
+        </View>
+        <AppText className="text-center">You caught up!</AppText>
+        <AppText className="text-center text-xs text-gray-500">
+          You have no pending assessments
+        </AppText>
+      </View>
+    );
+
+  return (
+    <ScrollView
+      horizontal={horizontal}
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{
+        paddingHorizontal: 20,
+      }}
+    >
+      {Array.isArray(data) &&
+        data.map((assessment) => (
+          <AssessmentItem key={assessment.id} item={assessment} />
+        ))}
+    </ScrollView>
   );
 };
 
@@ -113,7 +69,7 @@ const AssessmentItem = memo(({ item }: { item: Assessment }) => (
   <Card className=" w-72 md:w-80 lg:w-96 mr-3 shadow-none">
     <Card.Body className="flex flex-row items-center gap-2.5">
       <View className="p-2 bg-emerald-100 rounded-full">
-        <Icon as={BookOpenIcon} size={24} className="text-emerald-500" />
+        <Icon name="BookOpenIcon" size={24} className="text-emerald-500" />
       </View>
       <View className="flex-1">
         <AppText numberOfLines={1} weight="semibold">
@@ -124,6 +80,10 @@ const AssessmentItem = memo(({ item }: { item: Assessment }) => (
     </Card.Body>
   </Card>
 ));
+
+const LoadingSkeleton = () => (
+  <Skeleton className="h-19 rounded-3xl w-72 md:w-80 lg:w-96 mr-3 shadow-none"></Skeleton>
+);
 
 const styles = StyleSheet.create({
   center: {

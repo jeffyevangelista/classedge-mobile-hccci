@@ -23,7 +23,7 @@ const BackButton = ({ tintColor, to }: BackButtonProps) => {
       }}
     >
       <Icon
-        as={ArrowLeftIcon}
+        name="ArrowLeftIcon"
         style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }} // adjust visual centering for iOS
       />
     </Pressable>

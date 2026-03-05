@@ -99,11 +99,11 @@ const EventCard = ({ event }: { event: Event }) => {
             </AppText>
             <View>
               <View className="flex-row items-center gap-1">
-                <Icon as={MapPinIcon} size={16} />
+                <Icon name="MapPinIcon" size={16} />
                 <AppText>{event.location}</AppText>
               </View>
               <View className="flex-row items-center gap-1">
-                <Icon as={ClockIcon} size={16} />
+                <Icon name="ClockIcon" size={16} />
                 <AppText className="text-xs text-gray-500">
                   {formatDate(event.startDate)} -{formatTime(event.time)}
                 </AppText>

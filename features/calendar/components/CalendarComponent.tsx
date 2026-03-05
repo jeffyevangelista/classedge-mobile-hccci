@@ -51,7 +51,7 @@ const EventCard = ({ item }: { item: any }) => {
               <View className={"rounded-full p-2.5 bg-teal-50"}>
                 <Icon
                   className={"h-6 w-6 text-teal-600"}
-                  as={CalendarDotsIcon}
+                  name="CalendarDotsIcon"
                 />
               </View>
               <View className="flex-1">
@@ -295,7 +295,7 @@ const CalendarComponent = () => {
                       <View className={"rounded-full p-2.5 bg-orange-50"}>
                         <Icon
                           className={"h-6 w-6 text-orange-600"}
-                          as={PencilLineIcon}
+                          name="PencilLineIcon"
                         />
                       </View>
                       <View className="flex-1">

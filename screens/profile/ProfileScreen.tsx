@@ -1,46 +1,37 @@
 import { AppText } from "@/components/AppText";
-import { Icon } from "@/components/Icon";
+import { Icon, IconName } from "@/components/Icon";
 import Screen from "@/components/screen";
 import LogoutButton from "@/features/auth/components/LogoutButton";
 import HeaderComponent from "@/features/profile/components/HeaderComponent";
 import { Href, Link } from "expo-router";
-import { Avatar } from "heroui-native";
-import {
-  BookOpenIcon,
-  CalendarDotsIcon,
-  CaretRightIcon,
-  IdentificationBadgeIcon,
-  IdentificationCardIcon,
-} from "phosphor-react-native";
-import { ComponentType } from "react";
 import { ScrollView, View, Pressable } from "react-native";
 
 type ProfileNavProps = {
   title: string;
   href: Href;
-  icon: ComponentType<any>;
+  name: IconName;
 };
 
 const profileNav: ProfileNavProps[] = [
   {
     title: "Profile Information",
     href: "/(main)/profile/profile-info",
-    icon: IdentificationCardIcon,
+    name: "IdentificationCardIcon",
   },
   {
     title: "Academic Records",
     href: "/(main)/profile/academic-records",
-    icon: BookOpenIcon,
+    name: "BookOpenIcon",
   },
   {
     title: "Financial Records",
     href: "/(main)/profile/financial-records",
-    icon: IdentificationBadgeIcon,
+    name: "IdentificationBadgeIcon",
   },
   {
     title: "Class Schedule",
     href: "/(main)/profile/class-schedule",
-    icon: CalendarDotsIcon,
+    name: "CalendarDotsIcon",
   },
 ];
 
@@ -68,7 +59,7 @@ const ProfileScreen = () => {
   );
 };
 
-const ProfileNavItem = ({ title, href, icon }: ProfileNavProps) => {
+const ProfileNavItem = ({ title, href, name }: ProfileNavProps) => {
   return (
     <Link href={href} asChild>
       <Pressable className="active:opacity-70">
@@ -76,7 +67,7 @@ const ProfileNavItem = ({ title, href, icon }: ProfileNavProps) => {
           <View
             className={`flex-row items-center p-4 rounded-2xl border border-transparent`}
           >
-            <Icon as={icon} size={28} className="text-blue-500" />
+            <Icon name={name} size={28} className="text-blue-500" />
 
             <AppText
               weight="semibold"
@@ -85,7 +76,11 @@ const ProfileNavItem = ({ title, href, icon }: ProfileNavProps) => {
               {title}
             </AppText>
 
-            <Icon as={CaretRightIcon} size={18} className="text-slate-400" />
+            <Icon
+              name={"CaretRightIcon"}
+              size={18}
+              className="text-slate-400"
+            />
           </View>
         )}
       </Pressable>

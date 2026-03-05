@@ -22,7 +22,6 @@ import zxcvbn from "zxcvbn";
 import { AnimatePresence, MotiView } from "moti";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
-import { EyeIcon, EyeSlashIcon } from "phosphor-react-native";
 
 const PasswordResetForm = () => {
   const themeColorAccentForeground = useThemeColor("accent-foreground");
@@ -89,7 +88,7 @@ const PasswordResetForm = () => {
                   onPress={() => setShowPassword(!showPassword)}
                 >
                   <Icon
-                    as={showPassword ? EyeIcon : EyeSlashIcon}
+                    name={showPassword ? "EyeIcon" : "EyeSlashIcon"}
                     size={20}
                     color="gray"
                   />

@@ -1,22 +1,21 @@
-import type { IconProps } from "phosphor-react-native";
-import type { ComponentType } from "react";
-import type { StyleProp, ViewStyle, TextStyle } from "react-native";
+import * as PhosphorIcons from "phosphor-react-native";
 import { withUniwind } from "uniwind";
 
-interface ReusableIconProps extends Omit<IconProps, "style"> {
-  // Use ComponentType to accept both Phosphor and Heroicons
-  as: ComponentType<any>;
-  className?: string;
-  style?: StyleProp<ViewStyle | TextStyle>;
+export type PhosphorIcon = keyof typeof PhosphorIcons;
+
+interface IconProps extends PhosphorIcons.IconProps {
+  name: PhosphorIcon;
 }
 
-export const Icon = ({
-  as: IconComponent,
-  className,
-  ...props
-}: ReusableIconProps) => {
-  // We cast the component through withUniwind
-  const UniwindIcon = withUniwind(IconComponent);
+const IconBase = ({ name, ...props }: IconProps) => {
+  const IconComponent = PhosphorIcons[name] as React.ElementType;
 
-  return <UniwindIcon className={className} {...props} />;
+  if (!IconComponent) {
+    console.warn(`Icon "${name}" not found in phosphor-react-native`);
+    return null;
+  }
+
+  return <IconComponent {...props} />;
 };
+
+export const Icon = withUniwind(IconBase);

@@ -2,14 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useEvent } from "../calendar.hooks";
 import { AppText } from "@/components/AppText";
 import { BottomSheet } from "heroui-native";
-
 import { useWindowDimensions, View, ActivityIndicator } from "react-native";
-import {
-  CalendarIcon,
-  MapPinIcon,
-  ClockIcon,
-  UserIcon,
-} from "phosphor-react-native";
 import { Icon } from "@/components/Icon";
 
 import {
@@ -81,7 +74,7 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
   if (isError) {
     return (
       <View className="flex-1 justify-center items-center p-6">
-        <Icon as={CalendarIcon} size={48} className="text-destructive mb-4" />
+        <Icon name="CalendarIcon" size={48} className="text-destructive mb-4" />
         <AppText className="text-center text-destructive font-semibold mb-2">
           Error Loading Event
         </AppText>
@@ -96,7 +89,7 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
     return (
       <View className="flex-1 justify-center items-center p-6">
         <Icon
-          as={CalendarIcon}
+          name="CalendarIcon"
           size={48}
           className="text-muted-foreground mb-4"
         />
@@ -126,21 +119,13 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
         {/* Date & Time */}
         <View className="flex-row items-start">
           <View className="mr-3 mt-1">
-            <Icon as={CalendarIcon} size={20} className="text-primary" />
+            <Icon name="CalendarIcon" size={20} className="text-primary" />
           </View>
           <View className="flex-1">
             <AppText weight="semibold" className="text-foreground mb-1">
               Date & Time
             </AppText>
             <AppText className="text-muted-foreground">
-              {/* {new Date(event.startDate).toLocaleDateString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })
-             
-              } */}
               {formatDate(event.startDate)}
             </AppText>
             {event.time && (
@@ -155,7 +140,7 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
         {event.location && (
           <View className="flex-row items-start">
             <View className="mr-3 mt-1">
-              <Icon as={MapPinIcon} size={20} className="text-primary" />
+              <Icon name="MapPinIcon" size={20} className="text-primary" />
             </View>
             <View className="flex-1">
               <AppText weight="semibold" className="text-foreground mb-1">
@@ -172,7 +157,7 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
         {event.createdById && (
           <View className="flex-row items-start">
             <View className="mr-3 mt-1">
-              <Icon as={UserIcon} size={20} className="text-primary" />
+              <Icon name="UserIcon" size={20} className="text-primary" />
             </View>
             <View className="flex-1">
               <AppText weight="semibold" className="text-foreground mb-1">
@@ -188,7 +173,7 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
         {/* Created At */}
         <View className="flex-row items-start">
           <View className="mr-3 mt-1">
-            <Icon as={ClockIcon} size={20} className="text-primary" />
+            <Icon name="ClockIcon" size={20} className="text-primary" />
           </View>
           <View className="flex-1">
             <AppText weight="semibold" className="text-foreground mb-1">

@@ -53,7 +53,7 @@ const TabsLayout = () => {
         name="index"
         options={{
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon focused={focused} color={color} IconElement={HouseIcon} />
+            <TabIcon focused={focused} color={color} IconElement="HouseIcon" />
           ),
           headerTitle: "Good Morning, User!",
           tabBarLabel: "Home",
@@ -69,7 +69,7 @@ const TabsLayout = () => {
               <TabIcon
                 focused={focused}
                 color={color}
-                IconElement={ChalkboardTeacherIcon}
+                IconElement="ChalkboardTeacherIcon"
               />
             ),
             headerTitle: "Teaching",
@@ -91,7 +91,7 @@ const TabsLayout = () => {
               <TabIcon
                 focused={focused}
                 color={color}
-                IconElement={BookOpenIcon}
+                IconElement="BookOpenIcon"
               />
             ),
             headerTitle: "Courses",
@@ -119,7 +119,7 @@ const TabsLayout = () => {
               <TabIcon
                 focused={focused}
                 color={color}
-                IconElement={BinocularsIcon}
+                IconElement="BinocularsIcon"
               />
             ),
             headerTitle: "Oversight",
@@ -135,7 +135,7 @@ const TabsLayout = () => {
             <TabIcon
               focused={focused}
               color={color}
-              IconElement={CalendarBlankIcon}
+              IconElement="CalendarBlankIcon"
             />
           ),
           headerTitle: "Calendar",
@@ -149,7 +149,7 @@ const TabsLayout = () => {
           tabBarBadge:
             (data?.[0]?.count ?? 0) > 0 ? data?.[0]?.count : undefined,
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon focused={focused} color={color} IconElement={BellIcon} />
+            <TabIcon focused={focused} color={color} IconElement="BellIcon" />
           ),
           headerTitle: "Notifications",
           tabBarLabel: "Notifications",

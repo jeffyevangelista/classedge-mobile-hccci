@@ -1,4 +1,4 @@
-import type { Icon } from "phosphor-react-native";
+import { Icon, PhosphorIcon } from "./Icon";
 
 const ICON_SIZE = 28;
 
@@ -6,12 +6,13 @@ interface TabIconProps {
   focused: boolean;
   color: string;
   // Phosphor icons share the same Icon type
-  IconElement: Icon;
+  IconElement: PhosphorIcon;
 }
 
 const TabIcon = ({ focused, color, IconElement }: TabIconProps) => {
   return (
-    <IconElement
+    <Icon
+      name={IconElement}
       color={color}
       size={ICON_SIZE}
       // Toggle between 'regular' (outline) and 'fill' (solid)

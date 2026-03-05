@@ -27,7 +27,7 @@ const SyncBanner = () => {
           ) : (
             <>
               <Icon
-                as={WarningCircleIcon}
+                name="WarningCircleIcon"
                 size={24}
                 color={themeColorDangerForeground}
               />
