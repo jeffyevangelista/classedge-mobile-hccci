@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, View } from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import { Avatar, Card, Separator, Skeleton } from "heroui-native";
+import { Avatar, Card, Separator, Skeleton, Surface } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { Icon } from "@/components/Icon";
@@ -29,8 +29,8 @@ const AnnouncementList = () => {
       onRefresh={refetch}
       refreshing={isRefetching}
       renderItem={({ item }) => (
-        <View className="mb-2 max-w-3xl sm:mx-auto w-full px-5">
-          <Card className="shadow-none">
+        <View className="mb-2 max-w-3xl sm:mx-auto w-full px-2.5">
+          <Card className="shadow-none rounded-xl">
             <Card.Header>
               <View className="flex-row items-center gap-2">
                 <Avatar alt="" size="sm" className="border border-accent">
@@ -62,7 +62,7 @@ const AnnouncementList = () => {
               <AppText weight="semibold" className="text-lg">
                 {item.title}
               </AppText>
-              <AppText className="text-justify leading-relaxed">
+              <AppText className="text-xs text-justify leading-relaxed">
                 {item.description}
               </AppText>
               {item.events.length > 0 && (
@@ -89,7 +89,11 @@ const EventCard = ({ event }: { event: Event }) => {
   return (
     <>
       <Pressable onPress={() => setIsOpen(true)}>
-        <Card key={event.id} className="bg-gray-100 mr-2 max-w-sm">
+        <Surface
+          variant="secondary"
+          key={event.id}
+          className=" mr-2 max-w-sm rounded-xl"
+        >
           <Card.Body className="gap-2.5">
             <AppText weight="semibold" className="text-md">
               {event.title}
@@ -113,7 +117,7 @@ const EventCard = ({ event }: { event: Event }) => {
               </View>
             </View>
           </Card.Body>
-        </Card>
+        </Surface>
       </Pressable>
       <EventDetailModal
         isOpen={isOpen}

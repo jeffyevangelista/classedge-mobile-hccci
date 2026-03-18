@@ -1,5 +1,5 @@
 import useStore from "@/lib/store";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Alert } from "react-native";
 import {
@@ -14,15 +14,15 @@ import { useToast } from "heroui-native";
 
 export const useLogin = () => {
   const router = useRouter();
-  const { setAccessToken, setRefreshToken } = useStore.getState();
+  const { setAccessToken, setRefreshToken, setPowersyncToken } =
+    useStore.getState();
   return useMutation({
     mutationKey: ["login"],
     mutationFn: (payload: LoginCredentials) => login(payload),
     onSuccess: async (data: AuthResponse) => {
-      await Promise.all([
-        setAccessToken(data.access),
-        setRefreshToken(data.refresh),
-      ]);
+      setAccessToken(data.access_token);
+      setPowersyncToken(data.powersync_token);
+      await setRefreshToken(data.refresh_token);
       router.replace("/(main)/(tabs)");
     },
   });
@@ -70,43 +70,38 @@ export const useResetPassword = () => {
   });
 };
 
-export const useMsLogin = (token: string | null) => {
+export const useMsLogin = () => {
   const router = useRouter();
-  const { setAccessToken, setRefreshToken, clearCredentials } =
-    useStore.getState();
+  const {
+    setAccessToken,
+    setRefreshToken,
+    setPowersyncToken,
+    clearCredentials,
+  } = useStore.getState();
   const { toast } = useToast();
 
-  return useQuery({
-    queryKey: ["ms-login"],
-    queryFn: async () => {
-      const data = await msLogin(token);
+  return useMutation({
+    mutationKey: ["ms-login"],
+    mutationFn: (token: string) => {
+      console.log(token);
 
-      if (data) {
-        try {
-          await Promise.all([
-            setAccessToken(data.access),
-            setRefreshToken(data.refresh),
-          ]);
-          router.replace("/(main)/(tabs)");
-          return data; // Return the data for React Query
-        } catch (error) {
-          // Clear any partial credentials if role validation fails
-          await clearCredentials();
-
-          // Show native alert for role validation errors
-          const errorMessage =
-            error instanceof Error ? error.message : "Authentication failed";
-          toast.show({
-            variant: "danger",
-            label: "Something went wrong",
-            description: errorMessage,
-          });
-          throw error; // Re-throw to mark query as failed
-        }
-      }
-      throw new Error("No data returned from login");
+      return msLogin(token);
     },
-
-    enabled: !!token,
+    onSuccess: async (data: AuthResponse) => {
+      setAccessToken(data.access_token);
+      setPowersyncToken(data.powersync_token);
+      await setRefreshToken(data.refresh_token);
+      router.replace("/(main)/(tabs)");
+    },
+    onError: async (error) => {
+      await clearCredentials();
+      const errorMessage =
+        error instanceof Error ? error.message : "Authentication failed";
+      toast.show({
+        variant: "danger",
+        label: "Something went wrong",
+        description: errorMessage,
+      });
+    },
   });
 };

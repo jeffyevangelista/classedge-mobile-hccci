@@ -29,7 +29,15 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 api.interceptors.request.use(async (config) => {
-  const { accessToken } = useStore.getState();
+  const { accessToken, isConnected, isInternetReachable } = useStore.getState();
+
+  // Block requests when offline to avoid unnecessary timeouts
+  if (!isConnected || !isInternetReachable) {
+    return Promise.reject(
+      new axios.Cancel("No network connection. Request cancelled."),
+    );
+  }
+
   if (accessToken && config.headers) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -39,8 +47,13 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const { setAccessToken, refreshToken, clearCredentials } =
-      useStore.getState();
+    const {
+      setAccessToken,
+      setPowersyncToken,
+      setRefreshToken,
+      refreshToken,
+      clearCredentials,
+    } = useStore.getState();
 
     const originalRequest = error.config;
 
@@ -63,14 +76,22 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const { access: accessToken } = await refresh(refreshToken);
+        const data = await refresh(refreshToken);
 
-        await setAccessToken(accessToken);
-        processQueue(null, accessToken);
+        setAccessToken(data.access_token);
+        setPowersyncToken(data.powersync_token);
+        await setRefreshToken(data.refresh_token);
+        processQueue(null, data.access_token);
         return api(originalRequest);
-      } catch (err) {
+      } catch (err: any) {
         processQueue(err, null);
-        await clearCredentials();
+        // Only clear credentials if the refresh failed due to a server
+        // rejection (e.g. 401). Never clear when the error is a network
+        // failure — the user should stay logged in while offline.
+        const isNetworkError = !err?.response;
+        if (!isNetworkError) {
+          await clearCredentials();
+        }
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

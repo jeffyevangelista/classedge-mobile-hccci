@@ -10,9 +10,8 @@ WebBrowser.maybeCompleteAuthSession();
 
 const MSAuthButton = () => {
   const { toast } = useToast();
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [authInProgress, setAuthInProgress] = useState(false);
-  const { isLoading } = useMsLogin(accessToken);
+  const msLoginMutation = useMsLogin();
   const themeColorAccentForeground = useThemeColor("accent-foreground");
   const processedCodeRef = useRef<string | null>(null);
 
@@ -62,7 +61,7 @@ const MSAuthButton = () => {
             discovery,
           );
           if (tokenResult.accessToken) {
-            setAccessToken(tokenResult.accessToken);
+            msLoginMutation.mutateAsync(tokenResult.accessToken);
           } else {
             toast.show({
               variant: "danger",
@@ -114,9 +113,9 @@ const MSAuthButton = () => {
       variant="primary"
       size="lg"
       onPress={handleSignIn}
-      isDisabled={isLoading || authInProgress}
+      isDisabled={msLoginMutation.isPending || authInProgress}
     >
-      {isLoading || authInProgress ? (
+      {msLoginMutation.isPending || authInProgress ? (
         <Spinner color={themeColorAccentForeground} />
       ) : (
         <>

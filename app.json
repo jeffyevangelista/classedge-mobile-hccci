@@ -10,14 +10,19 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.jeffigy.classedge"
+      "bundleIdentifier": "com.jeffigy.classedge",
+      "icon": {
+        "dark": "./assets/icons/ios/ios-dark.png",
+        "light": "./assets/icons/ios/ios-light.png",
+        "tinted": "./assets/icons/ios/ios-tinted.png"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/icons/android/adaptive-icon.png",
+        "backgroundImage": "./assets/icons/android/adaptive-icon.png",
+        "monochromeImage": "./assets/icons/android/adaptive-icon.png",
+        "backgroundColor": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -32,14 +37,19 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/logo.png",
+          "image": "./assets/icons/splash/splash-icon-light.png",
           "imageWidth": 170,
           "imageHeight": 170,
           "resizeMode": "contain",
-          "backgroundColor": "#f9f9f9"
+          "backgroundColor": "#f9f9f9",
+          "dark": {
+            "image": "./assets/icons/splash/splash-icon-dark.png",
+            "backgroundColor": "#1a1a1a"
+          }
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-background-task"
     ],
     "experiments": {
       "typedRoutes": true,

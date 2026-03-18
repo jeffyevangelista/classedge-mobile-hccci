@@ -3,6 +3,8 @@ import { BottomSheet, Card } from "heroui-native";
 import { FlatList, useWindowDimensions, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { useSyncData } from "../useSyncData";
+import SyncStatusCard from "./SyncStatusCard";
+import ForceSyncButton from "./ForceSyncButton";
 
 const BOTTOM_SHEET_MAX_WIDTH = 768;
 
@@ -27,53 +29,33 @@ const SheetItem = ({ item }: { item: any }) => {
 // 1. Isolated Content Component
 // This component handles the data. When data changes, ONLY this renders.
 const SyncSheetContent = () => {
-  const {
-    hasSynced,
-    unsyncedCount,
-    pendingChanges,
-    lastSyncedAt,
-    downloading,
-    uploading,
-    connected,
-    connecting,
-  } = useSyncData();
+  const { pendingChanges } = useSyncData();
 
   return (
     <>
       <BottomSheet.Title>Sync Center</BottomSheet.Title>
-      <View className="flex-col gap-2">
-        <AppText className="text-xs text-gray-500">
-          Connection Status:{" "}
-          {connected ? (
-            <AppText className="text-xs text-green-500">Connected</AppText>
-          ) : (
-            <AppText className="text-xs text-red-500">Disconnected</AppText>
-          )}
-        </AppText>
-        <AppText className="text-xs text-gray-500">
-          Sync Status:{" "}
-          {/* {(uploading && <AppText>Uploading</AppText>) ||
-            (downloading && <AppText>Downloading</AppText>) || (
-              <AppText>Synced</AppText>
-            )} */}
-          {uploading && <AppText>Uploading</AppText>}
-          {downloading && <AppText>Downloading</AppText>}
-          {hasSynced && <AppText>Synced</AppText>}
-          {unsyncedCount > 0 && <AppText>{unsyncedCount} Unsynced</AppText>}
-        </AppText>
-        <AppText className="text-xs text-gray-500">
-          Last Synced: {lastSyncedAt?.toLocaleString() ?? "Never"}
-        </AppText>
+      <SyncStatusCard />
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          marginTop: 12,
+        }}
+      >
+        <ForceSyncButton />
       </View>
       <View className="mt-5 flex-1">
+        <AppText weight="semibold" className="text-sm mb-2">
+          Pending Changes
+        </AppText>
         <FlatList
           ListEmptyComponent={
             <AppText className="self-center">No pending Items</AppText>
           }
-          data={pendingChanges}
-          keyExtractor={(item) => item.rowId.toString()}
+          data={pendingChanges.filter(Boolean)}
+          keyExtractor={(item) => item!.rowId.toString()}
           contentContainerStyle={{ paddingBottom: 20 }}
-          renderItem={({ item }) => <SheetItem item={item} />}
+          renderItem={({ item }) => <SheetItem item={item!} />}
         />
       </View>
     </>

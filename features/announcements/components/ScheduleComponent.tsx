@@ -1,12 +1,14 @@
-import { View, Text } from "react-native";
+import { View, Text, useColorScheme } from "react-native";
 import React, { useMemo } from "react";
 import { useClock } from "@/hooks/useClock";
 import { useClassSchedule } from "@/features/profile/profile.hooks";
-import { Card, Skeleton } from "heroui-native";
+import { Skeleton } from "heroui-native";
+import { Icon } from "@/components/Icon";
 import { colors } from "@/utils/colors";
 
 const ScheduleComponent = () => {
   const now = useClock();
+  const isDark = useColorScheme() === "dark";
 
   const currentDay = now.getDay();
 
@@ -52,69 +54,231 @@ const ScheduleComponent = () => {
   if (isError) return <Text className="text-red-500 p-4">{error.message}</Text>;
   if (!data) return null;
 
-  // Header Logic
-  const getHeaderLabel = () => {
-    if (currentClass) return "Ongoing Class";
-    if (nextClass) return "Up Next";
-    if (!todayHasClasses) return "No Classes Today";
-    return "Done for the Day";
-  };
-
   return (
     <Skeleton isLoading={isLoading}>
-      <Card className="w-full h-44 rounded-3xl p-6 flex-column justify-between shadow-lg bg-accent">
-        <View>
-          <View className="flex-row justify-between items-center">
-            <Text className="text-white/70 uppercase text-[10px] font-bold tracking-widest">
-              {getHeaderLabel()}
-            </Text>
-            <Text className="text-white/50 text-[10px]">
-              {now.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+      <View className="flex-row gap-3">
+        {/* Left Card — Current Class */}
+        <View
+          className="flex-1 rounded-2xl p-4 justify-between"
+          style={{
+            backgroundColor: currentClass
+              ? colors.primary[700]
+              : isDark
+                ? "#1e293b"
+                : colors.primary[50],
+            minHeight: 160,
+          }}
+        >
+          <View className="flex-row items-center gap-1.5 mb-2">
+            <Icon
+              name="CircleIcon"
+              weight="fill"
+              size={8}
+              color={
+                currentClass
+                  ? "#4ade80"
+                  : isDark
+                    ? colors.primary[400]
+                    : colors.primary[300]
+              }
+            />
+            <Text
+              className="uppercase text-[10px] font-bold tracking-widest"
+              style={{
+                color: currentClass
+                  ? "rgba(255,255,255,0.7)"
+                  : isDark
+                    ? colors.primary[300]
+                    : colors.primary[400],
+              }}
+            >
+              {currentClass ? "Now" : "No Class"}
             </Text>
           </View>
 
-          <Text
-            className="text-white text-2xl font-bold mt-2 leading-7"
-            numberOfLines={2}
-          >
-            {currentClass
-              ? currentClass.subject.subjectId.subjectName
-              : nextClass?.subject.subjectId.subjectName || "Rest & Recharge"}
-          </Text>
-
-          <Text className="text-white/80 text-sm mt-1">
-            {currentClass
-              ? `📍 ${currentClass.subject.subjectId.roomNumber}`
-              : nextClass
-                ? `📍 ${nextClass.subject.subjectId.roomNumber}`
-                : "No more academic tasks"}
-          </Text>
-        </View>
-
-        <View className="flex-row justify-between items-end border-t border-white/10 pt-3">
-          <View>
-            <Text className="text-white/60 text-[10px] mb-0.5">Schedule</Text>
-            <Text className="text-white font-semibold">
+          <View className="flex-1 justify-center">
+            <Text
+              className="text-base font-bold leading-5"
+              style={{
+                color: currentClass
+                  ? "#ffffff"
+                  : isDark
+                    ? colors.primary[100]
+                    : colors.primary[800],
+              }}
+              numberOfLines={2}
+            >
               {currentClass
-                ? `${currentClass.scheduleStartTime.slice(0, 5)} - ${currentClass.scheduleEndTime.slice(0, 5)}`
-                : nextClass
-                  ? `${nextClass.scheduleStartTime.slice(0, 5)} start`
-                  : "--:--"}
+                ? currentClass.subject.subjectId.subjectName
+                : "You're free right now"}
+            </Text>
+
+            {currentClass && (
+              <View className="flex-row items-center gap-1 mt-1.5">
+                <Icon
+                  name="MapPinIcon"
+                  size={12}
+                  color="rgba(255,255,255,0.7)"
+                />
+                <Text
+                  className="text-[11px]"
+                  style={{ color: "rgba(255,255,255,0.7)" }}
+                >
+                  {currentClass.subject.subjectId.roomNumber}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <View
+            className="rounded-lg px-2.5 py-1.5 mt-2 self-start"
+            style={{
+              backgroundColor: currentClass
+                ? "rgba(255,255,255,0.15)"
+                : isDark
+                  ? colors.primary[900]
+                  : colors.primary[100],
+            }}
+          >
+            <Text
+              className="text-[11px] font-semibold"
+              style={{
+                color: currentClass
+                  ? "#ffffff"
+                  : isDark
+                    ? colors.primary[300]
+                    : colors.primary[600],
+              }}
+            >
+              {currentClass
+                ? `${currentClass.scheduleStartTime.slice(0, 5)} – ${currentClass.scheduleEndTime.slice(0, 5)}`
+                : "Enjoy your break"}
+            </Text>
+          </View>
+        </View>
+
+        {/* Right Card — Upcoming Class */}
+        <View
+          className="flex-1 rounded-2xl p-4 justify-between border"
+          style={{
+            borderColor: nextClass
+              ? isDark
+                ? colors.primary[800]
+                : colors.primary[200]
+              : isDark
+                ? "#374151"
+                : "#e5e7eb",
+            backgroundColor: nextClass
+              ? isDark
+                ? colors.primary[950]
+                : colors.primary[50]
+              : isDark
+                ? "#111827"
+                : "#f9fafb",
+            minHeight: 160,
+          }}
+        >
+          <View className="flex-row items-center gap-1.5 mb-2">
+            <Icon
+              name="FastForwardIcon"
+              size={12}
+              color={
+                nextClass
+                  ? isDark
+                    ? colors.primary[400]
+                    : colors.primary[500]
+                  : isDark
+                    ? "#6b7280"
+                    : "#9ca3af"
+              }
+            />
+            <Text
+              className="uppercase text-[10px] font-bold tracking-widest"
+              style={{
+                color: nextClass
+                  ? isDark
+                    ? colors.primary[400]
+                    : colors.primary[500]
+                  : isDark
+                    ? "#6b7280"
+                    : "#9ca3af",
+              }}
+            >
+              Up Next
             </Text>
           </View>
 
-          {currentClass && nextClass && (
-            <View className="bg-white/20 px-3 py-1.5 rounded-xl">
-              <Text className="text-white text-[10px] font-medium">
-                Next: {nextClass.subject.subjectId.subjectCode || "Class"}
-              </Text>
-            </View>
-          )}
+          <View className="flex-1 justify-center">
+            <Text
+              className="text-base font-bold leading-5"
+              style={{
+                color: nextClass
+                  ? isDark
+                    ? colors.primary[100]
+                    : colors.primary[900]
+                  : isDark
+                    ? "#9ca3af"
+                    : "#6b7280",
+              }}
+              numberOfLines={2}
+            >
+              {nextClass
+                ? nextClass.subject.subjectId.subjectName
+                : todayHasClasses
+                  ? "Done for today"
+                  : "No classes today"}
+            </Text>
+
+            {nextClass && (
+              <View className="flex-row items-center gap-1 mt-1.5">
+                <Icon
+                  name="MapPinIcon"
+                  size={12}
+                  color={isDark ? colors.primary[500] : colors.primary[400]}
+                />
+                <Text
+                  className="text-[11px]"
+                  style={{
+                    color: isDark ? colors.primary[400] : colors.primary[500],
+                  }}
+                >
+                  {nextClass.subject.subjectId.roomNumber}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <View
+            className="rounded-lg px-2.5 py-1.5 mt-2 self-start"
+            style={{
+              backgroundColor: nextClass
+                ? isDark
+                  ? colors.primary[900]
+                  : colors.primary[100]
+                : isDark
+                  ? "#1f2937"
+                  : "#f3f4f6",
+            }}
+          >
+            <Text
+              className="text-[11px] font-semibold"
+              style={{
+                color: nextClass
+                  ? isDark
+                    ? colors.primary[300]
+                    : colors.primary[700]
+                  : isDark
+                    ? "#6b7280"
+                    : "#9ca3af",
+              }}
+            >
+              {nextClass
+                ? `Starts ${nextClass.scheduleStartTime.slice(0, 5)}`
+                : "Rest & recharge"}
+            </Text>
+          </View>
         </View>
-      </Card>
+      </View>
     </Skeleton>
   );
 };

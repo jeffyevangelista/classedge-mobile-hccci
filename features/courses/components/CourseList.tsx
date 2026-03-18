@@ -1,9 +1,8 @@
 import { AppText } from "@/components/AppText";
-import { Icon } from "@/components/Icon";
 import Image from "@/components/Image";
 import { FlashList } from "@shopify/flash-list";
 import { Link } from "expo-router";
-import { Card, Input, TextField } from "heroui-native";
+import { Card } from "heroui-native";
 import { Pressable, useWindowDimensions, View } from "react-native";
 import { env } from "@/utils/env";
 import { useStudentCourses } from "../courses.hooks";
@@ -14,15 +13,19 @@ const MIN_CARD_WIDTH = 280;
 const CourseList = () => {
   const { width } = useWindowDimensions();
   const numColumns = Math.max(1, Math.floor(width / MIN_CARD_WIDTH));
-  const { data } = useStudentCourses();
+  const { data, isLoading, isError, error } = useStudentCourses();
+
+  if (isLoading) return <AppText>Loading...</AppText>;
+  if (isError) return <AppText>{error.message}</AppText>;
 
   return (
     <View className="w-full max-w-6xl mx-auto flex-1  ">
       <FlashList
+        ListEmptyComponent={<AppText>No Courses Found</AppText>}
         key={numColumns}
         numColumns={numColumns}
         data={data}
-        className="p-2.5"
+        className="px-1"
         contentContainerStyle={{ paddingBottom: 15 }}
         renderItem={({ item }) => (
           <Course item={item} numColumns={numColumns} />
@@ -46,7 +49,7 @@ const Course = ({
       asChild
     >
       <Pressable>
-        <Card className="p-0 shadow">
+        <Card className="p-0 shadow-none rounded-xl">
           <Card.Body className="gap-2.5">
             <Image
               source={
@@ -56,7 +59,7 @@ const Course = ({
                     }
                   : require("@/assets/placeholder/bg-placeholder.png")
               }
-              className="rounded-t-3xl w-full aspect-video"
+              className="rounded-t-lg w-full aspect-video"
               contentFit="cover"
               cachePolicy="disk"
             />
@@ -69,8 +72,10 @@ const Course = ({
                   {item.subjectId.subjectName}
                 </AppText>
               </View>
-              <AppText numberOfLines={1} className="text-sm text-gray-500">
-                {item.subjectId.subjectType} · {item.subjectId.roomNumber}
+              <AppText numberOfLines={1} className="text-xs text-gray-500">
+                {item.subjectId.roomNumber} ·{" "}
+                {item.subjectId.assignTeacherId?.firstName}{" "}
+                {item.subjectId.assignTeacherId?.lastName}
               </AppText>
             </View>
           </Card.Body>

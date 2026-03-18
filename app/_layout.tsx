@@ -1,4 +1,5 @@
 import "@/global.css";
+import { useTokenRefresh } from "@/features/auth/useTokenRefresh";
 import useStore from "@/lib/store";
 import RootProvider from "@/providers/RootProvider";
 import {
@@ -19,6 +20,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const themeColorForeground = useThemeColor("foreground");
   const { restoreSession, clearCredentials, isAuthenticated } = useStore();
+  useTokenRefresh();
   const [sessionRestored, setSessionRestored] = useState(false);
   const [loaded, error] = useFonts({
     "Poppins-Regular": Poppins_400Regular,

@@ -7,9 +7,6 @@ const AuthLayout = () => {
     <Stack
       screenOptions={{
         headerShadowVisible: false,
-        headerStyle: {
-          backgroundColor: colors.backgroundColor,
-        },
       }}
     >
       <Stack.Screen name="login" options={{ headerShown: false }} />

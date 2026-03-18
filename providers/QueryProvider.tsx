@@ -1,4 +1,4 @@
-import { createAsyncStoragePersister } from "@/lib/storage/asyncStoragePersister";
+import { createMmkvPersister } from "@/lib/storage/mmkvPersister";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { DevToolsBubble } from "react-native-react-query-devtools";
@@ -12,7 +12,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-const persister = createAsyncStoragePersister();
+const persister = createMmkvPersister();
 
 const QueryProvider = ({ children }: { children: React.ReactNode }) => {
   return (

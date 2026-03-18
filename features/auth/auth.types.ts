@@ -13,10 +13,9 @@ export type AuthUser = {
 };
 
 export type AuthResponse = {
-  access: string;
-  refresh: string;
-  access_expiry: number;
-  refresh_expiry: number;
+  access_token: string;
+  refresh_token: string;
+  powersync_token: string;
 };
 
 export type DecodedToken = JwtPayload & {

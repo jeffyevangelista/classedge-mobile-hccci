@@ -1,4 +1,5 @@
 import { useQuery, useStatus } from "@powersync/react-native";
+import React from "react";
 
 export const useSyncData = () => {
   const {
@@ -19,22 +20,20 @@ export const useSyncData = () => {
   const { data: rawRows = [] } = useQuery("SELECT id, data FROM ps_crud");
 
   const pendingChanges = React.useMemo(() => {
-    return rawRows
-      .map((row) => {
-        try {
-          const body = JSON.parse(row.data);
-          return {
-            rowId: row.id,
-            table: body.type,
-            operation: body.op,
-            recordId: body.id,
-            fields: body.data,
-          };
-        } catch (e) {
-          return null;
-        }
-      })
-      .filter((item): item is NonNullable<typeof item> => item !== null);
+    return rawRows.map((row) => {
+      try {
+        const body = JSON.parse(row.data);
+        return {
+          rowId: row.id,
+          table: body.type,
+          operation: body.op,
+          recordId: body.id,
+          fields: body.data,
+        };
+      } catch (e) {
+        return null;
+      }
+    });
   }, [rawRows]);
 
   const unsyncedCount = pendingChanges.length;

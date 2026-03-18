@@ -42,6 +42,7 @@ export const useCourseDetails = (courseId: string) => {
   return useQuery({
     queryKey: ["course-details", courseId],
     queryFn: () => getCourseDetails(courseId),
+    enabled: !!courseId,
   });
 };
 

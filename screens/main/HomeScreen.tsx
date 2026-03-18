@@ -1,5 +1,4 @@
 import { AppText } from "@/components/AppText";
-import { Icon } from "@/components/Icon";
 import Screen from "@/components/screen";
 import AnnouncementList from "@/features/announcements/components/AnnouncementList";
 import ScheduleComponent from "@/features/announcements/components/ScheduleComponent";
@@ -8,13 +7,7 @@ import Header from "@/features/home/components/Header";
 import SyncBanner from "@/features/sync/components/SyncBanner";
 import { powersync } from "@/powersync/system";
 import { useCallback, useEffect, useState } from "react";
-import {
-  Alert,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  View,
-} from "react-native";
+import { RefreshControl, ScrollView, View } from "react-native";
 import useStore from "@/lib/store";
 import { queryClient } from "@/providers/QueryProvider";
 
@@ -65,32 +58,15 @@ const HomeScreen = () => {
       </Pressable> */}
 
       <ScrollView
-        className=" w-full max-w-3xl mx-auto pt-15 pb-5"
+        className=" w-full max-w-3xl mx-auto pt-15 pb-5 "
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
         <Header />
 
-        <View
-          className="mt-5 px-5 gap-5"
-          style={{ display: authUser?.role === "Student" ? "flex" : "none" }}
-        >
-          <SyncBanner />
-          <ScheduleComponent />
-        </View>
-
-        <View
-          className="mt-5 gap-3"
-          style={{ display: authUser?.role === "Student" ? "flex" : "none" }}
-        >
-          <AppText weight="semibold" className="text-lg px-5">
-            Pending Submissions
-          </AppText>
-          <PendingAssessmentList subjectId={""} horizontal />
-        </View>
-        <AppText weight="semibold" className="text-lg px-5 mt-5">
-          Recent Announcements
+        <AppText weight="semibold" className="text-lg px-2.5 mt-5">
+          Announcements
         </AppText>
         <AnnouncementList />
       </ScrollView>

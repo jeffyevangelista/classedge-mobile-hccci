@@ -1,10 +1,11 @@
-import { View, Text } from "react-native";
+import Screen from "@/components/screen";
+import CourseDetails from "@/features/courses/components/CourseDetails";
 
 const CourseDetailsScreen = () => {
   return (
-    <View>
-      <Text>CourseDetailsScreen</Text>
-    </View>
+    <Screen className="px-2.5">
+      <CourseDetails />
+    </Screen>
   );
 };
 

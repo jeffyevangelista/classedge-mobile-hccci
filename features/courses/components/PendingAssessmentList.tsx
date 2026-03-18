@@ -20,9 +20,6 @@ const PendingAssessmentList = ({
       <ScrollView
         horizontal={horizontal}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-        }}
       >
         {Array(5)
           .fill(0)

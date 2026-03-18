@@ -80,8 +80,8 @@ export const getCourseAssessment = (assessmentId: string) => {
   });
 };
 
-export const getCourseDetails = (courseId: string) => {
-  return db.query.studentEnrolledCoursesTable.findFirst({
+export const getCourseDetails = async (courseId: string) => {
+  const result = await db.query.studentEnrolledCoursesTable.findFirst({
     where: (enrollment, { eq }) => eq(enrollment.id, Number(courseId)),
     with: {
       subjectId: {
@@ -103,6 +103,12 @@ export const getCourseDetails = (courseId: string) => {
       },
     },
   });
+
+  if (!result) {
+    throw new Error(`Course with ID ${courseId} not found`);
+  }
+
+  return result;
 };
 
 export const getCourseStudents = async (subjectId: number) => {

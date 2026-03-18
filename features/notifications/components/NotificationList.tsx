@@ -1,4 +1,10 @@
-import { View, Text, Pressable, RefreshControl } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  RefreshControl,
+  useColorScheme,
+} from "react-native";
 import { useNotifications } from "../notifications.hooks";
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
@@ -11,6 +17,8 @@ import { readNotification } from "../notifications.service";
 import { Icon } from "@/components/Icon";
 
 const NotificationList = () => {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const { data, isLoading, isError, error, isRefetching, refetch } =
     useNotifications();
   if (isLoading) {
@@ -25,7 +33,8 @@ const NotificationList = () => {
     );
   }
 
-  if (isError) return <Text>Error: {error.message}</Text>;
+  if (isError)
+    return <Text className="dark:text-white">Error: {error.message}</Text>;
 
   return (
     <FlashList
@@ -37,14 +46,21 @@ const NotificationList = () => {
       }
       ListEmptyComponent={
         <View className="items-center justify-center py-10 gap-5">
-          <View className="p-5 rounded-full bg-blue-100">
-            <Icon name="BellSlashIcon" size={100} className="text-blue-600" />
+          <View className="p-5 rounded-full bg-blue-100 dark:bg-blue-900">
+            <Icon
+              name="BellSlashIcon"
+              size={100}
+              className="text-blue-600 dark:text-blue-400"
+            />
           </View>
-          <AppText className="text-center text-xl">
+          <AppText className="text-center text-xl dark:text-white">
             You have no notifications yet
           </AppText>
         </View>
       }
+      ItemSeparatorComponent={() => (
+        <View className="h-px bg-slate-200 dark:bg-slate-700" />
+      )}
       renderItem={({ item }) => <NotificationItem {...item} />}
       data={data}
     />
@@ -85,12 +101,9 @@ const NotificationItem = ({
     >
       <Pressable
         onPress={handleReadNotification}
-        className={`
-        flex-row items-start p-4 rounded
-        ${isReadBool ? "bg-white" : "bg-[#EBF5FF] "}
-      `}
+        className={`flex-row items-start p-4 ${isReadBool ? "bg-transparent" : "bg-blue-400/15 dark:bg-blue-400/10"}`}
       >
-        <Avatar alt="avatar">
+        <Avatar alt="avatar" size="sm">
           <Avatar.Image
             source={
               createdById.studentPhoto
@@ -103,13 +116,15 @@ const NotificationItem = ({
 
         <View className="flex-1 ml-3">
           <AppText
-            weight={isReadBool ? "regular" : "bold"}
-            className={`text-sm ${isReadBool ? "text-slate-500" : "text-slate-900"}`}
+            weight={isReadBool ? "regular" : "semibold"}
+            className={`text-xs ${isReadBool ? "text-slate-500 dark:text-slate-400" : "text-slate-700: dark:text-slate-200"}`}
             numberOfLines={2}
           >
             {createdById.firstName} {createdById.lastName} added {message}
           </AppText>
-          <AppText className="text-[11px] text-slate-400 mt-1 uppercase font-medium">
+          <AppText
+            className={`text-[8px] mt-1 uppercase font-medium ${isReadBool ? "text-slate-400 dark:text-slate-500" : "text-blue-100"}`}
+          >
             {formattedTime}
           </AppText>
         </View>

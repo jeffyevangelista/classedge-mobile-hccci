@@ -6,9 +6,6 @@ const ProfileLayout = () => {
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: colors.backgroundColor,
-        },
         headerShadowVisible: false,
       }}
     >

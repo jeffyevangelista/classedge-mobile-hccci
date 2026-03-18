@@ -8,12 +8,30 @@ const MainLayout = () => {
       <Stack.Screen name="profile" />
       <Stack.Screen name="course" />
       <Stack.Screen
-        options={{ headerShown: true }}
+        options={{
+          headerShown: true,
+          // headerTitle: "",
+          headerShadowVisible: false,
+          headerLeft: () => <BackButton />,
+        }}
         name="assessment/[assessmentId]/index"
       />
       <Stack.Screen
-        options={{ headerShown: true }}
+        options={{
+          headerShown: true,
+          headerTitle: "",
+          headerShadowVisible: false,
+          headerLeft: () => <BackButton />,
+        }}
         name="material/[materialId]/index"
+      />
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          headerTitle: "",
+          headerShadowVisible: false,
+        }}
+        name="attempt/[attemptId]/index"
       />
     </Stack>
   );

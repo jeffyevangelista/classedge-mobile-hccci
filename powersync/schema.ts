@@ -1,6 +1,6 @@
 import { type InferSelectModel, relations, sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-
+import { createId } from "@paralleldrive/cuid2";
 const utcNow = sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'NOW'))`;
 
 export const accountsTable = sqliteTable("accounts_customuser", {
@@ -242,33 +242,145 @@ export const assessmentRelations = relations(assessmentTable, ({ one }) => ({
   }),
 }));
 
-const attemptsTable = sqliteTable("activity_retakerecord", {
+export const studentAssessment = sqliteTable("activity_studentactivity", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  retakerNumber: integer("retaker_number").notNull(),
+  studentId: integer("student_id").notNull(),
+  activityId: integer("activity_id").notNull(),
+  termId: integer("term_id").notNull(),
+  subjectId: integer("subject_id").notNull(),
+  retakeCount: integer("retake_count").notNull(),
+  totalScore: integer("total_score").notNull(),
+  isEditable: integer("is_editable").notNull(),
+});
+
+export const studentAssessmentRelations = relations(
+  studentAssessment,
+  ({ one, many }) => ({
+    studentId: one(accountDetailsTable, {
+      fields: [studentAssessment.studentId],
+      references: [accountDetailsTable.userId],
+    }),
+    activityId: one(assessmentTable, {
+      fields: [studentAssessment.activityId],
+      references: [assessmentTable.id],
+    }),
+    termId: one(academicTermsTable, {
+      fields: [studentAssessment.termId],
+      references: [academicTermsTable.id],
+    }),
+    subjectId: one(coursesTable, {
+      fields: [studentAssessment.subjectId],
+      references: [coursesTable.id],
+    }),
+    retakeRecords: many(attemptsTable),
+  }),
+);
+
+export const attemptsTable = sqliteTable("activity_retakerecord", {
+  id: text("id").primaryKey(),
+  studentActivityId: integer("student_activity_id").notNull(),
+  retakeNumber: integer("retake_number").notNull(),
   score: integer("score").notNull(),
-  retakeTime: text("retake_time").notNull(),
+  status: text("status").notNull(),
   startedAt: text("started_at").notNull(),
   willEndAt: text("will_end_at").notNull(),
-});
-
-const attemptAnswerTable = sqliteTable("activity_retakerecorddetail", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  studentAnswer: text("student_answer").notNull(),
-  score: integer("score").notNull(),
-  submissionTime: text("submission_time").notNull(),
-  uploadFile: text("upload_file").notNull(),
-  activityQuestionId: integer("activity_question_id").notNull(),
-  retakeRecordId: integer("retake_record_id").notNull(),
   studentId: integer("student_id").notNull(),
+  duration: integer("duration").notNull(),
+  localId: text("local_id")
+    .notNull()
+    .$defaultFn(() => createId()),
+  activityId: integer("activity_id").notNull(),
 });
 
-const assessmentQuestionsTable = sqliteTable("activity_questionchoice", {
+export const attemptsRelations = relations(attemptsTable, ({ one }) => ({
+  studentActivity: one(studentAssessment, {
+    fields: [attemptsTable.studentActivityId],
+    references: [studentAssessment.id],
+  }),
+}));
+
+export const assessmentQuestionTable = sqliteTable(
+  "activity_activityquestion",
+  {
+    id: integer("id").primaryKey(),
+    questionText: text("question_text").notNull(),
+    questionInstruction: text("question_instruction").notNull(),
+    correctAnswer: text("correct_answer").notNull(),
+    score: integer("score").notNull(),
+    activityId: integer("activity_id").notNull(),
+    quizTypeId: integer("quiz_type_id").notNull(),
+    subjectId: integer("subject_id").notNull(),
+  },
+);
+
+export const questionType = sqliteTable("activity_quiztype", {
+  id: integer("id").notNull(),
+  name: text("name").notNull(),
+});
+
+export const assessmentQuestionTableRelation = relations(
+  assessmentQuestionTable,
+  ({ one }) => ({
+    activityId: one(assessmentTable, {
+      fields: [assessmentQuestionTable.activityId],
+      references: [assessmentTable.id],
+    }),
+    subjectId: one(coursesTable, {
+      fields: [assessmentQuestionTable.subjectId],
+      references: [coursesTable.id],
+    }),
+    quizTypeId: one(questionType, {
+      fields: [assessmentQuestionTable.quizTypeId],
+      references: [questionType.id],
+    }),
+  }),
+);
+
+export const assessmentQuestionsTable = sqliteTable("activity_questionchoice", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   activityId: integer("activity_id").notNull(),
   choiceText: text("choice_text").notNull(),
   isLeftSide: text("is_left_side").notNull(),
   questionId: integer("question_id").notNull(),
 });
+
+export const assessmentQuestionsTableRelations = relations(
+  assessmentQuestionsTable,
+  ({ one }) => ({
+    questionId: one(assessmentQuestionTable, {
+      fields: [assessmentQuestionsTable.questionId],
+      references: [assessmentQuestionTable.id],
+    }),
+  }),
+);
+
+export const attemptAnswerTable = sqliteTable("activity_retakerecorddetail", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  studentAnswer: text("student_answer").notNull(),
+  score: integer("score").notNull(),
+  uploadFile: text("upload_file").notNull(),
+  activityQuestionId: integer("activity_question_id").notNull(),
+  retakeRecordId: integer("retake_record_id").notNull(),
+  studentId: integer("student_id").notNull(),
+});
+
+export const attemptAnswerTableRelations = relations(
+  attemptAnswerTable,
+  ({ one }) => ({
+    activityQuestionId: one(assessmentQuestionsTable, {
+      fields: [attemptAnswerTable.activityQuestionId],
+      references: [assessmentQuestionsTable.id],
+    }),
+    retakeRecordId: one(attemptsTable, {
+      fields: [attemptAnswerTable.retakeRecordId],
+      references: [attemptsTable.id],
+    }),
+    studentId: one(accountsTable, {
+      fields: [attemptAnswerTable.studentId],
+      references: [accountsTable.id],
+    }),
+  }),
+);
 
 export const drizzleSchema = {
   courseScheduleTable,
@@ -292,6 +404,17 @@ export const drizzleSchema = {
   materialsTable,
   assessmentTable,
   assessmentRelations,
+  studentAssessment,
+  studentAssessmentRelations,
+  attemptsTable,
+  attemptsRelations,
+  assessmentQuestionTable,
+  assessmentQuestionTableRelation,
+  questionType,
+  assessmentQuestionsTable,
+  assessmentQuestionsTableRelations,
+  attemptAnswerTable,
+  attemptAnswerTableRelations,
 };
 
 export type Subject = InferSelectModel<typeof coursesTable>;

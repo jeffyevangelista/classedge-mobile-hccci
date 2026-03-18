@@ -1,4 +1,3 @@
-import { getPowerSyncToken } from "@/features/auth/auth.apis";
 import { env } from "@/utils/env";
 import useStore from "@/lib/store";
 import {
@@ -14,11 +13,11 @@ import { createBaseLogger, LogLevel } from "@powersync/react-native";
 
 export class Connector implements PowerSyncBackendConnector {
   async fetchCredentials() {
-    const res = await getPowerSyncToken();
+    const { powersyncToken } = useStore.getState();
 
     return {
       endpoint: env.EXPO_PUBLIC_POWERSYNC_ENDPOINT,
-      token: res.token,
+      token: powersyncToken ?? "",
     };
   }
 
@@ -33,7 +32,15 @@ export class Connector implements PowerSyncBackendConnector {
       return;
     }
 
-    const { accessToken } = useStore.getState();
+    const { accessToken, isConnected, isInternetReachable } =
+      useStore.getState();
+
+    // Skip upload when offline — transaction stays in the local queue
+    // and will be retried when PowerSync reconnects.
+    if (!isConnected || !isInternetReachable) {
+      throw new Error("Offline: upload deferred until reconnected");
+    }
+
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",
@@ -52,7 +59,7 @@ export class Connector implements PowerSyncBackendConnector {
         switch (op.op) {
           case UpdateType.PUT:
             // For 'PUT', typically use an UPSERT on your backend
-            await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}`, {
+            await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/`, {
               method: "POST",
               headers,
               body: JSON.stringify(record),
@@ -74,7 +81,7 @@ export class Connector implements PowerSyncBackendConnector {
         }
       }
 
-      // 2. Mark as complete so it's removed from the local queue
+      // Mark as complete so it's removed from the local queue
       await transaction.complete();
     } catch (error) {
       console.error("Upload failed, will retry automatically:", error);
@@ -82,7 +89,5 @@ export class Connector implements PowerSyncBackendConnector {
       // PowerSync will retry this transaction later.
       throw error;
     }
-    // Completes the transaction and moves onto the next one
-    await transaction.complete();
   }
 }

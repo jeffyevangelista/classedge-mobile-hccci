@@ -1,21 +1,22 @@
 import {
-  deleteASItem,
-  getASItem,
-  setASItem,
-} from "@/lib/storage/async-storage";
+  deleteMMKVItem,
+  getMMKVItem,
+  setMMKVItem,
+} from "@/lib/storage/mmkv-storage";
 import {
   deleteSSItem,
   getSSItem,
   setSSItem,
 } from "@/lib/storage/secure-storage";
 import { env } from "@/utils/env";
-import { ASYNC_STORAGE_KEYS } from "@/utils/storage-keys";
+import { MMKV_KEYS } from "@/utils/storage-keys";
 import { jwtDecode } from "jwt-decode";
 import type { StateCreator } from "zustand";
 import type { AuthUser, DecodedToken } from "./auth.types";
 
 type AuthState = {
   accessToken: string | null;
+  powersyncToken: string | null;
   refreshToken: string | null;
   authUser: AuthUser | null;
   isAuthenticated: boolean;
@@ -25,6 +26,7 @@ type AuthState = {
 
 type AuthAction = {
   setAccessToken: (accessToken: string) => void;
+  setPowersyncToken: (powersyncToken: string) => void;
   setRefreshToken: (refreshToken: string) => void;
   clearCredentials: () => Promise<void>;
   restoreSession: () => Promise<void>;
@@ -35,6 +37,7 @@ export type AuthSlice = AuthState & AuthAction;
 
 const initialState: AuthState = {
   accessToken: null,
+  powersyncToken: null,
   refreshToken: null,
   expiresAt: null,
   isAuthenticated: false,
@@ -44,7 +47,7 @@ const initialState: AuthState = {
 
 const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
   ...initialState,
-  setAccessToken: async (accessToken: string) => {
+  setAccessToken: (accessToken: string) => {
     if (!accessToken) {
       return;
     }
@@ -64,11 +67,9 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
       role,
     };
 
-    await Promise.all([
-      setSSItem(env.EXPO_PUBLIC_ACCESS_TOKEN_KEY, accessToken),
-      setSSItem(env.EXPO_PUBLIC_AUTH_USER_KEY, authUser),
-      setASItem(ASYNC_STORAGE_KEYS.EXPIRES_AT, expiresAt),
-    ]);
+    setMMKVItem(MMKV_KEYS.ACCESS_TOKEN, accessToken);
+    setMMKVItem(MMKV_KEYS.AUTH_USER, authUser);
+    setMMKVItem(MMKV_KEYS.EXPIRES_AT, expiresAt);
 
     set({
       accessToken,
@@ -77,31 +78,29 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
       authUser,
     });
   },
+  setPowersyncToken: (powersyncToken: string) => {
+    setMMKVItem(MMKV_KEYS.POWERSYNC_TOKEN, powersyncToken);
+    set({ powersyncToken });
+  },
   setRefreshToken: async (refreshToken: string) => {
     await setSSItem(env.EXPO_PUBLIC_REFRESH_TOKEN_KEY, refreshToken);
     set({ refreshToken });
   },
   clearCredentials: async () => {
-    await Promise.all([
-      deleteSSItem(env.EXPO_PUBLIC_ACCESS_TOKEN_KEY),
-      deleteSSItem(env.EXPO_PUBLIC_REFRESH_TOKEN_KEY),
-      deleteSSItem(env.EXPO_PUBLIC_AUTH_USER_KEY),
-      deleteASItem(ASYNC_STORAGE_KEYS.EXPIRES_AT),
-    ]);
+    deleteMMKVItem(MMKV_KEYS.ACCESS_TOKEN);
+    deleteMMKVItem(MMKV_KEYS.POWERSYNC_TOKEN);
+    deleteMMKVItem(MMKV_KEYS.AUTH_USER);
+    deleteMMKVItem(MMKV_KEYS.EXPIRES_AT);
+    await deleteSSItem(env.EXPO_PUBLIC_REFRESH_TOKEN_KEY);
     set(() => ({ ...initialState }));
   },
   restoreSession: async () => {
     try {
-      const [accessToken, refreshToken, authUserStr, expiresAtStr] =
-        await Promise.all([
-          getSSItem(env.EXPO_PUBLIC_ACCESS_TOKEN_KEY),
-          getSSItem(env.EXPO_PUBLIC_REFRESH_TOKEN_KEY),
-          getSSItem(env.EXPO_PUBLIC_AUTH_USER_KEY),
-          getASItem<number | null>(ASYNC_STORAGE_KEYS.EXPIRES_AT),
-        ]);
-
-      const authUser = authUserStr as AuthUser | null;
-      const expiresAt = expiresAtStr;
+      const accessToken = getMMKVItem<string>(MMKV_KEYS.ACCESS_TOKEN);
+      const powersyncToken = getMMKVItem<string>(MMKV_KEYS.POWERSYNC_TOKEN);
+      const authUser = getMMKVItem<AuthUser>(MMKV_KEYS.AUTH_USER);
+      const expiresAt = getMMKVItem<number>(MMKV_KEYS.EXPIRES_AT);
+      const refreshToken = await getSSItem(env.EXPO_PUBLIC_REFRESH_TOKEN_KEY);
 
       const isAuthenticated = !!(
         accessToken &&
@@ -112,6 +111,7 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
 
       set({
         accessToken,
+        powersyncToken,
         refreshToken,
         authUser,
         isAuthenticated,

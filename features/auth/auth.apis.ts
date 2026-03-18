@@ -1,13 +1,10 @@
 import api from "@/lib/axios";
 import axios from "axios";
+import { env } from "@/utils/env";
 import type { AuthResponse, LoginCredentials } from "./auth.types";
 
 export const login = async (loginCredentials: LoginCredentials) => {
   return (await api.post("/auth/login/", loginCredentials)).data;
-};
-
-export const getPowerSyncToken = async () => {
-  return (await api.post("/powersync/token/")).data;
 };
 
 export const forgotPassword = async (email: string) => {
@@ -22,9 +19,11 @@ export const resetPassword = async (email: string, password: string) => {
   return (await api.post("/auth/reset-password/", { email, password })).data;
 };
 
-export const msLogin = async (token: string | null): Promise<AuthResponse> => {
+export const msLogin = async (token: string): Promise<AuthResponse> => {
+  console.log(token);
+
   return (
-    await api.get(`/auth/microsoft/`, {
+    await axios.get(`${env.EXPO_PUBLIC_API_URL}/auth/microsoft/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
