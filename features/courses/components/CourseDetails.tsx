@@ -1,5 +1,5 @@
-import { View, Text } from "react-native";
-import React from "react";
+import { View, Text, RefreshControl } from "react-native";
+import React, { useCallback, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { useCourseDetails, useCourseStudents } from "../courses.hooks";
 import { FlashList } from "@shopify/flash-list";
@@ -8,20 +8,38 @@ import { LinearGradient } from "expo-linear-gradient";
 import { AppText } from "@/components/AppText";
 import { env } from "@/utils/env";
 import { Icon } from "@/components/Icon";
+import EmptyState from "@/components/EmptyState";
+import { Skeleton } from "heroui-native";
 
 const CourseDetails = () => {
   const { courseId } = useLocalSearchParams();
 
-  const { data: courseDetails, isLoading: isLoadingDetails } = useCourseDetails(
-    courseId as string,
-  );
-  const { data: students, isLoading: isLoadingStudents } = useCourseStudents(
-    courseDetails?.subjectId?.id,
-  );
+  const {
+    data: courseDetails,
+    isLoading: isLoadingDetails,
+    refetch: refetchDetails,
+  } = useCourseDetails(courseId as string);
+  const {
+    data: students,
+    isLoading: isLoadingStudents,
+    refetch: refetchStudents,
+  } = useCourseStudents(courseDetails?.subjectId?.id);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([refetchDetails(), refetchStudents()]);
+    setRefreshing(false);
+  }, [refetchDetails, refetchStudents]);
+
+  if (isLoadingDetails) return <CourseDetailsSkeleton />;
 
   return (
     <FlashList
       className="w-full max-w-3xl mx-auto "
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
       ListHeaderComponent={
         <>
           <CourseDetailsHeader courseDetails={courseDetails} />
@@ -35,6 +53,13 @@ const CourseDetails = () => {
       renderItem={({ item, index }) => (
         <StudentItem student={item} index={index} />
       )}
+      ListEmptyComponent={
+        <EmptyState
+          icon="UsersIcon"
+          title="No students enrolled"
+          description="No students are enrolled in this course yet"
+        />
+      }
     />
   );
 };
@@ -134,6 +159,48 @@ const StudentItem = ({ student, index }: { student: any; index: number }) => {
         <AppText className="text-base font-semibold">
           {student.firstName} {student.lastName}
         </AppText>
+      </View>
+    </View>
+  );
+};
+
+const CourseDetailsSkeleton = () => {
+  return (
+    <View className="w-full max-w-3xl mx-auto p-2.5">
+      <Skeleton className="rounded-xl w-full aspect-video mt-2.5" />
+      <View className="mt-6 px-1 gap-2">
+        <Skeleton className="h-8 w-3/4 rounded" />
+        <Skeleton className="h-5 w-1/3 rounded mb-6" />
+      </View>
+      <View className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 mb-6 mx-1 gap-3">
+        <View className="flex-row items-center">
+          <Skeleton className="w-10 h-10 rounded-full mr-3" />
+          <View className="flex-1 gap-1.5">
+            <Skeleton className="h-3 w-16 rounded" />
+            <Skeleton className="h-4 w-40 rounded" />
+          </View>
+        </View>
+        <View className="flex-row items-center">
+          <Skeleton className="w-10 h-10 rounded-full mr-3" />
+          <View className="flex-1 gap-1.5">
+            <Skeleton className="h-3 w-12 rounded" />
+            <Skeleton className="h-4 w-24 rounded" />
+          </View>
+        </View>
+      </View>
+      <View className="gap-2 mx-1">
+        <Skeleton className="h-5 w-40 rounded mb-2" />
+        {Array(4)
+          .fill(0)
+          .map((_, index) => (
+            <View
+              key={index}
+              className="flex-row items-center rounded-xl p-3 mb-2 gap-3"
+            >
+              <Skeleton className="w-12 h-12 rounded-full" />
+              <Skeleton className="h-4 w-32 rounded" />
+            </View>
+          ))}
       </View>
     </View>
   );

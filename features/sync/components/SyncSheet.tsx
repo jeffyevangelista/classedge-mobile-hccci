@@ -44,7 +44,7 @@ const SyncSheetContent = () => {
       >
         <ForceSyncButton />
       </View>
-      <View className="mt-5 flex-1">
+      {/* <View className="mt-5 flex-1">
         <AppText weight="semibold" className="text-sm mb-2">
           Pending Changes
         </AppText>
@@ -57,7 +57,7 @@ const SyncSheetContent = () => {
           contentContainerStyle={{ paddingBottom: 20 }}
           renderItem={({ item }) => <SheetItem item={item!} />}
         />
-      </View>
+      </View> */}
     </>
   );
 };

@@ -143,6 +143,9 @@ importers:
       npx:
         specifier: ^10.2.2
         version: 10.2.2
+      onesignal-expo-plugin:
+        specifier: ^2.4.0
+        version: 2.4.0(react-native-onesignal@5.3.6)
       phosphor-react-native:
         specifier: ^3.0.2
         version: 3.0.2(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -176,6 +179,9 @@ importers:
       react-native-nitro-modules:
         specifier: ^0.33.8
         version: 0.33.8(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      react-native-onesignal:
+        specifier: ^5.3.6
+        version: 5.3.6
       react-native-react-query-devtools:
         specifier: ^1.5.1
         version: 1.5.1(@tanstack/react-query@5.90.16(react@19.1.0))(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -4272,6 +4278,11 @@ packages:
   once@1.4.0:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
 
+  onesignal-expo-plugin@2.4.0:
+    resolution: {integrity: sha512-gH0IUDyJAsSKCsIm1Lf2Zb9HRQVOmUpIqSDpQDRIjxNBpHKWMWM0Rtw9Vtr2/exmt4mmqj4Sz/XJo+jWLbxqtw==}
+    peerDependencies:
+      react-native-onesignal: '>=5.0.0'
+
   onetime@2.0.1:
     resolution: {integrity: sha512-oyyPpiMaKARvvcgip+JV+7zci5L8D1W9RZIz2l1o08AM3pfspitVWnPt3mzHcBPp12oYMTy0pqrFs/C+m3EwsQ==}
     engines: {node: '>=4'}
@@ -4538,6 +4549,9 @@ packages:
     peerDependencies:
       react: '*'
       react-native: '*'
+
+  react-native-onesignal@5.3.6:
+    resolution: {integrity: sha512-Ko3ez5RTZfqTN4X+KHuTpy3yf58/ryV/9BHlwIXl83FribrzXbdUs9+64U+kbceMAAOY9NuF6knATWUoxfS0rQ==}
 
   react-native-react-query-devtools@1.5.1:
     resolution: {integrity: sha512-3WDN0/4euB/uP7XqO816hQHp9Mi2oNekYVbYIU3GqjgrFz069fWBLafjuLWACm9uxesfRmdLMoy73N4H8FbP6g==}
@@ -9966,6 +9980,11 @@ snapshots:
     dependencies:
       wrappy: 1.0.2
 
+  onesignal-expo-plugin@2.4.0(react-native-onesignal@5.3.6):
+    dependencies:
+      '@expo/image-utils': 0.8.8
+      react-native-onesignal: 5.3.6
+
   onetime@2.0.1:
     dependencies:
       mimic-fn: 1.2.0
@@ -10236,6 +10255,10 @@ snapshots:
     dependencies:
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0)
+
+  react-native-onesignal@5.3.6:
+    dependencies:
+      invariant: 2.2.4
 
   react-native-react-query-devtools@1.5.1(@tanstack/react-query@5.90.16(react@19.1.0))(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:

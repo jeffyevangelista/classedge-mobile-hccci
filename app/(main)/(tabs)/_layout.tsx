@@ -1,7 +1,6 @@
 import TabIcon from "@/components/TabIcon";
 import { useNotificationCount } from "@/features/notifications/notifications.hooks";
 import NetworkBanner from "@/features/network/NetworkBanner";
-import SyncCenter from "@/features/sync/components/SyncCenter";
 import useStore from "@/lib/store";
 import { Tabs } from "expo-router";
 import { Platform, View } from "react-native";
@@ -14,6 +13,7 @@ const TabsLayout = () => {
     <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
+          headerShown: false,
           headerShadowVisible: false,
           animation: "shift",
           headerTitleAlign: "left",
@@ -73,11 +73,6 @@ const TabsLayout = () => {
           <Tabs.Screen
             name="courses"
             options={{
-              headerRight: () => (
-                <View className="mr-2">
-                  <SyncCenter />
-                </View>
-              ),
               tabBarIcon: ({ focused, color }) => (
                 <TabIcon
                   focused={focused}
@@ -85,7 +80,6 @@ const TabsLayout = () => {
                   IconElement="BookOpenIcon"
                 />
               ),
-              headerTitle: "Courses",
               tabBarLabel: "Courses",
             }}
           />
@@ -101,11 +95,6 @@ const TabsLayout = () => {
           <Tabs.Screen
             name="oversight"
             options={{
-              headerRight: () => (
-                <View className="mr-2">
-                  <SyncCenter />
-                </View>
-              ),
               tabBarIcon: ({ focused, color }) => (
                 <TabIcon
                   focused={focused}
@@ -113,7 +102,6 @@ const TabsLayout = () => {
                   IconElement="BinocularsIcon"
                 />
               ),
-              headerTitle: "Oversight",
               tabBarLabel: "Oversight",
             }}
           />

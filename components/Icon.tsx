@@ -1,10 +1,10 @@
 import * as PhosphorIcons from "phosphor-react-native";
 import { withUniwind } from "uniwind";
 
-export type PhosphorIcon = keyof typeof PhosphorIcons;
+export type IconName = keyof typeof PhosphorIcons;
 
 interface IconProps extends PhosphorIcons.IconProps {
-  name: PhosphorIcon;
+  name: IconName;
 }
 
 const IconBase = ({ name, ...props }: IconProps) => {

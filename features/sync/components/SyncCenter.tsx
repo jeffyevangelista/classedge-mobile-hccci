@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, Spinner } from "heroui-native";
-import { Icon, PhosphorIcon } from "@/components/Icon";
+import { Icon, IconName } from "@/components/Icon";
 import { useSyncData } from "../useSyncData";
 import SyncSheet from "./SyncSheet";
 
@@ -8,7 +8,7 @@ const SyncCenter = () => {
   const [isSyncOpen, setIsSyncOpen] = useState(false);
   const { uploading, downloading, connected, connecting } = useSyncData();
 
-  const getIconAndColor = (): { icon: PhosphorIcon; color: string } => {
+  const getIconAndColor = (): { icon: IconName; color: string } => {
     if (!connected) {
       return { icon: "CloudSlashIcon", color: "#EF4444" };
     }
@@ -29,7 +29,7 @@ const SyncCenter = () => {
       <SyncSheet isOpen={isSyncOpen} setIsOpen={setIsSyncOpen} />
       <Button isIconOnly variant="ghost" onPress={() => setIsSyncOpen(true)}>
         {connecting ? (
-          <Spinner />
+          <Spinner size="sm" />
         ) : (
           <Icon name={icon} color={color} size={30} />
         )}

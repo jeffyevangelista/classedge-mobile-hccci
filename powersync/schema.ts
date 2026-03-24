@@ -290,6 +290,10 @@ export const attemptsTable = sqliteTable("activity_retakerecord", {
     .notNull()
     .$defaultFn(() => createId()),
   activityId: integer("activity_id").notNull(),
+  questionOrder: text("question_order").notNull().default("[]"),
+  lastIndex: integer("last_index").notNull().default(0),
+  lastHeartbeatAt: text("last_heartbeat_at").notNull().default(utcNow),
+  totalElapsedSeconds: integer("total_elapsed_seconds").notNull().default(0),
 });
 
 export const attemptsRelations = relations(attemptsTable, ({ one }) => ({
@@ -355,13 +359,16 @@ export const assessmentQuestionsTableRelations = relations(
 );
 
 export const attemptAnswerTable = sqliteTable("activity_retakerecorddetail", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: text("id").primaryKey(),
   studentAnswer: text("student_answer").notNull(),
   score: integer("score").notNull(),
   uploadFile: text("upload_file").notNull(),
   activityQuestionId: integer("activity_question_id").notNull(),
-  retakeRecordId: integer("retake_record_id").notNull(),
+  retakeRecordId: text("retake_record_id").notNull(),
   studentId: integer("student_id").notNull(),
+  localId: text("local_id")
+    .notNull()
+    .$defaultFn(() => createId()),
 });
 
 export const attemptAnswerTableRelations = relations(

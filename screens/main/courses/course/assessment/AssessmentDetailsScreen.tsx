@@ -8,10 +8,11 @@ import {
 import { AppText } from "@/components/AppText";
 import useStore from "@/lib/store";
 import Screen from "@/components/screen";
-import { Button, Card, useToast } from "heroui-native";
+import { Button, useToast } from "heroui-native";
 import AssessmentResult from "@/features/assessment/components/AssessmentResult";
 import {
   getAttemptRecords,
+  getQuestions,
   startAssessmentAttempt,
 } from "@/features/assessment/assessment.services";
 import { useEffect } from "react";
@@ -61,7 +62,10 @@ const AssessmentDetailsScreen = () => {
   const handleStartAssessment = async () => {
     const studentAssessmentId = assessmentData?.id;
     const activityId = assessmentData?.activityId;
+
     try {
+      const questions = await getQuestions(activityId!);
+
       const existingAttempts = await getAttemptRecords(
         studentAssessmentId!,
         authUser?.id!,
@@ -71,12 +75,22 @@ const AssessmentDetailsScreen = () => {
         throw new Error("Maximum number of retakes reached");
       }
 
+      // Build question order, shuffle if the activity requires it
+      let questionIds = questions.map((q) => q.id);
+      if (data.shuffleQuestions) {
+        for (let i = questionIds.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [questionIds[i], questionIds[j]] = [questionIds[j], questionIds[i]];
+        }
+      }
+
       const result = await startAssessmentAttempt(
         studentAssessmentId!,
         authUser?.id!,
         data.timeDuration,
         existingAttempts.length + 1,
         activityId!,
+        questionIds,
       );
 
       console.log("result", result);
@@ -111,6 +125,10 @@ const AssessmentDetailsScreen = () => {
               <View className="flex-row justify-between">
                 <AppText weight="semibold">Due:</AppText>
                 <AppText>{formatDate(data.endTime)}</AppText>
+              </View>
+              <View className="flex-row justify-between">
+                <AppText weight="semibold">Time Duration:</AppText>
+                <AppText>{data.timeDuration}</AppText>
               </View>
 
               <View className="flex-row justify-between">

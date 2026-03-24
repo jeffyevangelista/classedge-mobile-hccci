@@ -4,22 +4,25 @@ import HeroUIProvider from "./HeroUIProvider";
 import KeyboardProvider from "./KeyboardProvider";
 import NetworkProvider from "./NetworkProvider";
 import PowerSyncProvider from "./PowerSyncProvider";
+import OneSignalProvider from "./OneSignalProvider";
 import QueryProvider from "./QueryProvider";
 
 const RootProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <SafeAreaProvider>
-      <NetworkProvider>
-        <NetworkBannerProvider>
-          <PowerSyncProvider>
-            <QueryProvider>
-              <HeroUIProvider>
-                <KeyboardProvider>{children}</KeyboardProvider>
-              </HeroUIProvider>
-            </QueryProvider>
-          </PowerSyncProvider>
-        </NetworkBannerProvider>
-      </NetworkProvider>
+      <OneSignalProvider>
+        <NetworkProvider>
+          <NetworkBannerProvider>
+            <PowerSyncProvider>
+              <QueryProvider>
+                <HeroUIProvider>
+                  <KeyboardProvider>{children}</KeyboardProvider>
+                </HeroUIProvider>
+              </QueryProvider>
+            </PowerSyncProvider>
+          </NetworkBannerProvider>
+        </NetworkProvider>
+      </OneSignalProvider>
     </SafeAreaProvider>
   );
 };

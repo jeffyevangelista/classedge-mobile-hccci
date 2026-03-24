@@ -1,50 +1,29 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type MutableRefObject } from "react";
 
 export const useAssessmentTimer = (
-  startedAt: string,
   durationSeconds: number,
-  onTimeUp: () => void,
+  elapsedRef: MutableRefObject<number>,
 ) => {
-  const calculateInitialTime = () => {
-    if (!startedAt || !durationSeconds) return 0;
-    const start = new Date(startedAt).getTime();
-    const now = new Date().getTime();
-    const elapsed = Math.floor((now - start) / 1000);
-    const remaining = durationSeconds - elapsed;
+  const [remainingTime, setRemainingTime] = useState<number>(() => {
+    const remaining = durationSeconds - elapsedRef.current;
     return remaining > 0 ? remaining : 0;
-  };
-
-  const [remainingTime, setRemainingTime] =
-    useState<number>(calculateInitialTime);
+  });
 
   useEffect(() => {
-    const calculateTime = () => {
-      const start = new Date(startedAt).getTime();
-      const now = new Date().getTime();
-      const elapsed = Math.floor((now - start) / 1000);
-      const remaining = durationSeconds - elapsed;
+    if (!durationSeconds) return;
 
-      if (remaining <= 0) {
-        setRemainingTime(0);
-        onTimeUp();
-        return false; // Stop the interval
-      }
-      setRemainingTime(remaining);
-      return true;
-    };
-
-    // Initial calculation
-    calculateTime();
+    // Immediately sync on duration change to avoid stale 0
+    const initial = durationSeconds - elapsedRef.current;
+    setRemainingTime(initial > 0 ? initial : 0);
 
     const interval = setInterval(() => {
-      const active = calculateTime();
-      if (!active) clearInterval(interval);
+      const remaining = durationSeconds - elapsedRef.current;
+      setRemainingTime(remaining > 0 ? remaining : 0);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [startedAt, durationSeconds]);
+  }, [durationSeconds]);
 
-  // Format helper: returns "MM:SS"
   const formattedTime = `${Math.floor(remainingTime / 60)}:${String(remainingTime % 60).padStart(2, "0")}`;
 
   return { remainingTime, formattedTime };

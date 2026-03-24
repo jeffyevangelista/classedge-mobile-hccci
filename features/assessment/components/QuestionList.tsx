@@ -1,15 +1,19 @@
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   Image,
   StyleSheet,
   ScrollView,
 } from "react-native";
-import React, { useState } from "react";
-import { useGetQuestions } from "../assessment.hooks";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  useGetOrderedQuestions,
+  useGetAnswersForAttempt,
+} from "../assessment.hooks";
+import { saveAnswer } from "../assessment.services";
 import { AppText } from "@/components/AppText";
+import { Skeleton } from "heroui-native";
 
 interface Question {
   id: number;
@@ -24,19 +28,22 @@ interface Question {
 
 interface QuestionComponentProps {
   question: Question;
+  currentAnswer: string;
   onAnswer: (questionId: number, answer: string) => void;
+  disabled: boolean;
 }
 
 const MultipleChoiceQuestion = ({
   question,
+  currentAnswer,
   onAnswer,
+  disabled,
 }: QuestionComponentProps) => {
-  const [selectedOption, setSelectedOption] = useState<string>("");
   const options = ["Option A", "Option B", "Option C", "Option D"];
 
   const handleSelect = (index: number) => {
+    if (disabled) return;
     const answer = index.toString();
-    setSelectedOption(answer);
     onAnswer(question.id, answer);
   };
 
@@ -49,9 +56,10 @@ const MultipleChoiceQuestion = ({
           key={index}
           style={[
             styles.optionButton,
-            selectedOption === index.toString() && styles.selectedOption,
+            currentAnswer === index.toString() && styles.selectedOption,
           ]}
           onPress={() => handleSelect(index)}
+          disabled={disabled}
         >
           <AppText>{option}</AppText>
         </TouchableOpacity>
@@ -60,11 +68,20 @@ const MultipleChoiceQuestion = ({
   );
 };
 
-const EssayQuestion = ({ question, onAnswer }: QuestionComponentProps) => {
-  const [answer, setAnswer] = useState<string>("");
+const EssayQuestion = ({
+  question,
+  currentAnswer,
+  onAnswer,
+  disabled,
+}: QuestionComponentProps) => {
+  const [localAnswer, setLocalAnswer] = useState(currentAnswer);
+
+  useEffect(() => {
+    setLocalAnswer(currentAnswer);
+  }, [currentAnswer]);
 
   const handleChange = (text: string) => {
-    setAnswer(text);
+    setLocalAnswer(text);
     onAnswer(question.id, text);
   };
 
@@ -77,18 +94,22 @@ const EssayQuestion = ({ question, onAnswer }: QuestionComponentProps) => {
         multiline
         numberOfLines={6}
         placeholder="Type your answer here..."
-        value={answer}
+        value={localAnswer}
         onChangeText={handleChange}
+        editable={!disabled}
       />
     </View>
   );
 };
 
-const TrueFalseQuestion = ({ question, onAnswer }: QuestionComponentProps) => {
-  const [selectedAnswer, setSelectedAnswer] = useState<string>("");
-
+const TrueFalseQuestion = ({
+  question,
+  currentAnswer,
+  onAnswer,
+  disabled,
+}: QuestionComponentProps) => {
   const handleSelect = (value: string) => {
-    setSelectedAnswer(value);
+    if (disabled) return;
     onAnswer(question.id, value);
   };
 
@@ -100,18 +121,20 @@ const TrueFalseQuestion = ({ question, onAnswer }: QuestionComponentProps) => {
         <TouchableOpacity
           style={[
             styles.trueFalseButton,
-            selectedAnswer === "True" && styles.selectedOption,
+            currentAnswer === "True" && styles.selectedOption,
           ]}
           onPress={() => handleSelect("True")}
+          disabled={disabled}
         >
           <AppText>True</AppText>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.trueFalseButton,
-            selectedAnswer === "False" && styles.selectedOption,
+            currentAnswer === "False" && styles.selectedOption,
           ]}
           onPress={() => handleSelect("False")}
+          disabled={disabled}
         >
           <AppText>False</AppText>
         </TouchableOpacity>
@@ -122,12 +145,18 @@ const TrueFalseQuestion = ({ question, onAnswer }: QuestionComponentProps) => {
 
 const FillInTheBlankQuestion = ({
   question,
+  currentAnswer,
   onAnswer,
+  disabled,
 }: QuestionComponentProps) => {
-  const [answer, setAnswer] = useState<string>("");
+  const [localAnswer, setLocalAnswer] = useState(currentAnswer);
+
+  useEffect(() => {
+    setLocalAnswer(currentAnswer);
+  }, [currentAnswer]);
 
   const handleChange = (text: string) => {
-    setAnswer(text);
+    setLocalAnswer(text);
     onAnswer(question.id, text);
   };
 
@@ -138,18 +167,28 @@ const FillInTheBlankQuestion = ({
       <TextInput
         style={styles.fillBlankInput}
         placeholder="Fill in the blank..."
-        value={answer}
+        value={localAnswer}
         onChangeText={handleChange}
+        editable={!disabled}
       />
     </View>
   );
 };
 
-const MatchingQuestion = ({ question, onAnswer }: QuestionComponentProps) => {
-  const [matches, setMatches] = useState<string>("");
+const MatchingQuestion = ({
+  question,
+  currentAnswer,
+  onAnswer,
+  disabled,
+}: QuestionComponentProps) => {
+  const [localAnswer, setLocalAnswer] = useState(currentAnswer);
+
+  useEffect(() => {
+    setLocalAnswer(currentAnswer);
+  }, [currentAnswer]);
 
   const handleChange = (text: string) => {
-    setMatches(text);
+    setLocalAnswer(text);
     onAnswer(question.id, text);
   };
 
@@ -163,18 +202,28 @@ const MatchingQuestion = ({ question, onAnswer }: QuestionComponentProps) => {
       <TextInput
         style={styles.fillBlankInput}
         placeholder="e.g., 1 -> 2"
-        value={matches}
+        value={localAnswer}
         onChangeText={handleChange}
+        editable={!disabled}
       />
     </View>
   );
 };
 
-const NumericQuestion = ({ question, onAnswer }: QuestionComponentProps) => {
-  const [answer, setAnswer] = useState<string>("");
+const NumericQuestion = ({
+  question,
+  currentAnswer,
+  onAnswer,
+  disabled,
+}: QuestionComponentProps) => {
+  const [localAnswer, setLocalAnswer] = useState(currentAnswer);
+
+  useEffect(() => {
+    setLocalAnswer(currentAnswer);
+  }, [currentAnswer]);
 
   const handleChange = (text: string) => {
-    setAnswer(text);
+    setLocalAnswer(text);
     onAnswer(question.id, text);
   };
 
@@ -186,18 +235,28 @@ const NumericQuestion = ({ question, onAnswer }: QuestionComponentProps) => {
         style={styles.fillBlankInput}
         placeholder="Enter numeric answer..."
         keyboardType="numeric"
-        value={answer}
+        value={localAnswer}
         onChangeText={handleChange}
+        editable={!disabled}
       />
     </View>
   );
 };
 
-const ImageBasedQuestion = ({ question, onAnswer }: QuestionComponentProps) => {
-  const [answer, setAnswer] = useState<string>("");
+const ImageBasedQuestion = ({
+  question,
+  currentAnswer,
+  onAnswer,
+  disabled,
+}: QuestionComponentProps) => {
+  const [localAnswer, setLocalAnswer] = useState(currentAnswer);
+
+  useEffect(() => {
+    setLocalAnswer(currentAnswer);
+  }, [currentAnswer]);
 
   const handleChange = (text: string) => {
-    setAnswer(text);
+    setLocalAnswer(text);
     onAnswer(question.id, text);
   };
 
@@ -217,29 +276,84 @@ const ImageBasedQuestion = ({ question, onAnswer }: QuestionComponentProps) => {
         multiline
         numberOfLines={4}
         placeholder="Type your answer based on the image..."
-        value={answer}
+        value={localAnswer}
         onChangeText={handleChange}
+        editable={!disabled}
       />
     </View>
   );
 };
 
-const QuestionRenderer = ({ question, onAnswer }: QuestionComponentProps) => {
+const QuestionRenderer = ({
+  question,
+  currentAnswer,
+  onAnswer,
+  disabled,
+}: QuestionComponentProps) => {
   switch (question.quizTypeId) {
     case 1:
-      return <MultipleChoiceQuestion question={question} onAnswer={onAnswer} />;
+      return (
+        <MultipleChoiceQuestion
+          question={question}
+          currentAnswer={currentAnswer}
+          onAnswer={onAnswer}
+          disabled={disabled}
+        />
+      );
     case 2:
-      return <EssayQuestion question={question} onAnswer={onAnswer} />;
+      return (
+        <EssayQuestion
+          question={question}
+          currentAnswer={currentAnswer}
+          onAnswer={onAnswer}
+          disabled={disabled}
+        />
+      );
     case 3:
-      return <TrueFalseQuestion question={question} onAnswer={onAnswer} />;
+      return (
+        <TrueFalseQuestion
+          question={question}
+          currentAnswer={currentAnswer}
+          onAnswer={onAnswer}
+          disabled={disabled}
+        />
+      );
     case 4:
-      return <FillInTheBlankQuestion question={question} onAnswer={onAnswer} />;
+      return (
+        <FillInTheBlankQuestion
+          question={question}
+          currentAnswer={currentAnswer}
+          onAnswer={onAnswer}
+          disabled={disabled}
+        />
+      );
     case 5:
-      return <MatchingQuestion question={question} onAnswer={onAnswer} />;
+      return (
+        <MatchingQuestion
+          question={question}
+          currentAnswer={currentAnswer}
+          onAnswer={onAnswer}
+          disabled={disabled}
+        />
+      );
     case 6:
-      return <NumericQuestion question={question} onAnswer={onAnswer} />;
+      return (
+        <NumericQuestion
+          question={question}
+          currentAnswer={currentAnswer}
+          onAnswer={onAnswer}
+          disabled={disabled}
+        />
+      );
     case 7:
-      return <ImageBasedQuestion question={question} onAnswer={onAnswer} />;
+      return (
+        <ImageBasedQuestion
+          question={question}
+          currentAnswer={currentAnswer}
+          onAnswer={onAnswer}
+          disabled={disabled}
+        />
+      );
     default:
       return (
         <View style={styles.questionContainer}>
@@ -249,41 +363,77 @@ const QuestionRenderer = ({ question, onAnswer }: QuestionComponentProps) => {
   }
 };
 
-const QuestionList = ({ activityId }: { activityId: number }) => {
+type QuestionListProps = {
+  activityId: number;
+  attemptId: string;
+  retakeRecordId: string;
+  studentId: number;
+  questionOrder: number[];
+  initialIndex: number;
+  onIndexChange: (index: number) => void;
+  isTimeUp: boolean;
+};
+
+const QuestionList = ({
+  activityId,
+  attemptId,
+  retakeRecordId,
+  studentId,
+  questionOrder,
+  initialIndex,
+  onIndexChange,
+  isTimeUp,
+}: QuestionListProps) => {
   const {
     data: questions,
     isLoading,
     isError,
     error,
-  } = useGetQuestions(activityId);
+  } = useGetOrderedQuestions(activityId, questionOrder);
+
+  const { data: existingAnswers } = useGetAnswersForAttempt(attemptId);
 
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(initialIndex);
 
-  const handleAnswer = (questionId: number, answer: string) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: answer,
-    }));
-  };
+  // Populate answers from existing records on load / re-entry
+  useEffect(() => {
+    if (!existingAnswers) return;
+    const restored: Record<number, string> = {};
+    for (const a of existingAnswers) {
+      restored[a.activityQuestionId] = a.studentAnswer;
+    }
+    setAnswers(restored);
+  }, [existingAnswers]);
+
+  const handleAnswer = useCallback(
+    (questionId: number, answer: string) => {
+      setAnswers((prev) => ({ ...prev, [questionId]: answer }));
+      // Persist immediately
+      saveAnswer(retakeRecordId, questionId, studentId, answer).catch((err) =>
+        console.error("[QuestionList] Failed to save answer:", err),
+      );
+    },
+    [retakeRecordId, studentId],
+  );
 
   const handleNextPage = () => {
     if (questions && currentPage < questions.length - 1) {
-      setCurrentPage(currentPage + 1);
+      const next = currentPage + 1;
+      setCurrentPage(next);
+      onIndexChange(next);
     }
   };
 
   const handlePreviousPage = () => {
     if (currentPage > 0) {
-      setCurrentPage(currentPage - 1);
+      const prev = currentPage - 1;
+      setCurrentPage(prev);
+      onIndexChange(prev);
     }
   };
 
-  const handleGoToPage = (pageIndex: number) => {
-    setCurrentPage(pageIndex);
-  };
-
-  if (isLoading) return <AppText>loading...</AppText>;
+  if (isLoading) return <QuestionListSkeleton />;
 
   if (isError) return <AppText>{error?.message}</AppText>;
 
@@ -296,14 +446,24 @@ const QuestionList = ({ activityId }: { activityId: number }) => {
 
   return (
     <View style={styles.paginationContainer}>
-      <ScrollView style={styles.questionScrollView}>
+      {isTimeUp && (
+        <View style={styles.timeUpBanner}>
+          <AppText style={styles.timeUpText}>Time is up! Submitting...</AppText>
+        </View>
+      )}
+      <ScrollView
+        style={styles.questionScrollView}
+        pointerEvents={isTimeUp ? "none" : "auto"}
+      >
         <View style={styles.currentQuestionContainer}>
           <AppText style={styles.questionNumber}>
             Question {currentPage + 1} of {totalQuestions}
           </AppText>
           <QuestionRenderer
             question={currentQuestion}
+            currentAnswer={answers[currentQuestion.id] ?? ""}
             onAnswer={handleAnswer}
+            disabled={isTimeUp}
           />
         </View>
       </ScrollView>
@@ -312,15 +472,15 @@ const QuestionList = ({ activityId }: { activityId: number }) => {
         <TouchableOpacity
           style={[
             styles.navButton,
-            currentPage === 0 && styles.navButtonDisabled,
+            (currentPage === 0 || isTimeUp) && styles.navButtonDisabled,
           ]}
           onPress={handlePreviousPage}
-          disabled={currentPage === 0}
+          disabled={currentPage === 0 || isTimeUp}
         >
           <AppText
             style={[
               styles.navButtonText,
-              currentPage === 0 && styles.navButtonTextDisabled,
+              (currentPage === 0 || isTimeUp) && styles.navButtonTextDisabled,
             ]}
           >
             Previous
@@ -330,15 +490,16 @@ const QuestionList = ({ activityId }: { activityId: number }) => {
         <TouchableOpacity
           style={[
             styles.navButton,
-            currentPage === totalQuestions - 1 && styles.navButtonDisabled,
+            (currentPage === totalQuestions - 1 || isTimeUp) &&
+              styles.navButtonDisabled,
           ]}
           onPress={handleNextPage}
-          disabled={currentPage === totalQuestions - 1}
+          disabled={currentPage === totalQuestions - 1 || isTimeUp}
         >
           <AppText
             style={[
               styles.navButtonText,
-              currentPage === totalQuestions - 1 &&
+              (currentPage === totalQuestions - 1 || isTimeUp) &&
                 styles.navButtonTextDisabled,
             ]}
           >
@@ -520,6 +681,39 @@ const styles = StyleSheet.create({
   pageIndicatorTextActive: {
     color: "#fff",
   },
+  timeUpBanner: {
+    backgroundColor: "#FF3B30",
+    padding: 12,
+    alignItems: "center",
+  },
+  timeUpText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
 });
+
+const QuestionListSkeleton = () => {
+  return (
+    <View style={styles.paginationContainer}>
+      <View style={styles.currentQuestionContainer}>
+        <Skeleton className="h-6 w-40 rounded mb-3" />
+        <View style={styles.questionContainer}>
+          <Skeleton className="h-5 w-full rounded mb-2" />
+          <Skeleton className="h-3 w-20 rounded mb-3" />
+          {Array(4)
+            .fill(0)
+            .map((_, index) => (
+              <Skeleton key={index} className="h-12 w-full rounded-md mb-2" />
+            ))}
+        </View>
+      </View>
+      <View style={styles.navigationContainer}>
+        <Skeleton className="h-12 w-24 rounded-lg" />
+        <Skeleton className="h-12 w-24 rounded-lg" />
+      </View>
+    </View>
+  );
+};
 
 export default QuestionList;

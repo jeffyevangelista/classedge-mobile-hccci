@@ -4,6 +4,7 @@ import { Avatar, Card, Separator, Skeleton, Surface } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { Icon } from "@/components/Icon";
+import EmptyState from "@/components/EmptyState";
 import {
   formatDate,
   formatTime,
@@ -24,7 +25,13 @@ const AnnouncementList = () => {
   return (
     <FlashList
       scrollEnabled={false}
-      ListEmptyComponent={<AppText>No Announcements Yet</AppText>}
+      ListEmptyComponent={
+        <EmptyState
+          icon="MegaphoneIcon"
+          title="No announcements yet"
+          description="Check back later for updates"
+        />
+      }
       data={data}
       onRefresh={refetch}
       refreshing={isRefetching}

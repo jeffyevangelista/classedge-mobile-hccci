@@ -1,9 +1,10 @@
 import { AppText } from "@/components/AppText";
-import { Icon, IconName } from "@/components/Icon";
+import { Icon, type IconName } from "@/components/Icon";
 import Screen from "@/components/screen";
 import LogoutButton from "@/features/auth/components/LogoutButton";
 import HeaderComponent from "@/features/profile/components/HeaderComponent";
 import { Href, Link } from "expo-router";
+import { Card } from "heroui-native";
 import { ScrollView, View, Pressable } from "react-native";
 
 type ProfileNavProps = {
@@ -37,22 +38,19 @@ const profileNav: ProfileNavProps[] = [
 
 const ProfileScreen = () => {
   return (
-    <Screen className="px-4 md:px-8">
+    <Screen className="px-2.5 md:px-8">
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="flex mx-auto max-w-2xl gap-8 w-full items-center py-8">
           {/* Header Section */}
           <HeaderComponent />
 
           {/* Navigation Links */}
-          <View className="w-full">
+          <Card className=" shadow-none overflow-hidden w-full">
             {profileNav.map((item) => (
               <ProfileNavItem key={item.title} {...item} />
             ))}
-          </View>
-
-          <View className="mt-4 w-full">
             <LogoutButton />
-          </View>
+          </Card>
         </View>
       </ScrollView>
     </Screen>
@@ -65,7 +63,7 @@ const ProfileNavItem = ({ title, href, name }: ProfileNavProps) => {
       <Pressable className="active:opacity-70">
         {({ pressed }) => (
           <View
-            className={`flex-row items-center p-4 rounded-2xl border border-transparent`}
+            className={`flex-row items-center p-3 rounded-2xl border border-transparent`}
           >
             <Icon name={name} size={28} className="text-blue-500" />
 

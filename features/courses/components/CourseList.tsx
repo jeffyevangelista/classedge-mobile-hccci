@@ -2,30 +2,47 @@ import { AppText } from "@/components/AppText";
 import Image from "@/components/Image";
 import { FlashList } from "@shopify/flash-list";
 import { Link } from "expo-router";
-import { Card } from "heroui-native";
-import { Pressable, useWindowDimensions, View } from "react-native";
+import { Card, Skeleton } from "heroui-native";
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { env } from "@/utils/env";
 import { useStudentCourses } from "../courses.hooks";
 import { StudentEnrolledCourses } from "../courses.types";
+import EmptyState from "@/components/EmptyState";
 
 const MIN_CARD_WIDTH = 280;
 
 const CourseList = () => {
   const { width } = useWindowDimensions();
   const numColumns = Math.max(1, Math.floor(width / MIN_CARD_WIDTH));
-  const { data, isLoading, isError, error } = useStudentCourses();
+  const { data, isLoading, isError, error, refetch, isRefetching } =
+    useStudentCourses();
 
-  if (isLoading) return <AppText>Loading...</AppText>;
+  if (isLoading) return <CourseListSkeleton numColumns={numColumns} />;
   if (isError) return <AppText>{error.message}</AppText>;
 
   return (
     <View className="w-full max-w-6xl mx-auto flex-1  ">
       <FlashList
-        ListEmptyComponent={<AppText>No Courses Found</AppText>}
+        refreshControl={
+          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+        }
+        ListEmptyComponent={
+          <EmptyState
+            icon="BookOpenIcon"
+            title="No courses found"
+            description="You are not enrolled in any courses yet"
+          />
+        }
         key={numColumns}
         numColumns={numColumns}
         data={data}
-        className="px-1"
+        className="p-1"
         contentContainerStyle={{ paddingBottom: 15 }}
         renderItem={({ item }) => (
           <Course item={item} numColumns={numColumns} />
@@ -82,6 +99,35 @@ const Course = ({
         </Card>
       </Pressable>
     </Link>
+  );
+};
+
+const CourseListSkeleton = ({ numColumns }: { numColumns: number }) => {
+  return (
+    <View className="w-full max-w-6xl mx-auto flex-1 px-1">
+      <ScrollView contentContainerStyle={{ paddingBottom: 15 }}>
+        <View className="flex-row flex-wrap">
+          {Array(6)
+            .fill(0)
+            .map((_, index) => (
+              <View
+                key={index}
+                style={{ width: `${100 / numColumns}%`, padding: 10 / 2 }}
+              >
+                <Card className="p-0 shadow-none rounded-xl">
+                  <Card.Body className="gap-2.5">
+                    <Skeleton className="rounded-t-lg w-full aspect-video" />
+                    <View className="px-4 pb-4 gap-2">
+                      <Skeleton className="h-5 w-3/4 rounded" />
+                      <Skeleton className="h-3 w-1/2 rounded" />
+                    </View>
+                  </Card.Body>
+                </Card>
+              </View>
+            ))}
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 

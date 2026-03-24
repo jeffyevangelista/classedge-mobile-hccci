@@ -1,12 +1,6 @@
-import {
-  View,
-  Pressable,
-  Platform,
-  useWindowDimensions,
-  ActivityIndicator,
-} from "react-native";
+import { View, Pressable, Platform, useWindowDimensions } from "react-native";
 import { useMemo } from "react";
-import { BottomSheet } from "heroui-native";
+import { BottomSheet, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import { useLocalSearchParams } from "expo-router";
 import { useCourseDetails, useCourseStudents } from "../courses.hooks";
@@ -15,6 +9,7 @@ import Image from "@/components/Image";
 import { env } from "@/utils/env";
 import { LinearGradient } from "expo-linear-gradient";
 import { FlashList } from "@shopify/flash-list";
+import EmptyState from "@/components/EmptyState";
 
 const BOTTOM_SHEET_MAX_WIDTH = 768;
 
@@ -184,9 +179,7 @@ const CourseDetailsSheet = () => {
         <BottomSheet.Overlay />
         <BottomSheet.Content snapPoints={["85%", "95%"]} style={contentStyle}>
           {isLoadingDetails ? (
-            <View className="flex-1 justify-center items-center py-20">
-              <ActivityIndicator size="large" />
-            </View>
+            <CourseDetailsSheetSkeleton />
           ) : (
             <FlashList
               data={students || []}
@@ -205,16 +198,13 @@ const CourseDetailsSheet = () => {
               )}
               ListEmptyComponent={
                 isLoadingStudents ? (
-                  <View className="py-8 items-center">
-                    <ActivityIndicator />
-                  </View>
+                  <StudentListSkeleton />
                 ) : (
-                  <View className="py-8 items-center mx-1">
-                    <Icon name="UsersIcon" size={48} color="#d1d5db" />
-                    <AppText className="text-gray-400 mt-2">
-                      No students enrolled yet
-                    </AppText>
-                  </View>
+                  <EmptyState
+                    icon="UsersIcon"
+                    title="No students enrolled"
+                    description="No students are enrolled in this course yet"
+                  />
                 )
               }
               contentContainerStyle={{ paddingBottom: 24 }}
@@ -224,6 +214,56 @@ const CourseDetailsSheet = () => {
         </BottomSheet.Content>
       </BottomSheet.Portal>
     </BottomSheet>
+  );
+};
+
+const CourseDetailsSheetSkeleton = () => {
+  return (
+    <View className="p-2.5 gap-4">
+      <Skeleton className="rounded-3xl w-full aspect-video" />
+      <View className="mt-6 px-1 gap-2">
+        <Skeleton className="h-8 w-3/4 rounded" />
+        <Skeleton className="h-5 w-1/3 rounded mb-6" />
+      </View>
+      <View className="rounded-2xl p-4 gap-3">
+        <View className="flex-row items-center">
+          <Skeleton className="w-10 h-10 rounded-full mr-3" />
+          <View className="flex-1 gap-1.5">
+            <Skeleton className="h-3 w-16 rounded" />
+            <Skeleton className="h-4 w-40 rounded" />
+          </View>
+        </View>
+        <View className="flex-row items-center">
+          <Skeleton className="w-10 h-10 rounded-full mr-3" />
+          <View className="flex-1 gap-1.5">
+            <Skeleton className="h-3 w-12 rounded" />
+            <Skeleton className="h-4 w-24 rounded" />
+          </View>
+        </View>
+      </View>
+      <StudentListSkeleton />
+    </View>
+  );
+};
+
+const StudentListSkeleton = () => {
+  return (
+    <View className="gap-2 mx-1">
+      {Array(4)
+        .fill(0)
+        .map((_, index) => (
+          <View
+            key={index}
+            className="flex-row items-center rounded-xl p-3 gap-3"
+          >
+            <Skeleton className="w-12 h-12 rounded-full" />
+            <View className="flex-1 gap-1.5">
+              <Skeleton className="h-4 w-32 rounded" />
+              <Skeleton className="h-3 w-20 rounded" />
+            </View>
+          </View>
+        ))}
+    </View>
   );
 };
 

@@ -6,28 +6,34 @@ import { useUserDetails } from "@/features/profile/profile.hooks";
 import { env } from "@/utils/env";
 import { useEffect, useState } from "react";
 import useGreeting from "@/hooks/useGreeting";
+import SyncCenter from "@/features/sync/components/SyncCenter";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const Header = () => {
+const TabsHeader = () => {
   const { data, isLoading, isError, error } = useUserDetails();
   const [greeting, setGreeting] = useState(useGreeting());
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (nextAppState === "active") {
-        setGreeting(useGreeting()); // Re-check the time
+        setGreeting(useGreeting());
       }
     });
 
     return () => subscription.remove();
   }, []);
 
-  if (isLoading) return <HeaderSkeleton />;
+  if (isLoading) return <TabsHeaderSkeleton />;
   if (isError) return <AppText>{error.message}</AppText>;
 
   const userDetails = data?.[0];
 
   return (
-    <View className="px-5 flex flex-row justify-between items-center">
+    <View
+      style={{ paddingTop: insets.top }}
+      className="bg-white dark:bg-neutral-900 px-5 pb-3 flex flex-row justify-between items-center"
+    >
       <Link href="/(main)/profile">
         <View className="flex flex-row items-center gap-3">
           <Avatar size="sm" alt="user-profile">
@@ -46,8 +52,13 @@ const Header = () => {
             </Avatar.Fallback>
           </Avatar>
           <View>
-            <AppText className="text-gray-500">{greeting},</AppText>
-            <AppText weight="semibold" className="text-2xl leading-tight">
+            <AppText className="text-gray-500 dark:text-gray-400">
+              {greeting},
+            </AppText>
+            <AppText
+              weight="semibold"
+              className="text-2xl leading-tight dark:text-white"
+            >
               {userDetails?.firstName
                 ? userDetails.firstName.split(" ")[0]
                 : ""}
@@ -55,13 +66,19 @@ const Header = () => {
           </View>
         </View>
       </Link>
+      <SyncCenter />
     </View>
   );
 };
 
-const HeaderSkeleton = () => {
+const TabsHeaderSkeleton = () => {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View className="px-5 flex flex-row justify-between items-center">
+    <View
+      style={{ paddingTop: insets.top }}
+      className="bg-white dark:bg-neutral-900 px-5 pb-3 flex flex-row justify-between items-center"
+    >
       <View className="flex flex-row items-center gap-3">
         <Skeleton className="w-8 h-8 rounded-full" />
         <View className="gap-1.5">
@@ -69,8 +86,9 @@ const HeaderSkeleton = () => {
           <Skeleton className="h-6 w-28 rounded" />
         </View>
       </View>
+      <Skeleton className="w-8 h-8 rounded-full" />
     </View>
   );
 };
 
-export default Header;
+export default TabsHeader;

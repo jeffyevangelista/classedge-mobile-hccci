@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useEvent } from "../calendar.hooks";
 import { AppText } from "@/components/AppText";
-import { BottomSheet } from "heroui-native";
-import { useWindowDimensions, View, ActivityIndicator } from "react-native";
+import { BottomSheet, Skeleton } from "heroui-native";
+import { useWindowDimensions, View } from "react-native";
 import { Icon } from "@/components/Icon";
 
 import {
@@ -61,14 +61,7 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
   const event = data?.[0];
 
   if (isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" className="text-primary mb-4" />
-        <AppText className="text-center text-muted-foreground">
-          Loading event details...
-        </AppText>
-      </View>
-    );
+    return <EventDetailSkeleton />;
   }
 
   if (isError) {
@@ -188,6 +181,41 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
                 minute: "2-digit",
               })}
             </AppText>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+const EventDetailSkeleton = () => {
+  return (
+    <View className="pt-5">
+      <View className="mb-6 gap-2">
+        <Skeleton className="h-7 w-3/4 rounded" />
+        <Skeleton className="h-4 w-full rounded" />
+        <Skeleton className="h-4 w-2/3 rounded" />
+      </View>
+      <View className="gap-4">
+        <View className="flex-row items-start">
+          <Skeleton className="w-5 h-5 rounded mr-3 mt-1" />
+          <View className="flex-1 gap-1.5">
+            <Skeleton className="h-4 w-24 rounded" />
+            <Skeleton className="h-4 w-32 rounded" />
+          </View>
+        </View>
+        <View className="flex-row items-start">
+          <Skeleton className="w-5 h-5 rounded mr-3 mt-1" />
+          <View className="flex-1 gap-1.5">
+            <Skeleton className="h-4 w-20 rounded" />
+            <Skeleton className="h-4 w-28 rounded" />
+          </View>
+        </View>
+        <View className="flex-row items-start">
+          <Skeleton className="w-5 h-5 rounded mr-3 mt-1" />
+          <View className="flex-1 gap-1.5">
+            <Skeleton className="h-4 w-24 rounded" />
+            <Skeleton className="h-4 w-36 rounded" />
           </View>
         </View>
       </View>

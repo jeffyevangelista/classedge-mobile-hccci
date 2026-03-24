@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { ScrollView, View, RefreshControl } from "react-native";
 import { useUserDetails } from "../profile.hooks";
 import { AppText } from "@/components/AppText";
-import { Card } from "heroui-native";
+import { Card, Skeleton } from "heroui-native";
 
 // 1. Move static mapping outside to prevent re-creation on every render
 const INFO_FIELDS = [
@@ -25,11 +25,12 @@ const ProfileInformation = () => {
     return {
       ...data,
       fullName:
-        `${data.firstName ?? ""} ${data.lastName ?? ""}`.trim() || "N/A",
+        `${data[0]?.firstName ?? ""} ${data[0]?.lastName ?? ""}`.trim() ||
+        "N/A",
     };
   }, [data]);
 
-  if (isLoading) return <AppText className="p-5">Loading...</AppText>;
+  if (isLoading) return <ProfileInformationSkeleton />;
   if (isError)
     return (
       <AppText className="p-5 text-red-500">
@@ -40,7 +41,7 @@ const ProfileInformation = () => {
 
   return (
     <ScrollView
-      className="px-5"
+      className="p-2.5"
       // 3. Implement Pull-to-Refresh (UX improvement)
       refreshControl={
         <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
@@ -81,5 +82,27 @@ const InFormationItem = React.memo(
     </Card>
   ),
 );
+
+const ProfileInformationSkeleton = () => {
+  return (
+    <View className="p-2.5">
+      {Array(7)
+        .fill(0)
+        .map((_, index) => (
+          <Card
+            key={index}
+            className="mb-2.5 shadow-none max-w-3xl mx-auto w-full"
+          >
+            <View className="flex-row justify-between items-center p-3">
+              <View className="gap-1.5">
+                <Skeleton className="h-3 w-20 rounded" />
+                <Skeleton className="h-5 w-40 rounded" />
+              </View>
+            </View>
+          </Card>
+        ))}
+    </View>
+  );
+};
 
 export default ProfileInformation;

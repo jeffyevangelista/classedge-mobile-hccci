@@ -8,13 +8,14 @@ import {
 import { useNotifications } from "../notifications.hooks";
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
-import { Avatar, Card, SkeletonGroup } from "heroui-native";
+import { Avatar, Card, Skeleton } from "heroui-native";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Notification } from "@/powersync/schema";
 import { Link } from "expo-router";
 import { readNotification } from "../notifications.service";
 import { Icon } from "@/components/Icon";
+import EmptyState from "@/components/EmptyState";
 
 const NotificationList = () => {
   const colorScheme = useColorScheme();
@@ -22,15 +23,7 @@ const NotificationList = () => {
   const { data, isLoading, isError, error, isRefetching, refetch } =
     useNotifications();
   if (isLoading) {
-    return (
-      <SkeletonGroup className="flex-row items-center gap-3 px-4">
-        <SkeletonGroup.Item className="h-12 w-12 rounded-full" />
-        <View className="flex-1 gap-1.5">
-          <SkeletonGroup.Item className="h-4 w-full rounded-md" />
-          <SkeletonGroup.Item className="h-3 w-1/8 rounded-md" />
-        </View>
-      </SkeletonGroup>
-    );
+    return <NotificationListSkeleton />;
   }
 
   if (isError)
@@ -45,18 +38,10 @@ const NotificationList = () => {
         />
       }
       ListEmptyComponent={
-        <View className="items-center justify-center py-10 gap-5">
-          <View className="p-5 rounded-full bg-blue-100 dark:bg-blue-900">
-            <Icon
-              name="BellSlashIcon"
-              size={100}
-              className="text-blue-600 dark:text-blue-400"
-            />
-          </View>
-          <AppText className="text-center text-xl dark:text-white">
-            You have no notifications yet
-          </AppText>
-        </View>
+        <EmptyState
+          icon="BellSlashIcon"
+          title="You have no notifications yet"
+        />
       }
       ItemSeparatorComponent={() => (
         <View className="h-px bg-slate-200 dark:bg-slate-700" />
@@ -134,6 +119,27 @@ const NotificationItem = ({
         )}
       </Pressable>
     </Link>
+  );
+};
+
+const NotificationListSkeleton = () => {
+  return (
+    <View>
+      {Array(8)
+        .fill(0)
+        .map((_, index) => (
+          <View key={index}>
+            <View className="flex-row items-start p-4">
+              <Skeleton className="w-8 h-8 rounded-full" />
+              <View className="flex-1 ml-3 gap-1.5">
+                <Skeleton className="h-4 w-full rounded" />
+                <Skeleton className="h-3 w-16 rounded" />
+              </View>
+            </View>
+            <View className="h-px bg-slate-200 dark:bg-slate-700" />
+          </View>
+        ))}
+    </View>
   );
 };
 

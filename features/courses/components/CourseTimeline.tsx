@@ -2,9 +2,10 @@ import { FlatList, Pressable, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { AppText } from "@/components/AppText";
 import { useCourseTimeline } from "../courses.hooks";
-import { Card } from "heroui-native";
+import { Card, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import { useFormattedDate } from "@/hooks/userFormattedDate";
+import EmptyState from "@/components/EmptyState";
 
 const CourseTimeline = () => {
   const { courseId } = useLocalSearchParams();
@@ -12,7 +13,7 @@ const CourseTimeline = () => {
     courseId as string,
   );
 
-  if (isLoading) return <AppText>Loading...</AppText>;
+  if (isLoading) return <CourseTimelineSkeleton />;
   if (isError) return <AppText>Error: {error.message}</AppText>;
 
   return (
@@ -21,9 +22,11 @@ const CourseTimeline = () => {
       data={data}
       scrollEnabled={false}
       ListEmptyComponent={
-        <AppText className="text-center text-gray-500">
-          No content found for this course.
-        </AppText>
+        <EmptyState
+          icon="FolderOpenIcon"
+          title="No content yet"
+          description="No content found for this course"
+        />
       }
       renderItem={({ item }) => <ListItem item={item} />}
       keyExtractor={(item) => `#${item.id}-${item.type}`}
@@ -100,6 +103,26 @@ const MaterialCard = ({ item }: { item: any }) => {
         </View>
       </Card>
     </Pressable>
+  );
+};
+
+const CourseTimelineSkeleton = () => {
+  return (
+    <View className="mt-5">
+      {Array(5)
+        .fill(0)
+        .map((_, index) => (
+          <View key={index} className="w-full max-w-3xl mx-auto">
+            <Card className="rounded-lg flex-row items-center gap-2 shadow-none mb-2">
+              <Skeleton className="w-10 h-10 rounded-full" />
+              <View className="flex-1 gap-1.5">
+                <Skeleton className="h-5 w-3/4 rounded" />
+                <Skeleton className="h-3 w-1/3 rounded" />
+              </View>
+            </Card>
+          </View>
+        ))}
+    </View>
   );
 };
 

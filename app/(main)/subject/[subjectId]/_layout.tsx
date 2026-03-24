@@ -1,11 +1,11 @@
-import { Stack, useRouter, useLocalSearchParams } from "expo-router";
+import { View, Text, Pressable, Platform } from "react-native";
+import React from "react";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import BackButton from "@/components/BackButton";
-import { Platform, Pressable } from "react-native";
 import { Icon } from "@/components/Icon";
 
-const CourseDetailsLayout = () => {
-  const { courseId } = useLocalSearchParams();
-
+const SubjectLayout = () => {
+  const { subjecdtId } = useLocalSearchParams();
   return (
     <Stack
       screenOptions={{
@@ -22,7 +22,7 @@ const CourseDetailsLayout = () => {
             return (
               <Pressable
                 onPress={() =>
-                  router.push(`/(main)/course/${courseId}/course-details`)
+                  router.push(`/(main)/course/${subjecdtId}/course-details`)
                 }
                 className="w-9 h-9 rounded-full flex justify-center items-center"
               >
@@ -40,4 +40,4 @@ const CourseDetailsLayout = () => {
   );
 };
 
-export default CourseDetailsLayout;
+export default SubjectLayout;

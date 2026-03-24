@@ -1,12 +1,15 @@
 import { View, Text } from "react-native";
-import React, { useEffect } from "react";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import React, { useEffect, useCallback } from "react";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { useGetAssessmentAttempt } from "@/features/assessment/assessment.hooks";
 import { useAssessmentTimer } from "@/hooks/useAssessmentTimer";
+import { useAttemptSession } from "@/hooks/useAttemptSession";
 import QuestionList from "@/features/assessment/components/QuestionList";
+import useStore from "@/lib/store";
 
 const AttemptScreen = () => {
   const { attemptId } = useLocalSearchParams();
+  const { authUser } = useStore();
   const {
     data: attempt,
     isLoading,
@@ -15,12 +18,21 @@ const AttemptScreen = () => {
   } = useGetAssessmentAttempt(attemptId as string);
   const navigation = useNavigation();
 
+  const onAutoSubmit = useCallback(() => {
+    router.replace({
+      pathname: "/(main)/assessment/[assessmentId]",
+      params: { assessmentId: String(attempt?.activityId) },
+    });
+  }, [attempt?.activityId]);
+
+  const { saveLastIndex, elapsedRef } = useAttemptSession({
+    attempt: attempt ?? null,
+    onAutoSubmit,
+  });
+
   const { formattedTime, remainingTime } = useAssessmentTimer(
-    attempt?.startedAt || new Date().toISOString(),
     attempt?.duration || 0,
-    () => {
-      // Handle time up
-    },
+    elapsedRef,
   );
 
   useEffect(() => {
@@ -60,9 +72,24 @@ const AttemptScreen = () => {
     );
   }
 
+  const questionOrder: number[] = attempt.questionOrder
+    ? JSON.parse(attempt.questionOrder)
+    : [];
+
   return (
     <View style={{ flex: 1 }}>
-      <QuestionList activityId={attempt.activityId} />
+      <QuestionList
+        activityId={attempt.activityId}
+        attemptId={attempt.localId}
+        retakeRecordId={attempt.id}
+        studentId={authUser?.id!}
+        questionOrder={questionOrder}
+        initialIndex={attempt.lastIndex}
+        onIndexChange={saveLastIndex}
+        isTimeUp={
+          attempt.duration > 0 && elapsedRef.current >= attempt.duration
+        }
+      />
     </View>
   );
 };

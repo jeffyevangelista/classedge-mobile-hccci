@@ -226,8 +226,9 @@ import { useEffect } from "react";
 import { useClassSchedule } from "../profile.hooks";
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
-import { Spinner, Button, Card, Separator, Chip } from "heroui-native";
+import { Skeleton, Button, Card, Separator, Chip } from "heroui-native";
 import { useToast } from "heroui-native";
+import EmptyState from "@/components/EmptyState";
 
 const ClassScheduleList = () => {
   const { toast } = useToast();
@@ -248,14 +249,8 @@ const ClassScheduleList = () => {
 
   const classSchedules = data ?? [];
 
-  console.log(JSON.stringify(data));
-
   if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <Spinner size="lg" />
-      </View>
-    );
+    return <ClassScheduleSkeleton />;
   }
 
   if (isError) {
@@ -269,28 +264,26 @@ const ClassScheduleList = () => {
     );
   }
 
-  if (!classSchedules || classSchedules.length === 0) {
-    return (
-      <View style={styles.center}>
-        <Text>No schedules found.</Text>
-      </View>
-    );
-  }
-
   return (
     <FlashList
       className="mx-auto w-full max-w-3xl"
+      ListEmptyComponent={
+        <EmptyState
+          icon="CalendarBlankIcon"
+          title="No schedules found"
+          description="Your class schedule will appear here"
+        />
+      }
       keyExtractor={(item, index) =>
         item?.id?.toString() || `schedule-${index}`
       }
-      data={classSchedules}
       renderItem={({ item }) => {
         const subject = item.subjectId;
         const teacher = subject?.assignTeacherId;
         const schedule = item.schedules?.[0];
 
         return (
-          <Card style={styles.card}>
+          <Card style={styles.card} className="shadow-none rounded-xl">
             <Card.Body style={styles.cardBody}>
               <View style={styles.header}>
                 <AppText style={styles.subjectName}>
@@ -336,6 +329,7 @@ const ClassScheduleList = () => {
       }}
       onRefresh={refetch}
       refreshing={isRefetching}
+      data={classSchedules}
     />
   );
 };
@@ -410,5 +404,40 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
+const ClassScheduleSkeleton = () => {
+  return (
+    <View className="mx-auto w-full max-w-3xl gap-3 p-2.5">
+      {Array(4)
+        .fill(0)
+        .map((_, index) => (
+          <Card key={index} style={styles.card}>
+            <Card.Body style={styles.cardBody}>
+              <View style={styles.header}>
+                <Skeleton className="h-5 w-3/4 rounded" />
+                <Skeleton className="h-4 w-1/2 rounded" />
+              </View>
+              <Separator style={styles.separator} />
+              <View style={styles.detailsContainer}>
+                <View style={styles.detailRow}>
+                  <Skeleton className="h-4 w-12 rounded" />
+                  <Skeleton className="h-4 w-32 rounded" />
+                </View>
+                <View style={styles.detailRow}>
+                  <Skeleton className="h-4 w-12 rounded" />
+                  <Skeleton className="h-4 w-20 rounded" />
+                </View>
+              </View>
+              <View style={styles.daysContainer}>
+                <Skeleton className="h-7 w-14 rounded-full" />
+                <Skeleton className="h-7 w-14 rounded-full" />
+                <Skeleton className="h-7 w-14 rounded-full" />
+              </View>
+            </Card.Body>
+          </Card>
+        ))}
+    </View>
+  );
+};
 
 export default ClassScheduleList;

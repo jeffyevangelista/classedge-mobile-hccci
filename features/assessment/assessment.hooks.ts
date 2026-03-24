@@ -4,7 +4,8 @@ import {
   getAssessmentDetails,
   getAttemptRecords,
   getQuestions,
-  startAssessmentAttempt,
+  getOrderedQuestions,
+  getAnswersForAttempt,
 } from "./assessment.services";
 
 export const useAssessmentDetails = ({
@@ -31,66 +32,12 @@ export const useAttemptRecords = (activityId: number, studentId: number) => {
   });
 };
 
-export const useStartAssessmentAttempt = ({
-  studentActivityId,
-  studentId,
-  duration,
-  retakeNumber,
-  maxRetakes,
-  ActivityId,
-}: {
-  studentActivityId: number;
-  studentId: number;
-  duration: number;
-  retakeNumber: number;
-  maxRetakes: number;
-  ActivityId: number;
-}) => {
-  return useQuery({
-    queryKey: [
-      "start-assessment-attempt",
-      studentActivityId,
-      studentId,
-      duration,
-      retakeNumber,
-    ],
-    queryFn: async () => {
-      const existingAttempts = await getAttemptRecords(
-        studentActivityId,
-        studentId,
-      );
-
-      if (existingAttempts.length >= maxRetakes) {
-        throw new Error("Maximum number of retakes reached");
-      }
-
-      if (existingAttempts.length > 0) {
-        return startAssessmentAttempt(
-          studentActivityId,
-          studentId,
-          duration,
-          existingAttempts.length + 1,
-          ActivityId,
-        );
-      }
-
-      return startAssessmentAttempt(
-        studentActivityId,
-        studentId,
-        duration,
-        retakeNumber,
-        ActivityId,
-      );
-    },
-  });
-};
-
 export const useGetAssessmentAttempt = (localId: string) => {
   return useQuery({
     queryKey: ["assessment-attempt", localId],
     queryFn: () => getAssessmentAttempt(localId),
-    staleTime: 1000 * 60 * 5, // Keep data fresh for 5 minutes
-    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });
 };
 
@@ -98,5 +45,24 @@ export const useGetQuestions = (activityId: number) => {
   return useQuery({
     queryKey: ["questions", activityId],
     queryFn: () => getQuestions(activityId),
+  });
+};
+
+export const useGetOrderedQuestions = (
+  activityId: number,
+  questionOrder: number[],
+) => {
+  return useQuery({
+    queryKey: ["ordered-questions", activityId, questionOrder],
+    queryFn: () => getOrderedQuestions(activityId, questionOrder),
+    enabled: !!activityId && questionOrder.length > 0,
+  });
+};
+
+export const useGetAnswersForAttempt = (retakeRecordId: string) => {
+  return useQuery({
+    queryKey: ["attempt-answers", retakeRecordId],
+    queryFn: () => getAnswersForAttempt(retakeRecordId),
+    enabled: !!retakeRecordId,
   });
 };

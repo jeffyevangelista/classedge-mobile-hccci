@@ -58,7 +58,7 @@ const ForceSyncButton = () => {
             size={18}
             color={isOnline ? "#3B82F6" : "#9CA3AF"}
           />
-          <Button.Label>Force Resync</Button.Label>
+          <Button.Label>Resync</Button.Label>
         </>
       )}
     </Button>

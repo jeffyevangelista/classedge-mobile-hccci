@@ -1,5 +1,6 @@
-import { attemptsTable } from "@/powersync/schema";
+import { attemptsTable, attemptAnswerTable } from "@/powersync/schema";
 import { db } from "@/powersync/system";
+import { eq } from "drizzle-orm";
 
 export const getAssessmentDetails = (assessmentId: number, userId: number) => {
   return db.query.studentAssessment.findFirst({
@@ -27,7 +28,9 @@ export const startAssessmentAttempt = (
   duration: number,
   retakeNumber: number,
   activityId: number,
+  questionOrder: number[],
 ) => {
+  const now = new Date().toISOString();
   return db
     .insert(attemptsTable)
     .values({
@@ -36,11 +39,15 @@ export const startAssessmentAttempt = (
       studentId: studentId,
       retakeNumber: retakeNumber,
       score: 0,
-      status: "in_progress",
-      startedAt: new Date().toISOString(),
+      status: "ongoing",
+      startedAt: now,
       willEndAt: new Date(Date.now() + duration * 60 * 1000).toISOString(),
       duration: duration * 60,
       activityId,
+      questionOrder: JSON.stringify(questionOrder),
+      lastIndex: 0,
+      lastHeartbeatAt: now,
+      totalElapsedSeconds: 0,
     })
     .returning();
 };
@@ -59,4 +66,96 @@ export const getQuestions = (activityId: number) => {
       asc(assessmentQuestionTable.id),
     ],
   });
+};
+
+export const getOrderedQuestions = async (
+  activityId: number,
+  questionOrder: number[],
+) => {
+  const questions = await db.query.assessmentQuestionTable.findMany({
+    where: (t, { eq }) => eq(t.activityId, activityId),
+  });
+
+  const questionMap = new Map(questions.map((q) => [q.id, q]));
+  return questionOrder
+    .map((id) => questionMap.get(id))
+    .filter((q): q is NonNullable<typeof q> => q != null);
+};
+
+export const saveAnswer = async (
+  retakeRecordId: string,
+  activityQuestionId: number,
+  studentId: number,
+  studentAnswer: string,
+) => {
+  const existing = await db.query.attemptAnswerTable.findFirst({
+    where: (t, { and, eq }) =>
+      and(
+        eq(t.retakeRecordId, retakeRecordId),
+        eq(t.activityQuestionId, activityQuestionId),
+      ),
+  });
+
+  if (existing) {
+    return db
+      .update(attemptAnswerTable)
+      .set({ studentAnswer })
+      .where(eq(attemptAnswerTable.localId, existing.localId))
+      .returning();
+  }
+
+  return db
+    .insert(attemptAnswerTable)
+    .values({
+      id: Date.now().toString(),
+      retakeRecordId,
+      activityQuestionId,
+      studentId,
+      studentAnswer,
+      score: 0,
+      uploadFile: "",
+    })
+    .returning();
+};
+
+export const getAnswersForAttempt = async (attemptLocalId: string) => {
+  const attempt = await db.query.attemptsTable.findFirst({
+    where: (t, { eq }) => eq(t.localId, attemptLocalId),
+  });
+  if (!attempt) return [];
+
+  return db.query.attemptAnswerTable.findMany({
+    where: (t, { eq }) => eq(t.retakeRecordId, attempt.id),
+  });
+};
+
+export const updateHeartbeat = (
+  attemptLocalId: string,
+  totalElapsedSeconds: number,
+) => {
+  return db
+    .update(attemptsTable)
+    .set({
+      lastHeartbeatAt: new Date().toISOString(),
+      totalElapsedSeconds,
+    })
+    .where(eq(attemptsTable.localId, attemptLocalId));
+};
+
+export const updateLastIndex = (attemptLocalId: string, lastIndex: number) => {
+  return db
+    .update(attemptsTable)
+    .set({ lastIndex })
+    .where(eq(attemptsTable.localId, attemptLocalId));
+};
+
+export const submitAttempt = async (attemptLocalId: string, score: number) => {
+  return db
+    .update(attemptsTable)
+    .set({
+      status: "completed",
+      score,
+      lastHeartbeatAt: new Date().toISOString(),
+    })
+    .where(eq(attemptsTable.localId, attemptLocalId));
 };

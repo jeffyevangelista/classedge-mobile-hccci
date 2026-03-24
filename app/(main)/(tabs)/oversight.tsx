@@ -1,4 +1,4 @@
-import OversightScreen from "@/screens/main/OversightScreen";
+import OversightScreen from "@/screens/main/oversight/OversightScreen";
 
 const OversightRoute = () => {
   return <OversightScreen />;
