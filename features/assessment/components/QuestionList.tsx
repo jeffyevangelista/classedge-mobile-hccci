@@ -11,7 +11,7 @@ import {
   useGetOrderedQuestions,
   useGetAnswersForAttempt,
 } from "../assessment.hooks";
-import { saveAnswer } from "../assessment.services";
+import { saveAnswer } from "../assessment.service";
 import { AppText } from "@/components/AppText";
 import { Skeleton } from "heroui-native";
 

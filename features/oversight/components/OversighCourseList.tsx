@@ -96,7 +96,7 @@ const Subject = ({
             <Image
               source={
                 subject.subject_photo
-                  ? { uri: `subject.subject_photo` }
+                  ? { uri: subject.subject_photo }
                   : require("@/assets/placeholder/bg-placeholder.png")
               }
               alt={subject.subject_name}
@@ -128,7 +128,9 @@ const Subject = ({
                   }}
                 />
               </Avatar>
-              <AppText className="my-auto">{subject.teacher_name}</AppText>
+              <AppText className="my-auto">
+                {subject.assign_teacher_name}
+              </AppText>
             </View>
           </View>
         </Card>

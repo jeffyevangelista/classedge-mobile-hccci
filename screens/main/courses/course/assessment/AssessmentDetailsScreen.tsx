@@ -14,7 +14,7 @@ import {
   getAttemptRecords,
   getQuestions,
   startAssessmentAttempt,
-} from "@/features/assessment/assessment.services";
+} from "@/features/assessment/assessment.service";
 import { useEffect } from "react";
 
 const AssessmentDetailsScreen = () => {

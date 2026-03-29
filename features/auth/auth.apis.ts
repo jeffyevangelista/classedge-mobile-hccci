@@ -20,8 +20,6 @@ export const resetPassword = async (email: string, password: string) => {
 };
 
 export const msLogin = async (token: string): Promise<AuthResponse> => {
-  console.log(token);
-
   return (
     await axios.get(`${env.EXPO_PUBLIC_API_URL}/auth/microsoft/`, {
       headers: {

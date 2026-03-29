@@ -12,7 +12,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.jeffigy.classedge",
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       },
       "entitlements": {
         "aps-environment": "development"
@@ -42,7 +44,10 @@
       [
         "onesignal-expo-plugin",
         {
-          "mode": "development"
+          "mode": "development",
+          "smallIcons": [
+            "./assets/notifications/ic_stat_onesignal_default.png"
+          ]
         }
       ],
       "expo-router",
@@ -61,7 +66,9 @@
         }
       ],
       "expo-web-browser",
-      "expo-background-task"
+      "expo-background-task",
+      "expo-video",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

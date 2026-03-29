@@ -41,6 +41,24 @@ const MainLayout = () => {
         }}
         name="attempt/[attemptId]/index"
       />
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          headerTitle: "",
+          headerShadowVisible: false,
+        }}
+        name="lesson/[lessonId]/index"
+      />
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          headerTitle: "",
+          headerShadowVisible: false,
+        }}
+        name="activity/[activityId]/index"
+      />
+
+      <Stack.Screen name="classroom" />
     </Stack>
   );
 };

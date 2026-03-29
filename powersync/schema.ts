@@ -69,6 +69,30 @@ export const academicTermsTable = sqliteTable("course_semester", {
   createdAt: text("created_at").notNull().default(utcNow),
 });
 
+export const gradingPeriodTable = sqliteTable("course_term", {
+  id: integer("id").primaryKey(),
+  termName: text("term_name").notNull(),
+  startDate: text("start_date").notNull(),
+  endDate: text("end_date").notNull(),
+  createdById: integer("created_by_id").notNull(),
+  semesterId: integer("semester_id").notNull(),
+  createdAt: text("created_at").notNull().default(utcNow),
+});
+
+export const gradingPeriodRelations = relations(
+  gradingPeriodTable,
+  ({ one }) => ({
+    createdById: one(accountsTable, {
+      fields: [gradingPeriodTable.createdById],
+      references: [accountsTable.id],
+    }),
+    semesterId: one(academicTermsTable, {
+      fields: [gradingPeriodTable.semesterId],
+      references: [academicTermsTable.id],
+    }),
+  }),
+);
+
 export const studentEnrolledCoursesTable = sqliteTable(
   "course_subjectenrollment",
   {
@@ -217,7 +241,7 @@ export const announcementEventRelations = relations(
 );
 
 export const assessmentTable = sqliteTable("activity_activity", {
-  id: integer("id").primaryKey(),
+  id: integer("id").primaryKey().notNull(),
   activityName: text("activity_name").notNull(),
   startTime: text("start_time").notNull(),
   endTime: text("end_time").notNull(),
@@ -233,6 +257,10 @@ export const assessmentTable = sqliteTable("activity_activity", {
   shuffleQuestions: integer("shuffle_questions").notNull(),
   subjectId: integer("subject_id").notNull(),
   activityTypeId: integer("activity_type_id").notNull(),
+  classroomMode: integer("classroom_mode").notNull(),
+  localId: text("local_id")
+    .notNull()
+    .$defaultFn(() => createId()),
 });
 
 export const assessmentRelations = relations(assessmentTable, ({ one }) => ({
@@ -422,6 +450,8 @@ export const drizzleSchema = {
   assessmentQuestionsTableRelations,
   attemptAnswerTable,
   attemptAnswerTableRelations,
+  gradingPeriodTable,
+  gradingPeriodRelations,
 };
 
 export type Subject = InferSelectModel<typeof coursesTable>;

@@ -1,11 +1,8 @@
-import { View, Text, Pressable, Platform } from "react-native";
-import React from "react";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import BackButton from "@/components/BackButton";
-import { Icon } from "@/components/Icon";
 
 const SubjectLayout = () => {
-  const { subjecdtId } = useLocalSearchParams();
+  const { subjectId } = useLocalSearchParams();
   return (
     <Stack
       screenOptions={{
@@ -14,28 +11,7 @@ const SubjectLayout = () => {
         headerTitle: "",
       }}
     >
-      <Stack.Screen
-        name="index"
-        options={{
-          headerRight: () => {
-            const router = useRouter();
-            return (
-              <Pressable
-                onPress={() =>
-                  router.push(`/(main)/course/${subjecdtId}/course-details`)
-                }
-                className="w-9 h-9 rounded-full flex justify-center items-center"
-              >
-                <Icon
-                  name="InfoIcon"
-                  style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
-                />
-              </Pressable>
-            );
-          },
-        }}
-      />
-      <Stack.Screen name="course-details" />
+      <Stack.Screen name="index" />
     </Stack>
   );
 };

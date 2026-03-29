@@ -4,7 +4,7 @@ import {
   updateHeartbeat,
   updateLastIndex,
   submitAttempt,
-} from "@/features/assessment/assessment.services";
+} from "@/features/assessment/assessment.service";
 
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const MINOR_GLITCH_THRESHOLD_S = 30;

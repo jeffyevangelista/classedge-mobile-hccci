@@ -6,7 +6,7 @@ import {
   getQuestions,
   getOrderedQuestions,
   getAnswersForAttempt,
-} from "./assessment.services";
+} from "./assessment.service";
 
 export const useAssessmentDetails = ({
   userId,

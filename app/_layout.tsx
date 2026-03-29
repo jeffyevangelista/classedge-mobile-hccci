@@ -71,6 +71,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <RootProvider>
         <Stack screenOptions={{ headerShown: false }}>
+          {/* <Stack.Screen name="auth/callback" options={{ headerShown: false }} /> */}
           <Stack.Protected guard={!isAuthenticated}>
             <Stack.Screen name="(auth)" />
           </Stack.Protected>

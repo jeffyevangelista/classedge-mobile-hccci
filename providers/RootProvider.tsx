@@ -6,23 +6,26 @@ import NetworkProvider from "./NetworkProvider";
 import PowerSyncProvider from "./PowerSyncProvider";
 import OneSignalProvider from "./OneSignalProvider";
 import QueryProvider from "./QueryProvider";
+import ImageProvider from "./ImageProvider";
 
 const RootProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <SafeAreaProvider>
-      <OneSignalProvider>
-        <NetworkProvider>
-          <NetworkBannerProvider>
-            <PowerSyncProvider>
-              <QueryProvider>
-                <HeroUIProvider>
-                  <KeyboardProvider>{children}</KeyboardProvider>
-                </HeroUIProvider>
-              </QueryProvider>
-            </PowerSyncProvider>
-          </NetworkBannerProvider>
-        </NetworkProvider>
-      </OneSignalProvider>
+      <ImageProvider>
+        <OneSignalProvider>
+          <NetworkProvider>
+            <NetworkBannerProvider>
+              <PowerSyncProvider>
+                <QueryProvider>
+                  <HeroUIProvider>
+                    <KeyboardProvider>{children}</KeyboardProvider>
+                  </HeroUIProvider>
+                </QueryProvider>
+              </PowerSyncProvider>
+            </NetworkBannerProvider>
+          </NetworkProvider>
+        </OneSignalProvider>
+      </ImageProvider>
     </SafeAreaProvider>
   );
 };

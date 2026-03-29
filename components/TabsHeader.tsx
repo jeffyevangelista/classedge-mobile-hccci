@@ -32,10 +32,10 @@ const TabsHeader = () => {
   return (
     <View
       style={{ paddingTop: insets.top }}
-      className="bg-white dark:bg-neutral-900 px-5 pb-3 flex flex-row justify-between items-center"
+      className="bg-white dark:bg-neutral-900 px-5 pb-1 flex flex-row justify-between items-center "
     >
       <Link href="/(main)/profile">
-        <View className="flex flex-row items-center gap-3">
+        <View className="flex flex-row items-center gap-3 ">
           <Avatar size="sm" alt="user-profile">
             <Avatar.Image
               source={
@@ -52,8 +52,8 @@ const TabsHeader = () => {
             </Avatar.Fallback>
           </Avatar>
           <View>
-            <AppText className="text-gray-500 dark:text-gray-400">
-              {greeting},
+            <AppText className="text-xs text-gray-500 dark:text-gray-400">
+              {greeting}
             </AppText>
             <AppText
               weight="semibold"
