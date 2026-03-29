@@ -50,7 +50,7 @@ const AssessmentCard = ({ item }: { item: any }) => {
       onPress={() => router.push(`/assessment/${item.id}`)}
       className="w-full max-w-3xl mx-auto"
     >
-      <Card className="rounded-lg flex-row items-center gap-2 shadow-none mb-2">
+      <Card className="rounded-xl flex-row items-center gap-2 shadow-none mb-2">
         <View className="p-2 bg-orange-50 rounded-full">
           <Icon name="PencilLineIcon" size={24} className="text-orange-500" />
         </View>
@@ -80,7 +80,7 @@ const MaterialCard = ({ item }: { item: any }) => {
       onPress={() => router.push(`/material/${item.id}`)}
       className="w-full max-w-3xl mx-auto"
     >
-      <Card className=" rounded-lg flex-row items-center gap-2 shadow-none mb-2">
+      <Card className="rounded-xl flex-row items-center gap-2 shadow-none mb-2">
         <View className="p-2 bg-emerald-50 rounded-full">
           <Icon
             name="BookOpenTextIcon"
@@ -113,7 +113,7 @@ const CourseTimelineSkeleton = () => {
         .fill(0)
         .map((_, index) => (
           <View key={index} className="w-full max-w-3xl mx-auto">
-            <Card className="rounded-lg flex-row items-center gap-2 shadow-none mb-2">
+            <Card className="rounded-xl flex-row items-center gap-2 shadow-none mb-2">
               <Skeleton className="w-10 h-10 rounded-full" />
               <View className="flex-1 gap-1.5">
                 <Skeleton className="h-5 w-3/4 rounded" />

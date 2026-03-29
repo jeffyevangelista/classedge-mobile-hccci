@@ -142,7 +142,7 @@ const AnnouncementSkeleton = () => {
       data={[1, 2, 3]}
       renderItem={() => (
         <View className="mb-2 max-w-3xl sm:mx-auto w-full px-5">
-          <Card className="shadow-none">
+          <Card className="shadow-none rounded-xl">
             <Card.Header>
               <View className="flex-row items-center gap-2">
                 <Skeleton className="w-8 h-8 rounded-full" />

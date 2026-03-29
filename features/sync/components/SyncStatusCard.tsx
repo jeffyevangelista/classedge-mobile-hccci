@@ -126,7 +126,7 @@ const SyncStatusCard = () => {
   );
 
   return (
-    <Card className="p-4">
+    <Card className="p-4 rounded-xl shadow-none">
       <AppText weight="semibold" className="text-base mb-3">
         Sync Status
       </AppText>

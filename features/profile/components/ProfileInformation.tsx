@@ -65,7 +65,7 @@ const ProfileInformation = () => {
 // 4. Memoize the child component to prevent unnecessary re-renders
 const InFormationItem = React.memo(
   ({ label, value }: { label: string; value: string | null | undefined }) => (
-    <Card className="mb-2.5 shadow-none max-w-3xl mx-auto w-full">
+    <Card className="mb-2.5 shadow-none rounded-xl max-w-3xl mx-auto w-full">
       <View className="flex-row justify-between items-center p-3">
         <View>
           <AppText
@@ -91,7 +91,7 @@ const ProfileInformationSkeleton = () => {
         .map((_, index) => (
           <Card
             key={index}
-            className="mb-2.5 shadow-none max-w-3xl mx-auto w-full"
+            className="mb-2.5 shadow-none rounded-xl max-w-3xl mx-auto w-full"
           >
             <View className="flex-row justify-between items-center p-3">
               <View className="gap-1.5">

@@ -51,7 +51,7 @@ const LoadingComponent = () => {
       {Array.from({ length: 5 }).map((_, index) => (
         <Card
           key={index}
-          className="shadow mb-5 rounded-xl p-0 overflow-hidden w-full max-w-screen-3xl mx-auto"
+          className="shadow-none mb-5 rounded-xl p-0 overflow-hidden w-full max-w-screen-3xl mx-auto"
         >
           <View className="relative h-40 w-full">
             <Skeleton className="object-cover w-full h-full" />
@@ -91,7 +91,7 @@ const Subject = ({
       asChild
     >
       <Pressable>
-        <Card className="shadow mb-5 rounded-lg p-0 overflow-hidden ">
+        <Card className="shadow-none mb-5 rounded-xl p-0 overflow-hidden ">
           <View className="relative h-40 w-full">
             <Image
               source={

@@ -10,7 +10,7 @@ const BOTTOM_SHEET_MAX_WIDTH = 768;
 
 const SheetItem = ({ item }: { item: any }) => {
   return (
-    <Card className="p-4 mb-2">
+    <Card className="p-4 mb-2 rounded-xl shadow-none">
       <View className="gap-2">
         <View className="flex-row justify-between items-center">
           <AppText className="font-semibold text-base">{item.table}</AppText>
@@ -85,6 +85,8 @@ const SyncSheet = ({ isOpen, setIsOpen }: SyncSheetProps) => {
           ? (screenWidth - BOTTOM_SHEET_MAX_WIDTH) / 2
           : 0,
       minHeight: 400, // Giving it a set height helps stability
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
     }),
     [screenWidth],
   );

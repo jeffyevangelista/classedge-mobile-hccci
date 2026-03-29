@@ -59,7 +59,7 @@ const ScheduleComponent = () => {
       <View className="flex-row gap-3">
         {/* Left Card — Current Class */}
         <View
-          className="flex-1 rounded-2xl p-4 justify-between"
+          className="flex-1 rounded-xl p-4 justify-between"
           style={{
             backgroundColor: currentClass
               ? colors.primary[700]
@@ -159,7 +159,7 @@ const ScheduleComponent = () => {
 
         {/* Right Card — Upcoming Class */}
         <View
-          className="flex-1 rounded-2xl p-4 justify-between border"
+          className="flex-1 rounded-xl p-4 justify-between border"
           style={{
             borderColor: nextClass
               ? isDark

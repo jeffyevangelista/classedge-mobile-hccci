@@ -75,7 +75,7 @@ const StudentList = () => {
 
 const StudentItem = React.memo(({ name, student_photo }: Student) => {
   return (
-    <Card className="shadow-none rounded-lg mt-2.5 w-full max-w-3xl mx-auto dark:bg-neutral-800/50">
+    <Card className="shadow-none rounded-xl mt-2.5 w-full max-w-3xl mx-auto dark:bg-neutral-800/50">
       <View className="flex-row gap-2 items-center">
         <Avatar alt="student-photo" size="sm">
           <Avatar.Fallback>{name.split(" ")[0][0]}</Avatar.Fallback>
@@ -100,7 +100,7 @@ const StudentsSkeleton = () => {
       {Array.from({ length: 8 }).map((_, index) => (
         <Card
           key={index}
-          className="shadow-none rounded-lg mt-2.5 w-full max-w-3xl mx-auto"
+          className="shadow-none rounded-xl mt-2.5 w-full max-w-3xl mx-auto"
         >
           <View className="flex-row gap-2 items-center">
             <Skeleton className="rounded-full h-8 w-8" />

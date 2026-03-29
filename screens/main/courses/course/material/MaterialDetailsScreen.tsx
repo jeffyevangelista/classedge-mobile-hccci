@@ -28,7 +28,7 @@ const MaterialDetailsScreen = () => {
     <Screen>
       <ScrollView className="flex-1 p-4">
         <View className="gap-4">
-          <Card className="p-4">
+          <Card className="p-4 rounded-xl shadow-none">
             <AppText weight="bold" className="text-2xl mb-2">
               {data.fileName}
             </AppText>
@@ -57,7 +57,7 @@ const MaterialDetailsScreen = () => {
           </Card>
 
           {data.file && (
-            <Card className="p-4">
+            <Card className="p-4 rounded-xl shadow-none">
               <AppText weight="semibold" className="text-lg mb-2">
                 Attached File
               </AppText>
@@ -72,7 +72,7 @@ const MaterialDetailsScreen = () => {
           )}
 
           {data.url && (
-            <Card className="p-4">
+            <Card className="p-4 rounded-xl shadow-none">
               <AppText weight="semibold" className="text-lg mb-2">
                 URL
               </AppText>
@@ -81,7 +81,7 @@ const MaterialDetailsScreen = () => {
           )}
 
           {data.iframeCode && (
-            <Card className="p-4">
+            <Card className="p-4 rounded-xl shadow-none">
               <AppText weight="semibold" className="text-lg mb-2">
                 Embedded Content
               </AppText>

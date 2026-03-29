@@ -161,6 +161,8 @@ const CourseDetailsSheet = () => {
           ? (screenWidth - BOTTOM_SHEET_MAX_WIDTH) / 2
           : 0,
       minHeight: 400,
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
     }),
     [screenWidth],
   );

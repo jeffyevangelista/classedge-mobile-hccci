@@ -45,7 +45,7 @@ const ProfileScreen = () => {
           <HeaderComponent />
 
           {/* Navigation Links */}
-          <Card className=" shadow-none overflow-hidden w-full">
+          <Card className="shadow-none rounded-xl overflow-hidden w-full">
             {profileNav.map((item) => (
               <ProfileNavItem key={item.title} {...item} />
             ))}

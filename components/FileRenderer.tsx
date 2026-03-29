@@ -32,7 +32,7 @@ const FileRenderer = ({ url }: { url: any }) => {
           await WebBrowser.openBrowserAsync(lesson_url!);
         }}
       >
-        <Card className="shadow-none rounded-lg max-w-3xl flex-row items-center gap-2.5 mt-2.5 dark:bg-neutral-800/50">
+        <Card className="shadow-none rounded-xl max-w-3xl flex-row items-center gap-2.5 mt-2.5 dark:bg-neutral-800/50">
           <View className="p-2 rounded-lg bg-primary-100 dark:bg-primary-900/50">
             <Icon
               className="h-10 w-10 text-primary-600 dark:text-primary-400"
@@ -65,7 +65,7 @@ const FileRenderer = ({ url }: { url: any }) => {
       case "png":
         return (
           <TouchableOpacity onPress={() => showImage(lesson_file)}>
-            <Card className="shadow-none rounded-lg max-w-3xl flex-row items-center gap-2.5 mt-2.5 dark:bg-neutral-800/50">
+            <Card className="shadow-none rounded-xl max-w-3xl flex-row items-center gap-2.5 mt-2.5 dark:bg-neutral-800/50">
               <View className="p-2 rounded-lg bg-teal-100 dark:bg-teal-900/50">
                 <Icon
                   className="text-teal-600 dark:text-teal-400 h-10 w-10"
@@ -89,7 +89,7 @@ const FileRenderer = ({ url }: { url: any }) => {
         return (
           <>
             <Pressable onPress={() => setShowVideo(!showVideo)}>
-              <Card className="shadow-none rounded-lg max-w-3xl flex-row items-center gap-2.5 mt-2.5 dark:bg-neutral-800/50">
+              <Card className="shadow-none rounded-xl max-w-3xl flex-row items-center gap-2.5 mt-2.5 dark:bg-neutral-800/50">
                 <View className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/50">
                   <Icon
                     className="text-purple-600 dark:text-purple-400 h-10 w-10"
@@ -128,7 +128,7 @@ const FileRenderer = ({ url }: { url: any }) => {
               await WebBrowser.openBrowserAsync(lesson_file);
             }}
           >
-            <Card className="shadow-none rounded-lg max-w-3xl flex-row items-center gap-2.5 mt-2.5 dark:bg-neutral-800/50">
+            <Card className="shadow-none rounded-xl max-w-3xl flex-row items-center gap-2.5 mt-2.5 dark:bg-neutral-800/50">
               <View className="p-2 rounded-lg bg-red-100 dark:bg-red-900/50">
                 <Icon
                   className="text-red-600 dark:text-red-400 h-10 w-10"

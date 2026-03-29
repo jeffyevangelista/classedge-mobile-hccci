@@ -63,7 +63,7 @@ const PendingAssessmentList = ({
 export default PendingAssessmentList;
 
 const AssessmentItem = memo(({ item }: { item: Assessment }) => (
-  <Card className=" w-72 md:w-80 lg:w-96 mr-3 shadow-none">
+  <Card className=" w-72 md:w-80 lg:w-96 mr-3 shadow-none rounded-xl">
     <Card.Body className="flex flex-row items-center gap-2.5">
       <View className="p-2 bg-emerald-100 rounded-full">
         <Icon name="BookOpenIcon" size={24} className="text-emerald-500" />

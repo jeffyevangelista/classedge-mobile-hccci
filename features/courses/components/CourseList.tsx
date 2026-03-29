@@ -76,7 +76,7 @@ const Course = ({
                     }
                   : require("@/assets/placeholder/bg-placeholder.png")
               }
-              className="rounded-t-lg w-full aspect-video"
+              className="rounded-t-xl w-full aspect-video"
               contentFit="cover"
               cachePolicy="disk"
             />
@@ -116,7 +116,7 @@ const CourseListSkeleton = ({ numColumns }: { numColumns: number }) => {
               >
                 <Card className="p-0 shadow-none rounded-xl">
                   <Card.Body className="gap-2.5">
-                    <Skeleton className="rounded-t-lg w-full aspect-video" />
+                    <Skeleton className="rounded-t-xl w-full aspect-video" />
                     <View className="px-4 pb-4 gap-2">
                       <Skeleton className="h-5 w-3/4 rounded" />
                       <Skeleton className="h-3 w-1/2 rounded" />

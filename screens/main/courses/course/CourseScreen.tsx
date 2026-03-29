@@ -73,7 +73,7 @@ const TimelineHeader = () => {
               }
             : require("@/assets/placeholder/bg-placeholder.png")
         }
-        className="w-full rounded-t-lg aspect-29/9 md:aspect-31/9"
+        className="w-full rounded-t-xl aspect-29/9 md:aspect-31/9"
         contentFit="cover"
         cachePolicy="disk"
       />

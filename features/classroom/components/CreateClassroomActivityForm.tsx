@@ -212,7 +212,7 @@ const CreateClassroomActivityForm = () => {
 
       <TextField isRequired>
         <Label>From</Label>
-        <Surface className="gap-1 py-2 rounded-2xl p-0">
+        <Surface className="gap-1 py-2 rounded-xl p-0 shadow-none">
           <Pressable
             onPress={() => setShowStartDatePicker(!showStartDatePicker)}
             className="flex-row items-center justify-center py-4 "
@@ -232,7 +232,7 @@ const CreateClassroomActivityForm = () => {
             </View>
           )}
         </Surface>
-        <Surface className="gap-1 rounded-2xl p-0">
+        <Surface className="gap-1 rounded-xl p-0 shadow-none">
           <Pressable
             onPress={() => setShowStartTimePicker(!showStartTimePicker)}
             className="flex-row items-center justify-center py-4"
@@ -255,7 +255,7 @@ const CreateClassroomActivityForm = () => {
 
       <TextField isRequired>
         <Label>To</Label>
-        <Surface className="gap-1 py-2 rounded-2xl p-0">
+        <Surface className="gap-1 py-2 rounded-xl p-0 shadow-none">
           <Pressable
             onPress={() => setShowEndDatePicker(!showEndDatePicker)}
             className="flex-row items-center justify-center py-4"
@@ -275,7 +275,7 @@ const CreateClassroomActivityForm = () => {
             </View>
           )}
         </Surface>
-        <Surface className="gap-1 py-2 rounded-2xl p-0">
+        <Surface className="gap-1 py-2 rounded-xl p-0 shadow-none">
           <Pressable
             onPress={() => setShowEndTimePicker(!showEndTimePicker)}
             className="flex-row items-center justify-center py-4"

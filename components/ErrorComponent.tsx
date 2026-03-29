@@ -11,7 +11,7 @@ interface ErrorComponentProps {
 export function ErrorComponent({ message, onRetry }: ErrorComponentProps) {
   return (
     <View className="flex-1 justify-center items-center px-5">
-      <Card className="shadow-none border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950 max-w-md w-full">
+      <Card className="shadow-none rounded-xl border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950 max-w-md w-full">
         <Card.Body className="gap-4 items-center">
           <View className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full items-center justify-center">
             <Icon

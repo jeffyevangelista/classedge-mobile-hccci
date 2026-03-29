@@ -411,7 +411,11 @@ const ClassScheduleSkeleton = () => {
       {Array(4)
         .fill(0)
         .map((_, index) => (
-          <Card key={index} style={styles.card}>
+          <Card
+            key={index}
+            style={styles.card}
+            className="rounded-xl shadow-none"
+          >
             <Card.Body style={styles.cardBody}>
               <View style={styles.header}>
                 <Skeleton className="h-5 w-3/4 rounded" />

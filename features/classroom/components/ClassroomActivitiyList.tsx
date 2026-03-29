@@ -17,7 +17,7 @@ const ClassroomActivitiyList = () => {
     <FlashList
       renderItem={({ item }) => (
         <Link href={"/"} className="mb-2.5">
-          <Card className="rounded-lg shadow-none w-full">
+          <Card className="rounded-xl shadow-none w-full">
             <AppText>{item.activityName}</AppText>
           </Card>
         </Link>

@@ -65,7 +65,7 @@ const CourseworkItem = ({
 
   return (
     <Link href={`/activity/${id}`} className="mt-2.5 max-w-3xl mx-auto w-full">
-      <Card className="shadow-none rounded-lg flex-row items-center active:bg-orange-50/50 dark:bg-neutral-800/50 dark:active:bg-orange-900/20">
+      <Card className="shadow-none rounded-xl flex-row items-center active:bg-orange-50/50 dark:bg-neutral-800/50 dark:active:bg-orange-900/20">
         <View className="flex-row gap-2 flex-1">
           <View className="rounded-full p-2.5 bg-orange-50 dark:bg-orange-900/50">
             <Icon

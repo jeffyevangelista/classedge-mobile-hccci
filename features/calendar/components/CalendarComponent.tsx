@@ -46,7 +46,7 @@ const EventCard = ({ item }: { item: any }) => {
     <React.Fragment key={item.id}>
       <Pressable onPress={() => setIsOpen(true)}>
         <View className=" mx-auto w-full max-w-3xl">
-          <Card className="mb-1 rounded-xl flex-row items-center ">
+          <Card className="mb-1 rounded-xl flex-row items-center shadow-none">
             <View className=" flex-row flex-1">
               <View
                 className={"rounded-full p-2.5 bg-teal-50 dark:bg-teal-900"}
@@ -299,7 +299,7 @@ const CalendarComponent = () => {
                   className=" mx-auto w-full"
                   asChild
                 >
-                  <Card className=" rounded-lg mb-1 flex-row items-center active:bg-orange-50/50 dark:active:bg-orange-900/50 border-neutral-200 dark:border-neutral-700 border">
+                  <Card className="shadow-none rounded-xl mb-1 flex-row items-center active:bg-orange-50/50 dark:active:bg-orange-900/50 border-neutral-200 dark:border-neutral-700 border">
                     <View className="flex-row flex-1 gap-2">
                       <View
                         className={
@@ -385,7 +385,10 @@ const CalendarSkeleton = () => {
         {Array(3)
           .fill(0)
           .map((_, index) => (
-            <Card key={index} className="mb-1 rounded-xl flex-row items-center">
+            <Card
+              key={index}
+              className="mb-1 rounded-xl flex-row items-center shadow-none"
+            >
               <View className="flex-row flex-1 gap-2">
                 <Skeleton className="w-10 h-10 rounded-full" />
                 <View className="flex-1 gap-1.5">

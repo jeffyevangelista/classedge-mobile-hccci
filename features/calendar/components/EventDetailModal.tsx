@@ -38,6 +38,8 @@ const EventDetailModal = ({
           ? (screenWidth - BOTTOM_SHEET_MAX_WIDTH) / 2
           : 0,
       minHeight: 500, // Giving it a set height helps stability
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
     }),
     [screenWidth],
   );
