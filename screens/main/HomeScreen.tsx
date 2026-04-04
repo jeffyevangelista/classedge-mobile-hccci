@@ -28,11 +28,6 @@ const HomeScreen = () => {
     setRefreshing(true);
     await queryClient.invalidateQueries({
       stale: true,
-      // queryKey: [
-      //   "pending-assessments",
-      //   "announcements-with-events",
-      //   "user-details",
-      // ],
     });
     setRefreshing(false);
   }, [queryClient]);

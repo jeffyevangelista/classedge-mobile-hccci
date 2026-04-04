@@ -261,6 +261,7 @@ export const assessmentTable = sqliteTable("activity_activity", {
   localId: text("local_id")
     .notNull()
     .$defaultFn(() => createId()),
+  termId: integer("term_id").notNull(),
 });
 
 export const assessmentRelations = relations(assessmentTable, ({ one }) => ({

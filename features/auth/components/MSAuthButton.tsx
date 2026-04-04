@@ -95,7 +95,10 @@ const MSAuthButton = () => {
 
     try {
       setAuthInProgress(true);
-      await promptAsync();
+      const result = await promptAsync();
+      if (result.type !== "success") {
+        setAuthInProgress(false);
+      }
     } catch (error) {
       toast.show({
         variant: "danger",

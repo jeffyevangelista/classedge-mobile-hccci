@@ -11,7 +11,6 @@ const SubjectLayout = () => {
       }}
     >
       <Stack.Screen name="[subjectId]" options={{ headerShown: false }} />
-      <Stack.Screen name="subject-details" />
     </Stack>
   );
 };

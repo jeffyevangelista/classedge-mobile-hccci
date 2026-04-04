@@ -71,9 +71,9 @@ const LoginScreen = () => {
           <AppText className="text-xs text-gray-500 text-center px-4">
             By Continuing, you agree to our{" "}
             <Link style={{ color: colors.primary[500] }} href={"/"}>
-              Terms of Service
+              EULA
             </Link>{" "}
-            and{" "}
+            and acknowledge{" "}
             <Link style={{ color: colors.primary[500] }} href={"/"}>
               Privacy Policy
             </Link>

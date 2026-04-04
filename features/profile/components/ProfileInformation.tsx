@@ -42,7 +42,6 @@ const ProfileInformation = () => {
   return (
     <ScrollView
       className="p-2.5"
-      // 3. Implement Pull-to-Refresh (UX improvement)
       refreshControl={
         <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
       }

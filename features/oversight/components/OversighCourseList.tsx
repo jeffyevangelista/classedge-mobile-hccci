@@ -46,34 +46,39 @@ const SubjectsList = () => {
 };
 
 const LoadingComponent = () => {
-  return (
-    <>
-      {Array.from({ length: 5 }).map((_, index) => (
-        <Card
-          key={index}
-          className="shadow-none mb-5 rounded-xl p-0 overflow-hidden w-full max-w-screen-3xl mx-auto"
-        >
-          <View className="relative h-40 w-full">
-            <Skeleton className="object-cover w-full h-full" />
-          </View>
-          <View className="p-4 gap-4">
-            <View className="gap-2">
-              <Skeleton
-                className={
-                  "rounded-full h-6 w-full text-slate-900 font-semibold"
-                }
-              />
-              <Skeleton className="rounded-full h-2 w-24 text-typography-500" />
-            </View>
+  const { width } = useWindowDimensions();
+  const numColumns = Math.max(1, Math.floor(width / MIN_CARD_WIDTH));
 
-            <View className="gap-2 flex-row">
-              <Skeleton className="rounded-full w-12 h-12" />
-              <Skeleton className="rounded-full h-3 w-24 my-auto" />
-            </View>
+  return (
+    <View className="w-full max-w-6xl mx-auto flex-1">
+      <FlatList
+        className="p-1"
+        data={Array.from({ length: 6 })}
+        renderItem={() => (
+          <View style={{ flex: 1 / numColumns, padding: 10 / 2 }}>
+            <Card className="shadow-none mb-5 rounded-xl p-0 overflow-hidden">
+              <View className="relative h-40 w-full">
+                <Skeleton className="object-cover w-full h-full" />
+              </View>
+              <View className="p-2 gap-1">
+                <View>
+                  <Skeleton className="rounded-full h-5 w-full" />
+                  <Skeleton className="rounded-full h-3 w-24 mt-1" />
+                </View>
+                <View className="flex-row gap-2">
+                  <Skeleton className="rounded-full w-8 h-8" />
+                  <Skeleton className="rounded-full h-3 w-24 my-auto" />
+                </View>
+              </View>
+            </Card>
           </View>
-        </Card>
-      ))}
-    </>
+        )}
+        keyExtractor={(_, index) => index.toString()}
+        key={numColumns}
+        numColumns={numColumns}
+        contentContainerStyle={{ paddingBottom: 15 }}
+      />
+    </View>
   );
 };
 

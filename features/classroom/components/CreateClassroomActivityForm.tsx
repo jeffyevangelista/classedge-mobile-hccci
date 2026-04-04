@@ -99,7 +99,7 @@ const CreateClassroomActivityForm = () => {
     const startDateTime = combineDateTime(startDate, startTime);
     const endDateTime = combineDateTime(endDate, endTime);
 
-    console.log({
+    console.log("activity-details:", {
       activityName: title,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
@@ -139,6 +139,7 @@ const CreateClassroomActivityForm = () => {
         shuffleQuestions: 0,
         subjectId: parseInt(classroomId as string),
         activityTypeId: 2,
+        termId: term?.value,
       });
 
       router.replace(`/classroom/${classroomId}/input-grades`);

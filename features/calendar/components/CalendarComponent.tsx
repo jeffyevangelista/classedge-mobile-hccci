@@ -39,51 +39,46 @@ type CustomMarkedDate = {
 
 type MarkedDates = Record<string, CustomMarkedDate>;
 
-const EventCard = ({ item }: { item: any }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
+const EventCard = ({
+  item,
+  onPress,
+}: {
+  item: any;
+  onPress: (id: number) => void;
+}) => {
   return (
-    <React.Fragment key={item.id}>
-      <Pressable onPress={() => setIsOpen(true)}>
-        <View className=" mx-auto w-full max-w-3xl">
-          <Card className="mb-1 rounded-xl flex-row items-center shadow-none">
-            <View className=" flex-row flex-1">
-              <View
-                className={"rounded-full p-2.5 bg-teal-50 dark:bg-teal-900"}
+    <Pressable onPress={() => onPress(item.id)}>
+      <View className=" mx-auto w-full max-w-3xl">
+        <Card className="mb-1 rounded-xl flex-row items-center shadow-none">
+          <View className=" flex-row flex-1">
+            <View className={"rounded-full p-2.5 bg-teal-50 dark:bg-teal-900"}>
+              <Icon
+                className={"h-6 w-6 text-teal-600 dark:text-teal-400"}
+                name="CalendarDotsIcon"
+              />
+            </View>
+            <View className="flex-1">
+              <Text
+                className="text-neutral-900 dark:text-neutral-100 font-poppins-semibold text-lg flex-1"
+                numberOfLines={1}
+                ellipsizeMode="tail"
               >
-                <Icon
-                  className={"h-6 w-6 text-teal-600 dark:text-teal-400"}
-                  name="CalendarDotsIcon"
-                />
-              </View>
-              <View className="flex-1">
+                {item.title}
+              </Text>
+              <View className="flex-row items-center">
                 <Text
-                  className="text-neutral-900 dark:text-neutral-100 font-poppins-semibold text-lg flex-1"
+                  className="text-neutral-500 dark:text-neutral-400 text-xs"
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  {item.title}
+                  {formatDate(item.startDate)} - {formatDate(item.endDate)}
                 </Text>
-                <View className="flex-row items-center">
-                  <Text
-                    className="text-neutral-500 dark:text-neutral-400 text-xs"
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    {formatDate(item.startDate)} - {formatDate(item.endDate)}
-                  </Text>
-                </View>
               </View>
             </View>
-          </Card>
-        </View>
-      </Pressable>
-      <EventDetailModal
-        isOpen={isOpen}
-        setOpenChange={setIsOpen}
-        eventId={item.id}
-      />
-    </React.Fragment>
+          </View>
+        </Card>
+      </View>
+    </Pressable>
   );
 };
 
@@ -96,6 +91,7 @@ const CalendarComponent = () => {
   const isDark = theme === "dark";
 
   const [selectedDate, setSelectedDate] = useState<string>(today);
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
 
   const dayCellSize = useMemo(() => {
     const horizontalPadding = 20;
@@ -338,13 +334,25 @@ const CalendarComponent = () => {
             }
 
             if (item.type === "event") {
-              return <EventCard key={item.id} item={item} />;
+              return (
+                <EventCard
+                  key={item.id}
+                  item={item}
+                  onPress={setSelectedEventId}
+                />
+              );
             }
 
             return null;
           })
         )}
       </View>
+
+      <EventDetailModal
+        isOpen={selectedEventId !== null}
+        setOpenChange={(open) => !open && setSelectedEventId(null)}
+        eventId={selectedEventId!}
+      />
     </ScrollView>
   );
 };

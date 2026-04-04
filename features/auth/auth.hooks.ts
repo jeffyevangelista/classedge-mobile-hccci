@@ -1,19 +1,19 @@
 import useStore from "@/lib/store";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
 import { Alert } from "react-native";
 import {
+  completeOnboarding,
   forgotPassword,
   login,
   msLogin,
   resetPassword,
   verifyOtp,
 } from "./auth.apis";
+import { refresh } from "./refreshToken";
 import type { AuthResponse, LoginCredentials } from "./auth.types";
 import { useToast } from "heroui-native";
 
 export const useLogin = () => {
-  const router = useRouter();
   const { setAccessToken, setRefreshToken, setPowersyncToken } =
     useStore.getState();
   return useMutation({
@@ -23,20 +23,15 @@ export const useLogin = () => {
       setAccessToken(data.access_token);
       setPowersyncToken(data.powersync_token);
       await setRefreshToken(data.refresh_token);
-      router.replace("/(main)/(tabs)");
     },
   });
 };
 
 export const useLogout = () => {
-  const router = useRouter();
   const { clearCredentials } = useStore.getState();
   return useMutation({
     mutationKey: ["logout"],
     mutationFn: async () => await clearCredentials(),
-    onSuccess: () => {
-      router.replace("/(auth)/login");
-    },
     onError: (error) => {
       Alert.alert("Logout failed:", error.message);
     },
@@ -71,7 +66,6 @@ export const useResetPassword = () => {
 };
 
 export const useMsLogin = () => {
-  const router = useRouter();
   const {
     setAccessToken,
     setRefreshToken,
@@ -83,15 +77,12 @@ export const useMsLogin = () => {
   return useMutation({
     mutationKey: ["ms-login"],
     mutationFn: (token: string) => {
-      console.log(token);
-
       return msLogin(token);
     },
     onSuccess: async (data: AuthResponse) => {
       setAccessToken(data.access_token);
       setPowersyncToken(data.powersync_token);
       await setRefreshToken(data.refresh_token);
-      router.replace("/(main)/(tabs)");
     },
     onError: async (error) => {
       await clearCredentials();
@@ -100,6 +91,43 @@ export const useMsLogin = () => {
       toast.show({
         variant: "danger",
         label: "Something went wrong",
+        description: errorMessage,
+      });
+    },
+  });
+};
+
+export const useCompleteOnboarding = () => {
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationKey: ["complete-onboarding"],
+    mutationFn: () =>
+      completeOnboarding({
+        eula_version: "1.0",
+        privacy_policy_version: "1.0",
+        is_accepted: true,
+      }),
+    onSuccess: async () => {
+      const {
+        refreshToken,
+        setAccessToken,
+        setPowersyncToken,
+        setRefreshToken,
+        setNeedsOnboarding,
+      } = useStore.getState();
+      const data = await refresh(refreshToken);
+      setAccessToken(data.access_token);
+      setPowersyncToken(data.powersync_token);
+      await setRefreshToken(data.refresh_token);
+      setNeedsOnboarding(false);
+    },
+    onError: (error) => {
+      const errorMessage =
+        error instanceof Error ? error.message : "Something went wrong";
+      toast.show({
+        variant: "danger",
+        label: "Onboarding failed",
         description: errorMessage,
       });
     },

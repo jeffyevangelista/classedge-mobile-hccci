@@ -11,12 +11,13 @@ const ClassroomActivitiyList = () => {
   const { data, isLoading } = useClassroomActivities(classroomId as string);
   if (isLoading) return <AppText>loading...</AppText>;
 
-  console.log(JSON.stringify({ data }));
-
   return (
     <FlashList
       renderItem={({ item }) => (
-        <Link href={"/"} className="mb-2.5">
+        <Link
+          href={`/classroom/${classroomId}/input-grades/${item.localId}`}
+          className="mb-2.5"
+        >
           <Card className="rounded-xl shadow-none w-full">
             <AppText>{item.activityName}</AppText>
           </Card>

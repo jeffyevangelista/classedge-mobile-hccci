@@ -12,9 +12,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.jeffigy.classedge",
       "infoPlist": {
-        "UIBackgroundModes": [
-          "remote-notification"
-        ]
+        "UIBackgroundModes": ["remote-notification"]
       },
       "entitlements": {
         "aps-environment": "development"
@@ -45,9 +43,15 @@
         "onesignal-expo-plugin",
         {
           "mode": "development",
-          "smallIcons": [
-            "./assets/notifications/ic_stat_onesignal_default.png"
-          ]
+          "smallIcons": ["./assets/notifications/ic_stat_onesignal_default.png"]
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Classedge to access your camera",
+          "microphonePermission": "Allow Classedge to access your microphone",
+          "barcodeScannerEnabled": true
         }
       ],
       "expo-router",
@@ -75,7 +79,28 @@
       "reactCompiler": true
     },
     "extra": {
-      "onesignalAppId": "89c53280-0393-43c1-8416-6ae2f4771bdd"
+      "onesignalAppId": "89c53280-0393-43c1-8416-6ae2f4771bdd",
+      "eas": {
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "OneSignalNotificationServiceExtension",
+                  "bundleIdentifier": "com.jeffigy.classedge.OneSignalNotificationServiceExtension",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.jeffigy.classedge.onesignal"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "f1f67952-1a82-470a-a9d0-a723f9a96f39"
+      },
+      "router": {}
     }
   }
 }

@@ -60,17 +60,14 @@ const ClassroomScreen = () => {
           <CourseworkList />
         </Tabs.Content>
 
-        <Tabs.Content value="rapid-grader" className="flex-1">
+        <Tabs.Content value="rapid-grader" className="flex-1 gap-2">
           <Button
-            isIconOnly
-            // size="lg"
-            // className="absolute bottom-6 right-6"
+            className="ml-auto"
             onPress={() => {
-              console.log("classroomId", classroomId);
               router.push(`/classroom/${classroomId}/create-activity`);
             }}
           >
-            <Icon name="PencilSimpleLine" size={24} color="white" />
+            <Button.Label>Create Activity</Button.Label>
           </Button>
           <ClassroomActivitiyList />
         </Tabs.Content>

@@ -12,6 +12,7 @@ const SubjectLayout = () => {
       }}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="subject-details" />
     </Stack>
   );
 };

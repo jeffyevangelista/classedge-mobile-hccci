@@ -16,8 +16,10 @@ const BackButton = ({ tintColor, to }: BackButtonProps) => {
       onPress={() => {
         if (to) {
           router.push(to);
-        } else {
+        } else if (router.canGoBack()) {
           router.back();
+        } else {
+          router.replace("/" as RelativePathString);
         }
       }}
     >

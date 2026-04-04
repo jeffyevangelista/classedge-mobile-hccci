@@ -31,6 +31,7 @@ type AuthAction = {
   clearCredentials: () => Promise<void>;
   restoreSession: () => Promise<void>;
   setEmail: (email: string) => void;
+  setNeedsOnboarding: (needsOnboarding: boolean) => void;
 };
 
 export type AuthSlice = AuthState & AuthAction;
@@ -124,6 +125,17 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
   },
   setEmail: (email: string) => {
     set({ email });
+  },
+  setNeedsOnboarding: (needsOnboarding: boolean) => {
+    set((state) => {
+      const updatedAuthUser = state.authUser
+        ? { ...state.authUser, needs_onboarding: needsOnboarding }
+        : null;
+      if (updatedAuthUser) {
+        setMMKVItem(MMKV_KEYS.AUTH_USER, updatedAuthUser);
+      }
+      return { authUser: updatedAuthUser };
+    });
   },
 });
 

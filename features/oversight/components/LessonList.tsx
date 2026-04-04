@@ -46,7 +46,10 @@ const MaterialList = () => {
     [data],
   );
 
-  const keyExtractor = useCallback((item: Lesson) => item.id.toString(), []);
+  const keyExtractor = useCallback(
+    (item: Lesson, index: number) => `${item.id}-${index}`,
+    [],
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: Lesson }) => <MaterialItem {...item} />,

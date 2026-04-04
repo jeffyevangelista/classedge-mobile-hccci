@@ -10,7 +10,7 @@ interface EmptyStateProps {
 
 const EmptyState = ({ icon, title, description }: EmptyStateProps) => {
   return (
-    <View className="items-center justify-center py-10 gap-5">
+    <View className="flex-1 items-center justify-center py-10 gap-5 flex">
       <View className="p-5 rounded-full bg-blue-100 dark:bg-blue-900">
         <Icon
           name={icon}

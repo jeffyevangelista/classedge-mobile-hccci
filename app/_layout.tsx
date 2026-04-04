@@ -19,7 +19,8 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const themeColorForeground = useThemeColor("foreground");
-  const { restoreSession, clearCredentials, isAuthenticated } = useStore();
+  const { restoreSession, clearCredentials, isAuthenticated, authUser } =
+    useStore();
   useTokenRefresh();
   const [sessionRestored, setSessionRestored] = useState(false);
   const [loaded, error] = useFonts({
@@ -71,11 +72,17 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <RootProvider>
         <Stack screenOptions={{ headerShown: false }}>
-          {/* <Stack.Screen name="auth/callback" options={{ headerShown: false }} /> */}
           <Stack.Protected guard={!isAuthenticated}>
             <Stack.Screen name="(auth)" />
           </Stack.Protected>
-          <Stack.Protected guard={isAuthenticated}>
+          <Stack.Protected
+            guard={isAuthenticated && !!authUser?.needs_onboarding}
+          >
+            <Stack.Screen name="(onboarding)" />
+          </Stack.Protected>
+          <Stack.Protected
+            guard={isAuthenticated && !authUser?.needs_onboarding}
+          >
             <Stack.Screen name="(main)" />
           </Stack.Protected>
         </Stack>

@@ -19,6 +19,14 @@ export const resetPassword = async (email: string, password: string) => {
   return (await api.post("/auth/reset-password/", { email, password })).data;
 };
 
+export const completeOnboarding = async (payload: {
+  eula_version: string;
+  privacy_policy_version: string;
+  is_accepted: boolean;
+}) => {
+  return (await api.post("/legal-consents/", payload)).data;
+};
+
 export const msLogin = async (token: string): Promise<AuthResponse> => {
   return (
     await axios.get(`${env.EXPO_PUBLIC_API_URL}/auth/microsoft/`, {
