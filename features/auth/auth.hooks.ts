@@ -31,6 +31,7 @@ export const useLogout = () => {
   const { clearCredentials } = useStore.getState();
   return useMutation({
     mutationKey: ["logout"],
+    networkMode: "always",
     mutationFn: async () => await clearCredentials(),
     onError: (error) => {
       Alert.alert("Logout failed:", error.message);

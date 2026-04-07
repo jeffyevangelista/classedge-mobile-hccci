@@ -69,7 +69,7 @@ const InFormationItem = React.memo(
         <View>
           <AppText
             weight="regular"
-            className="text-muted-foreground text-xs uppercase"
+            className="text-gray-500 dark:text-gray-400 text-xs uppercase"
           >
             {label}
           </AppText>

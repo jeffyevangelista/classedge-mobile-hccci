@@ -36,9 +36,9 @@ export const useClassroomStudents = (classroomId: string) => {
   });
 };
 
-export const useStudentScoresForActivity = (activityId: number) => {
+export const useStudentScoresForActivity = (activityLocalId: string) => {
   return useQuery({
-    query: toCompilableQuery(getStudentScoresForActivity(activityId)),
-    queryKey: ["student-scores", activityId],
+    query: toCompilableQuery(getStudentScoresForActivity(activityLocalId)),
+    queryKey: ["student-scores", activityLocalId],
   });
 };

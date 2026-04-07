@@ -5,7 +5,7 @@ import MSAuthButton from "@/features/auth/components/MSAuthButton";
 import { colors } from "@/utils/colors";
 import { Link, useRouter } from "expo-router";
 import { Button } from "heroui-native";
-import { useWindowDimensions, View } from "react-native";
+import { useColorScheme, useWindowDimensions, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -17,6 +17,8 @@ const LoginScreen = () => {
     ? insets.top + 10
     : Math.max(insets.top + 20, height * 0.05);
   const router = useRouter();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   return (
     <KeyboardAwareScrollView
@@ -54,13 +56,21 @@ const LoginScreen = () => {
           <View className="w-full gap-4">
             <MSAuthButton />
             <Button
-              className="w-full"
+              className="w-full dark:border-neutral-700"
               variant="outline"
               size="lg"
               onPress={() => router.push("/(auth)/login-email")}
             >
-              <Icon name="EnvelopeIcon" size={28} />
-              <Button.Label className="text-primary-500">
+              <Icon
+                name="EnvelopeIcon"
+                size={28}
+                color={isDark ? "#e5e5e5" : "#262626"}
+              />
+              <Button.Label
+                style={{
+                  color: isDark ? "#e5e5e5" : "#262626",
+                }}
+              >
                 Continue with Email
               </Button.Label>
             </Button>

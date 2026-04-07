@@ -2,14 +2,18 @@ import { attemptsTable, attemptAnswerTable } from "@/powersync/schema";
 import { db } from "@/powersync/system";
 import { eq } from "drizzle-orm";
 
-export const getAssessmentDetails = (assessmentId: number, userId: number) => {
-  return db.query.studentAssessment.findFirst({
+export const getAssessmentDetails = async (
+  assessmentId: number,
+  userId: number,
+) => {
+  const result = await db.query.studentAssessment.findFirst({
     where: (studentAssessment, { and, eq }) =>
       and(
         eq(studentAssessment.activityId, assessmentId),
         eq(studentAssessment.studentId, userId),
       ),
   });
+  return result ?? null;
 };
 
 export const getAttemptRecords = (activityId: number, studentId: number) => {

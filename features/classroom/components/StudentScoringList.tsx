@@ -12,7 +12,10 @@ import {
   useClassroomStudents,
   useStudentScoresForActivity,
 } from "@/features/classroom/classroom.hooks";
-import { upsertStudentScore } from "@/features/classroom/ classroom.service";
+import {
+  upsertStudentScore,
+  saveAttachment,
+} from "@/features/classroom/ classroom.service";
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
 import { Avatar, Button, Card, Input } from "heroui-native";
@@ -23,11 +26,14 @@ import Image from "@/components/Image";
 import { useCamera } from "@/features/camera/useCamera";
 import type { CapturedPhoto } from "@/features/camera/useCamera";
 
+type LocalImages = Record<number, CapturedPhoto | null>;
+
 type ActivityDetail = {
-  id: number;
+  localId: string;
   maxScore: number;
   termId: number;
   subjectId: number;
+  id: number;
 };
 
 const StudentScoringList = ({
@@ -36,6 +42,7 @@ const StudentScoringList = ({
   activityDetail: ActivityDetail;
 }) => {
   const { classroomId } = useGlobalSearchParams();
+  console.log("activityDetail ----c", activityDetail.id);
 
   const {
     data: students,
@@ -45,7 +52,7 @@ const StudentScoringList = ({
   } = useClassroomStudents(classroomId as string);
 
   const { data: existingScores } = useStudentScoresForActivity(
-    activityDetail.id,
+    activityDetail.localId,
   );
 
   const scoresMap = useMemo(() => {
@@ -59,6 +66,7 @@ const StudentScoringList = ({
   }, [existingScores]);
 
   const [localScores, setLocalScores] = useState<Record<number, string>>({});
+  const [localImages, setLocalImages] = useState<LocalImages>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -79,6 +87,13 @@ const StudentScoringList = ({
     setLocalScores((prev) => ({ ...prev, [studentId]: value }));
   }, []);
 
+  const handleImageChange = useCallback(
+    (studentId: number, image: CapturedPhoto | null) => {
+      setLocalImages((prev) => ({ ...prev, [studentId]: image }));
+    },
+    [],
+  );
+
   const dirtyStudentIds = useMemo(() => {
     if (!students) return new Set<number>();
     const dirty = new Set<number>();
@@ -95,10 +110,12 @@ const StudentScoringList = ({
       const saved = scoresMap[s.studentId];
       if (saved === undefined || saved !== numericScore) {
         dirty.add(s.studentId);
+      } else if (localImages[s.studentId]) {
+        dirty.add(s.studentId);
       }
     }
     return dirty;
-  }, [students, localScores, scoresMap, activityDetail.maxScore]);
+  }, [students, localScores, localImages, scoresMap, activityDetail.maxScore]);
 
   const hasUnsavedChanges = dirtyStudentIds.size > 0;
 
@@ -106,22 +123,30 @@ const StudentScoringList = ({
     if (dirtyStudentIds.size === 0) return;
     setIsSubmitting(true);
     try {
-      const promises = Array.from(dirtyStudentIds).map((studentId) =>
-        upsertStudentScore({
+      const promises = Array.from(dirtyStudentIds).map(async (studentId) => {
+        let fileUri: string | null = null;
+        const image = localImages[studentId];
+        if (image) {
+          fileUri = await saveAttachment(image.uri);
+        }
+        return upsertStudentScore({
           studentId,
           activityId: activityDetail.id,
           termId: activityDetail.termId,
+          activityLocalId: activityDetail.localId,
           subjectId: activityDetail.subjectId,
           totalScore: parseInt(localScores[studentId], 10),
-        }),
-      );
+          file: fileUri,
+        });
+      });
       await Promise.all(promises);
+      setLocalImages({});
     } catch (err) {
       console.error("[StudentScoringList] Failed to save scores:", err);
     } finally {
       setIsSubmitting(false);
     }
-  }, [dirtyStudentIds, localScores, activityDetail]);
+  }, [dirtyStudentIds, localScores, localImages, activityDetail]);
 
   if (isLoading) {
     return (
@@ -150,6 +175,8 @@ const StudentScoringList = ({
             activityDetail={activityDetail}
             score={localScores[item.studentId] ?? ""}
             onScoreChange={handleScoreChange}
+            capturedImage={localImages[item.studentId] ?? null}
+            onImageChange={handleImageChange}
             isSaved={
               scoresMap[item.studentId] !== undefined &&
               !dirtyStudentIds.has(item.studentId)
@@ -157,7 +184,7 @@ const StudentScoringList = ({
           />
         )}
         keyExtractor={(item) => item.studentId.toString()}
-        extraData={localScores}
+        extraData={{ localScores, localImages }}
       />
       <View className="p-4 max-w-3xl w-full mx-auto">
         <Button
@@ -184,19 +211,20 @@ const StudentScoreItem = React.memo(
     activityDetail,
     score,
     onScoreChange,
+    capturedImage,
+    onImageChange,
     isSaved,
   }: {
     studentId: number;
     activityDetail: ActivityDetail;
     score: string;
     onScoreChange: (studentId: number, value: string) => void;
+    capturedImage: CapturedPhoto | null;
+    onImageChange: (studentId: number, image: CapturedPhoto | null) => void;
     isSaved: boolean;
   }) => {
     const [showCamera, setShowCamera] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
-    const [capturedImage, setCapturedImage] = useState<CapturedPhoto | null>(
-      null,
-    );
 
     const {
       cameraRef,
@@ -219,15 +247,15 @@ const StudentScoreItem = React.memo(
     const handleCapture = useCallback(async () => {
       const photo = await takePicture();
       if (photo) {
-        setCapturedImage(photo);
+        onImageChange(studentId, photo);
         resetPhoto();
         setShowCamera(false);
       }
-    }, [takePicture, resetPhoto]);
+    }, [takePicture, resetPhoto, onImageChange, studentId]);
 
     const handleDeleteImage = useCallback(() => {
-      setCapturedImage(null);
-    }, []);
+      onImageChange(studentId, null);
+    }, [onImageChange, studentId]);
 
     const handleChangeText = (text: string) => {
       if (text !== "" && !/^\d+$/.test(text)) return;

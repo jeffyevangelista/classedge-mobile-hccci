@@ -1,8 +1,12 @@
 import { View } from "react-native";
 import { AppText } from "@/components/AppText";
 import Screen from "@/components/screen";
-import { useClassroomActivity } from "@/features/classroom/classroom.hooks";
+import {
+  useClassroomActivity,
+  useStudentScoresForActivity,
+} from "@/features/classroom/classroom.hooks";
 import StudentScoringList from "@/features/classroom/components/StudentScoringList";
+import ScoreDisplayList from "@/features/classroom/components/ScoreDisplayList";
 import { Card } from "heroui-native";
 import { useGlobalSearchParams, useNavigation } from "expo-router";
 import { useEffect } from "react";
@@ -17,6 +21,11 @@ const InputGradeScreen = () => {
   );
 
   const activity = data?.[0];
+
+  const { data: existingScores, isLoading: scoresLoading } =
+    useStudentScoresForActivity(activity?.localId ?? "");
+
+  const hasExistingScores = !scoresLoading && (existingScores?.length ?? 0) > 0;
 
   useEffect(() => {
     if (activity?.activityName) {
@@ -35,6 +44,8 @@ const InputGradeScreen = () => {
   if (!activity) {
     return <AppText>Activity not found</AppText>;
   }
+
+  console.log(activity);
 
   return (
     <Screen>
@@ -60,7 +71,11 @@ const InputGradeScreen = () => {
           </View>
         </View>
       </Card>
-      <StudentScoringList activityDetail={activity} />
+      {hasExistingScores ? (
+        <ScoreDisplayList activityDetail={activity} />
+      ) : (
+        <StudentScoringList activityDetail={activity} />
+      )}
     </Screen>
   );
 };

@@ -280,6 +280,11 @@ export const studentAssessment = sqliteTable("activity_studentactivity", {
   retakeCount: integer("retake_count").notNull(),
   totalScore: integer("total_score").notNull(),
   isEditable: integer("is_editable").notNull(),
+  localId: text("local_id")
+    .notNull()
+    .$defaultFn(() => createId()),
+  activityLocalId: text("activity_local_id").notNull(),
+  file: text("file"),
 });
 
 export const studentAssessmentRelations = relations(
@@ -302,6 +307,10 @@ export const studentAssessmentRelations = relations(
       references: [coursesTable.id],
     }),
     retakeRecords: many(attemptsTable),
+    file: one(attachementsTable, {
+      fields: [studentAssessment.file],
+      references: [attachementsTable.id],
+    }),
   }),
 );
 
@@ -418,6 +427,15 @@ export const attemptAnswerTableRelations = relations(
   }),
 );
 
+export const attachementsTable = sqliteTable("mobile_attachment", {
+  id: text("id")
+    .notNull()
+    .$defaultFn(() => createId()),
+  file: text("file").notNull(),
+  profileId: integer("profile_id"),
+  studentActivityId: integer("student_activity_id"),
+});
+
 export const drizzleSchema = {
   courseScheduleTable,
   courseScheduleRelations,
@@ -453,6 +471,7 @@ export const drizzleSchema = {
   attemptAnswerTableRelations,
   gradingPeriodTable,
   gradingPeriodRelations,
+  attachementsTable,
 };
 
 export type Subject = InferSelectModel<typeof coursesTable>;

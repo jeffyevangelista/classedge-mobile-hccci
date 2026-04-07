@@ -121,8 +121,10 @@ const CreateClassroomActivityForm = () => {
     });
 
     try {
+      const localId = createId();
       await createActivity({
         id: createId(),
+        localId,
         activityName: title,
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
@@ -142,7 +144,7 @@ const CreateClassroomActivityForm = () => {
         termId: term?.value,
       });
 
-      router.replace(`/classroom/${classroomId}/input-grades`);
+      router.replace(`/classroom/${classroomId}/input-grades/${localId}`);
     } catch (error) {
       console.error("Error creating activity:", error);
     }

@@ -1,17 +1,19 @@
 import TabIcon from "@/components/TabIcon";
 import { useNotificationCount } from "@/features/notifications/notifications.hooks";
-import NetworkBanner from "@/features/network/NetworkBanner";
 import useStore from "@/lib/store";
 import { Tabs } from "expo-router";
 import { Platform, View } from "react-native";
 
 const TabsLayout = () => {
-  const { authUser } = useStore();
+  const { authUser, isConnected, isInternetReachable } = useStore();
   const { data } = useNotificationCount();
+  const isOffline = !isConnected || !isInternetReachable;
 
   return (
     <View style={{ flex: 1 }}>
       <Tabs
+        safeAreaInsets={isOffline ? { bottom: 0 } : undefined}
+        // safeAreaInsets={{ bottom: 0 }}
         screenOptions={{
           headerShown: false,
           headerShadowVisible: false,
@@ -135,7 +137,6 @@ const TabsLayout = () => {
           }}
         />
       </Tabs>
-      <NetworkBanner />
     </View>
   );
 };

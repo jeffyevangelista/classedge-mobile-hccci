@@ -69,7 +69,7 @@ const ProfileNavItem = ({ title, href, name }: ProfileNavProps) => {
 
             <AppText
               weight="semibold"
-              className="text-base sm:text-lg ml-4 flex-1 text-slate-800"
+              className="text-base sm:text-lg ml-4 flex-1 text-slate-800 dark:text-slate-100"
             >
               {title}
             </AppText>
@@ -77,7 +77,7 @@ const ProfileNavItem = ({ title, href, name }: ProfileNavProps) => {
             <Icon
               name={"CaretRightIcon"}
               size={18}
-              className="text-slate-400"
+              className="text-slate-400 dark:text-slate-500"
             />
           </View>
         )}

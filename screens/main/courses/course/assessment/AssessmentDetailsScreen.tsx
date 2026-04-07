@@ -146,12 +146,14 @@ const AssessmentDetailsScreen = () => {
           assessmentData={assessmentData}
           isLoading={isAssessmentLoading}
         />
-        {!maxRetakesReached && (
+      </ScrollView>
+      {!maxRetakesReached && (
+        <View className="p-2.5">
           <Button isDisabled={disableButton} onPress={handleStartAssessment}>
             <Button.Label>Start Assessment</Button.Label>
           </Button>
-        )}
-      </ScrollView>
+        </View>
+      )}
     </Screen>
   );
 };

@@ -37,7 +37,7 @@ const EventDetailModal = ({
         screenWidth > BOTTOM_SHEET_MAX_WIDTH
           ? (screenWidth - BOTTOM_SHEET_MAX_WIDTH) / 2
           : 0,
-      minHeight: 500, // Giving it a set height helps stability
+      minHeight: 500,
       borderTopLeftRadius: 12,
       borderTopRightRadius: 12,
     }),
@@ -48,7 +48,11 @@ const EventDetailModal = ({
     <BottomSheet isOpen={isOpen} onOpenChange={handleOpenChange}>
       <BottomSheet.Portal>
         <BottomSheet.Overlay />
-        <BottomSheet.Content snapPoints={["50%", "90%"]} style={contentStyle}>
+        <BottomSheet.Content
+          snapPoints={["50%", "90%"]}
+          style={contentStyle}
+          className="bg-white dark:bg-neutral-900"
+        >
           <BottomSheet.Close />
           <BottomSheetContent eventId={eventId} />
         </BottomSheet.Content>
@@ -96,14 +100,14 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
   }
 
   return (
-    <View className="pt-5">
+    <View className="pt-5 bg-white dark:bg-neutral-900">
       {/* Header */}
       <View className="mb-6">
-        <AppText className="text-2xl font-bold text-foreground mb-2">
+        <AppText className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
           {event.title}
         </AppText>
         {event.description && (
-          <AppText className=" text-muted-foreground leading-relaxed">
+          <AppText className="text-neutral-500 dark:text-neutral-400 leading-relaxed">
             {event.description}
           </AppText>
         )}
@@ -114,17 +118,24 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
         {/* Date & Time */}
         <View className="flex-row items-start">
           <View className="mr-3 mt-1">
-            <Icon name="CalendarIcon" size={20} className="text-primary" />
+            <Icon
+              name="CalendarIcon"
+              size={20}
+              className="text-blue-600 dark:text-blue-400"
+            />
           </View>
           <View className="flex-1">
-            <AppText weight="semibold" className="text-foreground mb-1">
+            <AppText
+              weight="semibold"
+              className="text-neutral-900 dark:text-neutral-100 mb-1"
+            >
               Date & Time
             </AppText>
-            <AppText className="text-muted-foreground">
+            <AppText className="text-neutral-500 dark:text-neutral-400">
               {formatDate(event.startDate)}
             </AppText>
             {event.time && (
-              <AppText className="text-muted-foreground">
+              <AppText className="text-neutral-500 dark:text-neutral-400">
                 {formatTime(event.time)}
               </AppText>
             )}
@@ -135,13 +146,20 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
         {event.location && (
           <View className="flex-row items-start">
             <View className="mr-3 mt-1">
-              <Icon name="MapPinIcon" size={20} className="text-primary" />
+              <Icon
+                name="MapPinIcon"
+                size={20}
+                className="text-blue-600 dark:text-blue-400"
+              />
             </View>
             <View className="flex-1">
-              <AppText weight="semibold" className="text-foreground mb-1">
+              <AppText
+                weight="semibold"
+                className="text-neutral-900 dark:text-neutral-100 mb-1"
+              >
                 Location
               </AppText>
-              <AppText className="text-muted-foreground">
+              <AppText className="text-neutral-500 dark:text-neutral-400">
                 {event.location}
               </AppText>
             </View>
@@ -152,13 +170,20 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
         {event.createdById && (
           <View className="flex-row items-start">
             <View className="mr-3 mt-1">
-              <Icon name="UserIcon" size={20} className="text-primary" />
+              <Icon
+                name="UserIcon"
+                size={20}
+                className="text-blue-600 dark:text-blue-400"
+              />
             </View>
             <View className="flex-1">
-              <AppText weight="semibold" className="text-foreground mb-1">
+              <AppText
+                weight="semibold"
+                className="text-neutral-900 dark:text-neutral-100 mb-1"
+              >
                 Created By
               </AppText>
-              <AppText className="text-muted-foreground">
+              <AppText className="text-neutral-500 dark:text-neutral-400">
                 {event.createdById.firstName} {event.createdById.lastName}
               </AppText>
             </View>
@@ -168,13 +193,20 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
         {/* Created At */}
         <View className="flex-row items-start">
           <View className="mr-3 mt-1">
-            <Icon name="ClockIcon" size={20} className="text-primary" />
+            <Icon
+              name="ClockIcon"
+              size={20}
+              className="text-blue-600 dark:text-blue-400"
+            />
           </View>
           <View className="flex-1">
-            <AppText weight="semibold" className="text-foreground mb-1">
+            <AppText
+              weight="semibold"
+              className="text-neutral-900 dark:text-neutral-100 mb-1"
+            >
               Created
             </AppText>
-            <AppText className="text-muted-foreground">
+            <AppText className="text-neutral-500 dark:text-neutral-400">
               {new Date(event.createdAt).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",

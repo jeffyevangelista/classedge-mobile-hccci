@@ -1,15 +1,15 @@
 import { powersync } from "@/powersync/system";
+import useStore from "@/lib/store";
 import { Button, Dialog, useToast } from "heroui-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import { useLogout } from "../auth.hooks";
 import { Icon } from "@/components/Icon";
 import { AppText } from "@/components/AppText";
 
 const LogoutButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [unsyncedCount, setUnsyncedCount] = useState(0);
-  const { mutateAsync, isPending } = useLogout();
+  const [isPending, setIsPending] = useState(false);
 
   const checkUnsyncedData = useCallback(async () => {
     const result = await powersync.getAll<{ count: number }>(
@@ -26,10 +26,13 @@ const LogoutButton = () => {
 
   const { toast } = useToast();
   const handleLogout = async () => {
+    setIsPending(true);
+    setIsOpen(false);
     try {
-      await mutateAsync();
       await powersync.disconnectAndClear();
+      await useStore.getState().clearCredentials();
     } catch (error: any) {
+      setIsPending(false);
       toast.show({
         variant: "danger",
         label: "Logout Failed",
@@ -50,7 +53,7 @@ const LogoutButton = () => {
 
                 <AppText
                   weight="semibold"
-                  className="text-base sm:text-lg ml-4 flex-1 text-slate-800"
+                  className="text-base sm:text-lg ml-4 flex-1 text-slate-800 dark:text-slate-100"
                 >
                   Logout
                 </AppText>

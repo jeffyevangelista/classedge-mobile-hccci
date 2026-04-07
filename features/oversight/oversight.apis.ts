@@ -41,7 +41,7 @@ export const getLesson = async (id: string): Promise<Lesson> => {
 export const getAssessments = async ({
   pageParam,
   courseId,
-  classroomMode = false,
+  classroomMode = true,
 }: {
   pageParam: number;
   classroomMode: boolean;

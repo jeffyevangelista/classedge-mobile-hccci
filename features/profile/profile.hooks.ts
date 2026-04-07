@@ -16,9 +16,10 @@ export const useUserDetails = () => {
 };
 
 export const useClassSchedule = () => {
-  const { authUser } = useStore.getState();
+  const authUser = useStore((state) => state.authUser);
   return usePowersyncQuery({
-    queryKey: ["class-schedule", authUser?.id!],
+    queryKey: ["class-schedule", authUser?.id],
+    enabled: !!authUser?.id,
     queryFn: () => getStudentCourseSchedules(authUser?.id!),
   });
 };

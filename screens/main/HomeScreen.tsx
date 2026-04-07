@@ -34,30 +34,22 @@ const HomeScreen = () => {
 
   return (
     <Screen className="">
-      {/* <Pressable
-        onPress={() => {
-          Alert.alert(
-            "Status",
-            `${connected ? "Connected" : "Disconnected"}. \nLast Synced at ${
-              powersync.currentStatus?.lastSyncedAt?.toISOString() ?? "-"
-            }\nVersion: ${powersync.sdkVersion}`,
-          );
-        }}
-      >
-        <Icon
-          name={connected ? WifiHighIcon : WifiSlashIcon}
-          color="black"
-          size={20}
-          style={{ padding: 5 }}
-        />
-      </Pressable> */}
-
       <ScrollView
-        className=" w-full max-w-3xl mx-auto  pb-5 "
+        className="w-full max-w-3xl mx-auto pb-5"
+        scrollIndicatorInsets={{ right: 1 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        {authUser?.role === "Student" && (
+          <View className="px-2.5 mt-5">
+            <AppText weight="semibold" className="text-lg mb-3">
+              My Schedule
+            </AppText>
+            <ScheduleComponent />
+          </View>
+        )}
+
         <AppText weight="semibold" className="text-lg px-2.5 mt-5">
           Announcements
         </AppText>

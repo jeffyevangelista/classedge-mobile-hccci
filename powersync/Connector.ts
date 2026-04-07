@@ -6,6 +6,45 @@ import {
   UpdateType,
 } from "@powersync/react-native";
 import { createBaseLogger, LogLevel } from "@powersync/react-native";
+import * as FileSystem from "expo-file-system/legacy";
+
+const MIME_MAP: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  gif: "image/gif",
+  webp: "image/webp",
+  pdf: "application/pdf",
+};
+
+function isLocalFileUri(value: unknown): value is string {
+  return typeof value === "string" && value.startsWith("file://");
+}
+
+function buildMultipartBody(record: Record<string, any>): FormData {
+  const formData = new FormData();
+  for (const [key, value] of Object.entries(record)) {
+    if (key === "file" && isLocalFileUri(value)) {
+      const filename = value.split("/").pop() ?? "upload.jpg";
+      const ext = filename.split(".").pop()?.toLowerCase() ?? "jpg";
+      formData.append("file", {
+        uri: value,
+        name: filename,
+        type: MIME_MAP[ext] ?? "application/octet-stream",
+      } as any);
+    } else if (value != null) {
+      formData.append(key, String(value));
+    }
+  }
+  return formData;
+}
+
+async function hasLocalFile(record: Record<string, any>): Promise<boolean> {
+  const uri = record.file;
+  if (!isLocalFileUri(uri)) return false;
+  const info = await FileSystem.getInfoAsync(uri);
+  return info.exists;
+}
 
 // const logger = createBaseLogger();
 // logger.useDefaults(); // Console output
@@ -55,22 +94,44 @@ export class Connector implements PowerSyncBackendConnector {
         // op.opData contains the columns (name, etc.)
         // op.id is the automatically managed 'id' column
         const record = { ...op.opData, id: Number(op.id) };
+        const hasFile = await hasLocalFile(record);
 
         switch (op.op) {
           case UpdateType.PUT:
-            // For 'PUT', typically use an UPSERT on your backend
-            await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/`, {
-              method: "POST",
-              headers,
-              body: JSON.stringify(record),
-            });
+            if (hasFile) {
+              const authHeaders: Record<string, string> = {};
+              if (accessToken)
+                authHeaders.Authorization = `Bearer ${accessToken}`;
+              await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/`, {
+                method: "POST",
+                headers: authHeaders,
+                body: buildMultipartBody(record),
+              });
+            } else {
+              await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/`, {
+                method: "POST",
+                headers,
+                body: JSON.stringify(record),
+              });
+            }
             break;
           case UpdateType.PATCH:
-            await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`, {
-              method: "PATCH",
-              headers,
-              body: JSON.stringify(op.opData),
-            });
+            if (hasFile) {
+              const authHeaders: Record<string, string> = {};
+              if (accessToken)
+                authHeaders.Authorization = `Bearer ${accessToken}`;
+              await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`, {
+                method: "PATCH",
+                headers: authHeaders,
+                body: buildMultipartBody({ ...op.opData }),
+              });
+            } else {
+              await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`, {
+                method: "PATCH",
+                headers,
+                body: JSON.stringify(op.opData),
+              });
+            }
             break;
           case UpdateType.DELETE:
             await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`, {

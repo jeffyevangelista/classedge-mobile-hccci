@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { OneSignal, LogLevel } from "react-native-onesignal";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
+import { readNotification } from "@/features/notifications/notifications.service";
 
 const OneSignalProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -22,12 +23,24 @@ const OneSignalProvider = ({ children }: { children: React.ReactNode }) => {
     const clickHandler = (event: any) => {
       const data = event.notification.additionalData;
 
-      // Check if our custom path exists in the notification data
-      if (data && data.path) {
-        console.log("Redirecting to path:", data.path);
+      if (data && data.entity_type && data.entity_id) {
+        const { entity_type, entity_id, notification_id } = data;
 
-        // Use your navigation library to redirect the user
-        router.push(data.path);
+        // Mark notification as read if notification_id is available
+        if (notification_id) {
+          readNotification(String(notification_id)).catch((err: any) =>
+            console.log("Failed to mark notification as read:", err.message),
+          );
+        }
+
+        // Route based on entity_type, matching NotificationList logic
+        const path =
+          entity_type === "lesson" || entity_type === "module"
+            ? `/material/${entity_id}`
+            : `/assessment/${entity_id}`;
+
+        console.log("Redirecting to path:", path);
+        router.push(path);
       }
     };
 

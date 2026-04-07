@@ -42,7 +42,7 @@ const ClassroomLayout = () => {
         }}
       />
       <Stack.Screen
-        name="input-grades"
+        name="input-grades/[activityId]"
         options={{
           headerTitle: "Input Grades",
         }}

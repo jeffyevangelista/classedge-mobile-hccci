@@ -21,7 +21,7 @@ const QueryProvider = ({ children }: { children: React.ReactNode }) => {
       persistOptions={{ persister }}
     >
       {children}
-      <DevToolsBubble queryClient={queryClient} />
+      {__DEV__ && <DevToolsBubble queryClient={queryClient} />}
     </PersistQueryClientProvider>
   );
 };

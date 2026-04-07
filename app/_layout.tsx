@@ -14,6 +14,7 @@ import { useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import NetworkBanner from "@/features/network/NetworkBanner";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -86,6 +87,7 @@ export default function RootLayout() {
             <Stack.Screen name="(main)" />
           </Stack.Protected>
         </Stack>
+        <NetworkBanner />
       </RootProvider>
     </GestureHandlerRootView>
   );
