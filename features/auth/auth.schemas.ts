@@ -2,10 +2,12 @@ import { z } from "zod";
 
 const emailSchema = z
   .email("Please enter a valid email")
-  .refine((val) => val.toLowerCase().endsWith("@hccci.edu.ph"), {
-    message: "Email must end with @hccci.edu.ph",
-  })
   .min(1, "Email is required");
+
+// .refine((val) => val.toLowerCase().endsWith("@hccci.edu.ph"), {
+//   message: "Email must end with @hccci.edu.ph",
+// })
+// .min(1, "Email is required");
 
 export const forgotPasswordSchema = z.object({
   email: emailSchema,

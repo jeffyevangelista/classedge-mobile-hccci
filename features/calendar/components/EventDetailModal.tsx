@@ -4,6 +4,7 @@ import { AppText } from "@/components/AppText";
 import { BottomSheet, Skeleton } from "heroui-native";
 import { useWindowDimensions, View } from "react-native";
 import { Icon } from "@/components/Icon";
+import EmptyState from "@/components/EmptyState";
 
 import {
   formatDate,
@@ -86,16 +87,11 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
 
   if (!event) {
     return (
-      <View className="flex-1 justify-center items-center p-6">
-        <Icon
-          name="CalendarIcon"
-          size={48}
-          className="text-muted-foreground mb-4"
-        />
-        <AppText className="text-center text-muted-foreground">
-          Event not found
-        </AppText>
-      </View>
+      <EmptyState
+        icon="CalendarIcon"
+        title="Event not found"
+        description="This event may have been removed"
+      />
     );
   }
 

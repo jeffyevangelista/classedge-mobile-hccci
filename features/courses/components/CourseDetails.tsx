@@ -1,4 +1,4 @@
-import { View, Text, RefreshControl } from "react-native";
+import { View, RefreshControl } from "react-native";
 import React, { useCallback, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { useCourseDetails, useCourseStudents } from "../courses.hooks";
@@ -36,7 +36,7 @@ const CourseDetails = () => {
 
   return (
     <FlashList
-      className="w-full max-w-3xl mx-auto "
+      className="w-full max-w-3xl mx-auto"
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
@@ -67,7 +67,9 @@ const CourseDetails = () => {
 const StudentListHeader = ({ count }: { count: number }) => {
   return (
     <View className="flex-row items-center mb-4 mx-1">
-      <AppText className="text-xl font-bold">Enrolled Students</AppText>
+      <AppText weight="bold" className="text-xl">
+        Enrolled Students
+      </AppText>
       <View className="ml-auto bg-orange-100 dark:bg-orange-900 px-3 py-1 rounded-full"></View>
     </View>
   );
@@ -82,7 +84,7 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
         </View>
         <View className="flex-1">
           <AppText className="text-xs text-gray-500 mb-1">Instructor</AppText>
-          <AppText className="text-base font-semibold">
+          <AppText weight="semibold" className="text-base">
             {courseDetails?.subjectId.assignTeacherId.firstName}{" "}
             {courseDetails?.subjectId.assignTeacherId.lastName}
           </AppText>
@@ -95,7 +97,7 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
         </View>
         <View className="flex-1">
           <AppText className="text-xs text-gray-500 mb-1">Room</AppText>
-          <AppText className="text-base font-semibold">
+          <AppText weight="semibold" className="text-base">
             {courseDetails?.subjectId.roomNumber || "TBA"}
           </AppText>
         </View>
@@ -127,7 +129,7 @@ const CourseDetailsHeader = ({ courseDetails }: { courseDetails: any }) => {
       </View>
 
       <View className="mt-6 px-1">
-        <AppText className="text-3xl font-bold mb-2">
+        <AppText weight="bold" className="text-3xl mb-2">
           {courseDetails?.subjectId.subjectName}
         </AppText>
         <AppText className="text-lg text-gray-500 mb-6">
@@ -156,7 +158,7 @@ const StudentItem = ({ student, index }: { student: any; index: number }) => {
         />
       </View>
       <View className="flex-1 ml-3">
-        <AppText className="text-base font-semibold">
+        <AppText weight="semibold" className="text-base">
           {student.firstName} {student.lastName}
         </AppText>
       </View>

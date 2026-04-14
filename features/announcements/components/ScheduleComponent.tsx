@@ -1,9 +1,10 @@
-import { View, Text, useColorScheme } from "react-native";
+import { View, useColorScheme } from "react-native";
 import React, { useMemo } from "react";
 import { useClock } from "@/hooks/useClock";
 import { useClassSchedule } from "@/features/profile/profile.hooks";
 import { Skeleton } from "heroui-native";
 import { colors } from "@/utils/colors";
+import { AppText } from "@/components/AppText";
 
 const formatTime = (time: string) => {
   const [h, m] = time.split(":").map(Number);
@@ -113,7 +114,8 @@ const ScheduleComponent = () => {
       };
     }, [data, now, currentDay]);
 
-  if (isError) return <Text className="text-red-500 p-4">{error.message}</Text>;
+  if (isError)
+    return <AppText className="text-red-500 p-4">{error.message}</AppText>;
   if (!data) return null;
 
   return (
@@ -132,8 +134,9 @@ const ScheduleComponent = () => {
           }}
         >
           <View className="flex-row items-center gap-2 mb-3">
-            <Text
-              className="uppercase text-[11px] font-bold tracking-widest"
+            <AppText
+              weight="bold"
+              className="uppercase text-[11px] tracking-widest"
               style={{
                 color: currentClass
                   ? "rgba(255,255,255,0.7)"
@@ -143,12 +146,13 @@ const ScheduleComponent = () => {
               }}
             >
               {currentClass ? "Now" : "No Class"}
-            </Text>
+            </AppText>
           </View>
 
           <View className="flex-1 justify-center">
-            <Text
-              className="text-[15px] font-bold leading-5"
+            <AppText
+              weight="bold"
+              className="text-[15px] leading-5"
               style={{
                 color: currentClass
                   ? "#ffffff"
@@ -161,7 +165,7 @@ const ScheduleComponent = () => {
               {currentClass
                 ? currentClass.subject.subjectId.subjectName
                 : "You're free right now"}
-            </Text>
+            </AppText>
           </View>
 
           <View
@@ -174,8 +178,9 @@ const ScheduleComponent = () => {
                   : colors.primary[100],
             }}
           >
-            <Text
-              className="text-xs font-semibold"
+            <AppText
+              weight="semibold"
+              className="text-xs"
               style={{
                 color: currentClass
                   ? "#ffffff"
@@ -187,7 +192,7 @@ const ScheduleComponent = () => {
               {currentClass
                 ? `${formatTime(currentClass.scheduleStartTime)} – ${formatTime(currentClass.scheduleEndTime)}`
                 : "Enjoy your break"}
-            </Text>
+            </AppText>
           </View>
         </View>
 
@@ -213,8 +218,9 @@ const ScheduleComponent = () => {
           }}
         >
           <View className="flex-row items-center gap-2 mb-3">
-            <Text
-              className="uppercase text-[11px] font-bold tracking-widest"
+            <AppText
+              weight="bold"
+              className="uppercase text-[11px] tracking-widest"
               style={{
                 color: nextClass
                   ? isDark
@@ -226,12 +232,13 @@ const ScheduleComponent = () => {
               }}
             >
               Up Next
-            </Text>
+            </AppText>
           </View>
 
           <View className="flex-1 justify-center">
-            <Text
-              className="text-[15px] font-bold leading-5"
+            <AppText
+              weight="bold"
+              className="text-[15px] leading-5"
               style={{
                 color: nextClass
                   ? isDark
@@ -248,7 +255,7 @@ const ScheduleComponent = () => {
                 : todayHasClasses
                   ? "Done for today"
                   : "No classes today"}
-            </Text>
+            </AppText>
           </View>
 
           <View
@@ -263,8 +270,9 @@ const ScheduleComponent = () => {
                   : "#f3f4f6",
             }}
           >
-            <Text
-              className="text-xs font-semibold"
+            <AppText
+              weight="semibold"
+              className="text-xs"
               style={{
                 color: nextClass
                   ? isDark
@@ -280,7 +288,7 @@ const ScheduleComponent = () => {
                   ? `${nextClassDayLabel} · ${formatTime(nextClass.scheduleStartTime)}`
                   : `Starts ${formatTime(nextClass.scheduleStartTime)}`
                 : "Rest & recharge"}
-            </Text>
+            </AppText>
           </View>
         </View>
       </View>

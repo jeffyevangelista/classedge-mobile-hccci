@@ -4,6 +4,8 @@ import { useAssessment } from "@/features/oversight/oversight.hooks";
 import { useFormattedDate } from "@/hooks/userFormattedDate";
 import { useLocalSearchParams } from "expo-router";
 import { Skeleton } from "heroui-native";
+import ErrorFallback from "@/components/ErrorFallback";
+import NoDataFallback from "@/components/NoDataFallback";
 import { View } from "react-native";
 import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 
@@ -17,9 +19,17 @@ const ActivityScreen = () => {
       <LoadingComponent isRefetching={isLoading} refetch={() => refetch()} />
     );
 
-  if (isError) return <AppText>{error.message}</AppText>;
+  if (isError)
+    return <ErrorFallback message={error.message} onRefetch={refetch} />;
 
-  if (!data) return <AppText>No data found</AppText>;
+  if (!data)
+    return (
+      <NoDataFallback
+        title="Activity not found"
+        description="The activity you're looking for doesn't exist"
+        onRefetch={() => refetch()}
+      />
+    );
 
   const ongoing = data.ongoing_attempt;
   const isPastDue = data.end_time
@@ -30,7 +40,7 @@ const ActivityScreen = () => {
   let actionButton = null;
 
   return (
-    <View className="flex-1 w-full max-w-3xl mx-auto">
+    <View className="flex-1 w-full max-w-3xl mx-auto bg-white dark:bg-neutral-900">
       <ScrollView
         className="pb-24"
         refreshControl={
@@ -39,31 +49,46 @@ const ActivityScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         <View className="p-4">
-          <AppText>Due {useFormattedDate(data.end_time, true)} </AppText>
-          <AppText>
+          <AppText className="text-sm text-neutral-500 dark:text-neutral-400">
+            Due {useFormattedDate(data.end_time, true)}
+          </AppText>
+          <AppText
+            weight="semibold"
+            className="text-xl text-neutral-900 dark:text-neutral-100 mt-1"
+          >
             {data.activity_type_name}: {data?.activity_name}
           </AppText>
 
-          <AppText>
+          <AppText className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             {data.max_score} Points • {data.time_duration} Minutes
           </AppText>
 
           {data.activity_instruction && (
             <View className="mt-5">
-              <AppText>Instructions</AppText>
-              <AppText className="text-typography-500 text-justify">
+              <AppText
+                weight="semibold"
+                className="text-base text-neutral-900 dark:text-neutral-100 mb-1"
+              >
+                Instructions
+              </AppText>
+              <AppText className="text-neutral-500 dark:text-neutral-400 text-justify leading-relaxed">
                 {data.activity_instruction}
               </AppText>
             </View>
           )}
           <View className="mt-5">
-            <AppText>Materials</AppText>
+            <AppText
+              weight="semibold"
+              className="text-base text-neutral-900 dark:text-neutral-100 mb-1"
+            >
+              Materials
+            </AppText>
             {data.lesson_urls.length > 0 ? (
               data.lesson_urls.map((url) => (
                 <FileRenderer url={url} key={url.id} />
               ))
             ) : (
-              <AppText className="text-typography-400">
+              <AppText className="text-neutral-400 dark:text-neutral-500">
                 No materials available
               </AppText>
             )}
@@ -82,31 +107,30 @@ const LoadingComponent = ({
   refetch: () => void;
 }) => {
   return (
-    <View className="flex-1 w-full max-w-3xl mx-auto">
+    <View className="flex-1 w-full max-w-3xl mx-auto p-2.5 bg-white dark:bg-neutral-900">
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
         showsVerticalScrollIndicator={false}
       >
-        <View className=" w-full max-w-3xl mx-auto flex-1 gap-10">
+        <View className="w-full max-w-3xl mx-auto flex-1 gap-10">
           <View className="gap-2">
             <Skeleton className="rounded-full h-3 w-40" />
             <Skeleton className="rounded-full h-6" />
             <Skeleton className="rounded-full h-3 w-20" />
           </View>
           <Skeleton className="rounded-full h-4" />
-
           <View className="gap-2">
             <Skeleton className="h-4 w-28 rounded-full" />
-            <Skeleton className="rounded full h-16" />
-            <Skeleton className="rounded full h-16" />
-            <Skeleton className="rounded full h-16" />
-            <Skeleton className="rounded full h-16" />
+            <Skeleton className="rounded-full h-16" />
+            <Skeleton className="rounded-full h-16" />
+            <Skeleton className="rounded-full h-16" />
+            <Skeleton className="rounded-full h-16" />
           </View>
         </View>
       </ScrollView>
-      <View className="bg-[#f9f9f9] absolute bottom-0 left-0 right-0 z-10 p-4">
+      <View className="bg-neutral-50 dark:bg-neutral-800 absolute bottom-0 left-0 right-0 z-10 p-4">
         <Skeleton className="h-12 w-full max-w-3xl mx-auto rounded-full" />
       </View>
     </View>

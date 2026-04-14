@@ -75,7 +75,8 @@ const CourseworkItem = ({
           </View>
           <View className="flex-1">
             <AppText
-              className="text-neutral-900 dark:text-neutral-100 font-poppins-semibold text-lg flex-1"
+              weight="semibold"
+              className="text-neutral-900 dark:text-neutral-100 text-lg flex-1"
               numberOfLines={1}
               ellipsizeMode="tail"
             >
@@ -89,21 +90,6 @@ const CourseworkItem = ({
               >
                 Due {formattedDate}
               </AppText>
-              {/* {urgency && (
-                <Badge
-                  size="sm"
-                  variant="solid"
-                  className={
-                    urgency.color === "text-red-600"
-                      ? "bg-red-100"
-                      : "bg-orange-100"
-                  }
-                >
-                  <BadgeText className={`${urgency.color} text-2xs`}>
-                    {urgency.label}
-                  </BadgeText>
-                </Badge>
-              )} */}
             </View>
           </View>
         </View>

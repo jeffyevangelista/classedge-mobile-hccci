@@ -2,6 +2,7 @@ import { AppState, View } from "react-native";
 import { Link } from "expo-router";
 import { Avatar, Skeleton } from "heroui-native";
 import { AppText } from "@/components/AppText";
+import { ErrorComponent } from "@/components/ErrorComponent";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import { env } from "@/utils/env";
 import { useEffect, useState } from "react";
@@ -22,7 +23,7 @@ const Header = () => {
   }, []);
 
   if (isLoading) return <HeaderSkeleton />;
-  if (isError) return <AppText>{error.message}</AppText>;
+  if (isError) return <ErrorComponent message={error.message} />;
 
   const userDetails = data?.[0];
 

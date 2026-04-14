@@ -4,7 +4,6 @@ import { Button, Tabs } from "heroui-native";
 import LessonList from "@/features/classroom/components/LessonList";
 import CourseworkList from "@/features/classroom/components/CourseworkList";
 import ClassroomActivitiyList from "@/features/classroom/components/ClassroomActivitiyList";
-import { Icon } from "@/components/Icon";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { db } from "@/powersync/system";
 

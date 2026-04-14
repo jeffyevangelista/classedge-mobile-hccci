@@ -8,7 +8,7 @@ const LoginEmailScreen = () => {
   const dynamicTopPadding = height * 0.1;
   return (
     <Screen
-      className="items-center "
+      className="items-center"
       style={{
         paddingTop: dynamicTopPadding,
       }}

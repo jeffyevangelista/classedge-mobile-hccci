@@ -12,6 +12,7 @@ import {
 import { refresh } from "./refreshToken";
 import type { AuthResponse, LoginCredentials } from "./auth.types";
 import { useToast } from "heroui-native";
+import { useRouter } from "expo-router";
 
 export const useLogin = () => {
   const { setAccessToken, setRefreshToken, setPowersyncToken } =
@@ -41,10 +42,14 @@ export const useLogout = () => {
 
 export const useForgotPassword = () => {
   const { setEmail } = useStore.getState();
+  const router = useRouter();
   return useMutation({
     mutationKey: ["forgot-password"],
     mutationFn: ({ email }: { email: string }) => forgotPassword(email),
     onSuccess: (_, { email }: { email: string }) => {
+      if (email) {
+        router.push("/forgot-password/otp-verification");
+      }
       setEmail(email);
     },
   });
@@ -119,9 +124,9 @@ export const useCompleteOnboarding = () => {
       } = useStore.getState();
       const data = await refresh(refreshToken);
       setAccessToken(data.access_token);
+      setNeedsOnboarding(false);
       setPowersyncToken(data.powersync_token);
       await setRefreshToken(data.refresh_token);
-      setNeedsOnboarding(false);
     },
     onError: (error) => {
       const errorMessage =

@@ -2,6 +2,8 @@ import React, { useMemo } from "react";
 import { ScrollView, View, RefreshControl } from "react-native";
 import { useUserDetails } from "../profile.hooks";
 import { AppText } from "@/components/AppText";
+import { ErrorComponent } from "@/components/ErrorComponent";
+import NoDataFallback from "@/components/NoDataFallback";
 import { Card, Skeleton } from "heroui-native";
 
 // 1. Move static mapping outside to prevent re-creation on every render
@@ -33,11 +35,19 @@ const ProfileInformation = () => {
   if (isLoading) return <ProfileInformationSkeleton />;
   if (isError)
     return (
-      <AppText className="p-5 text-red-500">
-        {error?.message ?? "An error occurred"}
-      </AppText>
+      <ErrorComponent
+        message={error?.message ?? "An error occurred"}
+        onRetry={() => refetch()}
+      />
     );
-  if (!formattedData) return <AppText className="p-5">No data found</AppText>;
+  if (!formattedData)
+    return (
+      <NoDataFallback
+        title="No profile data"
+        description="Your profile information is not available"
+        onRefetch={() => refetch()}
+      />
+    );
 
   return (
     <ScrollView

@@ -99,7 +99,7 @@ const EventCard = ({ event }: { event: Event }) => {
         <Surface
           variant="secondary"
           key={event.id}
-          className=" mr-2 max-w-sm rounded-xl"
+          className="mr-2 max-w-sm rounded-xl"
         >
           <Card.Body className="gap-2.5">
             <AppText weight="semibold" className="text-md">
@@ -149,7 +149,7 @@ const AnnouncementSkeleton = () => {
       scrollEnabled={false}
       data={[1, 2, 3]}
       renderItem={() => (
-        <View className="mb-2 max-w-3xl sm:mx-auto w-full px-5">
+        <View className="mb-2 max-w-3xl sm:mx-auto w-full px-2.5">
           <Card className="shadow-none rounded-xl">
             <Card.Header>
               <View className="flex-row items-center gap-2">

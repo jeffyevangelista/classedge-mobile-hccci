@@ -2,6 +2,7 @@ import { View, StyleSheet, ScrollView } from "react-native";
 import React, { memo } from "react";
 import { usePendingAssessments } from "../courses.hooks";
 import { AppText } from "@/components/AppText";
+import { ErrorComponent } from "@/components/ErrorComponent";
 import { Card, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import { Assessment } from "../courses.types";
@@ -29,11 +30,11 @@ const PendingAssessmentList = ({
       </ScrollView>
     );
   }
-  if (isError) return <AppText>{error.message}</AppText>;
+  if (isError) return <ErrorComponent message={error.message} />;
 
   if (!data || data.length === 0)
     return (
-      <View className=" w-full items-center justify-center max-w-2xl mx-auto">
+      <View className="w-full items-center justify-center max-w-2xl mx-auto">
         <View className="p-2 bg-emerald-100 rounded-full">
           <Icon name="ConfettiIcon" size={32} className="text-emerald-500" />
         </View>
@@ -63,7 +64,7 @@ const PendingAssessmentList = ({
 export default PendingAssessmentList;
 
 const AssessmentItem = memo(({ item }: { item: Assessment }) => (
-  <Card className=" w-72 md:w-80 lg:w-96 mr-3 shadow-none rounded-xl">
+  <Card className="w-72 md:w-80 lg:w-96 mr-3 shadow-none rounded-xl">
     <Card.Body className="flex flex-row items-center gap-2.5">
       <View className="p-2 bg-emerald-100 rounded-full">
         <Icon name="BookOpenIcon" size={24} className="text-emerald-500" />

@@ -2,10 +2,8 @@ import { View, useWindowDimensions, TextInput } from "react-native";
 import { useCallback, useRef } from "react";
 import {
   Button,
-  Description,
   FieldError,
   Input,
-  Label,
   Spinner,
   TextField,
   useThemeColor,
@@ -15,17 +13,14 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useForgotPassword } from "../auth.hooks";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   ForgotPasswordFormvalues,
   forgotPasswordSchema,
 } from "../auth.schemas";
-import { AxiosError } from "axios";
 
 const ForgotPasswordForm = () => {
   const { toast } = useToast();
   const { height } = useWindowDimensions();
-  const router = useRouter();
   const themeColorAccentForeground = useThemeColor("accent-foreground");
   const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null);
   const { mutateAsync: forgotPassword, isPending } = useForgotPassword();
@@ -43,7 +38,6 @@ const ForgotPasswordForm = () => {
   const handleForgotPassword = async (data: ForgotPasswordFormvalues) => {
     try {
       await forgotPassword(data);
-      router.push("/forgot-password/otp-verification");
     } catch (error: any) {
       toast.show({
         variant: "danger",

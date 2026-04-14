@@ -36,7 +36,7 @@ const LoginScreen = () => {
         }}
       >
         {/* logo title, and auth */}
-        <View className="flex-1 items-center justify-center w-full max-w-md mx-auto ">
+        <View className="flex-1 items-center justify-center w-full max-w-md mx-auto">
           <View className={`items-center mb-48 md:mb-56 lg:mb-64`}>
             <Image
               source={require("@/assets/logo.png")}

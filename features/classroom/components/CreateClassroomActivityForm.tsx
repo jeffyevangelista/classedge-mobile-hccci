@@ -6,6 +6,7 @@ import {
   Label,
   Select,
   Separator,
+  Skeleton,
   Surface,
   TextArea,
   TextField,
@@ -218,7 +219,7 @@ const CreateClassroomActivityForm = () => {
         <Surface className="gap-1 py-2 rounded-xl p-0 shadow-none">
           <Pressable
             onPress={() => setShowStartDatePicker(!showStartDatePicker)}
-            className="flex-row items-center justify-center py-4 "
+            className="flex-row items-center justify-center py-4"
           >
             <Icon name="CalendarIcon" size={16} className="text-muted mr-2" />
             <Text className="text-foreground">{formatDate(startDate)}</Text>
@@ -314,7 +315,7 @@ const GradingPeriodSelector = ({
   onValueChange: (value: SelectOption | undefined) => void;
 }) => {
   const { data, isLoading } = useClassroomGradingPeriods();
-  if (isLoading) return <AppText>loading...</AppText>;
+  if (isLoading) return <Skeleton className="h-10 w-full rounded-lg" />;
 
   console.log(data);
 

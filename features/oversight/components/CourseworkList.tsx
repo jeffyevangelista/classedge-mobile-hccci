@@ -24,7 +24,7 @@ const CourseworkList = () => {
     fetchNextPage,
     refetch,
     isRefetching,
-  } = useAssessments(subjectId as string);
+  } = useAssessments(subjectId as string, true);
 
   if (isLoading) return <AssessmentSkeleton />;
   if (isError)

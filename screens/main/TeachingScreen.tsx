@@ -15,6 +15,7 @@ import { Link } from "expo-router";
 import Image from "@/components/Image";
 import { env } from "@/utils/env";
 import EmptyState from "@/components/EmptyState";
+import ErrorFallback from "@/components/ErrorFallback";
 import { Subject } from "@/powersync/schema";
 
 const MIN_CARD_WIDTH = 280;
@@ -26,7 +27,8 @@ const TeachingScreen = () => {
     useTeachingCourses();
 
   if (isLoading) return <TeachingListSkeleton numColumns={numColumns} />;
-  if (isError) return <AppText>{error.message}</AppText>;
+  if (isError)
+    return <ErrorFallback message={error.message} onRefetch={refetch} />;
 
   return (
     <Screen className="px-2.5">
@@ -88,7 +90,8 @@ const TeachingCourse = ({
               <View className="md:h-14">
                 <AppText
                   numberOfLines={2}
-                  className="font-semibold text-lg md:text-md leading-6"
+                  weight="semibold"
+                  className="text-lg md:text-md leading-6"
                 >
                   {item.subjectName}
                 </AppText>

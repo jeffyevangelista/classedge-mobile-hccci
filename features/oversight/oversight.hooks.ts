@@ -62,10 +62,7 @@ export const useLesson = (id: string) => {
   });
 };
 
-export const useAssessments = (
-  courseId: string,
-  classroomMode: boolean = false,
-) => {
+export const useAssessments = (courseId: string, classroomMode: boolean) => {
   return useInfiniteQuery({
     queryKey: ["course-assessments", courseId],
     queryFn: ({ pageParam = 1 }) =>
@@ -79,7 +76,7 @@ export const useAssessments = (
       return undefined;
     },
     initialPageParam: 1,
-    placeholderData: keepPreviousData,
+    // placeholderData: keepPreviousData,
     enabled: !!courseId,
   });
 };

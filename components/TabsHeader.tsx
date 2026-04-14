@@ -2,6 +2,7 @@ import { AppState, View } from "react-native";
 import { Link } from "expo-router";
 import { Avatar, Skeleton } from "heroui-native";
 import { AppText } from "@/components/AppText";
+import { ErrorComponent } from "@/components/ErrorComponent";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import { env } from "@/utils/env";
 import { useEffect, useState } from "react";
@@ -25,17 +26,17 @@ const TabsHeader = () => {
   }, []);
 
   if (isLoading) return <TabsHeaderSkeleton />;
-  if (isError) return <AppText>{error.message}</AppText>;
+  if (isError) return <ErrorComponent message={error.message} />;
 
   const userDetails = data?.[0];
 
   return (
     <View
       style={{ paddingTop: insets.top }}
-      className="bg-white dark:bg-neutral-900 px-5 pb-1 flex flex-row justify-between items-center "
+      className="bg-white dark:bg-neutral-900 px-5 pb-3 flex flex-row justify-between items-center"
     >
       <Link href="/(main)/profile">
-        <View className="flex flex-row items-center gap-3 ">
+        <View className="flex flex-row items-center gap-3">
           <Avatar size="sm" alt="user-profile">
             <Avatar.Image
               source={

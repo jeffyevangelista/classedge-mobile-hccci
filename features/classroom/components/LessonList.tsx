@@ -108,7 +108,8 @@ const MaterialItem = React.memo(
 
             <View className="flex-1">
               <AppText
-                className="text-neutral-900 dark:text-neutral-100 font-poppins-semibold text-lg flex-1"
+                weight="semibold"
+                className="text-neutral-900 dark:text-neutral-100 text-lg flex-1"
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >

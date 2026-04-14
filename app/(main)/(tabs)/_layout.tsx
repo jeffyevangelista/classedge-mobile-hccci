@@ -22,7 +22,6 @@ const TabsLayout = () => {
           headerTitleStyle: {
             fontFamily: "Poppins-SemiBold",
             fontSize: Platform.OS === "ios" ? 28 : 32,
-            color: "#000",
           },
           tabBarLabelStyle: {
             fontFamily: "Poppins-Medium",

@@ -18,8 +18,9 @@ import {
 } from "@/features/classroom/ classroom.service";
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
-import { Avatar, Button, Card, Input } from "heroui-native";
+import { Avatar, Button, Card, Input, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
+import ErrorFallback from "@/components/ErrorFallback";
 import { CameraView } from "expo-camera";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Image from "@/components/Image";
@@ -148,21 +149,12 @@ const StudentScoringList = ({
     }
   }, [dirtyStudentIds, localScores, localImages, activityDetail]);
 
-  if (isLoading) {
-    return (
-      <View>
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
+  if (isLoading) return <StudentScoringSkeleton />;
 
-  if (isError) {
+  if (isError)
     return (
-      <View>
-        <Text>Error: {error?.message}</Text>
-      </View>
+      <ErrorFallback message={error?.message ?? "Failed to load students"} />
     );
-  }
 
   return (
     <View className="flex-1">
@@ -495,5 +487,30 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 });
+
+const StudentScoringSkeleton = () => (
+  <View className="flex-1">
+    <View className="max-w-3xl w-full mx-auto gap-2">
+      {Array(6)
+        .fill(0)
+        .map((_, i) => (
+          <Card
+            key={i}
+            className="rounded-xl items-center gap-2 shadow-none flex-row"
+          >
+            <Skeleton className="w-10 h-10 rounded-full" />
+            <Skeleton className="h-4 w-24 rounded-full flex-1" />
+            <View className="flex-row gap-1 items-center">
+              <Skeleton className="h-8 w-16 rounded-lg" />
+              <Skeleton className="w-10 h-10 rounded-xl" />
+            </View>
+          </Card>
+        ))}
+    </View>
+    <View className="p-4 max-w-3xl w-full mx-auto">
+      <Skeleton className="h-10 w-full rounded-xl" />
+    </View>
+  </View>
+);
 
 export default StudentScoringList;

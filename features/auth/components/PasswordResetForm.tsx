@@ -1,5 +1,5 @@
 import { Pressable, TextInput, useWindowDimensions, View } from "react-native";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Button,
   FieldError,
@@ -18,8 +18,7 @@ import {
   ConfirmPasswordFormValues,
   confirmPasswordSchema,
 } from "../auth.schemas";
-import zxcvbn from "zxcvbn";
-import { AnimatePresence, MotiView } from "moti";
+import { MotiView } from "moti";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 
@@ -39,10 +38,26 @@ const PasswordResetForm = () => {
 
   const password = watch("password");
   const [showPassword, setShowPassword] = useState(false);
-  const strength = zxcvbn(password || "");
 
-  const scoreColors = ["#f87171", "#fb923c", "#facc15", "#4ade80", "#22c55e"];
-  const scoreLabels = ["Very weak", "Weak", "Fair", "Good", "Strong"];
+  const requirements = useMemo(
+    () => [
+      { label: "At least 12 characters", met: (password || "").length >= 12 },
+      {
+        label: "At least 1 uppercase letter",
+        met: /[A-Z]/.test(password || ""),
+      },
+      {
+        label: "At least 1 lowercase letter",
+        met: /[a-z]/.test(password || ""),
+      },
+      { label: "At least 1 number", met: /[0-9]/.test(password || "") },
+      {
+        label: "At least 1 symbol (!@#$...)",
+        met: /[^A-Za-z0-9]/.test(password || ""),
+      },
+    ],
+    [password],
+  );
 
   const handleResetPassword = async (data: ConfirmPasswordFormValues) => {
     try {
@@ -95,37 +110,33 @@ const PasswordResetForm = () => {
                 </Pressable>
               </View>
               {error && <FieldError>{error.message}</FieldError>}
-              <AnimatePresence>
-                {value?.length > 0 && (
-                  <MotiView
-                    from={{ opacity: 0, translateY: -4 }}
-                    animate={{ opacity: 1, translateY: 0 }}
-                    exit={{ opacity: 0, translateY: -4 }}
-                    className="mt-3"
-                  >
-                    <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <MotiView
-                        from={{ width: "0%" }}
-                        animate={{
-                          width: `${((strength.score + 1) / 5) * 100}%`,
-                          backgroundColor: scoreColors[strength.score],
-                        }}
-                        transition={{
-                          type: "timing",
-                          duration: 400,
-                        }}
-                        className="h-2 rounded-full"
-                      />
-                    </View>
-                    <AppText
-                      className="mt-1 text-sm font-medium"
-                      style={{ color: scoreColors[strength.score] }}
+              {value?.length > 0 && (
+                <MotiView
+                  from={{ opacity: 0, translateY: -4 }}
+                  animate={{ opacity: 1, translateY: 0 }}
+                  className="mt-3 gap-1.5"
+                >
+                  {requirements.map((req) => (
+                    <View
+                      key={req.label}
+                      className="flex-row items-center gap-2"
                     >
-                      {scoreLabels[strength.score]}
-                    </AppText>
-                  </MotiView>
-                )}
-              </AnimatePresence>
+                      <Icon
+                        name={req.met ? "CheckCircle" : "XCircle"}
+                        size={16}
+                        color={req.met ? "#22c55e" : "#9ca3af"}
+                        weight={req.met ? "fill" : "regular"}
+                      />
+                      <AppText
+                        className="text-sm"
+                        style={{ color: req.met ? "#22c55e" : "#9ca3af" }}
+                      >
+                        {req.label}
+                      </AppText>
+                    </View>
+                  ))}
+                </MotiView>
+              )}
             </>
           )}
         />

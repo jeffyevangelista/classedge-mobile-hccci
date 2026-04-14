@@ -3,7 +3,9 @@ import { useCourseMaterial } from "@/features/courses/courses.hooks";
 import { useLocalSearchParams } from "expo-router";
 import { AppText } from "@/components/AppText";
 import Screen from "@/components/screen";
-import { Card } from "heroui-native";
+import { Skeleton } from "heroui-native";
+import ErrorFallback from "@/components/ErrorFallback";
+import NoDataFallback from "@/components/NoDataFallback";
 import { env } from "@/utils/env";
 
 const MaterialDetailsScreen = () => {
@@ -12,9 +14,15 @@ const MaterialDetailsScreen = () => {
     materialId as string,
   );
 
-  if (isLoading) return <AppText>Loading...</AppText>;
-  if (isError) return <AppText>Error: {error.message}</AppText>;
-  if (!data) return <AppText>No data found</AppText>;
+  if (isLoading) return <MaterialDetailsSkeleton />;
+  if (isError) return <ErrorFallback message={error.message} />;
+  if (!data)
+    return (
+      <NoDataFallback
+        title="Material not found"
+        description="The material you're looking for doesn't exist"
+      />
+    );
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -25,40 +33,41 @@ const MaterialDetailsScreen = () => {
   };
 
   return (
-    <Screen>
-      <ScrollView className="flex-1 p-4">
-        <View className="gap-4">
-          <Card className="p-4 rounded-xl shadow-none">
-            <AppText weight="bold" className="text-2xl mb-2">
+    <Screen className="bg-white dark:bg-neutral-900">
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <View className="gap-6 w-full max-w-3xl mx-auto p-4">
+          <View>
+            <AppText className="text-sm text-neutral-500 dark:text-neutral-400">
+              {formatDate(data.startDate)} – {formatDate(data.endDate)}
+            </AppText>
+            <AppText
+              weight="semibold"
+              className="text-xl text-neutral-900 dark:text-neutral-100 mt-1"
+            >
               {data.fileName}
             </AppText>
+          </View>
 
-            {data.description && (
-              <View className="mt-4">
-                <AppText weight="semibold" className="text-lg mb-2">
-                  Description
-                </AppText>
-                <AppText className="text-foreground-secondary">
-                  {data.description}
-                </AppText>
-              </View>
-            )}
-
-            <View className="mt-4 gap-2">
-              <View className="flex-row justify-between">
-                <AppText weight="semibold">Start Date:</AppText>
-                <AppText>{formatDate(data.startDate)}</AppText>
-              </View>
-              <View className="flex-row justify-between">
-                <AppText weight="semibold">End Date:</AppText>
-                <AppText>{formatDate(data.endDate)}</AppText>
-              </View>
+          {data.description && (
+            <View>
+              <AppText
+                weight="semibold"
+                className="text-base text-neutral-900 dark:text-neutral-100 mb-1"
+              >
+                Description
+              </AppText>
+              <AppText className="text-neutral-500 dark:text-neutral-400 text-justify leading-relaxed">
+                {data.description}
+              </AppText>
             </View>
-          </Card>
+          )}
 
           {data.file && (
-            <Card className="p-4 rounded-xl shadow-none">
-              <AppText weight="semibold" className="text-lg mb-2">
+            <View>
+              <AppText
+                weight="semibold"
+                className="text-base text-neutral-900 dark:text-neutral-100 mb-2"
+              >
                 Attached File
               </AppText>
               <Image
@@ -68,32 +77,59 @@ const MaterialDetailsScreen = () => {
                 style={{ width: "100%", height: 300, borderRadius: 8 }}
                 resizeMode="contain"
               />
-            </Card>
+            </View>
           )}
 
           {data.url && (
-            <Card className="p-4 rounded-xl shadow-none">
-              <AppText weight="semibold" className="text-lg mb-2">
+            <View>
+              <AppText
+                weight="semibold"
+                className="text-base text-neutral-900 dark:text-neutral-100 mb-1"
+              >
                 URL
               </AppText>
               <AppText className="text-primary">{data.url}</AppText>
-            </Card>
+            </View>
           )}
 
           {data.iframeCode && (
-            <Card className="p-4 rounded-xl shadow-none">
-              <AppText weight="semibold" className="text-lg mb-2">
+            <View>
+              <AppText
+                weight="semibold"
+                className="text-base text-neutral-900 dark:text-neutral-100 mb-1"
+              >
                 Embedded Content
               </AppText>
-              <AppText className="text-foreground-secondary">
+              <AppText className="text-neutral-500 dark:text-neutral-400">
                 Iframe content available
               </AppText>
-            </Card>
+            </View>
           )}
         </View>
       </ScrollView>
     </Screen>
   );
 };
+
+const MaterialDetailsSkeleton = () => (
+  <Screen className="bg-white dark:bg-neutral-900">
+    <View className="gap-6 w-full max-w-3xl mx-auto p-4">
+      <View>
+        <Skeleton className="h-3 w-40 rounded-full" />
+        <Skeleton className="h-6 w-3/4 rounded-full mt-2" />
+      </View>
+      <View className="gap-2">
+        <Skeleton className="h-4 w-24 rounded-full" />
+        <Skeleton className="h-3 w-full rounded-full" />
+        <Skeleton className="h-3 w-full rounded-full" />
+        <Skeleton className="h-3 w-2/3 rounded-full" />
+      </View>
+      <View className="gap-2">
+        <Skeleton className="h-4 w-28 rounded-full" />
+        <Skeleton className="h-64 w-full rounded-xl" />
+      </View>
+    </View>
+  </Screen>
+);
 
 export default MaterialDetailsScreen;

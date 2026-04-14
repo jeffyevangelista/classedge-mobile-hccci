@@ -1,10 +1,4 @@
-import {
-  View,
-  Text,
-  Pressable,
-  RefreshControl,
-  useColorScheme,
-} from "react-native";
+import { View, Pressable, RefreshControl, useColorScheme } from "react-native";
 import { useNotifications } from "../notifications.hooks";
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
@@ -16,6 +10,7 @@ import { Link } from "expo-router";
 import { readNotification } from "../notifications.service";
 import { Icon } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
+import ErrorFallback from "@/components/ErrorFallback";
 
 const NotificationList = () => {
   const colorScheme = useColorScheme();
@@ -27,7 +22,7 @@ const NotificationList = () => {
   }
 
   if (isError)
-    return <Text className="dark:text-white">Error: {error.message}</Text>;
+    return <ErrorFallback message={error.message} onRefetch={refetch} />;
 
   return (
     <FlashList
@@ -102,13 +97,13 @@ const NotificationItem = ({
         <View className="flex-1 ml-3">
           <AppText
             weight={isReadBool ? "regular" : "semibold"}
-            className={`text-xs ${isReadBool ? "text-slate-500 dark:text-slate-400" : "text-slate-700: dark:text-slate-200"}`}
+            className={`text-xs ${isReadBool ? "text-slate-500 dark:text-slate-400" : "text-slate-700 dark:text-slate-200"}`}
             numberOfLines={2}
           >
             {createdById.firstName} {createdById.lastName} added {message}
           </AppText>
           <AppText
-            className={`text-[8px] mt-1 uppercase font-medium ${isReadBool ? "text-slate-400 dark:text-slate-500" : "text-blue-100"}`}
+            className={`text-[10px] mt-1 uppercase font-medium ${isReadBool ? "text-slate-400 dark:text-slate-500" : "text-blue-100"}`}
           >
             {formattedTime}
           </AppText>

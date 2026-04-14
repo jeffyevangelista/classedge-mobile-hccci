@@ -13,6 +13,8 @@ import {
 } from "../assessment.hooks";
 import { saveAnswer } from "../assessment.service";
 import { AppText } from "@/components/AppText";
+import ErrorFallback from "@/components/ErrorFallback";
+import EmptyState from "@/components/EmptyState";
 import { Skeleton } from "heroui-native";
 
 interface Question {
@@ -435,10 +437,19 @@ const QuestionList = ({
 
   if (isLoading) return <QuestionListSkeleton />;
 
-  if (isError) return <AppText>{error?.message}</AppText>;
+  if (isError)
+    return (
+      <ErrorFallback message={error?.message ?? "Failed to load questions"} />
+    );
 
   if (!questions || questions.length === 0) {
-    return <AppText>No questions available</AppText>;
+    return (
+      <EmptyState
+        icon="ClipboardTextIcon"
+        title="No questions available"
+        description="This assessment has no questions yet"
+      />
+    );
   }
 
   const currentQuestion = questions[currentPage];

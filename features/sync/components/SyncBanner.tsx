@@ -15,7 +15,7 @@ const SyncBanner = () => {
       <Button
         variant="danger"
         isDisabled={uploading}
-        className="flex flex-row items-center gap-2.5 rounded-3xl "
+        className="flex flex-row items-center gap-2.5 rounded-3xl"
         onPress={openSyncSheet}
       >
         {uploading ? (

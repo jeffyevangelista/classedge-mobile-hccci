@@ -1,10 +1,10 @@
 import Screen from "@/components/screen";
-import { Text } from "react-native";
+import { AppText } from "@/components/AppText";
 
 const MessagesScreen = () => {
   return (
-    <Screen className="border">
-      <Text>MessagesScreen</Text>
+    <Screen>
+      <AppText>MessagesScreen</AppText>
     </Screen>
   );
 };

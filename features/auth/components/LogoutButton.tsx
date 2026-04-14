@@ -2,7 +2,7 @@ import { powersync } from "@/powersync/system";
 import useStore from "@/lib/store";
 import { Button, Dialog, useToast } from "heroui-native";
 import React, { useCallback, useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Icon } from "@/components/Icon";
 import { AppText } from "@/components/AppText";
 
@@ -71,11 +71,11 @@ const LogoutButton = () => {
                 and this action cannot be undone.
               </Dialog.Description>
               {unsyncedCount > 0 && (
-                <Text className="text-sm font-semibold text-danger">
+                <AppText weight="semibold" className="text-sm text-danger">
                   You have {unsyncedCount} pending unsynced{" "}
                   {unsyncedCount === 1 ? "change" : "changes"} that will be
                   lost.
-                </Text>
+                </AppText>
               )}
             </View>
             <View>

@@ -7,8 +7,9 @@ import {
 } from "@/features/classroom/classroom.hooks";
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
-import { Avatar, Card } from "heroui-native";
+import { Avatar, Card, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
+import ErrorFallback from "@/components/ErrorFallback";
 
 type ActivityDetail = {
   localId: string;
@@ -43,13 +44,12 @@ const ScoreDisplayList = ({
     return map;
   }, [existingScores]);
 
-  if (isLoading) {
-    return <AppText>Loading...</AppText>;
-  }
+  if (isLoading) return <ScoreDisplaySkeleton />;
 
-  if (isError) {
-    return <AppText>Error: {error?.message}</AppText>;
-  }
+  if (isError)
+    return (
+      <ErrorFallback message={error?.message ?? "Failed to load scores"} />
+    );
 
   return (
     <FlashList
@@ -88,5 +88,22 @@ const ScoreDisplayList = ({
     />
   );
 };
+
+const ScoreDisplaySkeleton = () => (
+  <View className="max-w-3xl w-full mx-auto gap-2">
+    {Array(6)
+      .fill(0)
+      .map((_, i) => (
+        <Card
+          key={i}
+          className="rounded-xl items-center gap-2 shadow-none flex-row"
+        >
+          <Skeleton className="w-10 h-10 rounded-full" />
+          <Skeleton className="h-4 w-24 rounded-full flex-1" />
+          <Skeleton className="h-4 w-20 rounded-full" />
+        </Card>
+      ))}
+  </View>
+);
 
 export default ScoreDisplayList;

@@ -85,7 +85,7 @@ const StudentItem = React.memo(({ name, student_photo }: Student) => {
             }}
           />
         </Avatar>
-        <AppText className="text-neutral-900 dark:text-neutral-100 font-poppins-regular text-lg flex-1">
+        <AppText className="text-neutral-900 dark:text-neutral-100 text-lg flex-1">
           {name}
         </AppText>
       </View>

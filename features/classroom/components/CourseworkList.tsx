@@ -1,8 +1,7 @@
 import React, { useCallback, useMemo } from "react";
-import { useGlobalSearchParams, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, FlatList, View } from "react-native";
 import { useAssessments } from "@/features/oversight/oversight.hooks";
-import { AppText } from "@/components/AppText";
 import { Card, Skeleton } from "heroui-native";
 import { Assessment } from "@/features/oversight/oversight.type";
 import CourseworkItem from "@/features/oversight/components/Coursework";
@@ -24,7 +23,7 @@ const CourseworkList = () => {
     fetchNextPage,
     refetch,
     isRefetching,
-  } = useAssessments(classroomId as string);
+  } = useAssessments(classroomId as string, true);
 
   if (isLoading) return <AssessmentSkeleton />;
   if (isError)
@@ -58,20 +57,24 @@ const CourseworkList = () => {
       />
     );
 
+  console.log(assessments);
+
   return (
-    <FlatList
-      data={assessments}
-      keyExtractor={keyExtractor}
-      renderItem={renderItem}
-      ListFooterComponent={isFetchingNextPage ? <ActivityIndicator /> : null}
-      refreshing={isRefetching}
-      onRefresh={refetch}
-      onEndReached={handleEndReached}
-      onEndReachedThreshold={0.5}
-      showsVerticalScrollIndicator={false}
-      scrollEventThrottle={16}
-      contentContainerStyle={CONTENT_CONTAINER_STYLE}
-    />
+    <View className="flex-1">
+      <FlatList
+        data={assessments}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        ListFooterComponent={isFetchingNextPage ? <ActivityIndicator /> : null}
+        refreshing={isRefetching}
+        onRefresh={refetch}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        contentContainerStyle={CONTENT_CONTAINER_STYLE}
+      />
+    </View>
   );
 };
 
@@ -81,11 +84,11 @@ const AssessmentSkeleton = () => {
       {Array.from({ length: 5 }).map((_, index) => (
         <Card
           key={index}
-          className="shadow-none rounded-xl mt-2.5 flex-row max-w-3xl mx-auto w-full gap-2.5 items-center"
+          className="shadow-none rounded-xl mt-2.5 flex-row max-w-3xl mx-auto w-full gap-2.5 items-center dark:bg-neutral-800/50"
         >
-          <View className="flex-row gap-1">
+          <View className="gap-2 flex-row flex-1">
             <Skeleton className="rounded-md h-16 w-16" />
-            <View className="flex-1 gap-2">
+            <View className="flex-1 gap-1">
               <Skeleton className="h-5 rounded-full" />
               <Skeleton className="h-3 w-24 rounded-full" />
             </View>

@@ -6,6 +6,7 @@ import { Card, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import { useFormattedDate } from "@/hooks/userFormattedDate";
 import EmptyState from "@/components/EmptyState";
+import ErrorFallback from "@/components/ErrorFallback";
 
 const CourseTimeline = () => {
   const { courseId } = useLocalSearchParams();
@@ -14,7 +15,7 @@ const CourseTimeline = () => {
   );
 
   if (isLoading) return <CourseTimelineSkeleton />;
-  if (isError) return <AppText>Error: {error.message}</AppText>;
+  if (isError) return <ErrorFallback message={error.message} />;
 
   return (
     <FlatList
@@ -63,7 +64,7 @@ const AssessmentCard = ({ item }: { item: any }) => {
           >
             {item.fileName}
           </AppText>
-          <AppText className="text-xs text-gray-500 ">
+          <AppText className="text-xs text-gray-500">
             Posted {formattedDate}
           </AppText>
         </View>
@@ -97,7 +98,7 @@ const MaterialCard = ({ item }: { item: any }) => {
           >
             {item.fileName}
           </AppText>
-          <AppText className="text-xs text-gray-500 ">
+          <AppText className="text-xs text-gray-500">
             Posted {formattedDate}
           </AppText>
         </View>

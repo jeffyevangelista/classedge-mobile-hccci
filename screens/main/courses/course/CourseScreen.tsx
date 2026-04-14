@@ -6,7 +6,8 @@ import { useCourseDetails } from "@/features/courses/courses.hooks";
 import { queryClient } from "@/providers/QueryProvider";
 import { env } from "@/utils/env";
 import { useLocalSearchParams } from "expo-router";
-import { Card } from "heroui-native";
+import { Card, Skeleton } from "heroui-native";
+import { ErrorComponent } from "@/components/ErrorComponent";
 import { useCallback, useMemo, useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { useUniwind } from "uniwind";
@@ -60,8 +61,8 @@ const TimelineHeader = () => {
     courseId as string,
   );
 
-  if (isLoading) return <AppText>Loading...</AppText>;
-  if (isError) return <AppText>Error: {error.message}</AppText>;
+  if (isLoading) return <TimelineHeaderSkeleton />;
+  if (isError) return <ErrorComponent message={error.message} />;
 
   return (
     <Card className="shadow-none w-full mx-auto rounded-xl max-w-3xl p-0 overflow-hidden mt-2.5">
@@ -93,5 +94,15 @@ const TimelineHeader = () => {
     </Card>
   );
 };
+
+const TimelineHeaderSkeleton = () => (
+  <Card className="shadow-none w-full mx-auto rounded-xl max-w-3xl p-0 overflow-hidden mt-2.5">
+    <Skeleton className="w-full aspect-29/9 md:aspect-31/9 rounded-t-xl" />
+    <View className="p-4 md:p-6 gap-2">
+      <Skeleton className="h-5 w-3/4 rounded-full" />
+      <Skeleton className="h-3 w-1/3 rounded-full" />
+    </View>
+  </Card>
+);
 
 export default CourseScreen;

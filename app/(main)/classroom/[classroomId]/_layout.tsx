@@ -17,7 +17,7 @@ const ClassroomLayout = () => {
       <Stack.Screen
         name="index"
         options={{
-          headerRight: () => {
+          headerRight: ({ tintColor }) => {
             const router = useRouter();
             return (
               <Pressable
@@ -28,6 +28,7 @@ const ClassroomLayout = () => {
               >
                 <Icon
                   name="InfoIcon"
+                  color={tintColor}
                   style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
                 />
               </Pressable>

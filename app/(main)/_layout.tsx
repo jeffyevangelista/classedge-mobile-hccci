@@ -21,9 +21,9 @@ const MainLayout = () => {
         <Stack.Screen
           options={{
             headerShown: true,
-            // headerTitle: "",
+            headerTitle: "",
             headerShadowVisible: false,
-            headerLeft: () => <BackButton />,
+            headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
           }}
           name="assessment/[assessmentId]/index"
         />
@@ -32,7 +32,7 @@ const MainLayout = () => {
             headerShown: true,
             headerTitle: "",
             headerShadowVisible: false,
-            headerLeft: () => <BackButton />,
+            headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
           }}
           name="material/[materialId]/index"
         />
@@ -41,7 +41,7 @@ const MainLayout = () => {
             headerShown: true,
             headerTitle: "",
             headerShadowVisible: false,
-            headerLeft: () => <BackButton />,
+            headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
           }}
           name="attempt/[attemptId]/index"
         />
@@ -50,7 +50,7 @@ const MainLayout = () => {
             headerShown: true,
             headerTitle: "",
             headerShadowVisible: false,
-            headerLeft: () => <BackButton />,
+            headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
           }}
           name="lesson/[lessonId]/index"
         />
@@ -59,7 +59,7 @@ const MainLayout = () => {
             headerShown: true,
             headerTitle: "",
             headerShadowVisible: false,
-            headerLeft: () => <BackButton />,
+            headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
           }}
           name="activity/[activityId]/index"
         />

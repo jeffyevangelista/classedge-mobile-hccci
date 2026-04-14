@@ -7,7 +7,9 @@ import {
 } from "@/features/classroom/classroom.hooks";
 import StudentScoringList from "@/features/classroom/components/StudentScoringList";
 import ScoreDisplayList from "@/features/classroom/components/ScoreDisplayList";
-import { Card } from "heroui-native";
+import { Card, Skeleton } from "heroui-native";
+import ErrorFallback from "@/components/ErrorFallback";
+import NoDataFallback from "@/components/NoDataFallback";
 import { useGlobalSearchParams, useNavigation } from "expo-router";
 import { useEffect } from "react";
 
@@ -33,17 +35,17 @@ const InputGradeScreen = () => {
     }
   }, [activity?.activityName, navigation]);
 
-  if (isLoading) {
-    return <AppText>Loading...</AppText>;
-  }
+  if (isLoading) return <InputGradeSkeleton />;
 
-  if (isError) {
-    return <AppText>{error.message}</AppText>;
-  }
+  if (isError) return <ErrorFallback message={error.message} />;
 
-  if (!activity) {
-    return <AppText>Activity not found</AppText>;
-  }
+  if (!activity)
+    return (
+      <NoDataFallback
+        title="Activity not found"
+        description="The activity you're looking for doesn't exist"
+      />
+    );
 
   console.log(activity);
 
@@ -58,13 +60,13 @@ const InputGradeScreen = () => {
             <AppText className="text-xs text-muted-foreground">
               Max Score
             </AppText>
-            <AppText className="font-semibold">{activity.maxScore}</AppText>
+            <AppText weight="semibold">{activity.maxScore}</AppText>
           </View>
           <View className="gap-1">
             <AppText className="text-xs text-muted-foreground">
               Passing Score
             </AppText>
-            <AppText className="font-semibold">
+            <AppText weight="semibold">
               {activity.passingScore}
               {activity.passingScoreType === "percentage" ? "%" : ""}
             </AppText>
@@ -79,5 +81,37 @@ const InputGradeScreen = () => {
     </Screen>
   );
 };
+
+const InputGradeSkeleton = () => (
+  <Screen>
+    <Card className="rounded-xl p-4 mb-4 shadow-none gap-3 w-full max-w-3xl mx-auto mt-2.5">
+      <Skeleton className="h-3 w-full rounded-full" />
+      <View className="flex-row justify-between">
+        <View className="gap-1">
+          <Skeleton className="h-2 w-16 rounded-full" />
+          <Skeleton className="h-4 w-10 rounded-full" />
+        </View>
+        <View className="gap-1">
+          <Skeleton className="h-2 w-20 rounded-full" />
+          <Skeleton className="h-4 w-12 rounded-full" />
+        </View>
+      </View>
+    </Card>
+    <View className="max-w-3xl w-full mx-auto gap-2 px-2.5">
+      {Array(6)
+        .fill(0)
+        .map((_, i) => (
+          <Card
+            key={i}
+            className="rounded-xl items-center gap-2 shadow-none flex-row"
+          >
+            <Skeleton className="w-10 h-10 rounded-full" />
+            <Skeleton className="h-4 w-24 rounded-full flex-1" />
+            <Skeleton className="h-8 w-16 rounded-lg" />
+          </Card>
+        ))}
+    </View>
+  </Screen>
+);
 
 export default InputGradeScreen;

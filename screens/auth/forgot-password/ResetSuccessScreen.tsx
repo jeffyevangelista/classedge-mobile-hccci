@@ -1,6 +1,6 @@
 import { StyleSheet, View, useWindowDimensions } from "react-native";
 import { AppText } from "@/components/AppText";
-import { Button } from "heroui-native";
+import { Button, LinkButton } from "heroui-native";
 import { useRouter } from "expo-router";
 import Screen from "@/components/screen";
 import Success from "@/assets/illustrations/forgot-password/success.svg";
@@ -17,7 +17,7 @@ const ResetSuccessScreen = () => {
           paddingVertical: verticalPadding,
           paddingBottom: verticalPadding / 2,
         }}
-        className="flex-1 items-center justify-start px-6 border"
+        className="flex-1 items-center justify-start px-6"
       >
         <Success
           width={width * 0.7}

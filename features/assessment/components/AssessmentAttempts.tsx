@@ -8,6 +8,7 @@ import { FlashList } from "@shopify/flash-list";
 import { Skeleton, Surface } from "heroui-native";
 import { useAssessmentTimer } from "@/hooks/useAssessmentTimer";
 import EmptyState from "@/components/EmptyState";
+import { ErrorComponent } from "@/components/ErrorComponent";
 
 type AssessmentAttemptsProps = {
   assessmentData: any;
@@ -21,7 +22,10 @@ const AssessmentAttempts = ({ assessmentData }: AssessmentAttemptsProps) => {
   );
 
   if (isLoading) return <AssessmentAttemptsSkeleton />;
-  if (isError) return <AppText>Error: {error?.message}</AppText>;
+  if (isError)
+    return (
+      <ErrorComponent message={error?.message ?? "Failed to load attempts"} />
+    );
 
   return (
     <FlashList

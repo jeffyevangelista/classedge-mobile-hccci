@@ -14,6 +14,7 @@ import { env } from "@/utils/env";
 import { useStudentCourses } from "../courses.hooks";
 import { StudentEnrolledCourses } from "../courses.types";
 import EmptyState from "@/components/EmptyState";
+import ErrorFallback from "@/components/ErrorFallback";
 
 const MIN_CARD_WIDTH = 280;
 
@@ -24,10 +25,11 @@ const CourseList = () => {
     useStudentCourses();
 
   if (isLoading) return <CourseListSkeleton numColumns={numColumns} />;
-  if (isError) return <AppText>{error.message}</AppText>;
+  if (isError)
+    return <ErrorFallback message={error.message} onRefetch={refetch} />;
 
   return (
-    <View className="w-full max-w-6xl mx-auto flex-1  ">
+    <View className="w-full max-w-6xl mx-auto flex-1">
       <FlashList
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
@@ -84,7 +86,8 @@ const Course = ({
               <View className="md:h-14">
                 <AppText
                   numberOfLines={2}
-                  className="font-semibold text-lg md:text-md leading-6"
+                  weight="semibold"
+                  className="text-lg md:text-md leading-6"
                 >
                   {item.subjectId.subjectName}
                 </AppText>

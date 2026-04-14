@@ -33,7 +33,7 @@ const HomeScreen = () => {
   }, [queryClient]);
 
   return (
-    <Screen className="">
+    <Screen>
       <ScrollView
         className="w-full max-w-3xl mx-auto pb-5"
         scrollIndicatorInsets={{ right: 1 }}
@@ -50,7 +50,7 @@ const HomeScreen = () => {
           </View>
         )}
 
-        <AppText weight="semibold" className="text-lg px-2.5 mt-5">
+        <AppText weight="semibold" className="text-lg px-2.5 mt-5 mb-3">
           Announcements
         </AppText>
         <AnnouncementList />

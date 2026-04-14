@@ -5,6 +5,9 @@ import { useLesson } from "@/features/oversight/oversight.hooks";
 import { useFormattedDate } from "@/hooks/userFormattedDate";
 import { useLocalSearchParams } from "expo-router";
 import { RefreshControl, ScrollView, View } from "react-native";
+import { Skeleton } from "heroui-native";
+import ErrorFallback from "@/components/ErrorFallback";
+import NoDataFallback from "@/components/NoDataFallback";
 
 const LessonScreen = () => {
   const { lessonId } = useLocalSearchParams();
@@ -12,32 +15,70 @@ const LessonScreen = () => {
     lessonId as string,
   );
 
-  if (isLoading) return <AppText>loading...</AppText>;
-  if (isError) return <AppText>{error?.message}</AppText>;
+  if (isLoading) return <LessonScreenSkeleton />;
+  if (isError)
+    return (
+      <ErrorFallback
+        message={error?.message ?? "Something went wrong"}
+        onRefetch={refetch}
+      />
+    );
 
-  if (!data) return <AppText>No data foundd</AppText>;
+  if (!data)
+    return (
+      <NoDataFallback
+        title="Lesson not found"
+        description="The lesson you're looking for doesn't exist"
+        onRefetch={refetch}
+      />
+    );
 
   const formattedDate = data?.start_date
     ? useFormattedDate(data.start_date)
     : null;
 
   return (
-    <Screen>
+    <Screen className="bg-white dark:bg-neutral-900">
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
         showsVerticalScrollIndicator={false}
       >
-        <View className="gap-10 w-full max-w-3xl mx-auto">
+        <View className="gap-6 w-full max-w-3xl mx-auto p-4">
           <View>
-            <AppText>{formattedDate || "Date not available"}</AppText>
-            <AppText>{data.lesson_name}</AppText>
+            <AppText className="text-sm text-neutral-500 dark:text-neutral-400">
+              {formattedDate || "Date not available"}
+            </AppText>
+            <AppText
+              weight="semibold"
+              className="text-xl text-neutral-900 dark:text-neutral-100 mt-1"
+            >
+              {data.lesson_name}
+            </AppText>
           </View>
-          <AppText className="text-justify">{data.lesson_description}</AppText>
+
+          {data.lesson_description && (
+            <View>
+              <AppText
+                weight="semibold"
+                className="text-base text-neutral-900 dark:text-neutral-100 mb-1"
+              >
+                Description
+              </AppText>
+              <AppText className="text-neutral-500 dark:text-neutral-400 text-justify leading-relaxed">
+                {data.lesson_description}
+              </AppText>
+            </View>
+          )}
 
           <View className="gap-2">
-            <AppText>Attachments</AppText>
+            <AppText
+              weight="semibold"
+              className="text-base text-neutral-900 dark:text-neutral-100 mb-1"
+            >
+              Attachments
+            </AppText>
             {(data.lesson_file || data.lesson_url) && (
               <FileRenderer url={data} />
             )}
@@ -47,5 +88,26 @@ const LessonScreen = () => {
     </Screen>
   );
 };
+
+const LessonScreenSkeleton = () => (
+  <Screen className="bg-white dark:bg-neutral-900">
+    <View className="gap-6 w-full max-w-3xl mx-auto p-4">
+      <View>
+        <Skeleton className="h-3 w-32 rounded-full" />
+        <Skeleton className="h-6 w-3/4 rounded-full mt-2" />
+      </View>
+      <View className="gap-2">
+        <Skeleton className="h-4 w-24 rounded-full" />
+        <Skeleton className="h-3 w-full rounded-full" />
+        <Skeleton className="h-3 w-full rounded-full" />
+        <Skeleton className="h-3 w-2/3 rounded-full" />
+      </View>
+      <View className="gap-2">
+        <Skeleton className="h-4 w-28 rounded-full" />
+        <Skeleton className="h-16 w-full rounded-xl" />
+      </View>
+    </View>
+  </Screen>
+);
 
 export default LessonScreen;

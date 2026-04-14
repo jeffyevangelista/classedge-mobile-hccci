@@ -12,7 +12,7 @@ import {
 import { SplashScreen, Stack } from "expo-router";
 import { useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import NetworkBanner from "@/features/network/NetworkBanner";
 
@@ -64,7 +64,7 @@ export default function RootLayout() {
           justifyContent: "center",
         }}
       >
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" color="#fff" />
       </View>
     );
   }

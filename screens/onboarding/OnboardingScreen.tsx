@@ -157,6 +157,7 @@ const OnboardingScreen = () => {
       {/* Checkboxes + buttons pinned to bottom */}
       <View className="border-t border-gray-200 pt-4 px-6 pb-2 self-center w-full max-w-3xl">
         <ControlField
+          isDisabled={completeOnboardingMutation.isPending}
           isSelected={eulaAccepted}
           onSelectedChange={setEulaAccepted}
           className="flex-row items-center gap-3 py-2"
@@ -168,6 +169,7 @@ const OnboardingScreen = () => {
         </ControlField>
 
         <ControlField
+          isDisabled={completeOnboardingMutation.isPending}
           isSelected={privacyAccepted}
           onSelectedChange={setPrivacyAccepted}
           className="flex-row items-center gap-3 py-2"
