@@ -1,7 +1,8 @@
-import { Button, Spinner } from "heroui-native";
+import { Button } from "heroui-native";
 import { Icon, IconName } from "@/components/Icon";
 import { useSyncData } from "../useSyncData";
 import { useSyncSheet } from "../SyncSheetContext";
+import { ActivityIndicator } from "react-native";
 
 const SyncCenter = () => {
   const { openSyncSheet } = useSyncSheet();
@@ -26,7 +27,7 @@ const SyncCenter = () => {
   return (
     <Button isIconOnly variant="ghost" onPress={openSyncSheet}>
       {connecting ? (
-        <Spinner size="sm" />
+        <ActivityIndicator />
       ) : (
         <Icon name={icon} color={color} size={26} />
       )}
