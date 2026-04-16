@@ -1,62 +1,62 @@
 type DayOfWeek = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
 export type ClassSchedule = {
   id: number;
-  subject_id: number;
-  subject_name: string;
-  schedule_start_time: string;
-  schedule_end_time: string;
-  assign_teacher: string;
+  subjectId: number;
+  subjectName: string;
+  scheduleStartTime: string;
+  scheduleEndTime: string;
+  assignTeacher: string;
   room: string;
-  days_of_week: DayOfWeek[];
-  teacher_photo: string;
+  daysOfWeek: DayOfWeek[];
+  teacherPhoto: string;
 };
 
 export type FinancialStudent = {
   id: number;
-  first_name: string;
-  middle_name: string;
-  last_name: string;
-  name_extension: string;
-  school_email: string | null;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  nameExtension: string;
+  schoolEmail: string | null;
   email: string;
 };
 
 export type AcademicTerm = {
   id: number;
-  academic_term_code: string;
+  academicTermCode: string;
   semester: string;
-  year_level: string;
+  yearLevel: string;
 };
 
 export type Tuition = {
-  total_amount: string;
+  totalAmount: string;
   balance: string;
-  amount_paid: number;
+  amountPaid: number;
 };
 
 export type MiscellaneousFee = {
-  fee_item_name: string;
-  final_cost: string;
+  feeItemName: string;
+  finalCost: string;
 };
 
 export type SubjectFee = {
-  subject_name: string;
-  final_cost: string;
+  subjectName: string;
+  finalCost: string;
 };
 
 export type GrantedScholarship = {
-  scholarship_name: string;
-  tuition_amount: string;
-  date_granted: string;
+  scholarshipName: string;
+  tuitionAmount: string;
+  dateGranted: string;
 };
 
 export type FinancialRecord = {
   student: FinancialStudent;
-  academic_term: AcademicTerm;
+  academicTerm: AcademicTerm;
   tuition: Tuition;
-  miscellaneous_fees: MiscellaneousFee[];
-  subject_fees: SubjectFee[];
-  granted_scholarships: GrantedScholarship[];
+  miscellaneousFees: MiscellaneousFee[];
+  subjectFees: SubjectFee[];
+  grantedScholarships: GrantedScholarship[];
 };
 
 export type FinancialRecordResponse = {

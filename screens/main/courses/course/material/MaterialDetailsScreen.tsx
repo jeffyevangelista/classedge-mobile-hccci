@@ -7,6 +7,7 @@ import { Skeleton } from "heroui-native";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { env } from "@/utils/env";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const MaterialDetailsScreen = () => {
   const { materialId } = useLocalSearchParams();
@@ -15,7 +16,7 @@ const MaterialDetailsScreen = () => {
   );
 
   if (isLoading) return <MaterialDetailsSkeleton />;
-  if (isError) return <ErrorFallback message={error.message} />;
+  if (isError) return <ErrorFallback message={getApiErrorMessage(error)} />;
   if (!data)
     return (
       <NoDataFallback

@@ -33,8 +33,8 @@ const LessonScreen = () => {
       />
     );
 
-  const formattedDate = data?.start_date
-    ? useFormattedDate(data.start_date)
+  const formattedDate = data?.startDate
+    ? useFormattedDate(data.startDate)
     : null;
 
   return (
@@ -54,11 +54,11 @@ const LessonScreen = () => {
               weight="semibold"
               className="text-xl text-neutral-900 dark:text-neutral-100 mt-1"
             >
-              {data.lesson_name}
+              {data.lessonName}
             </AppText>
           </View>
 
-          {data.lesson_description && (
+          {data.lessonDescription && (
             <View>
               <AppText
                 weight="semibold"
@@ -67,7 +67,7 @@ const LessonScreen = () => {
                 Description
               </AppText>
               <AppText className="text-neutral-500 dark:text-neutral-400 text-justify leading-relaxed">
-                {data.lesson_description}
+                {data.lessonDescription}
               </AppText>
             </View>
           )}
@@ -79,9 +79,7 @@ const LessonScreen = () => {
             >
               Attachments
             </AppText>
-            {(data.lesson_file || data.lesson_url) && (
-              <FileRenderer url={data} />
-            )}
+            {(data.lessonFile || data.lessonUrl) && <FileRenderer url={data} />}
           </View>
         </View>
       </ScrollView>

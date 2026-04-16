@@ -6,6 +6,7 @@ import { useLocalSearchParams } from "expo-router";
 import { Skeleton } from "heroui-native";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { View } from "react-native";
 import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 
@@ -20,7 +21,9 @@ const ActivityScreen = () => {
     );
 
   if (isError)
-    return <ErrorFallback message={error.message} onRefetch={refetch} />;
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   if (!data)
     return (
@@ -31,11 +34,9 @@ const ActivityScreen = () => {
       />
     );
 
-  const ongoing = data.ongoing_attempt;
-  const isPastDue = data.end_time
-    ? new Date(data.end_time) < new Date()
-    : false;
-  const isOutOfAttempts = data.remaining_attempts === 0;
+  const ongoing = data.ongoingAttempt;
+  const isPastDue = data.endTime ? new Date(data.endTime) < new Date() : false;
+  const isOutOfAttempts = data.remainingAttempts === 0;
 
   let actionButton = null;
 
@@ -50,20 +51,20 @@ const ActivityScreen = () => {
       >
         <View className="p-4">
           <AppText className="text-sm text-neutral-500 dark:text-neutral-400">
-            Due {useFormattedDate(data.end_time, true)}
+            Due {useFormattedDate(data.endTime, true)}
           </AppText>
           <AppText
             weight="semibold"
             className="text-xl text-neutral-900 dark:text-neutral-100 mt-1"
           >
-            {data.activity_type_name}: {data?.activity_name}
+            {data.activityTypeName}: {data?.activityName}
           </AppText>
 
           <AppText className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            {data.max_score} Points • {data.time_duration} Minutes
+            {data.maxScore} Points • {data.timeDuration} Minutes
           </AppText>
 
-          {data.activity_instruction && (
+          {data.activityInstruction && (
             <View className="mt-5">
               <AppText
                 weight="semibold"
@@ -72,7 +73,7 @@ const ActivityScreen = () => {
                 Instructions
               </AppText>
               <AppText className="text-neutral-500 dark:text-neutral-400 text-justify leading-relaxed">
-                {data.activity_instruction}
+                {data.activityInstruction}
               </AppText>
             </View>
           )}
@@ -83,8 +84,8 @@ const ActivityScreen = () => {
             >
               Materials
             </AppText>
-            {data.lesson_urls.length > 0 ? (
-              data.lesson_urls.map((url) => (
+            {data.lessonUrls.length > 0 ? (
+              data.lessonUrls.map((url) => (
                 <FileRenderer url={url} key={url.id} />
               ))
             ) : (

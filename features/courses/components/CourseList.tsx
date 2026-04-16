@@ -15,6 +15,7 @@ import { useStudentCourses } from "../courses.hooks";
 import { StudentEnrolledCourses } from "../courses.types";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const MIN_CARD_WIDTH = 280;
 
@@ -26,7 +27,9 @@ const CourseList = () => {
 
   if (isLoading) return <CourseListSkeleton numColumns={numColumns} />;
   if (isError)
-    return <ErrorFallback message={error.message} onRefetch={refetch} />;
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   return (
     <View className="w-full max-w-6xl mx-auto flex-1">

@@ -37,9 +37,9 @@ export type StudentEnrolledCourses = StudentEnrollmentWithDetails;
 
 export type Assessment = {
   id: number;
-  activity_name: string;
-  activity_type: string;
-  subject_name: string;
-  start_time: string;
-  retake_count: number;
+  activityName: string;
+  activityType: string;
+  subjectName: string;
+  startTime: string;
+  retakeCount: number;
 };

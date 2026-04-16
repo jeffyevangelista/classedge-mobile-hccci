@@ -14,6 +14,7 @@ import { useGetSubjects } from "../oversight.hooks";
 import { SubjectType } from "../oversight.type";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const MIN_CARD_WIDTH = 280;
 
@@ -25,7 +26,9 @@ const SubjectsList = () => {
 
   if (isLoading) return <SubjectsListSkeleton numColumns={numColumns} />;
   if (isError)
-    return <ErrorFallback message={error.message} onRefetch={refetch} />;
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   const subjects = data?.pages.flatMap((page) => page.results) ?? [];
 
@@ -106,8 +109,8 @@ const Subject = ({
           <Card.Body className="gap-2.5">
             <Image
               source={
-                subject.subject_photo
-                  ? { uri: subject.subject_photo }
+                subject.subjectPhoto
+                  ? { uri: subject.subjectPhoto }
                   : require("@/assets/placeholder/bg-placeholder.png")
               }
               className="rounded-t-xl w-full aspect-video"
@@ -121,25 +124,25 @@ const Subject = ({
                   weight="semibold"
                   className="text-lg md:text-md leading-6"
                 >
-                  {subject.subject_name}
+                  {subject.subjectName}
                 </AppText>
               </View>
               <AppText numberOfLines={1} className="text-xs text-gray-500">
-                {subject.subject_code}
+                {subject.subjectCode}
               </AppText>
               <View className="flex-row gap-2 items-center mt-2">
-                <Avatar alt={subject.assign_teacher_name} size="sm">
+                <Avatar alt={subject.assignTeacherName} size="sm">
                   <Avatar.Fallback>
-                    {subject.assign_teacher_name?.[0][0]}
+                    {subject.assignTeacherName?.[0][0]}
                   </Avatar.Fallback>
                   <Avatar.Image
                     source={{
-                      uri: subject.teacher_photo,
+                      uri: subject.teacherPhoto,
                     }}
                   />
                 </Avatar>
                 <AppText className="text-xs text-gray-500">
-                  {subject.assign_teacher_name}
+                  {subject.assignTeacherName}
                 </AppText>
               </View>
             </View>

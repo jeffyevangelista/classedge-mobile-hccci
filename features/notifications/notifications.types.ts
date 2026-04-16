@@ -1,11 +1,11 @@
 export type Notification = {
   id: number;
-  entity_type: string;
-  entity_id: string;
+  entityType: string;
+  entityId: string;
   message: string;
-  created_at: string;
-  created_by_id: string;
-  created_by: string;
-  is_read: boolean;
-  created_by_photo: string;
+  createdAt: string;
+  createdById: string;
+  createdBy: string;
+  isRead: boolean;
+  createdByPhoto: string;
 };

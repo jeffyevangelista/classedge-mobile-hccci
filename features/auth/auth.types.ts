@@ -8,19 +8,19 @@ export type LoginCredentials = {
 export type AuthUser = {
   id: number;
   role: string;
-  needs_password_setup: boolean;
-  needs_onboarding: boolean;
+  needsPasswordSetup: boolean;
+  needsOnboarding: boolean;
 };
 
 export type AuthResponse = {
-  access_token: string;
-  refresh_token: string;
-  powersync_token: string;
+  accessToken: string;
+  refreshToken: string;
+  powersyncToken: string;
 };
 
 export type DecodedToken = JwtPayload & {
-  user_id: number;
+  userId: number;
   role: string;
-  needs_password_setup: boolean;
-  needs_onboarding: boolean;
+  needsPasswordSetup: boolean;
+  needsOnboarding: boolean;
 };

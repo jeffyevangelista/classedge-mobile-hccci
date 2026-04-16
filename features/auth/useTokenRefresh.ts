@@ -39,17 +39,17 @@ async function silentRefresh(): Promise<boolean> {
 
   // Capture local onboarding state before the refresh overwrites it
   const wasOnboardingDone =
-    useStore.getState().authUser?.needs_onboarding === false;
+    useStore.getState().authUser?.needsOnboarding === false;
 
   try {
     const data = await refresh(refreshToken);
-    setAccessToken(data.access_token);
-    // Preserve local needs_onboarding: false if the server JWT is stale
-    if (wasOnboardingDone && useStore.getState().authUser?.needs_onboarding) {
+    setAccessToken(data.accessToken);
+    // Preserve local needsOnboarding: false if the server JWT is stale
+    if (wasOnboardingDone && useStore.getState().authUser?.needsOnboarding) {
       useStore.getState().setNeedsOnboarding(false);
     }
-    setPowersyncToken(data.powersync_token);
-    await setRefreshToken(data.refresh_token);
+    setPowersyncToken(data.powersyncToken);
+    await setRefreshToken(data.refreshToken);
     console.log("[TokenRefresh] Tokens refreshed silently");
     return true;
   } catch (error) {

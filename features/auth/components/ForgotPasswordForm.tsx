@@ -10,6 +10,7 @@ import {
   useToast,
 } from "heroui-native";
 import { useFocusEffect, useRouter } from "expo-router";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { useForgotPassword } from "../auth.hooks";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,7 +43,7 @@ const ForgotPasswordForm = () => {
       toast.show({
         variant: "danger",
         label: "Error",
-        description: error.message || "An error occurred",
+        description: getApiErrorMessage(error),
       });
     }
   };

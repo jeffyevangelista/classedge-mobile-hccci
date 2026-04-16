@@ -3,6 +3,8 @@ import { env } from "@/utils/env";
 import axios from "axios";
 import useStore from "./store";
 import { Alert } from "react-native";
+import { ApiError, isStandardizedError } from "./api-error";
+import { snakeToCamel } from "./case-transform";
 
 const api = axios.create({
   baseURL: env.EXPO_PUBLIC_API_URL,
@@ -27,6 +29,13 @@ const processQueue = (error: any, token: string | null = null) => {
   });
   failedQueue = [];
 };
+
+api.interceptors.response.use((response) => {
+  if (response.data) {
+    response.data = snakeToCamel(response.data);
+  }
+  return response;
+});
 
 api.interceptors.request.use(async (config) => {
   const { accessToken, isConnected, isInternetReachable } = useStore.getState();
@@ -57,6 +66,25 @@ api.interceptors.response.use(
 
     const originalRequest = error.config;
 
+    // Parse drf-standardized-errors early — except token-related 401/403s
+    // that should fall through to the refresh logic below.
+    if (error.response && isStandardizedError(error.response.data)) {
+      const { status, data } = error.response;
+      const TOKEN_ERROR_CODES = new Set([
+        "token_not_valid",
+        "not_authenticated",
+      ]);
+      const isTokenError =
+        (status === 401 || status === 403) &&
+        data.errors.some((e: { code: string }) =>
+          TOKEN_ERROR_CODES.has(e.code),
+        );
+
+      if (!isTokenError) {
+        return Promise.reject(new ApiError(data, status));
+      }
+    }
+
     if (
       (error.response?.status === 403 || error.response?.status === 401) &&
       !originalRequest._retry
@@ -78,10 +106,10 @@ api.interceptors.response.use(
       try {
         const data = await refresh(refreshToken);
 
-        setAccessToken(data.access_token);
-        setPowersyncToken(data.powersync_token);
-        await setRefreshToken(data.refresh_token);
-        processQueue(null, data.access_token);
+        setAccessToken(data.accessToken);
+        setPowersyncToken(data.powersyncToken);
+        await setRefreshToken(data.refreshToken);
+        processQueue(null, data.accessToken);
         return api(originalRequest);
       } catch (err: any) {
         processQueue(err, null);
@@ -99,7 +127,8 @@ api.interceptors.response.use(
     }
     // 1. Response Errors (Server replied with 4xx or 5xx)
     if (error.response) {
-      const { status, data } = error.response;
+      const { status } = error.response;
+
       switch (status) {
         case 401:
           /* Redirect to login */ break;

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import useGreeting from "@/hooks/useGreeting";
 import SyncCenter from "@/features/sync/components/SyncCenter";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const TabsHeader = () => {
   const { data, isLoading, isError, error } = useUserDetails();
@@ -26,7 +27,7 @@ const TabsHeader = () => {
   }, []);
 
   if (isLoading) return <TabsHeaderSkeleton />;
-  if (isError) return <ErrorComponent message={error.message} />;
+  if (isError) return <ErrorComponent message={getApiErrorMessage(error)} />;
 
   const userDetails = data?.[0];
 

@@ -5,6 +5,7 @@ import { useClassSchedule } from "@/features/profile/profile.hooks";
 import { Skeleton } from "heroui-native";
 import { colors } from "@/utils/colors";
 import { AppText } from "@/components/AppText";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const formatTime = (time: string) => {
   const [h, m] = time.split(":").map(Number);
@@ -115,7 +116,11 @@ const ScheduleComponent = () => {
     }, [data, now, currentDay]);
 
   if (isError)
-    return <AppText className="text-red-500 p-4">{error.message}</AppText>;
+    return (
+      <AppText className="text-red-500 p-4">
+        {getApiErrorMessage(error)}
+      </AppText>
+    );
   if (!data) return null;
 
   return (

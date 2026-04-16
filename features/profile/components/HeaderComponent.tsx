@@ -4,12 +4,13 @@ import { Avatar, Skeleton } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { env } from "@/utils/env";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const HeaderComponent = () => {
   const { data, isLoading, isError, error } = useUserDetails();
 
   if (isLoading) return <ProfileHeaderSkeleton />;
-  if (isError) return <ErrorComponent message={error.message} />;
+  if (isError) return <ErrorComponent message={getApiErrorMessage(error)} />;
 
   const userDetails = data?.[0];
 

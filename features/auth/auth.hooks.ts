@@ -1,4 +1,5 @@
 import useStore from "@/lib/store";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { useMutation } from "@tanstack/react-query";
 import { Alert } from "react-native";
 import {
@@ -21,9 +22,9 @@ export const useLogin = () => {
     mutationKey: ["login"],
     mutationFn: (payload: LoginCredentials) => login(payload),
     onSuccess: async (data: AuthResponse) => {
-      setAccessToken(data.access_token);
-      setPowersyncToken(data.powersync_token);
-      await setRefreshToken(data.refresh_token);
+      setAccessToken(data.accessToken);
+      setPowersyncToken(data.powersyncToken);
+      await setRefreshToken(data.refreshToken);
     },
   });
 };
@@ -35,21 +36,29 @@ export const useLogout = () => {
     networkMode: "always",
     mutationFn: async () => await clearCredentials(),
     onError: (error) => {
-      Alert.alert("Logout failed:", error.message);
+      Alert.alert("Logout failed:", getApiErrorMessage(error));
     },
   });
 };
 
 export const useForgotPassword = () => {
   const { setEmail } = useStore.getState();
+  const { toast } = useToast();
   const router = useRouter();
   return useMutation({
     mutationKey: ["forgot-password"],
     mutationFn: ({ email }: { email: string }) => forgotPassword(email),
-    onSuccess: (_, { email }: { email: string }) => {
-      if (email) {
-        router.push("/forgot-password/otp-verification");
+    onSuccess: (data, { email }: { email: string }) => {
+      if (data.provider && data.success === false) {
+        toast.show({
+          label: "Error",
+          description: data.message,
+          variant: "danger",
+        });
       }
+
+      if (data.success) router.push("/forgot-password/otp-verification");
+
       setEmail(email);
     },
   });
@@ -83,21 +92,23 @@ export const useMsLogin = () => {
   return useMutation({
     mutationKey: ["ms-login"],
     mutationFn: (token: string) => {
+      console.log({ token });
+
       return msLogin(token);
     },
     onSuccess: async (data: AuthResponse) => {
-      setAccessToken(data.access_token);
-      setPowersyncToken(data.powersync_token);
-      await setRefreshToken(data.refresh_token);
+      console.log(data);
+
+      setAccessToken(data.accessToken);
+      setPowersyncToken(data.powersyncToken);
+      await setRefreshToken(data.refreshToken);
     },
     onError: async (error) => {
       await clearCredentials();
-      const errorMessage =
-        error instanceof Error ? error.message : "Authentication failed";
       toast.show({
         variant: "danger",
         label: "Something went wrong",
-        description: errorMessage,
+        description: getApiErrorMessage(error),
       });
     },
   });
@@ -123,18 +134,16 @@ export const useCompleteOnboarding = () => {
         setNeedsOnboarding,
       } = useStore.getState();
       const data = await refresh(refreshToken);
-      setAccessToken(data.access_token);
+      setAccessToken(data.accessToken);
       setNeedsOnboarding(false);
-      setPowersyncToken(data.powersync_token);
-      await setRefreshToken(data.refresh_token);
+      setPowersyncToken(data.powersyncToken);
+      await setRefreshToken(data.refreshToken);
     },
     onError: (error) => {
-      const errorMessage =
-        error instanceof Error ? error.message : "Something went wrong";
       toast.show({
         variant: "danger",
         label: "Onboarding failed",
-        description: errorMessage,
+        description: getApiErrorMessage(error),
       });
     },
   });

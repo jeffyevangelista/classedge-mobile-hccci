@@ -1,9 +1,9 @@
 export type EventItem = {
   id: string;
   title: string;
-  start_date: string; // "YYYY-MM-DD"
-  end_date: string; // "YYYY-MM-DD"
-  event_time: string;
+  startDate: string; // "YYYY-MM-DD"
+  endDate: string; // "YYYY-MM-DD"
+  eventTime: string;
   type: "event";
   location: string;
 };

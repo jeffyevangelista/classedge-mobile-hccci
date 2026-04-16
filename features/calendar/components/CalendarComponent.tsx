@@ -16,6 +16,7 @@ import { useEvents } from "../calendar.hooks";
 import { formatDate } from "./date-formatter";
 import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { Card, Skeleton, Surface } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import EventDetailModal from "./EventDetailModal";
@@ -104,7 +105,9 @@ const CalendarComponent = () => {
 
   if (isLoading) return <CalendarSkeleton />;
   if (isError)
-    return <ErrorFallback message={error.message} onRefetch={refetch} />;
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   // ----------------------------------------------------
   // BUILD MARKED DATES

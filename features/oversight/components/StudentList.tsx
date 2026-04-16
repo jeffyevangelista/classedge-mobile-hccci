@@ -7,6 +7,7 @@ import { Avatar, Card, Skeleton } from "heroui-native";
 import { Student } from "../oversight.type";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const CONTENT_CONTAINER_STYLE = { paddingTop: 16 } as const;
 
@@ -27,7 +28,9 @@ const StudentList = () => {
 
   if (isLoading) return <StudentsSkeleton />;
   if (isError)
-    return <ErrorFallback message={error.message} onRefetch={refetch} />;
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   const students = useMemo(
     () =>
@@ -73,7 +76,7 @@ const StudentList = () => {
   );
 };
 
-const StudentItem = React.memo(({ name, student_photo }: Student) => {
+const StudentItem = React.memo(({ name, studentPhoto }: Student) => {
   return (
     <Card className="shadow-none rounded-xl mt-2.5 w-full max-w-3xl mx-auto dark:bg-neutral-800/50">
       <View className="flex-row gap-2 items-center">
@@ -81,7 +84,7 @@ const StudentItem = React.memo(({ name, student_photo }: Student) => {
           <Avatar.Fallback>{name.split(" ")[0][0]}</Avatar.Fallback>
           <Avatar.Image
             source={{
-              uri: student_photo,
+              uri: studentPhoto,
             }}
           />
         </Avatar>

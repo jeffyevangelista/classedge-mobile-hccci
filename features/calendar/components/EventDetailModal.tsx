@@ -5,6 +5,7 @@ import { BottomSheet, Skeleton } from "heroui-native";
 import { useWindowDimensions, View } from "react-native";
 import { Icon } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 import {
   formatDate,
@@ -79,7 +80,7 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
           Error Loading Event
         </AppText>
         <AppText className="text-center text-muted-foreground">
-          {error.message}
+          {getApiErrorMessage(error)}
         </AppText>
       </View>
     );

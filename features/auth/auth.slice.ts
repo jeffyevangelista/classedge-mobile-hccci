@@ -12,7 +12,7 @@ import { env } from "@/utils/env";
 import { MMKV_KEYS } from "@/utils/storage-keys";
 import { jwtDecode } from "jwt-decode";
 import type { StateCreator } from "zustand";
-import type { AuthUser, DecodedToken } from "./auth.types";
+import type { AuthUser } from "./auth.types";
 
 type AuthState = {
   accessToken: string | null;
@@ -53,18 +53,22 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
       return;
     }
 
-    const { user_id, exp, needs_onboarding, needs_password_setup, role } =
-      jwtDecode<DecodedToken>(accessToken);
+    const decoded = jwtDecode<Record<string, unknown>>(accessToken);
+    const userId = decoded.user_id as number;
+    const exp = decoded.exp as number;
+    const needsOnboarding = decoded.needs_onboarding as boolean;
+    const needsPasswordSetup = decoded.needs_password_setup as boolean;
+    const role = decoded.role as string;
 
-    if (!user_id || !exp) {
+    if (!userId || !exp) {
       console.warn("[AUTH] Invalid token: missing id or exp");
       return;
     }
     const expiresAt = exp * 1000;
-    const authUser = {
-      id: user_id,
-      needs_onboarding,
-      needs_password_setup,
+    const authUser: AuthUser = {
+      id: userId,
+      needsOnboarding,
+      needsPasswordSetup,
       role,
     };
 
@@ -129,7 +133,7 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
   setNeedsOnboarding: (needsOnboarding: boolean) => {
     set((state) => {
       const updatedAuthUser = state.authUser
-        ? { ...state.authUser, needs_onboarding: needsOnboarding }
+        ? { ...state.authUser, needsOnboarding }
         : null;
       if (updatedAuthUser) {
         setMMKVItem(MMKV_KEYS.AUTH_USER, updatedAuthUser);

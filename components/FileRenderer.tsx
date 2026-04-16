@@ -14,22 +14,22 @@ import { AppText } from "./AppText";
 import { useImage } from "@/providers/ImageProvider";
 
 const FileRenderer = ({ url }: { url: any }) => {
-  const { lesson_file, lesson_url } = url;
+  const { lessonFile, lessonUrl } = url;
 
   // Move hooks to component level
   const { showImage } = useImage();
   const [showVideo, setShowVideo] = useState(false);
-  const player = useVideoPlayer(lesson_file || "", (player) => {
+  const player = useVideoPlayer(lessonFile || "", (player) => {
     player.loop = true;
   });
 
   const renderUrlLink = () => {
-    if (!lesson_url) return null;
+    if (!lessonUrl) return null;
 
     return (
       <Pressable
         onPress={async () => {
-          await WebBrowser.openBrowserAsync(lesson_url!);
+          await WebBrowser.openBrowserAsync(lessonUrl!);
         }}
       >
         <Card className="shadow-none rounded-xl max-w-3xl flex-row items-center gap-2.5 mt-2.5 dark:bg-neutral-800/50">
@@ -45,7 +45,7 @@ const FileRenderer = ({ url }: { url: any }) => {
               ellipsizeMode="tail"
               className="text-neutral-900 dark:text-neutral-100 leading-tight"
             >
-              {lesson_url}
+              {lessonUrl}
             </AppText>
           </View>
         </Card>
@@ -54,17 +54,17 @@ const FileRenderer = ({ url }: { url: any }) => {
   };
 
   const renderFileContent = () => {
-    if (!lesson_file) return null;
+    if (!lessonFile) return null;
 
-    const fileName = lesson_file.split("/").pop();
-    const fileType = lesson_file.split(".").pop()?.toLowerCase();
+    const fileName = lessonFile.split("/").pop();
+    const fileType = lessonFile.split(".").pop()?.toLowerCase();
 
     switch (fileType) {
       case "jpg":
       case "jpeg":
       case "png":
         return (
-          <TouchableOpacity onPress={() => showImage(lesson_file)}>
+          <TouchableOpacity onPress={() => showImage(lessonFile)}>
             <Card className="shadow-none rounded-xl max-w-3xl flex-row items-center gap-2.5 mt-2.5 dark:bg-neutral-800/50">
               <View className="p-2 rounded-lg bg-teal-100 dark:bg-teal-900/50">
                 <Icon
@@ -125,7 +125,7 @@ const FileRenderer = ({ url }: { url: any }) => {
         return (
           <Pressable
             onPress={async () => {
-              await WebBrowser.openBrowserAsync(lesson_file);
+              await WebBrowser.openBrowserAsync(lessonFile);
             }}
           >
             <Card className="shadow-none rounded-xl max-w-3xl flex-row items-center gap-2.5 mt-2.5 dark:bg-neutral-800/50">

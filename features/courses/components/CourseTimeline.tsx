@@ -7,6 +7,7 @@ import { Icon } from "@/components/Icon";
 import { useFormattedDate } from "@/hooks/userFormattedDate";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const CourseTimeline = () => {
   const { courseId } = useLocalSearchParams();
@@ -15,7 +16,7 @@ const CourseTimeline = () => {
   );
 
   if (isLoading) return <CourseTimelineSkeleton />;
-  if (isError) return <ErrorFallback message={error.message} />;
+  if (isError) return <ErrorFallback message={getApiErrorMessage(error)} />;
 
   return (
     <FlatList

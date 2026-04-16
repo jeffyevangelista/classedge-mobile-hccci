@@ -28,19 +28,19 @@ const getActivityIcon = (activityType: string) => {
 };
 
 const CourseworkItem = ({
-  activity_name,
-  activity_type_name,
-  end_time,
+  activityName,
+  activityTypeName,
+  endTime,
   id,
   attempts,
 }: Assessment) => {
-  const { label } = getActivityIcon(activity_type_name);
+  const { label } = getActivityIcon(activityTypeName);
 
-  const formattedDate = end_time ? useFormattedDate(end_time, true) : null;
+  const formattedDate = endTime ? useFormattedDate(endTime, true) : null;
 
   // Calculate urgency
   const getUrgency = () => {
-    if (!end_time) return null;
+    if (!endTime) return null;
 
     // Don't show urgency badge if there are attempts
     if (attempts?.length > 0) {
@@ -48,7 +48,7 @@ const CourseworkItem = ({
     }
 
     const now = new Date();
-    const dueDate = new Date(end_time);
+    const dueDate = new Date(endTime);
     const hoursUntilDue =
       (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
@@ -80,7 +80,7 @@ const CourseworkItem = ({
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {label}: {activity_name}
+              {label}: {activityName}
             </AppText>
             <View className="flex-row gap-1 items-center">
               <AppText

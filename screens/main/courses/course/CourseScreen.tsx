@@ -8,6 +8,7 @@ import { env } from "@/utils/env";
 import { useLocalSearchParams } from "expo-router";
 import { Card, Skeleton } from "heroui-native";
 import { ErrorComponent } from "@/components/ErrorComponent";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { useCallback, useMemo, useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { useUniwind } from "uniwind";
@@ -62,7 +63,7 @@ const TimelineHeader = () => {
   );
 
   if (isLoading) return <TimelineHeaderSkeleton />;
-  if (isError) return <ErrorComponent message={error.message} />;
+  if (isError) return <ErrorComponent message={getApiErrorMessage(error)} />;
 
   return (
     <Card className="shadow-none w-full mx-auto rounded-xl max-w-3xl p-0 overflow-hidden mt-2.5">

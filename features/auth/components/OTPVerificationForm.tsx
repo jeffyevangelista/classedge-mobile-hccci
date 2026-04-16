@@ -9,6 +9,7 @@ import {
 import { AppText } from "@/components/AppText";
 import { useFocusEffect, useRouter } from "expo-router";
 import useStore from "@/lib/store";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { useForgotPassword, useVerifyOtp } from "../auth.hooks";
 import { useCallback, useRef, useState } from "react";
 
@@ -34,7 +35,7 @@ const OTPVerificationForm = () => {
       toast.show({
         variant: "danger",
         label: "Error",
-        description: error.message || "An error occurred",
+        description: getApiErrorMessage(error),
       });
     }
   };
@@ -51,7 +52,7 @@ const OTPVerificationForm = () => {
       toast.show({
         variant: "danger",
         label: "Error",
-        description: error.message || "An error occurred",
+        description: getApiErrorMessage(error),
       });
     }
   };
@@ -67,7 +68,7 @@ const OTPVerificationForm = () => {
       toast.show({
         variant: "danger",
         label: "Error",
-        description: error.message || "An error occurred",
+        description: getApiErrorMessage(error),
       });
     }
   };
@@ -91,12 +92,12 @@ const OTPVerificationForm = () => {
         onChange={setValue}
       >
         <InputOTP.Group>
-          <InputOTP.Slot index={0} />
-          <InputOTP.Slot index={1} />
-          <InputOTP.Slot index={2} />
-          <InputOTP.Slot index={3} />
-          <InputOTP.Slot index={4} />
-          <InputOTP.Slot index={5} />
+          <InputOTP.Slot className="shadow-none" index={0} />
+          <InputOTP.Slot className="shadow-none" index={1} />
+          <InputOTP.Slot className="shadow-none" index={2} />
+          <InputOTP.Slot className="shadow-none" index={3} />
+          <InputOTP.Slot className="shadow-none" index={4} />
+          <InputOTP.Slot className="shadow-none" index={5} />
         </InputOTP.Group>
       </InputOTP>
 

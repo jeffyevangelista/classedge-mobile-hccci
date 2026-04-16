@@ -10,6 +10,7 @@ import ScoreDisplayList from "@/features/classroom/components/ScoreDisplayList";
 import { Card, Skeleton } from "heroui-native";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { useGlobalSearchParams, useNavigation } from "expo-router";
 import { useEffect } from "react";
 
@@ -37,7 +38,7 @@ const InputGradeScreen = () => {
 
   if (isLoading) return <InputGradeSkeleton />;
 
-  if (isError) return <ErrorFallback message={error.message} />;
+  if (isError) return <ErrorFallback message={getApiErrorMessage(error)} />;
 
   if (!activity)
     return (

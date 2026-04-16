@@ -52,14 +52,14 @@ export function buildMarkedDates(data: CalendarItem[]): MarkedDates {
 
   data.forEach((item) => {
     if (item.type === "event") {
-      const { start_date, end_date } = item;
+      const { startDate, endDate } = item;
 
-      if (!start_date || !end_date) return;
+      if (!startDate || !endDate) return;
 
       // One-day event
-      if (start_date === end_date) {
-        marks[start_date] = {
-          ...(marks[start_date] || {}),
+      if (startDate === endDate) {
+        marks[startDate] = {
+          ...(marks[startDate] || {}),
           startingDay: true,
           endingDay: true,
           color: "#96f7e4",
@@ -67,7 +67,7 @@ export function buildMarkedDates(data: CalendarItem[]): MarkedDates {
         };
       } else {
         // Range event
-        addRange(start_date, end_date, "#96f7e4");
+        addRange(startDate, endDate, "#96f7e4");
       }
     }
 

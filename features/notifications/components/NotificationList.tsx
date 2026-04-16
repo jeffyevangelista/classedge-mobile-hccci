@@ -11,6 +11,7 @@ import { readNotification } from "../notifications.service";
 import { Icon } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const NotificationList = () => {
   const colorScheme = useColorScheme();
@@ -22,7 +23,9 @@ const NotificationList = () => {
   }
 
   if (isError)
-    return <ErrorFallback message={error.message} onRefetch={refetch} />;
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   return (
     <FlashList
@@ -66,7 +69,7 @@ const NotificationItem = ({
       await readNotification(id.toString());
       console.log("Notification read successfully");
     } catch (error: any) {
-      console.log("failed to update notification", error.message);
+      console.log("failed to update notification", getApiErrorMessage(error));
     }
   };
 

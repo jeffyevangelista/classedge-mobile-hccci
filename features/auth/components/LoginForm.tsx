@@ -13,6 +13,7 @@ import { Pressable, View } from "react-native";
 import { useLogin } from "../auth.hooks";
 import { Icon } from "@/components/Icon";
 import { useRouter } from "expo-router";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -27,10 +28,11 @@ const LoginForm = () => {
     try {
       await login({ username, password });
     } catch (error: any) {
+      console.log("Login error:", JSON.stringify(error));
       toast.show({
         variant: "danger",
         label: "Error",
-        description: error?.message,
+        description: getApiErrorMessage(error),
       });
     }
   };
@@ -48,11 +50,7 @@ const LoginForm = () => {
           onChangeText={setUsername}
         />
 
-        {isError && (
-          <FieldError>
-            {error?.message || "Please enter a valid email"}
-          </FieldError>
-        )}
+        {isError && <FieldError>{getApiErrorMessage(error)}</FieldError>}
       </TextField>
       <View className="gap-2">
         <TextField>

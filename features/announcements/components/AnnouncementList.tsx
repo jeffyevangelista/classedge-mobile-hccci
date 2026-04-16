@@ -10,6 +10,7 @@ import {
   formatTime,
 } from "@/features/calendar/components/date-formatter";
 import { useAnnouncementsWithEvents } from "../announcements.hooks";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { Event } from "@/powersync/schema";
 import React, { useState } from "react";
 import EventDetailModal from "@/features/calendar/components/EventDetailModal";
@@ -20,7 +21,9 @@ const AnnouncementList = () => {
 
   if (isLoading) return <AnnouncementSkeleton />;
   if (isError)
-    return <ErrorComponent message={error.message} onRetry={refetch} />;
+    return (
+      <ErrorComponent message={getApiErrorMessage(error)} onRetry={refetch} />
+    );
 
   return (
     <FlashList
@@ -42,9 +45,11 @@ const AnnouncementList = () => {
               <View className="flex-row items-center gap-2">
                 <Avatar alt="" size="sm" className="border border-accent">
                   <Avatar.Image
-                    source={{
-                      uri: item.createdById.studentPhoto,
-                    }}
+                    source={
+                      item.createdById.studentPhoto
+                        ? { uri: item.createdById.studentPhoto }
+                        : require("@/assets/placeholder/avatar-placeholder.png")
+                    }
                   />
                   <Avatar.Fallback>
                     {item.createdById.firstName.charAt(0)}

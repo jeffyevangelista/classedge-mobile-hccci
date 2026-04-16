@@ -5,6 +5,7 @@ import { useWindowDimensions } from "react-native";
 import Screen from "@/components/screen";
 import EnterPassword from "@/assets/illustrations/forgot-password/enter-password.svg";
 import { Button } from "heroui-native";
+import { Link } from "expo-router";
 
 const PasswordResetScreen = () => {
   const { height, width } = useWindowDimensions();
@@ -35,9 +36,11 @@ const PasswordResetScreen = () => {
           Create a new, more secure password to protect your account
         </AppText>
         <PasswordResetForm />
-        <Button size={height > 800 ? "lg" : "md"} variant="ghost">
-          <Button.Label>Cancel</Button.Label>
-        </Button>
+        <Link href={"/(auth)/login"} asChild>
+          <Button size={height > 800 ? "lg" : "md"} variant="ghost">
+            <Button.Label>Cancel</Button.Label>
+          </Button>
+        </Link>
       </View>
     </Screen>
   );

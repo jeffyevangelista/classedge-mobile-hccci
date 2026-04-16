@@ -11,6 +11,7 @@ import {
 } from "@/features/profile/profile.types";
 import { Card, Separator, Skeleton } from "heroui-native";
 import { RefreshControl, ScrollView, View } from "react-native";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const formatCurrency = (value: string | number) => {
   const num = typeof value === "string" ? parseFloat(value) : value;
@@ -23,7 +24,12 @@ const FinancialRecordsScreen = () => {
 
   if (isLoading) return <FinancialRecordsSkeleton />;
   if (isError)
-    return <ErrorComponent message={error.message} onRetry={() => refetch()} />;
+    return (
+      <ErrorComponent
+        message={getApiErrorMessage(error)}
+        onRetry={() => refetch()}
+      />
+    );
 
   const record = data?.results?.[0];
 
@@ -52,9 +58,9 @@ const FinancialRecordsScreen = () => {
       >
         <AcademicTermBanner record={record} />
         <TuitionSummaryCard record={record} />
-        <SubjectFeesCard fees={record.subject_fees} />
-        <MiscellaneousFeesCard fees={record.miscellaneous_fees} />
-        <ScholarshipsCard scholarships={record.granted_scholarships} />
+        <SubjectFeesCard fees={record.subjectFees} />
+        <MiscellaneousFeesCard fees={record.miscellaneousFees} />
+        <ScholarshipsCard scholarships={record.grantedScholarships} />
       </ScrollView>
     </Screen>
   );
@@ -67,7 +73,7 @@ const AcademicTermBanner = ({ record }: { record: FinancialRecord }) => (
         weight="semibold"
         className="text-primary-700 dark:text-white text-sm"
       >
-        {record.academic_term.academic_term_code}
+        {record.academicTerm.academicTermCode}
       </AppText>
     </Card.Body>
   </Card>
@@ -85,11 +91,11 @@ const TuitionSummaryCard = ({ record }: { record: FinancialRecord }) => {
       <Card.Body className="gap-2">
         <FeeRow
           label="Total Amount"
-          value={formatCurrency(tuition.total_amount)}
+          value={formatCurrency(tuition.totalAmount)}
         />
         <FeeRow
           label="Amount Paid"
-          value={formatCurrency(tuition.amount_paid)}
+          value={formatCurrency(tuition.amountPaid)}
         />
         <Separator className="my-1" />
         <FeeRow
@@ -106,7 +112,7 @@ const TuitionSummaryCard = ({ record }: { record: FinancialRecord }) => {
 const SubjectFeesCard = ({ fees }: { fees: SubjectFee[] }) => {
   if (!fees || fees.length === 0) return null;
 
-  const total = fees.reduce((sum, f) => sum + parseFloat(f.final_cost), 0);
+  const total = fees.reduce((sum, f) => sum + parseFloat(f.finalCost), 0);
 
   return (
     <Card className="shadow-none rounded-xl">
@@ -118,9 +124,9 @@ const SubjectFeesCard = ({ fees }: { fees: SubjectFee[] }) => {
       <Card.Body className="gap-2">
         {fees.map((fee, i) => (
           <FeeRow
-            key={`${fee.subject_name}-${i}`}
-            label={fee.subject_name}
-            value={formatCurrency(fee.final_cost)}
+            key={`${fee.subjectName}-${i}`}
+            label={fee.subjectName}
+            value={formatCurrency(fee.finalCost)}
           />
         ))}
         <Separator className="my-1" />
@@ -133,7 +139,7 @@ const SubjectFeesCard = ({ fees }: { fees: SubjectFee[] }) => {
 const MiscellaneousFeesCard = ({ fees }: { fees: MiscellaneousFee[] }) => {
   if (!fees || fees.length === 0) return null;
 
-  const total = fees.reduce((sum, f) => sum + parseFloat(f.final_cost), 0);
+  const total = fees.reduce((sum, f) => sum + parseFloat(f.finalCost), 0);
 
   return (
     <Card className="shadow-none rounded-xl">
@@ -145,9 +151,9 @@ const MiscellaneousFeesCard = ({ fees }: { fees: MiscellaneousFee[] }) => {
       <Card.Body className="gap-2">
         {fees.map((fee, i) => (
           <FeeRow
-            key={`${fee.fee_item_name}-${i}`}
-            label={fee.fee_item_name}
-            value={formatCurrency(fee.final_cost)}
+            key={`${fee.feeItemName}-${i}`}
+            label={fee.feeItemName}
+            value={formatCurrency(fee.finalCost)}
           />
         ))}
         <Separator className="my-1" />
@@ -176,23 +182,23 @@ const ScholarshipsCard = ({
       </Card.Header>
       <Card.Body className="gap-2">
         {scholarships.map((s, i) => (
-          <View key={`${s.scholarship_name}-${i}`} className="gap-0.5">
+          <View key={`${s.scholarshipName}-${i}`} className="gap-0.5">
             <View className="flex-row justify-between items-center">
               <AppText
                 weight="semibold"
                 className="text-sm text-green-900 dark:text-green-100 flex-1"
               >
-                {s.scholarship_name}
+                {s.scholarshipName}
               </AppText>
               <AppText
                 weight="semibold"
                 className="text-sm text-green-700 dark:text-green-300"
               >
-                -{formatCurrency(s.tuition_amount)}
+                -{formatCurrency(s.tuitionAmount)}
               </AppText>
             </View>
             <AppText className="text-xs text-green-600 dark:text-green-400">
-              Granted: {s.date_granted}
+              Granted: {s.dateGranted}
             </AppText>
           </View>
         ))}

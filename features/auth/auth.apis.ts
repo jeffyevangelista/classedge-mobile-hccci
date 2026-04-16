@@ -1,6 +1,7 @@
 import api from "@/lib/axios";
 import axios from "axios";
 import { env } from "@/utils/env";
+import { snakeToCamel } from "@/lib/case-transform";
 import type { AuthResponse, LoginCredentials } from "./auth.types";
 
 export const login = async (loginCredentials: LoginCredentials) => {
@@ -28,11 +29,12 @@ export const completeOnboarding = async (payload: {
 };
 
 export const msLogin = async (token: string): Promise<AuthResponse> => {
-  return (
+  const data = (
     await axios.get(`${env.EXPO_PUBLIC_API_URL}/auth/microsoft/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
   ).data;
+  return snakeToCamel<AuthResponse>(data);
 };

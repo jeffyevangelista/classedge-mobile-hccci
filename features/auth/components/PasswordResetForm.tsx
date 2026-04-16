@@ -21,6 +21,7 @@ import {
 import { MotiView } from "moti";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const PasswordResetForm = () => {
   const themeColorAccentForeground = useThemeColor("accent-foreground");
@@ -67,7 +68,7 @@ const PasswordResetForm = () => {
       toast.show({
         variant: "danger",
         label: "Error",
-        description: error.message || "An error occurred",
+        description: getApiErrorMessage(error),
       });
     }
   };
@@ -96,7 +97,8 @@ const PasswordResetForm = () => {
                   value={value}
                   onChangeText={onChange}
                   secureTextEntry={!showPassword}
-                  className="flex-1 pr-10 border"
+                  className="flex-1 pr-10 border shadow-none"
+                  style={{ elevation: 0, shadowOpacity: 0 }}
                 />
                 <Pressable
                   className="absolute right-4"

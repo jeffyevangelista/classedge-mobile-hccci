@@ -9,7 +9,7 @@ export function getItemsForDate(
 
   data.forEach((item) => {
     if (item.type === "event") {
-      if (dateString >= item.start_date && dateString <= item.end_date) {
+      if (dateString >= item.startDate && dateString <= item.endDate) {
         results.push({ ...item, category: "event" });
       }
     }

@@ -7,6 +7,7 @@ import { Assessment } from "@/features/oversight/oversight.type";
 import CourseworkItem from "@/features/oversight/components/Coursework";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const CONTENT_CONTAINER_STYLE = { paddingTop: 16 } as const;
 
@@ -27,7 +28,9 @@ const CourseworkList = () => {
 
   if (isLoading) return <AssessmentSkeleton />;
   if (isError)
-    return <ErrorFallback message={error.message} onRefetch={refetch} />;
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   const assessments = useMemo(
     () => data?.pages.flatMap((page) => page.results) ?? [],

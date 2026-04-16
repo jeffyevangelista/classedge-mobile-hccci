@@ -11,6 +11,7 @@ import Screen from "@/components/screen";
 import { Button, Skeleton, useToast } from "heroui-native";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
+import { getApiErrorMessage } from "@/lib/api-error";
 import AssessmentResult from "@/features/assessment/components/AssessmentResult";
 import {
   getAttemptRecords,
@@ -42,7 +43,7 @@ const AssessmentDetailsScreen = () => {
   );
 
   if (isLoading) return <AssessmentDetailsSkeleton />;
-  if (isError) return <ErrorFallback message={error.message} />;
+  if (isError) return <ErrorFallback message={getApiErrorMessage(error)} />;
   if (!data)
     return (
       <NoDataFallback

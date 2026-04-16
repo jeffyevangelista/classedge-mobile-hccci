@@ -5,6 +5,7 @@ import * as WebBrowser from "expo-web-browser";
 import { useEffect, useRef, useState } from "react";
 import { useMsLogin } from "../auth.hooks";
 import { env } from "@/utils/env";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -103,7 +104,7 @@ const MSAuthButton = () => {
       toast.show({
         variant: "danger",
         label: "Sign-in failed",
-        description: error instanceof Error ? error.message : "Unknown error",
+        description: getApiErrorMessage(error),
       });
       console.error("Error during sign-in:", error);
       setAuthInProgress(false);

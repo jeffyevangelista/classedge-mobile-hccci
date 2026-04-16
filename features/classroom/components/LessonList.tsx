@@ -9,6 +9,7 @@ import { Icon } from "@/components/Icon";
 import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const CONTENT_CONTAINER_STYLE = { paddingTop: 16 } as const;
 
@@ -39,7 +40,9 @@ const LessonList = () => {
 
   if (isLoading && !data) return <MaterialsSkeleton />;
   if (isError)
-    return <ErrorFallback message={error.message} onRefetch={refetch} />;
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   const materials = useMemo(() => {
     const all = data?.pages.flatMap((page) => page.results) ?? [];
@@ -91,9 +94,9 @@ const LessonList = () => {
 };
 
 const MaterialItem = React.memo(
-  ({ id, lesson_name, lesson_type, start_date }: Lesson) => {
-    const { label } = getLessonIcon(lesson_type);
-    const formattedDate = useFormattedDate(start_date);
+  ({ id, lessonName, lessonType, startDate }: Lesson) => {
+    const { label } = getLessonIcon(lessonType);
+    const formattedDate = useFormattedDate(startDate);
 
     return (
       <Link className="max-w-3xl mx-auto w-full mt-2.5" href={`/lesson/${id}`}>
@@ -113,7 +116,7 @@ const MaterialItem = React.memo(
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                {label}: {lesson_name}
+                {label}: {lessonName}
               </AppText>
               <AppText
                 className="text-neutral-500 dark:text-neutral-400 text-xs"

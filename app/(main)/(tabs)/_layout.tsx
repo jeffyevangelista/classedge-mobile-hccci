@@ -1,19 +1,54 @@
 import TabIcon from "@/components/TabIcon";
+import { useNetworkBannerHeight } from "@/features/network/NetworkBannerContext";
 import { useNotificationCount } from "@/features/notifications/notifications.hooks";
 import useStore from "@/lib/store";
 import { Tabs } from "expo-router";
-import { Platform, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Platform } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TabsLayout = () => {
   const { authUser, isConnected, isInternetReachable } = useStore();
   const { data } = useNotificationCount();
+  const { bannerHeight } = useNetworkBannerHeight();
+  const insets = useSafeAreaInsets();
   const isOffline = !isConnected || !isInternetReachable;
+  const isBannerVisible = bannerHeight > 0;
+
+  const shouldHidePadding = isOffline || isBannerVisible;
+  const targetPadding = shouldHidePadding ? 0 : insets.bottom;
+  const bottomPadding = useSharedValue(targetPadding);
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      bottomPadding.value = targetPadding;
+      isFirstRender.current = false;
+      return;
+    }
+    bottomPadding.value = withTiming(targetPadding, {
+      duration: 300,
+      easing: shouldHidePadding
+        ? Easing.out(Easing.cubic)
+        : Easing.in(Easing.cubic),
+    });
+  }, [shouldHidePadding, insets.bottom]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    flex: 1,
+    paddingBottom: bottomPadding.value,
+  }));
 
   return (
-    <View style={{ flex: 1 }}>
+    <Animated.View style={animatedStyle}>
       <Tabs
-        safeAreaInsets={isOffline ? { bottom: 0 } : undefined}
-        // safeAreaInsets={{ bottom: 0 }}
+        safeAreaInsets={{ bottom: 0 }}
         screenOptions={{
           headerShown: false,
           headerShadowVisible: false,
@@ -136,7 +171,7 @@ const TabsLayout = () => {
           }}
         />
       </Tabs>
-    </View>
+    </Animated.View>
   );
 };
 

@@ -23,21 +23,21 @@ const OneSignalProvider = ({ children }: { children: React.ReactNode }) => {
     const clickHandler = (event: any) => {
       const data = event.notification.additionalData;
 
-      if (data && data.entity_type && data.entity_id) {
-        const { entity_type, entity_id, notification_id } = data;
+      if (data && data.entityType && data.entityId) {
+        const { entityType, entityId, notificationId } = data;
 
-        // Mark notification as read if notification_id is available
-        if (notification_id) {
-          readNotification(String(notification_id)).catch((err: any) =>
+        // Mark notification as read if notificationId is available
+        if (notificationId) {
+          readNotification(String(notificationId)).catch((err: any) =>
             console.log("Failed to mark notification as read:", err.message),
           );
         }
 
-        // Route based on entity_type, matching NotificationList logic
+        // Route based on entityType, matching NotificationList logic
         const path =
-          entity_type === "lesson" || entity_type === "module"
-            ? `/material/${entity_id}`
-            : `/assessment/${entity_id}`;
+          entityType === "lesson" || entityType === "module"
+            ? `/material/${entityId}`
+            : `/assessment/${entityId}`;
 
         console.log("Redirecting to path:", path);
         router.push(path);

@@ -77,12 +77,12 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" />
           </Stack.Protected>
           <Stack.Protected
-            guard={isAuthenticated && !!authUser?.needs_onboarding}
+            guard={isAuthenticated && !!authUser?.needsOnboarding}
           >
             <Stack.Screen name="(onboarding)" />
           </Stack.Protected>
           <Stack.Protected
-            guard={isAuthenticated && !authUser?.needs_onboarding}
+            guard={isAuthenticated && !authUser?.needsOnboarding}
           >
             <Stack.Screen name="(main)" />
           </Stack.Protected>

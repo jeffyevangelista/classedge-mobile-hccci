@@ -17,6 +17,7 @@ import { env } from "@/utils/env";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
 import { Subject } from "@/powersync/schema";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const MIN_CARD_WIDTH = 280;
 
@@ -28,7 +29,9 @@ const TeachingScreen = () => {
 
   if (isLoading) return <TeachingListSkeleton numColumns={numColumns} />;
   if (isError)
-    return <ErrorFallback message={error.message} onRefetch={refetch} />;
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   return (
     <Screen className="px-2.5">

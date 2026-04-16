@@ -6,6 +6,7 @@ import { ErrorComponent } from "@/components/ErrorComponent";
 import { Card, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import { Assessment } from "../courses.types";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const PendingAssessmentList = ({
   subjectId,
@@ -30,7 +31,7 @@ const PendingAssessmentList = ({
       </ScrollView>
     );
   }
-  if (isError) return <ErrorComponent message={error.message} />;
+  if (isError) return <ErrorComponent message={getApiErrorMessage(error)} />;
 
   if (!data || data.length === 0)
     return (
@@ -71,9 +72,9 @@ const AssessmentItem = memo(({ item }: { item: Assessment }) => (
       </View>
       <View className="flex-1">
         <AppText numberOfLines={1} weight="semibold">
-          {item.activity_name}
+          {item.activityName}
         </AppText>
-        <AppText className="text-gray-500 text-sm">{item.start_time}</AppText>
+        <AppText className="text-gray-500 text-sm">{item.startTime}</AppText>
       </View>
     </Card.Body>
   </Card>
