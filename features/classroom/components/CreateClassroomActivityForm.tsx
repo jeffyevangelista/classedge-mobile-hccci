@@ -100,27 +100,6 @@ const CreateClassroomActivityForm = () => {
     const startDateTime = combineDateTime(startDate, startTime);
     const endDateTime = combineDateTime(endDate, endTime);
 
-    console.log("activity-details:", {
-      activityName: title,
-      startTime: startDateTime.toISOString(),
-      endTime: endDateTime.toISOString(),
-      show_score: false,
-      remedial: false,
-      maxRetake: 1,
-      timeDuration: 0,
-      maxScore,
-      status: true,
-      passingScoreType: passingScore,
-      retakeMethod: "highest",
-      activityInstruction: instructions,
-      classroomMode: true,
-      isGraded: true,
-      shuffleQuestions: false,
-      subjectId: classroomId,
-      termId: term?.value,
-      activityTypeId: type?.value,
-    });
-
     try {
       const localId = createId();
       await createActivity({
@@ -316,8 +295,6 @@ const GradingPeriodSelector = ({
 }) => {
   const { data, isLoading } = useClassroomGradingPeriods();
   if (isLoading) return <Skeleton className="h-10 w-full rounded-lg" />;
-
-  console.log(data);
 
   return (
     <Select value={value} onValueChange={onValueChange}>

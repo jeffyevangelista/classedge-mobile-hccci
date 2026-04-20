@@ -45,7 +45,6 @@ const MSAuthButton = () => {
 
         // Prevent duplicate token exchanges with the same code
         if (processedCodeRef.current === authCode) {
-          console.log("Authorization code already processed, skipping");
           return;
         }
 

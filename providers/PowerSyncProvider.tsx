@@ -1,5 +1,5 @@
 import useStore from "@/lib/store";
-import { powersync, setupPowerSync } from "@/powersync/system";
+import { logDbPath, powersync, setupPowerSync } from "@/powersync/system";
 import { PowerSyncContext } from "@powersync/react-native";
 import { useEffect, useRef, useState } from "react";
 

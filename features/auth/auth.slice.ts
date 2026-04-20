@@ -31,7 +31,7 @@ type AuthAction = {
   clearCredentials: () => Promise<void>;
   restoreSession: () => Promise<void>;
   setEmail: (email: string) => void;
-  setNeedsOnboarding: (needsOnboarding: boolean) => void;
+  setLegalUpdateRequired: (legalUpdateRequired: boolean) => void;
 };
 
 export type AuthSlice = AuthState & AuthAction;
@@ -56,7 +56,7 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
     const decoded = jwtDecode<Record<string, unknown>>(accessToken);
     const userId = decoded.user_id as number;
     const exp = decoded.exp as number;
-    const needsOnboarding = decoded.needs_onboarding as boolean;
+    const legalUpdateRequired = decoded.legal_update_required as boolean;
     const needsPasswordSetup = decoded.needs_password_setup as boolean;
     const role = decoded.role as string;
 
@@ -67,7 +67,7 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
     const expiresAt = exp * 1000;
     const authUser: AuthUser = {
       id: userId,
-      needsOnboarding,
+      legalUpdateRequired,
       needsPasswordSetup,
       role,
     };
@@ -130,10 +130,10 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
   setEmail: (email: string) => {
     set({ email });
   },
-  setNeedsOnboarding: (needsOnboarding: boolean) => {
+  setLegalUpdateRequired: (legalUpdateRequired: boolean) => {
     set((state) => {
       const updatedAuthUser = state.authUser
-        ? { ...state.authUser, needsOnboarding }
+        ? { ...state.authUser, legalUpdateRequired }
         : null;
       if (updatedAuthUser) {
         setMMKVItem(MMKV_KEYS.AUTH_USER, updatedAuthUser);

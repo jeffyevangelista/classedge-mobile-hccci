@@ -1,4 +1,4 @@
-import { View, useColorScheme } from "react-native";
+import { View, Pressable, useColorScheme } from "react-native";
 import React, { useMemo } from "react";
 import { useClock } from "@/hooks/useClock";
 import { useClassSchedule } from "@/features/profile/profile.hooks";
@@ -6,6 +6,7 @@ import { Skeleton } from "heroui-native";
 import { colors } from "@/utils/colors";
 import { AppText } from "@/components/AppText";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { useRouter } from "expo-router";
 
 const formatTime = (time: string) => {
   const [h, m] = time.split(":").map(Number);
@@ -17,6 +18,7 @@ const formatTime = (time: string) => {
 const ScheduleComponent = () => {
   const now = useClock();
   const isDark = useColorScheme() === "dark";
+  const router = useRouter();
 
   const currentDay = now.getDay();
 
@@ -127,7 +129,7 @@ const ScheduleComponent = () => {
     <Skeleton isLoading={isLoading}>
       <View className="flex-row gap-3">
         {/* Left Card — Current Class */}
-        <View
+        <Pressable
           className="flex-1 rounded-2xl p-5 justify-between"
           style={{
             backgroundColor: currentClass
@@ -137,6 +139,7 @@ const ScheduleComponent = () => {
                 : colors.primary[50],
             minHeight: 180,
           }}
+          onPress={() => router.push("/(main)/profile/class-schedule")}
         >
           <View className="flex-row items-center gap-2 mb-3">
             <AppText
@@ -199,10 +202,10 @@ const ScheduleComponent = () => {
                 : "Enjoy your break"}
             </AppText>
           </View>
-        </View>
+        </Pressable>
 
         {/* Right Card — Upcoming Class */}
-        <View
+        <Pressable
           className="flex-1 rounded-2xl p-5 justify-between border"
           style={{
             borderColor: nextClass
@@ -221,6 +224,7 @@ const ScheduleComponent = () => {
                 : "#f9fafb",
             minHeight: 180,
           }}
+          onPress={() => router.push("/(main)/profile/class-schedule")}
         >
           <View className="flex-row items-center gap-2 mb-3">
             <AppText
@@ -295,7 +299,7 @@ const ScheduleComponent = () => {
                 : "Rest & recharge"}
             </AppText>
           </View>
-        </View>
+        </Pressable>
       </View>
     </Skeleton>
   );

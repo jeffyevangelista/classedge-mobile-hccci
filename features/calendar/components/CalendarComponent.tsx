@@ -77,6 +77,14 @@ const EventCard = ({
                   {formatDate(item.startDate)} - {formatDate(item.endDate)}
                 </AppText>
               </View>
+              {item.createdById && (
+                <AppText
+                  className="text-neutral-400 dark:text-neutral-500 text-xs"
+                  numberOfLines={1}
+                >
+                  By {item.createdById.firstName} {item.createdById.lastName}
+                </AppText>
+              )}
             </View>
           </View>
         </Card>

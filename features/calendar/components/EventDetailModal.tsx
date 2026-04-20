@@ -3,6 +3,7 @@ import { useEvent } from "../calendar.hooks";
 import { AppText } from "@/components/AppText";
 import { BottomSheet, Skeleton } from "heroui-native";
 import { useWindowDimensions, View } from "react-native";
+import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Icon } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -39,7 +40,6 @@ const EventDetailModal = ({
         screenWidth > BOTTOM_SHEET_MAX_WIDTH
           ? (screenWidth - BOTTOM_SHEET_MAX_WIDTH) / 2
           : 0,
-      minHeight: 500,
       borderTopLeftRadius: 12,
       borderTopRightRadius: 12,
     }),
@@ -51,11 +51,12 @@ const EventDetailModal = ({
       <BottomSheet.Portal>
         <BottomSheet.Overlay />
         <BottomSheet.Content
-          snapPoints={["50%", "90%"]}
+          snapPoints={["50%", "95%"]}
+          enableDynamicSizing={false}
+          topInset={50}
           style={contentStyle}
           className="bg-white dark:bg-neutral-900"
         >
-          <BottomSheet.Close />
           <BottomSheetContent eventId={eventId} />
         </BottomSheet.Content>
       </BottomSheet.Portal>
@@ -97,7 +98,10 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
   }
 
   return (
-    <View className="pt-5 bg-white dark:bg-neutral-900">
+    <BottomSheetScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ paddingBottom: 40 }}
+    >
       {/* Header */}
       <View className="mb-6">
         <AppText className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
@@ -215,7 +219,7 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
           </View>
         </View>
       </View>
-    </View>
+    </BottomSheetScrollView>
   );
 };
 

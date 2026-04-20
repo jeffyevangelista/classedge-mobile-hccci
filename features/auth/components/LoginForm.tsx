@@ -28,7 +28,6 @@ const LoginForm = () => {
     try {
       await login({ username, password });
     } catch (error: any) {
-      console.log("Login error:", JSON.stringify(error));
       toast.show({
         variant: "danger",
         label: "Error",

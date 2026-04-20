@@ -2,14 +2,11 @@ import { AppText } from "@/components/AppText";
 import Screen from "@/components/screen";
 import AnnouncementList from "@/features/announcements/components/AnnouncementList";
 import ScheduleComponent from "@/features/announcements/components/ScheduleComponent";
-import PendingAssessmentList from "@/features/courses/components/PendingAssessmentList";
-import SyncBanner from "@/features/sync/components/SyncBanner";
 import { powersync } from "@/powersync/system";
 import { useCallback, useEffect, useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import useStore from "@/lib/store";
 import { queryClient } from "@/providers/QueryProvider";
-import { Button } from "heroui-native";
 
 const HomeScreen = () => {
   const { authUser } = useStore();

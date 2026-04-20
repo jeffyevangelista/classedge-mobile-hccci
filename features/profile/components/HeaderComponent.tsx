@@ -7,10 +7,10 @@ import { env } from "@/utils/env";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 const HeaderComponent = () => {
-  const { data, isLoading, isError, error } = useUserDetails();
+  const { data, isLoading, error } = useUserDetails();
 
   if (isLoading) return <ProfileHeaderSkeleton />;
-  if (isError) return <ErrorComponent message={getApiErrorMessage(error)} />;
+  if (error) return <ErrorComponent message={getApiErrorMessage(error)} />;
 
   const userDetails = data?.[0];
 

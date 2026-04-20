@@ -9,7 +9,7 @@ export type AuthUser = {
   id: number;
   role: string;
   needsPasswordSetup: boolean;
-  needsOnboarding: boolean;
+  legalUpdateRequired: boolean;
 };
 
 export type AuthResponse = {
@@ -22,5 +22,5 @@ export type DecodedToken = JwtPayload & {
   userId: number;
   role: string;
   needsPasswordSetup: boolean;
-  needsOnboarding: boolean;
+  legalUpdateRequired: boolean;
 };

@@ -96,7 +96,13 @@ const AnnouncementList = () => {
   );
 };
 
-const EventCard = ({ event }: { event: Event }) => {
+const EventCard = ({
+  event,
+}: {
+  event: Event & {
+    createdById?: { firstName: string; lastName: string };
+  };
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <>
@@ -116,6 +122,11 @@ const EventCard = ({ event }: { event: Event }) => {
             >
               {event.description}
             </AppText>
+            {event.createdById && (
+              <AppText className="text-xs text-gray-400">
+                By {event.createdById.firstName} {event.createdById.lastName}
+              </AppText>
+            )}
             <View>
               <View className="flex-row items-center gap-1">
                 <Icon

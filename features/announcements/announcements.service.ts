@@ -2,6 +2,7 @@ import { db } from "@/powersync/system";
 
 export const getAnnouncementsWithEvents = () => {
   return db.query.announcementsTable.findMany({
+    orderBy: (announcements, { desc }) => desc(announcements.createdAt),
     with: {
       createdById: {
         columns: {
@@ -12,7 +13,16 @@ export const getAnnouncementsWithEvents = () => {
       },
       events: {
         with: {
-          event: true,
+          event: {
+            with: {
+              createdById: {
+                columns: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
         },
       },
     },

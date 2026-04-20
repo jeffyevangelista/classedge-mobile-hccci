@@ -18,26 +18,32 @@ const INFO_FIELDS = [
 ] as const;
 
 const ProfileInformation = () => {
-  const { data, isLoading, isError, error, refetch, isRefetching } =
-    useUserDetails();
+  const { data, isLoading, error, refresh } = useUserDetails();
 
   // 2. Memoize formatted data to prevent unnecessary string logic on re-renders
   const formattedData = useMemo(() => {
-    if (!data) return null;
+    if (!data || data.length === 0) return null;
     return {
-      ...data,
+      ...data[0],
       fullName:
         `${data[0]?.firstName ?? ""} ${data[0]?.lastName ?? ""}`.trim() ||
         "N/A",
+      dateOfBirth: data[0]?.dateOfBirth
+        ? new Date(data[0].dateOfBirth).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        : null,
     };
   }, [data]);
 
   if (isLoading) return <ProfileInformationSkeleton />;
-  if (isError)
+  if (error)
     return (
       <ErrorComponent
         message={error?.message ?? "An error occurred"}
-        onRetry={() => refetch()}
+        onRetry={() => refresh?.()}
       />
     );
   if (!formattedData)
@@ -45,7 +51,7 @@ const ProfileInformation = () => {
       <NoDataFallback
         title="No profile data"
         description="Your profile information is not available"
-        onRefetch={() => refetch()}
+        onRefetch={() => refresh?.()}
       />
     );
 
@@ -53,7 +59,7 @@ const ProfileInformation = () => {
     <ScrollView
       className="p-2.5"
       refreshControl={
-        <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+        <RefreshControl refreshing={false} onRefresh={() => refresh?.()} />
       }
     >
       {INFO_FIELDS.map((field) => (

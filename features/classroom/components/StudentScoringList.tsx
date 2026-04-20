@@ -43,7 +43,6 @@ const StudentScoringList = ({
   activityDetail: ActivityDetail;
 }) => {
   const { classroomId } = useGlobalSearchParams();
-  console.log("activityDetail ----c", activityDetail.id);
 
   const {
     data: students,

@@ -97,8 +97,6 @@ export const useMsLogin = () => {
       return msLogin(token);
     },
     onSuccess: async (data: AuthResponse) => {
-      console.log(data);
-
       setAccessToken(data.accessToken);
       setPowersyncToken(data.powersyncToken);
       await setRefreshToken(data.refreshToken);
@@ -131,11 +129,11 @@ export const useCompleteOnboarding = () => {
         setAccessToken,
         setPowersyncToken,
         setRefreshToken,
-        setNeedsOnboarding,
+        setLegalUpdateRequired,
       } = useStore.getState();
       const data = await refresh(refreshToken);
       setAccessToken(data.accessToken);
-      setNeedsOnboarding(false);
+      setLegalUpdateRequired(false);
       setPowersyncToken(data.powersyncToken);
       await setRefreshToken(data.refreshToken);
     },

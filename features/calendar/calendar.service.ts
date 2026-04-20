@@ -4,6 +4,14 @@ import { Event } from "@/powersync/schema";
 
 export const getEvents = () => {
   return db.query.eventsTable.findMany({
+    with: {
+      createdById: {
+        columns: {
+          firstName: true,
+          lastName: true,
+        },
+      },
+    },
     extras: {
       type: sql<"event" | "activity">`'event'`.as("type"),
     },

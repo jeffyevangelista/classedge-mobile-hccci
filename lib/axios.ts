@@ -113,11 +113,12 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (err: any) {
         processQueue(err, null);
-        // Only clear credentials if the refresh failed due to a server
-        // rejection (e.g. 401). Never clear when the error is a network
-        // failure — the user should stay logged in while offline.
-        const isNetworkError = !err?.response;
-        if (!isNetworkError) {
+        // Only clear credentials if the refresh failed due to an auth
+        // rejection (e.g. 401). Never clear on network failures or
+        // server errors (5xx) — the user should stay logged in.
+        const status = err?.response?.status;
+        const isAuthRejection = status === 401 || status === 403;
+        if (isAuthRejection) {
           await clearCredentials();
         }
         return Promise.reject(err);

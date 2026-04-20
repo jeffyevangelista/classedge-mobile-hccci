@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import useGreeting from "@/hooks/useGreeting";
 
 const Header = () => {
-  const { data, isLoading, isError, error } = useUserDetails();
+  const { data, isLoading, error } = useUserDetails();
   const [greeting, setGreeting] = useState(useGreeting());
 
   useEffect(() => {
@@ -24,7 +24,7 @@ const Header = () => {
   }, []);
 
   if (isLoading) return <HeaderSkeleton />;
-  if (isError) return <ErrorComponent message={getApiErrorMessage(error)} />;
+  if (error) return <ErrorComponent message={getApiErrorMessage(error)} />;
 
   const userDetails = data?.[0];
 

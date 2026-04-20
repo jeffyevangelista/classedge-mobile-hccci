@@ -60,8 +60,6 @@ const CourseworkList = () => {
       />
     );
 
-  console.log(assessments);
-
   return (
     <View className="flex-1">
       <FlatList

@@ -4,15 +4,15 @@ import { getStudentCourseSchedules, getUserDetails } from "./user.service";
 import { toCompilableQuery } from "@powersync/drizzle-driver";
 import { getFinancialInformation } from "./profile.apis";
 import { useQuery } from "@tanstack/react-query";
+import { useQuery as usePowersyncReactQuery } from "@powersync/react";
 
 export const useUserDetails = () => {
   const authUser = useStore((state) => state.authUser);
 
-  return usePowersyncQuery({
-    queryKey: ["user-details", authUser?.id],
-    enabled: !!authUser,
-    query: toCompilableQuery(getUserDetails(authUser?.id!)),
-  });
+  return usePowersyncReactQuery(
+    toCompilableQuery(getUserDetails(authUser?.id!)),
+    [authUser?.id],
+  );
 };
 
 export const useClassSchedule = () => {

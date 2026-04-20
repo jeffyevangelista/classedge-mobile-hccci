@@ -52,8 +52,6 @@ export const getAssessments = async ({
   previous: string | null;
   results: Assessment[];
 }> => {
-  console.log("fetching");
-
   return (
     await api.get(
       `/subject/${courseId}/activities/?page=${pageParam}&classroom_mode=${classroomMode}`,

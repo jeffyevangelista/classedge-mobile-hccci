@@ -39,14 +39,17 @@ async function silentRefresh(): Promise<boolean> {
 
   // Capture local onboarding state before the refresh overwrites it
   const wasOnboardingDone =
-    useStore.getState().authUser?.needsOnboarding === false;
+    useStore.getState().authUser?.legalUpdateRequired === false;
 
   try {
     const data = await refresh(refreshToken);
     setAccessToken(data.accessToken);
-    // Preserve local needsOnboarding: false if the server JWT is stale
-    if (wasOnboardingDone && useStore.getState().authUser?.needsOnboarding) {
-      useStore.getState().setNeedsOnboarding(false);
+    // Preserve local legalUpdateRequired: false if the server JWT is stale
+    if (
+      wasOnboardingDone &&
+      useStore.getState().authUser?.legalUpdateRequired
+    ) {
+      useStore.getState().setLegalUpdateRequired(false);
     }
     setPowersyncToken(data.powersyncToken);
     await setRefreshToken(data.refreshToken);

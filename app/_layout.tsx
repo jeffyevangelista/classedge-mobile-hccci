@@ -75,14 +75,15 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Protected guard={!isAuthenticated}>
             <Stack.Screen name="(auth)" />
+            <Stack.Screen name="auth/callback" />
           </Stack.Protected>
           <Stack.Protected
-            guard={isAuthenticated && !!authUser?.needsOnboarding}
+            guard={isAuthenticated && !!authUser?.legalUpdateRequired}
           >
             <Stack.Screen name="(onboarding)" />
           </Stack.Protected>
           <Stack.Protected
-            guard={isAuthenticated && !authUser?.needsOnboarding}
+            guard={isAuthenticated && !authUser?.legalUpdateRequired}
           >
             <Stack.Screen name="(main)" />
           </Stack.Protected>

@@ -2,6 +2,7 @@
 import { wrapPowerSyncWithDrizzle } from "@powersync/drizzle-driver";
 import { OPSqliteOpenFactory } from "@powersync/op-sqlite";
 import { PowerSyncDatabase } from "@powersync/react-native";
+import { open } from "@op-engineering/op-sqlite";
 import { AppSchema } from "./AppSchema"; // Your PowerSync Schema
 import { Connector } from "./Connector";
 import * as drizzleSchema from "./schema"; // Your Drizzle Table definitions
@@ -25,6 +26,14 @@ export const powersync = new PowerSyncDatabase({
 export const db = wrapPowerSyncWithDrizzle(powersync, {
   schema: drizzleSchema,
 });
+
+export const logDbPath = () => {
+  if (__DEV__) {
+    const tempDb = open({ name: "powersync.db" });
+    console.log("📂 DB Path:", tempDb.getDbPath());
+    tempDb.close();
+  }
+};
 
 export const setupPowerSync = async () => {
   // Create local-only tables

@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 const TabsHeader = () => {
-  const { data, isLoading, isError, error } = useUserDetails();
+  const { data, isLoading, error, refresh } = useUserDetails();
   const [greeting, setGreeting] = useState(useGreeting());
   const insets = useSafeAreaInsets();
 
@@ -27,7 +27,7 @@ const TabsHeader = () => {
   }, []);
 
   if (isLoading) return <TabsHeaderSkeleton />;
-  if (isError) return <ErrorComponent message={getApiErrorMessage(error)} />;
+  if (error) return <ErrorComponent message={getApiErrorMessage(error)} />;
 
   const userDetails = data?.[0];
 

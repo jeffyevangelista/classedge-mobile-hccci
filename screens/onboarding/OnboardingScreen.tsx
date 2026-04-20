@@ -195,7 +195,9 @@ const OnboardingScreen = () => {
 
           <LinkButton
             className="w-full"
-            isDisabled={logoutMutation.isPending}
+            isDisabled={
+              logoutMutation.isPending || completeOnboardingMutation.isPending
+            }
             onPress={handleLogout}
           >
             {logoutMutation.isPending ? (
