@@ -10,6 +10,7 @@ export type AuthUser = {
   role: string;
   needsPasswordSetup: boolean;
   legalUpdateRequired: boolean;
+  pendingLegalDocTypes: string[];
 };
 
 export type AuthResponse = {
@@ -18,9 +19,26 @@ export type AuthResponse = {
   powersyncToken: string;
 };
 
+export type LegalDocument = {
+  id: number;
+  docType: string;
+  version: string;
+  title: string;
+  content: string;
+  effectiveDate: string;
+};
+
+export type ActiveLegalDocuments = {
+  eula: LegalDocument | null;
+  privacy: LegalDocument | null;
+  nda: LegalDocument | null;
+  missing: string[];
+};
+
 export type DecodedToken = JwtPayload & {
   userId: number;
   role: string;
   needsPasswordSetup: boolean;
   legalUpdateRequired: boolean;
+  pendingLegalDocTypes: string[];
 };

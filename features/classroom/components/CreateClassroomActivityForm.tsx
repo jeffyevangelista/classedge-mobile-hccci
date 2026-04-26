@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Platform } from "react-native";
+import { View, Text, Pressable, Platform, Alert } from "react-native";
 import React, { useState } from "react";
 import {
   Button,
@@ -16,7 +16,10 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { AppText } from "@/components/AppText";
-import { useClassroomGradingPeriods } from "../classroom.hooks";
+import {
+  useClassroomGradingPeriods,
+  useActivityTypes,
+} from "../classroom.hooks";
 import { createActivity } from "../ classroom.service";
 import { createId } from "@paralleldrive/cuid2";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -39,6 +42,7 @@ const CreateClassroomActivityForm = () => {
   const [instructions, setInstructions] = useState("");
   const [passingScore, setPassingScore] = useState("");
   const [type, setType] = useState<SelectOption | undefined>();
+  const [activityType, setActivityType] = useState<SelectOption | undefined>();
   const [maxScore, setMaxScore] = useState("");
 
   const [startDate, setStartDate] = useState(new Date());
@@ -97,13 +101,35 @@ const CreateClassroomActivityForm = () => {
   };
 
   const handleSubmit = async () => {
+    const maxScoreNum = parseInt(maxScore, 10);
+    const passingScoreNum = parseInt(passingScore, 10);
+    const termIdNum = term?.value ? parseInt(term.value, 10) : NaN;
+    const activityTypeIdNum = activityType?.value
+      ? parseInt(activityType.value, 10)
+      : NaN;
+
+    const missing: string[] = [];
+    if (!title.trim()) missing.push("Title");
+    if (!term?.value) missing.push("Term");
+    if (!activityType?.value) missing.push("Activity Type");
+    if (!type?.value) missing.push("Scoring Type");
+    if (Number.isNaN(maxScoreNum)) missing.push("Max Score");
+    if (Number.isNaN(passingScoreNum)) missing.push("Passing Score");
+    if (missing.length > 0) {
+      Alert.alert(
+        "Missing required fields",
+        `Please provide: ${missing.join(", ")}`,
+      );
+      return;
+    }
+
     const startDateTime = combineDateTime(startDate, startTime);
     const endDateTime = combineDateTime(endDate, endTime);
 
+    const localId = createId();
+
     try {
-      const localId = createId();
       await createActivity({
-        id: createId(),
         localId,
         activityName: title,
         startTime: startDateTime.toISOString(),
@@ -111,22 +137,26 @@ const CreateClassroomActivityForm = () => {
         showScore: 0,
         maxRetake: 1,
         timeDuration: 0,
-        maxScore: parseInt(maxScore),
-        passingScore: parseInt(passingScore),
+        maxScore: maxScoreNum,
+        passingScore: passingScoreNum,
         passingScoreType: type?.value,
         retakeMethod: "highest",
         activityInstruction: instructions,
         classroomMode: 1,
         isGraded: 1,
         shuffleQuestions: 0,
-        subjectId: parseInt(classroomId as string),
-        activityTypeId: 2,
-        termId: term?.value,
+        subjectId: parseInt(classroomId as string, 10),
+        activityTypeId: Number.isNaN(activityTypeIdNum) ? 2 : activityTypeIdNum,
+        termId: termIdNum,
       });
 
       router.replace(`/classroom/${classroomId}/input-grades/${localId}`);
     } catch (error) {
       console.error("Error creating activity:", error);
+      Alert.alert(
+        "Could not create activity",
+        error instanceof Error ? error.message : "Unknown error",
+      );
     }
   };
 
@@ -141,6 +171,14 @@ const CreateClassroomActivityForm = () => {
         <Label>Term</Label>
         <GradingPeriodSelector value={term} onValueChange={setTerm} />
       </TextField>
+      <TextField>
+        <Label>Activity Type</Label>
+        <ActivityTypeSelector
+          value={activityType}
+          onValueChange={setActivityType}
+        />
+      </TextField>
+
       <TextField>
         <Label>Instructions</Label>
         <TextArea
@@ -313,6 +351,43 @@ const GradingPeriodSelector = ({
               <Select.Item
                 value={String(gradingPeriod.id)}
                 label={gradingPeriod.termName}
+              />
+              {index < data.length - 1 && <Separator />}
+            </React.Fragment>
+          ))}
+        </Select.Content>
+      </Select.Portal>
+    </Select>
+  );
+};
+
+const ActivityTypeSelector = ({
+  value,
+  onValueChange,
+}: {
+  value: SelectOption | undefined;
+  onValueChange: (value: SelectOption | undefined) => void;
+}) => {
+  const { data, isLoading } = useActivityTypes();
+  if (isLoading) return <Skeleton className="h-10 w-full rounded-lg" />;
+
+  return (
+    <Select value={value} onValueChange={onValueChange}>
+      <Select.Trigger>
+        <Select.Value placeholder="Select activity type" />
+        <Select.TriggerIndicator />
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Overlay />
+        <Select.Content presentation="popover" width="trigger">
+          <Select.ListLabel className="mb-2">
+            Choose an activity type
+          </Select.ListLabel>
+          {data?.map((activityType, index) => (
+            <React.Fragment key={activityType.id}>
+              <Select.Item
+                value={String(activityType.id)}
+                label={activityType.name}
               />
               {index < data.length - 1 && <Separator />}
             </React.Fragment>

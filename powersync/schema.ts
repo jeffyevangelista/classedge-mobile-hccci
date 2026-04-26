@@ -241,7 +241,9 @@ export const announcementEventRelations = relations(
 );
 
 export const assessmentTable = sqliteTable("activity_activity", {
-  id: integer("id").primaryKey().notNull(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
   activityName: text("activity_name").notNull(),
   startTime: text("start_time").notNull(),
   endTime: text("end_time").notNull(),
@@ -436,6 +438,11 @@ export const attachementsTable = sqliteTable("mobile_attachment", {
   studentActivityId: integer("student_activity_id"),
 });
 
+export const activtyType = sqliteTable("activity_activitytype", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+});
+
 export const drizzleSchema = {
   courseScheduleTable,
   courseScheduleRelations,
@@ -472,6 +479,7 @@ export const drizzleSchema = {
   gradingPeriodTable,
   gradingPeriodRelations,
   attachementsTable,
+  activtyType,
 };
 
 export type Subject = InferSelectModel<typeof coursesTable>;

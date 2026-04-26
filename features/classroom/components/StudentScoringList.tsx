@@ -34,7 +34,7 @@ type ActivityDetail = {
   maxScore: number;
   termId: number;
   subjectId: number;
-  id: number;
+  id: string;
 };
 
 const StudentScoringList = ({
@@ -51,6 +51,11 @@ const StudentScoringList = ({
     error,
   } = useClassroomStudents(classroomId as string);
 
+  const validStudents = useMemo(
+    () => students?.filter((s) => s.studentId != null) ?? [],
+    [students],
+  );
+
   const { data: existingScores } = useStudentScoresForActivity(
     activityDetail.localId,
   );
@@ -59,7 +64,7 @@ const StudentScoringList = ({
     const map: Record<number, number> = {};
     if (existingScores) {
       for (const score of existingScores) {
-        map[score.studentId] = score.totalScore;
+        map[score.studentId] = score.totalScore ?? 0;
       }
     }
     return map;
@@ -75,7 +80,8 @@ const StudentScoringList = ({
         const next = { ...prev };
         for (const score of existingScores) {
           if (next[score.studentId] === undefined) {
-            next[score.studentId] = score.totalScore.toString();
+            next[score.studentId] =
+              score.totalScore != null ? score.totalScore.toString() : "";
           }
         }
         return next;
@@ -95,9 +101,9 @@ const StudentScoringList = ({
   );
 
   const dirtyStudentIds = useMemo(() => {
-    if (!students) return new Set<number>();
+    if (!validStudents.length) return new Set<number>();
     const dirty = new Set<number>();
-    for (const s of students) {
+    for (const s of validStudents) {
       const local = localScores[s.studentId];
       if (local === undefined || local === "") continue;
       const numericScore = parseInt(local, 10);
@@ -115,7 +121,13 @@ const StudentScoringList = ({
       }
     }
     return dirty;
-  }, [students, localScores, localImages, scoresMap, activityDetail.maxScore]);
+  }, [
+    validStudents,
+    localScores,
+    localImages,
+    scoresMap,
+    activityDetail.maxScore,
+  ]);
 
   const hasUnsavedChanges = dirtyStudentIds.size > 0;
 
@@ -159,7 +171,7 @@ const StudentScoringList = ({
     <View className="flex-1">
       <FlashList
         className="max-w-3xl w-full mx-auto"
-        data={students}
+        data={validStudents}
         renderItem={({ item }) => (
           <StudentScoreItem
             studentId={item.studentId}

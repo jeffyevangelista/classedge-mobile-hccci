@@ -17,6 +17,7 @@ const CourseDetailsLayout = () => {
       <Stack.Screen
         name="index"
         options={{
+          headerShown: false,
           headerRight: ({ tintColor }) => {
             const router = useRouter();
             return (
@@ -36,7 +37,12 @@ const CourseDetailsLayout = () => {
           },
         }}
       />
-      <Stack.Screen name="course-details" />
+      <Stack.Screen
+        name="course-details"
+        options={{
+          headerTitle: "Course Details",
+        }}
+      />
     </Stack>
   );
 };

@@ -36,8 +36,26 @@ export const getGradingPeriods = () => {
   return db.query.gradingPeriodTable.findMany();
 };
 
-export const createActivity = (data: any) => {
-  return db.insert(assessmentTable).values(data);
+export const getActivityTypes = () => {
+  return db.query.activtyType.findMany();
+};
+
+export const createActivity = async (data: any) => {
+  console.log("[createActivity] inserting:", JSON.stringify(data));
+  const result = await db.insert(assessmentTable).values(data);
+  console.log("[createActivity] insert result:", JSON.stringify(result));
+
+  // Verify the row actually landed in the local DB by reading it back directly.
+  const verify = await powersync.execute(
+    "SELECT id, local_id, activity_name FROM activity_activity WHERE local_id = ?",
+    [data.localId],
+  );
+  console.log(
+    "[createActivity] verify after insert:",
+    JSON.stringify(verify.rows?._array),
+  );
+
+  return result;
 };
 
 export const getClassroomStudents = (classroomId: string) => {
@@ -55,7 +73,7 @@ export const getStudentScoresForActivity = (activityLocalId: string) => {
 
 export const upsertStudentScore = async (data: {
   studentId: number;
-  activityId: number;
+  activityId: string;
   termId: number;
   activityLocalId: string;
   subjectId: number;

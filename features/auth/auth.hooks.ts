@@ -1,10 +1,11 @@
 import useStore from "@/lib/store";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Alert } from "react-native";
 import {
   completeOnboarding,
   forgotPassword,
+  getActiveLegalDocuments,
   login,
   msLogin,
   resetPassword,
@@ -91,12 +92,9 @@ export const useMsLogin = () => {
 
   return useMutation({
     mutationKey: ["ms-login"],
-    mutationFn: (token: string) => {
-      console.log({ token });
-
-      return msLogin(token);
-    },
+    mutationFn: (token: string) => msLogin(token),
     onSuccess: async (data: AuthResponse) => {
+      console.log(data);
       setAccessToken(data.accessToken);
       setPowersyncToken(data.powersyncToken);
       await setRefreshToken(data.refreshToken);
@@ -112,17 +110,23 @@ export const useMsLogin = () => {
   });
 };
 
+export const useActiveLegalDocuments = () => {
+  return useQuery({
+    queryKey: ["active-legal-documents"],
+    queryFn: getActiveLegalDocuments,
+  });
+};
+
 export const useCompleteOnboarding = () => {
   const { toast } = useToast();
 
   return useMutation({
     mutationKey: ["complete-onboarding"],
-    mutationFn: () =>
-      completeOnboarding({
-        eula_version: "1.0",
-        privacy_policy_version: "1.0",
-        is_accepted: true,
-      }),
+    mutationFn: () => {
+      const { authUser } = useStore.getState();
+      const accepted = authUser?.pendingLegalDocTypes ?? [];
+      return completeOnboarding({ accepted });
+    },
     onSuccess: async () => {
       const {
         refreshToken,

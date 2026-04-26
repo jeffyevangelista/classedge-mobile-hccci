@@ -1,26 +1,54 @@
 import { AppText } from "@/components/AppText";
+import BackButton from "@/components/BackButton";
+import { Icon } from "@/components/Icon";
 import Image from "@/components/Image";
-import Screen from "@/components/screen";
 import CourseTimeline from "@/features/courses/components/CourseTimeline";
 import { useCourseDetails } from "@/features/courses/courses.hooks";
 import { queryClient } from "@/providers/QueryProvider";
 import { env } from "@/utils/env";
-import { useLocalSearchParams } from "expo-router";
-import { Card, Skeleton } from "heroui-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Skeleton } from "heroui-native";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useCallback, useMemo, useState } from "react";
-import { RefreshControl, ScrollView, View } from "react-native";
+import {
+  Platform,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from "react-native";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedRef,
+  useAnimatedStyle,
+  useScrollViewOffset,
+} from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUniwind } from "uniwind";
+
+const NAV_HEIGHT = 44;
+const IMAGE_HEIGHT = 200;
 
 const CourseScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { courseId } = useLocalSearchParams();
   const { theme } = useUniwind();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  const scrollOffset = useScrollViewOffset(scrollRef);
+  const { data, isLoading, isError, error } = useCourseDetails(
+    courseId as string,
+  );
 
   const isDark = theme === "dark";
   const spinnerColor = isDark ? "#FFF" : "#000";
   const bgColor = isDark ? "#333" : "#FFF";
+  const navBg = isDark ? "#1a1a1a" : "#ffffff";
+  const tintColor = isDark ? "#fff" : "#000";
+  const contentBg = isDark ? "#1a1a1a" : "#ffffff";
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -46,64 +74,228 @@ const CourseScreen = () => {
     [refreshing, onRefresh, spinnerColor, bgColor],
   );
 
+  const headerAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateY: interpolate(
+          scrollOffset.value,
+          [-IMAGE_HEIGHT, 0, IMAGE_HEIGHT],
+          [-IMAGE_HEIGHT / 2, 0, IMAGE_HEIGHT * 0.75],
+        ),
+      },
+      {
+        scale: interpolate(
+          scrollOffset.value,
+          [-IMAGE_HEIGHT, 0, IMAGE_HEIGHT],
+          [2, 1, 1],
+        ),
+      },
+    ],
+  }));
+
+  const navBgStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollOffset.value,
+      [0, IMAGE_HEIGHT],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const navTitleStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollOffset.value,
+      [IMAGE_HEIGHT, IMAGE_HEIGHT + 30],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const floatingBtnStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollOffset.value,
+      [0, IMAGE_HEIGHT],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
   return (
-    <Screen className="px-2.5">
-      <ScrollView refreshControl={refreshControl}>
-        <TimelineHeader />
-        <CourseTimeline />
-      </ScrollView>
-    </Screen>
-  );
-};
-
-const TimelineHeader = () => {
-  const { courseId } = useLocalSearchParams();
-  const { data, isLoading, isError, error, isRefetching } = useCourseDetails(
-    courseId as string,
-  );
-
-  if (isLoading) return <TimelineHeaderSkeleton />;
-  if (isError) return <ErrorComponent message={getApiErrorMessage(error)} />;
-
-  return (
-    <Card className="shadow-none w-full mx-auto rounded-xl max-w-3xl p-0 overflow-hidden mt-2.5">
-      <Image
-        source={
-          data?.subjectId.subjectPhoto
-            ? {
-                uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${data.subjectId.subjectPhoto}`,
-              }
-            : require("@/assets/placeholder/bg-placeholder.png")
-        }
-        className="w-full rounded-t-xl aspect-29/9 md:aspect-31/9"
-        contentFit="cover"
-        cachePolicy="disk"
-      />
-      <View className="p-4 md:p-6">
-        <AppText
-          weight="semibold"
-          className="text-base md:text-xl dark:text-white leading-snug"
+    <View style={styles.container}>
+      {/* Animated Navigation Bar */}
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          paddingTop: insets.top,
+          height: insets.top + NAV_HEIGHT,
+        }}
+      >
+        <Animated.View
+          style={[
+            {
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: navBg,
+              borderBottomWidth: StyleSheet.hairlineWidth,
+              borderBottomColor: isDark ? "#333" : "#e5e5e5",
+            },
+            navBgStyle,
+          ]}
+        />
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 8,
+          }}
         >
-          {data?.subjectId.subjectName}
-        </AppText>
-        {data?.subjectId.subjectType && (
-          <AppText className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mt-1">
-            {data.subjectId.subjectType}
-          </AppText>
-        )}
+          <View>
+            <Animated.View
+              style={[
+                styles.floatingBtn,
+                {
+                  backgroundColor: isDark
+                    ? "rgba(0,0,0,0.5)"
+                    : "rgba(255,255,255,0.7)",
+                },
+                floatingBtnStyle,
+              ]}
+            />
+            <BackButton tintColor={isDark ? "#fff" : "#1a1a1a"} />
+          </View>
+          <Animated.View
+            style={[{ flex: 1, marginHorizontal: 4 }, navTitleStyle]}
+          >
+            <AppText
+              weight="semibold"
+              className="text-sm dark:text-white"
+              numberOfLines={1}
+            >
+              {data?.subjectId.subjectName ?? ""}
+            </AppText>
+          </Animated.View>
+          <View>
+            <Animated.View
+              style={[
+                styles.floatingBtn,
+                {
+                  backgroundColor: isDark
+                    ? "rgba(0,0,0,0.5)"
+                    : "rgba(255,255,255,0.7)",
+                },
+                floatingBtnStyle,
+              ]}
+            />
+            <Pressable
+              onPress={() =>
+                router.push(`/(main)/course/${courseId}/course-details`)
+              }
+              className="w-9 h-9 rounded-full flex justify-center items-center"
+            >
+              <Icon
+                name="InfoIcon"
+                color={tintColor}
+                style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
+              />
+            </Pressable>
+          </View>
+        </View>
       </View>
-    </Card>
+
+      {/* Parallax ScrollView */}
+      <Animated.ScrollView
+        ref={scrollRef}
+        scrollEventThrottle={16}
+        refreshControl={refreshControl}
+      >
+        <Animated.View
+          style={[
+            styles.imageHeader,
+            { backgroundColor: isDark ? "#333" : "#D0D0D0" },
+            headerAnimatedStyle,
+          ]}
+        >
+          {!isLoading && (
+            <Image
+              source={
+                data?.subjectId.subjectPhoto
+                  ? {
+                      uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${data.subjectId.subjectPhoto}`,
+                    }
+                  : require("@/assets/placeholder/bg-placeholder.png")
+              }
+              style={StyleSheet.absoluteFill}
+              contentFit="cover"
+              cachePolicy="disk"
+            />
+          )}
+        </Animated.View>
+
+        <View style={[styles.content, { backgroundColor: contentBg }]}>
+          {isLoading ? (
+            <View className="gap-2">
+              <Skeleton className="h-6 w-3/4 rounded-full" />
+              <Skeleton className="h-3 w-1/3 rounded-full" />
+            </View>
+          ) : isError ? (
+            <ErrorComponent message={getApiErrorMessage(error)} />
+          ) : (
+            <View className="gap-1">
+              <AppText
+                weight="semibold"
+                className="text-lg md:text-xl dark:text-white leading-snug"
+              >
+                {data?.subjectId.subjectName}
+              </AppText>
+              {data?.subjectId.subjectType && (
+                <AppText className="text-xs md:text-sm text-slate-600 dark:text-slate-400">
+                  {data.subjectId.subjectType}
+                </AppText>
+              )}
+            </View>
+          )}
+          <CourseTimeline />
+        </View>
+      </Animated.ScrollView>
+    </View>
   );
 };
 
-const TimelineHeaderSkeleton = () => (
-  <Card className="shadow-none w-full mx-auto rounded-xl max-w-3xl p-0 overflow-hidden mt-2.5">
-    <Skeleton className="w-full aspect-29/9 md:aspect-31/9 rounded-t-xl" />
-    <View className="p-4 md:p-6 gap-2">
-      <Skeleton className="h-5 w-3/4 rounded-full" />
-      <Skeleton className="h-3 w-1/3 rounded-full" />
-    </View>
-  </Card>
-);
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  imageHeader: {
+    height: IMAGE_HEIGHT,
+    overflow: "hidden",
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+    paddingTop: 24,
+    gap: 16,
+    overflow: "hidden",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    marginTop: -20,
+    minHeight: "100%",
+  },
+  floatingBtn: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 9999,
+  },
+});
 
 export default CourseScreen;

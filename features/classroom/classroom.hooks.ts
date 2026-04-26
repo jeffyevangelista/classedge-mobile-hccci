@@ -3,6 +3,7 @@ import { useQuery } from "@powersync/tanstack-react-query";
 import {
   getActivities,
   getActivityById,
+  getActivityTypes,
   getClassroomStudents,
   getGradingPeriods,
   getStudentScoresForActivity,
@@ -26,6 +27,13 @@ export const useClassroomGradingPeriods = () => {
   return useQuery({
     query: toCompilableQuery(getGradingPeriods()),
     queryKey: ["classroom-grading-periods"],
+  });
+};
+
+export const useActivityTypes = () => {
+  return useQuery({
+    query: toCompilableQuery(getActivityTypes()),
+    queryKey: ["activity-types"],
   });
 };
 

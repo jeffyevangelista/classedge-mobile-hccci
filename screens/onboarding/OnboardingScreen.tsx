@@ -1,25 +1,46 @@
 import { AppText } from "@/components/AppText";
 import Image from "@/components/Image";
-import { useCompleteOnboarding, useLogout } from "@/features/auth/auth.hooks";
-import { useEffect, useState } from "react";
+import {
+  useActiveLegalDocuments,
+  useCompleteOnboarding,
+  useLogout,
+} from "@/features/auth/auth.hooks";
+import { getApiErrorMessage } from "@/lib/api-error";
+import type { LegalDocument } from "@/features/auth/auth.types";
+import { useEffect, useMemo, useState } from "react";
 import { BackHandler, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, ControlField, LinkButton, Spinner } from "heroui-native";
+import {
+  Button,
+  ControlField,
+  LinkButton,
+  Skeleton,
+  Spinner,
+} from "heroui-native";
 import useStore from "@/lib/store";
 
-const LEGAL_VERSION = "1.0";
+const DOC_LABELS: Record<string, string> = {
+  EULA: "End User License Agreement (EULA)",
+  PRIVACY: "Privacy Policy",
+  NDA: "Non-Disclosure Agreement (NDA)",
+};
 
 const OnboardingScreen = () => {
   const { authUser } = useStore();
+  const isOffline = useStore((s) => !s.isConnected || !s.isInternetReachable);
   const insets = useSafeAreaInsets();
 
-  const [eulaAccepted, setEulaAccepted] = useState(false);
-  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [accepted, setAccepted] = useState(false);
 
+  const {
+    data: legalDocs,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useActiveLegalDocuments();
   const completeOnboardingMutation = useCompleteOnboarding();
   const logoutMutation = useLogout();
-
-  const canContinue = eulaAccepted && privacyAccepted;
 
   // Trap Android back button — prevent navigating away
   useEffect(() => {
@@ -31,13 +52,30 @@ const OnboardingScreen = () => {
   }, []);
 
   const handleContinue = () => {
-    if (!canContinue) return;
+    if (!accepted) return;
     completeOnboardingMutation.mutate();
   };
 
   const handleLogout = () => {
     logoutMutation.mutate();
   };
+
+  // Collect available documents in display order
+  const documents: LegalDocument[] = legalDocs
+    ? [legalDocs.eula, legalDocs.nda, legalDocs.privacy].filter(
+        (doc): doc is LegalDocument => doc !== null && doc !== undefined,
+      )
+    : [];
+
+  const checkboxLabel = useMemo(() => {
+    if (documents.length === 0) return "I have read and agree to the terms";
+    const names = documents.map((doc) => DOC_LABELS[doc.docType] ?? doc.title);
+    if (names.length === 1) return `I have read and agree to the ${names[0]}`;
+    const last = names.pop();
+    return `I have read and agree to the ${names.join(", ")} and ${last}`;
+  }, [documents]);
+
+  const hasDocuments = documents.length > 0;
 
   return (
     <View
@@ -77,113 +115,66 @@ const OnboardingScreen = () => {
           </AppText>
 
           <AppText className="text-sm text-gray-500 mt-1 mb-4">
-            Please review the following agreements (v{LEGAL_VERSION}) before
-            continuing.
+            Please review the following agreements before continuing.
           </AppText>
 
-          {/* EULA Section */}
-          <View className="mb-6">
-            <AppText weight="bold" className="text-base mb-2">
-              1. End User License Agreement (EULA)
-            </AppText>
-            <AppText className="text-xs text-gray-500 mb-3">
-              This agreement grants you permission to use Classedge and sets the
-              rules for what you can and cannot do.
-            </AppText>
+          {isLoading && <LegalSkeleton />}
 
-            <LegalClause title="Grant of License">
-              You are granted a limited, revocable, non-exclusive, and
-              non-transferable license to use the Classedge app for its intended
-              educational purpose.
-            </LegalClause>
-            <LegalClause title="Restrictions on Use">
-              You may not reverse-engineer the app, copy the source code, use it
-              to spam others, or use it for any illegal activities.
-            </LegalClause>
-            <LegalClause title="User-Generated Content">
-              Objectionable or offensive content is strictly forbidden.
-              Classedge reserves the right to remove such content and ban any
-              user who violates this policy.
-            </LegalClause>
-            <LegalClause title="Termination of License">
-              Classedge reserves the right to revoke your access to the app at
-              any time if you violate these terms.
-            </LegalClause>
-            <LegalClause title="Limitation of Liability">
-              The app is provided "as-is." Classedge is not liable for crashes,
-              data loss due to bugs, or any damage to your device while using
-              the app.
-            </LegalClause>
-          </View>
+          {!isLoading && isOffline && !hasDocuments && (
+            <View className="items-center py-12 px-4">
+              <AppText weight="semibold" className="text-base text-center mb-2">
+                You're offline
+              </AppText>
+              <AppText className="text-sm text-gray-500 text-center mb-4">
+                An internet connection is required to load the legal agreements.
+                Please connect and try again.
+              </AppText>
+              <Button variant="outline" onPress={() => refetch()}>
+                <Button.Label>Retry</Button.Label>
+              </Button>
+            </View>
+          )}
 
-          {/* Privacy Policy Section */}
-          <View className="mb-6">
-            <AppText weight="bold" className="text-base mb-2">
-              2. Privacy Policy
-            </AppText>
-            <AppText className="text-xs text-gray-500 mb-3">
-              This policy explains what data we collect, how we use it, and how
-              we keep it safe.
-            </AppText>
+          {!isLoading && !isOffline && isError && (
+            <View className="items-center py-12 px-4">
+              <AppText weight="semibold" className="text-base text-center mb-2">
+                Failed to load agreements
+              </AppText>
+              <AppText className="text-sm text-gray-500 text-center mb-4">
+                {getApiErrorMessage(error)}
+              </AppText>
+              <Button variant="outline" onPress={() => refetch()}>
+                <Button.Label>Retry</Button.Label>
+              </Button>
+            </View>
+          )}
 
-            <LegalClause title="Information We Collect">
-              We collect information you provide (name, email, and school
-              affiliation via Azure OAuth) and information collected
-              automatically (device type, operating system, IP address, and app
-              usage statistics).
-            </LegalClause>
-            <LegalClause title="How We Use Your Information">
-              To create your account, provide the core features of the LMS, send
-              push notifications, and troubleshoot app issues.
-            </LegalClause>
-            <LegalClause title="Data Sharing with Third Parties">
-              We share data with secure cloud database providers, authentication
-              providers, and notification/analytics services as needed to
-              operate the app.
-            </LegalClause>
-            <LegalClause title="Data Security">
-              We use industry-standard encryption (JWTs, SSL/TLS) and secure
-              storage to protect your tokens and school data.
-            </LegalClause>
-            <LegalClause title="Your Rights">
-              You have the right to access your data, correct inaccuracies, or
-              request account deletion. Contact support@classedge.com for any
-              requests.
-            </LegalClause>
-          </View>
+          {!isLoading &&
+            hasDocuments &&
+            documents.map((doc, index) => (
+              <LegalSection key={doc.id} index={index + 1} document={doc} />
+            ))}
         </View>
       </ScrollView>
 
-      {/* Checkboxes + buttons pinned to bottom */}
+      {/* Checkbox + buttons pinned to bottom */}
       <View className="border-t border-gray-200 pt-4 px-6 pb-2 self-center w-full max-w-3xl">
         <ControlField
-          isDisabled={completeOnboardingMutation.isPending}
-          isSelected={eulaAccepted}
-          onSelectedChange={setEulaAccepted}
+          isDisabled={completeOnboardingMutation.isPending || !hasDocuments}
+          isSelected={accepted}
+          onSelectedChange={setAccepted}
           className="flex-row items-center gap-3 py-2"
         >
           <ControlField.Indicator variant="checkbox" />
-          <AppText className="flex-1 text-xs">
-            I agree to the End User License Agreement
-          </AppText>
-        </ControlField>
-
-        <ControlField
-          isDisabled={completeOnboardingMutation.isPending}
-          isSelected={privacyAccepted}
-          onSelectedChange={setPrivacyAccepted}
-          className="flex-row items-center gap-3 py-2"
-        >
-          <ControlField.Indicator variant="checkbox" />
-          <AppText className="flex-1 text-xs">
-            I acknowledge the Privacy Policy
-          </AppText>
+          <AppText className="flex-1 text-xs">{checkboxLabel}</AppText>
         </ControlField>
 
         <View className="mt-4 gap-3">
           <Button
             className="w-full"
-            isDisabled={!canContinue || completeOnboardingMutation.isPending}
+            isDisabled={
+              !accepted || completeOnboardingMutation.isPending || !hasDocuments
+            }
             onPress={handleContinue}
           >
             {completeOnboardingMutation.isPending ? (
@@ -212,19 +203,99 @@ const OnboardingScreen = () => {
   );
 };
 
-const LegalClause = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: string;
-}) => (
-  <View className="mb-3 pl-3 border-l-2 border-primary-200">
-    <AppText weight="semibold" className="text-sm mb-1">
-      {title}
-    </AppText>
-    <AppText className="text-xs text-gray-600 leading-5">{children}</AppText>
+const LegalSkeleton = () => (
+  <View className="gap-6">
+    {[1, 2, 3].map((i) => (
+      <View key={i} className="mb-6">
+        <Skeleton className="h-5 w-48 rounded mb-2" />
+        <Skeleton className="h-3 w-24 rounded mb-3" />
+        <View className="pl-3 border-l-2 border-primary-200 gap-2">
+          <Skeleton className="h-3 w-full rounded" />
+          <Skeleton className="h-3 w-full rounded" />
+          <Skeleton className="h-3 w-3/4 rounded" />
+        </View>
+      </View>
+    ))}
   </View>
 );
+
+/**
+ * Split raw legal-doc content into structured blocks.
+ *
+ * Rules:
+ *  - Paragraphs are separated by blank-ish lines (`\r\n\r\n` or `\r\n \r\n`).
+ *  - A paragraph whose first line matches `<number>. <Title>` is treated as a
+ *    headed section; everything after the first line is the body.
+ *  - All other paragraphs are plain body text.
+ */
+type ContentBlock =
+  | { kind: "heading"; title: string; body: string }
+  | { kind: "text"; body: string };
+
+const HEADING_RE = /^(\d+)\.\s+(.+)/;
+
+function parseContent(raw: string): ContentBlock[] {
+  const paragraphs = raw
+    .split(/\r?\n\s*\r?\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  return paragraphs.map((p) => {
+    const lines = p.split(/\r?\n/).map((l) => l.trim());
+    const match = lines[0].match(HEADING_RE);
+
+    if (match) {
+      const title = match[2];
+      const body = lines.slice(1).join("\n").trim();
+      return { kind: "heading", title, body };
+    }
+
+    return { kind: "text", body: lines.join("\n") };
+  });
+}
+
+const LegalSection = ({
+  index,
+  document,
+}: {
+  index: number;
+  document: LegalDocument;
+}) => {
+  const label = DOC_LABELS[document.docType] ?? document.title;
+  const blocks = useMemo(
+    () => parseContent(document.content),
+    [document.content],
+  );
+
+  return (
+    <View className="mb-6">
+      <AppText weight="bold" className="text-base mb-1">
+        {index}. {label}
+      </AppText>
+      <AppText className="text-xs text-gray-400 mb-3">
+        Version {document.version}
+      </AppText>
+
+      {blocks.map((block, i) =>
+        block.kind === "heading" ? (
+          <View key={i} className="mb-3 pl-3 border-l-2 border-primary-200">
+            <AppText weight="semibold" className="text-sm mb-1">
+              {block.title}
+            </AppText>
+            {block.body ? (
+              <AppText className="text-xs text-gray-600 leading-5">
+                {block.body}
+              </AppText>
+            ) : null}
+          </View>
+        ) : (
+          <AppText key={i} className="text-xs text-gray-600 leading-5 mb-3">
+            {block.body}
+          </AppText>
+        ),
+      )}
+    </View>
+  );
+};
 
 export default OnboardingScreen;

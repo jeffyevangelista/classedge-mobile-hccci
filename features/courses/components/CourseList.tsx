@@ -3,6 +3,7 @@ import Image from "@/components/Image";
 import { FlashList } from "@shopify/flash-list";
 import { Link } from "expo-router";
 import { Card, Skeleton } from "heroui-native";
+import { useMemo } from "react";
 import {
   Pressable,
   RefreshControl,
@@ -25,6 +26,14 @@ const CourseList = () => {
   const { data, isLoading, isError, error, refetch, isRefetching } =
     useStudentCourses();
 
+  const sortedData = useMemo(
+    () =>
+      [...(data ?? [])].sort((a, b) =>
+        a.subjectId.subjectName.localeCompare(b.subjectId.subjectName),
+      ),
+    [data],
+  );
+
   if (isLoading) return <CourseListSkeleton numColumns={numColumns} />;
   if (isError)
     return (
@@ -46,7 +55,7 @@ const CourseList = () => {
         }
         key={numColumns}
         numColumns={numColumns}
-        data={data}
+        data={sortedData}
         className="p-1"
         contentContainerStyle={{ paddingBottom: 15 }}
         renderItem={({ item }) => (

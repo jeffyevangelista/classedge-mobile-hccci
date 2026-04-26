@@ -59,6 +59,8 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
     const legalUpdateRequired = decoded.legal_update_required as boolean;
     const needsPasswordSetup = decoded.needs_password_setup as boolean;
     const role = decoded.role as string;
+    const pendingLegalDocTypes =
+      (decoded.pending_legal_doc_types as string[]) ?? [];
 
     if (!userId || !exp) {
       console.warn("[AUTH] Invalid token: missing id or exp");
@@ -70,6 +72,7 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
       legalUpdateRequired,
       needsPasswordSetup,
       role,
+      pendingLegalDocTypes,
     };
 
     setMMKVItem(MMKV_KEYS.ACCESS_TOKEN, accessToken);

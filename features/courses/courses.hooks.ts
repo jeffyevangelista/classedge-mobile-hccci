@@ -4,12 +4,14 @@ import {
   getCourseAssessment,
   getCourseDetails,
   getCourseMaterial,
-  getCourseStudents,
   getCourseTimeline,
   getStudentCourses,
 } from "./courses.service";
-import { getPendingAssessments } from "./courses.apis";
-import { keepPreviousData } from "@tanstack/react-query";
+import { getCourseStudentsApi, getPendingAssessments } from "./courses.apis";
+import {
+  keepPreviousData,
+  useQuery as useApiQuery,
+} from "@tanstack/react-query";
 
 export const useStudentCourses = () => {
   const { authUser } = useStore.getState();
@@ -47,10 +49,10 @@ export const useCourseDetails = (courseId: string) => {
 };
 
 export const useCourseStudents = (subjectId: number | undefined) => {
-  return useQuery({
+  return useApiQuery({
     queryKey: ["course-students", subjectId],
     enabled: !!subjectId,
-    queryFn: () => getCourseStudents(subjectId!),
+    queryFn: () => getCourseStudentsApi(subjectId!),
   });
 };
 

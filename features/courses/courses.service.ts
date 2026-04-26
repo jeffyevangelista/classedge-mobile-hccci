@@ -101,6 +101,7 @@ export const getCourseDetails = async (courseId: string) => {
           },
         },
       },
+      schedules: true,
     },
   });
 
@@ -109,35 +110,4 @@ export const getCourseDetails = async (courseId: string) => {
   }
 
   return result;
-};
-
-export const getCourseStudents = async (subjectId: number) => {
-  const results = await db.query.studentEnrolledCoursesTable.findMany({
-    where: (enrollment, { eq }) => eq(enrollment.subjectId, subjectId),
-    columns: {
-      id: true,
-      studentId: true,
-    },
-  });
-
-  const studentsWithDetails = await Promise.all(
-    results.map(async (enrollment) => {
-      const studentDetails = await db.query.accountDetailsTable.findFirst({
-        where: (profile, { eq }) => eq(profile.userId, enrollment.studentId),
-        columns: {
-          firstName: true,
-          lastName: true,
-          studentPhoto: true,
-          gradeYearLevel: true,
-        },
-      });
-      return {
-        enrollmentId: enrollment.id,
-        studentId: enrollment.studentId,
-        ...studentDetails,
-      };
-    }),
-  );
-
-  return studentsWithDetails.filter((student) => student.firstName);
 };

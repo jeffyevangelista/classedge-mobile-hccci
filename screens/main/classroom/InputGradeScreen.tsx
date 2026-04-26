@@ -11,16 +11,16 @@ import { Card, Skeleton } from "heroui-native";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { useGlobalSearchParams, useNavigation } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect } from "react";
 
 const InputGradeScreen = () => {
-  const { activityId } = useGlobalSearchParams();
+  const { activityId } = useLocalSearchParams<{ activityId: string }>();
 
   const navigation = useNavigation();
 
   const { data, isLoading, isError, error } = useClassroomActivity(
-    activityId as string,
+    activityId ?? "",
   );
 
   const activity = data?.[0];
@@ -47,8 +47,6 @@ const InputGradeScreen = () => {
         description="The activity you're looking for doesn't exist"
       />
     );
-
-  console.log(activity);
 
   return (
     <Screen>

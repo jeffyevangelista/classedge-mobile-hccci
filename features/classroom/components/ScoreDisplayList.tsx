@@ -30,6 +30,11 @@ const ScoreDisplayList = ({
     error,
   } = useClassroomStudents(classroomId as string);
 
+  const validStudents = useMemo(
+    () => students?.filter((s) => s.studentId != null) ?? [],
+    [students],
+  );
+
   const { data: existingScores } = useStudentScoresForActivity(
     activityDetail.localId,
   );
@@ -54,7 +59,7 @@ const ScoreDisplayList = ({
   return (
     <FlashList
       className="max-w-3xl w-full mx-auto"
-      data={students}
+      data={validStudents}
       renderItem={({ item }) => {
         const score = scoresMap[item.studentId];
         const isPassing =

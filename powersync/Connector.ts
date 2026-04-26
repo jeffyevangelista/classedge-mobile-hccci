@@ -83,6 +83,7 @@ export class Connector implements PowerSyncBackendConnector {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",
+      "X-Platform": "mobile",
     };
 
     if (accessToken) {
@@ -99,12 +100,16 @@ export class Connector implements PowerSyncBackendConnector {
         switch (op.op) {
           case UpdateType.PUT:
             if (hasFile) {
-              const authHeaders: Record<string, string> = {};
-              if (accessToken)
-                authHeaders.Authorization = `Bearer ${accessToken}`;
+              const headers: Record<string, string> = {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Platform": "mobile", // Hardcoded here
+              };
+              if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
               await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/`, {
                 method: "POST",
-                headers: authHeaders,
+                headers,
                 body: buildMultipartBody(record),
               });
             } else {
@@ -117,7 +122,9 @@ export class Connector implements PowerSyncBackendConnector {
             break;
           case UpdateType.PATCH:
             if (hasFile) {
-              const authHeaders: Record<string, string> = {};
+              const authHeaders: Record<string, string> = {
+                "X-Platform": "mobile",
+              };
               if (accessToken)
                 authHeaders.Authorization = `Bearer ${accessToken}`;
               await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`, {

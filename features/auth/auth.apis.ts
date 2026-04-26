@@ -2,7 +2,11 @@ import api from "@/lib/axios";
 import axios from "axios";
 import { env } from "@/utils/env";
 import { snakeToCamel } from "@/lib/case-transform";
-import type { AuthResponse, LoginCredentials } from "./auth.types";
+import type {
+  ActiveLegalDocuments,
+  AuthResponse,
+  LoginCredentials,
+} from "./auth.types";
 
 export const login = async (loginCredentials: LoginCredentials) => {
   return (await api.post("/auth/login/", loginCredentials)).data;
@@ -20,13 +24,14 @@ export const resetPassword = async (email: string, password: string) => {
   return (await api.post("/auth/reset-password/", { email, password })).data;
 };
 
-export const completeOnboarding = async (payload: {
-  eula_version: string;
-  privacy_policy_version: string;
-  is_accepted: boolean;
-}) => {
-  return (await api.post("/legal-consents/", payload)).data;
+export const completeOnboarding = async (payload: { accepted: string[] }) => {
+  return (await api.post("/legal-consents/accept-all/", payload)).data;
 };
+
+export const getActiveLegalDocuments =
+  async (): Promise<ActiveLegalDocuments> => {
+    return (await api.get("/legal-documents/active/")).data;
+  };
 
 export const msLogin = async (token: string): Promise<AuthResponse> => {
   const data = (

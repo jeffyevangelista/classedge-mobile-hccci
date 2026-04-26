@@ -1,5 +1,5 @@
 import { View, RefreshControl } from "react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { useCourseDetails, useCourseStudents } from "../courses.hooks";
 import { FlashList } from "@shopify/flash-list";
@@ -22,6 +22,7 @@ const CourseDetails = () => {
   const {
     data: students,
     isLoading: isLoadingStudents,
+    isError: isErrorStudents,
     refetch: refetchStudents,
   } = useCourseStudents(courseDetails?.subjectId?.id);
 
@@ -36,29 +37,46 @@ const CourseDetails = () => {
 
   return (
     <FlashList
-      className="w-full max-w-3xl mx-auto"
+      className="w-full"
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
       ListHeaderComponent={
-        <>
+        <View className="w-full max-w-3xl mx-auto">
           <CourseDetailsHeader courseDetails={courseDetails} />
           <CourseInfoCard courseDetails={courseDetails} />
-          {students && students.length > 0 && (
-            <StudentListHeader count={students.length} />
-          )}
-        </>
+          {!isLoadingStudents &&
+            !isErrorStudents &&
+            students &&
+            students.length > 0 && (
+              <StudentListHeader count={students.length} />
+            )}
+        </View>
       }
-      data={students || []}
+      data={isLoadingStudents || isErrorStudents ? [] : students || []}
       renderItem={({ item, index }) => (
-        <StudentItem student={item} index={index} />
+        <View className="w-full max-w-3xl mx-auto">
+          <StudentItem student={item} index={index} />
+        </View>
       )}
       ListEmptyComponent={
-        <EmptyState
-          icon="UsersIcon"
-          title="No students enrolled"
-          description="No students are enrolled in this course yet"
-        />
+        <View className="w-full max-w-3xl mx-auto">
+          {isLoadingStudents ? (
+            <StudentListSkeleton />
+          ) : isErrorStudents ? (
+            <EmptyState
+              icon="Warning"
+              title="Failed to load students"
+              description="Something went wrong while fetching the student list"
+            />
+          ) : (
+            <EmptyState
+              icon="UsersIcon"
+              title="No students enrolled"
+              description="No students are enrolled in this course yet"
+            />
+          )}
+        </View>
       }
     />
   );
@@ -67,73 +85,172 @@ const CourseDetails = () => {
 const StudentListHeader = ({ count }: { count: number }) => {
   return (
     <View className="flex-row items-center mb-4 mx-1">
-      <AppText weight="bold" className="text-xl">
+      <AppText weight="bold" className="text-lg">
         Enrolled Students
       </AppText>
-      <View className="ml-auto bg-orange-100 dark:bg-orange-900 px-3 py-1 rounded-full"></View>
+      <View className="ml-auto bg-orange-100 dark:bg-orange-900 px-3 py-1.5 rounded-full">
+        <AppText
+          weight="semibold"
+          className="text-[11px] text-orange-700 dark:text-orange-300"
+        >
+          {count}
+        </AppText>
+      </View>
     </View>
   );
 };
 
+const formatTime = (time: string) => {
+  const [h, m] = time.split(":").map(Number);
+  const period = h >= 12 ? "PM" : "AM";
+  const hour12 = h % 12 || 12;
+  return `${hour12}:${m.toString().padStart(2, "0")} ${period}`;
+};
+
+const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
 const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
+  const instructorName = useMemo(() => {
+    const first = courseDetails?.subjectId?.assignTeacherId?.firstName;
+    const last = courseDetails?.subjectId?.assignTeacherId?.lastName;
+    return [first, last].filter(Boolean).join(" ") || "Unassigned";
+  }, [courseDetails]);
+
+  const activeSchedules = useMemo(() => {
+    return (
+      courseDetails?.schedules?.filter((s: any) => s.isActiveSemester === 1) ||
+      []
+    );
+  }, [courseDetails]);
+
   return (
-    <View className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 mb-6 mx-1">
-      <View className="flex-row items-center mb-3">
-        <View className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 items-center justify-center mr-3">
-          <Icon name="UserCircleIcon" size={24} color="#3b82f6" />
+    <View className="mb-6 mx-1 gap-3">
+      {/* Instructor & Room Row */}
+      <View className="flex-row gap-3">
+        <View className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4">
+          <View className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900 items-center justify-center mb-3">
+            <Icon name="UserCircleIcon" size={20} color="#3b82f6" />
+          </View>
+          <AppText className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">
+            Instructor
+          </AppText>
+          <AppText weight="semibold" className="text-sm">
+            {instructorName}
+          </AppText>
         </View>
-        <View className="flex-1">
-          <AppText className="text-xs text-gray-500 mb-1">Instructor</AppText>
-          <AppText weight="semibold" className="text-base">
-            {courseDetails?.subjectId.assignTeacherId.firstName}{" "}
-            {courseDetails?.subjectId.assignTeacherId.lastName}
+
+        <View className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4">
+          <View className="w-9 h-9 rounded-full bg-green-100 dark:bg-green-900 items-center justify-center mb-3">
+            <Icon name="MapPinIcon" size={20} color="#22c55e" />
+          </View>
+          <AppText className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">
+            Room
+          </AppText>
+          <AppText weight="semibold" className="text-sm">
+            {courseDetails?.subjectId?.roomNumber || "TBA"}
           </AppText>
         </View>
       </View>
 
-      <View className="flex-row items-center mb-3">
-        <View className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 items-center justify-center mr-3">
-          <Icon name="MapPinIcon" size={24} color="#22c55e" />
+      {/* Schedule Card */}
+      {activeSchedules.length > 0 && (
+        <View className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4">
+          <View className="flex-row items-center mb-3">
+            <View className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-900 items-center justify-center mr-3">
+              <Icon name="ClockIcon" size={20} color="#f97316" />
+            </View>
+            <AppText weight="semibold" className="text-sm">
+              Class Schedule
+            </AppText>
+          </View>
+
+          <View className="gap-2.5">
+            {activeSchedules.map((schedule: any) => {
+              const days = schedule.daysOfWeek
+                .split(",")
+                .map((d: string) => d.trim())
+                .sort(
+                  (a: string, b: string) =>
+                    DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b),
+                );
+
+              return (
+                <View
+                  key={schedule.id}
+                  className="flex-row items-center justify-between bg-white dark:bg-gray-700 rounded-xl px-3.5 py-3"
+                >
+                  <View className="flex-row items-center gap-1.5 flex-1 flex-wrap">
+                    {days.map((day: string) => (
+                      <View
+                        key={day}
+                        className="bg-orange-100 dark:bg-orange-900/50 px-2.5 py-1 rounded-lg"
+                      >
+                        <AppText
+                          weight="semibold"
+                          className="text-[11px] text-orange-700 dark:text-orange-300"
+                        >
+                          {day}
+                        </AppText>
+                      </View>
+                    ))}
+                  </View>
+                  <AppText
+                    weight="semibold"
+                    className="text-xs text-gray-500 dark:text-gray-400 ml-2"
+                  >
+                    {formatTime(schedule.scheduleStartTime)} –{" "}
+                    {formatTime(schedule.scheduleEndTime)}
+                  </AppText>
+                </View>
+              );
+            })}
+          </View>
         </View>
-        <View className="flex-1">
-          <AppText className="text-xs text-gray-500 mb-1">Room</AppText>
-          <AppText weight="semibold" className="text-base">
-            {courseDetails?.subjectId.roomNumber || "TBA"}
-          </AppText>
-        </View>
-      </View>
+      )}
     </View>
   );
 };
 
 const CourseDetailsHeader = ({ courseDetails }: { courseDetails: any }) => {
+  const subjectType = courseDetails?.subjectId?.subjectType;
+
   return (
     <>
       <View className="relative mt-2.5">
         <Image
           source={
-            courseDetails?.subjectId.subjectPhoto
+            courseDetails?.subjectId?.subjectPhoto
               ? {
-                  uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${courseDetails?.subjectId.subjectPhoto}`,
+                  uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${courseDetails?.subjectId?.subjectPhoto}`,
                 }
               : require("@/assets/placeholder/bg-placeholder.png")
           }
-          className="rounded-xl w-full aspect-video"
+          className="rounded-2xl w-full aspect-video"
           contentFit="cover"
           cachePolicy="disk"
         />
         <LinearGradient
           colors={["transparent", "rgba(0,0,0,0.7)"]}
-          className="absolute bottom-0 left-0 right-0 h-24 rounded-b-3xl"
+          className="absolute bottom-0 left-0 right-0 h-28 rounded-b-2xl"
         />
+        {subjectType && (
+          <View className="absolute top-3 right-3 bg-black/40 px-3 py-1.5 rounded-full">
+            <AppText
+              weight="semibold"
+              className="text-[11px] text-white uppercase tracking-wider"
+            >
+              {subjectType}
+            </AppText>
+          </View>
+        )}
       </View>
 
-      <View className="mt-6 px-1">
-        <AppText weight="bold" className="text-3xl mb-2">
-          {courseDetails?.subjectId.subjectName}
+      <View className="mt-5 px-1 mb-5">
+        <AppText weight="bold" className="text-2xl mb-1">
+          {courseDetails?.subjectId?.subjectName}
         </AppText>
-        <AppText className="text-lg text-gray-500 mb-6">
-          {courseDetails?.subjectId.subjectCode}
+        <AppText className="text-base text-gray-400">
+          {courseDetails?.subjectId?.subjectCode}
         </AppText>
       </View>
     </>
@@ -159,9 +276,28 @@ const StudentItem = ({ student, index }: { student: any; index: number }) => {
       </View>
       <View className="flex-1 ml-3">
         <AppText weight="semibold" className="text-base">
-          {student.firstName} {student.lastName}
+          {student.name}
         </AppText>
       </View>
+    </View>
+  );
+};
+
+const StudentListSkeleton = () => {
+  return (
+    <View className="gap-2 mx-1">
+      <Skeleton className="h-5 w-40 rounded mb-2" />
+      {Array(3)
+        .fill(0)
+        .map((_, index) => (
+          <View
+            key={index}
+            className="flex-row items-center rounded-xl p-3 mb-2 gap-3"
+          >
+            <Skeleton className="w-12 h-12 rounded-full" />
+            <Skeleton className="h-4 w-32 rounded" />
+          </View>
+        ))}
     </View>
   );
 };
@@ -169,30 +305,44 @@ const StudentItem = ({ student, index }: { student: any; index: number }) => {
 const CourseDetailsSkeleton = () => {
   return (
     <View className="w-full max-w-3xl mx-auto p-2.5">
-      <Skeleton className="rounded-xl w-full aspect-video mt-2.5" />
-      <View className="mt-6 px-1 gap-2">
-        <Skeleton className="h-8 w-3/4 rounded" />
-        <Skeleton className="h-5 w-1/3 rounded mb-6" />
+      <Skeleton className="rounded-2xl w-full aspect-video mt-2.5" />
+      <View className="mt-5 px-1 gap-1.5 mb-5">
+        <Skeleton className="h-7 w-3/4 rounded" />
+        <Skeleton className="h-5 w-1/3 rounded" />
       </View>
-      <View className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 mb-6 mx-1 gap-3">
-        <View className="flex-row items-center">
-          <Skeleton className="w-10 h-10 rounded-full mr-3" />
-          <View className="flex-1 gap-1.5">
+
+      {/* Info cards row */}
+      <View className="flex-row gap-3 mx-1 mb-3">
+        <View className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 gap-3">
+          <Skeleton className="w-9 h-9 rounded-full" />
+          <View className="gap-1.5">
             <Skeleton className="h-3 w-16 rounded" />
-            <Skeleton className="h-4 w-40 rounded" />
-          </View>
-        </View>
-        <View className="flex-row items-center">
-          <Skeleton className="w-10 h-10 rounded-full mr-3" />
-          <View className="flex-1 gap-1.5">
-            <Skeleton className="h-3 w-12 rounded" />
             <Skeleton className="h-4 w-24 rounded" />
           </View>
         </View>
+        <View className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 gap-3">
+          <Skeleton className="w-9 h-9 rounded-full" />
+          <View className="gap-1.5">
+            <Skeleton className="h-3 w-12 rounded" />
+            <Skeleton className="h-4 w-20 rounded" />
+          </View>
+        </View>
       </View>
+
+      {/* Schedule skeleton */}
+      <View className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 mx-1 mb-6 gap-3">
+        <View className="flex-row items-center gap-3">
+          <Skeleton className="w-9 h-9 rounded-full" />
+          <Skeleton className="h-4 w-28 rounded" />
+        </View>
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-12 w-full rounded-xl" />
+      </View>
+
+      {/* Students skeleton */}
       <View className="gap-2 mx-1">
         <Skeleton className="h-5 w-40 rounded mb-2" />
-        {Array(4)
+        {Array(3)
           .fill(0)
           .map((_, index) => (
             <View

@@ -32,14 +32,14 @@ const HomeScreen = () => {
   return (
     <Screen>
       <ScrollView
-        className="w-full max-w-3xl mx-auto pb-5"
+        className="w-full pb-5"
         scrollIndicatorInsets={{ right: 1 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
         {authUser?.role === "Student" && (
-          <View className="px-2.5 mt-5">
+          <View className="px-2.5 mt-5 max-w-3xl mx-auto w-full">
             <AppText weight="semibold" className="text-lg mb-3">
               My Schedule
             </AppText>
@@ -47,9 +47,11 @@ const HomeScreen = () => {
           </View>
         )}
 
-        <AppText weight="semibold" className="text-lg px-2.5 mt-5 mb-3">
-          Announcements
-        </AppText>
+        <View className="w-full max-w-3xl mx-auto">
+          <AppText weight="semibold" className="text-lg px-2.5 mt-5 mb-3 ">
+            Announcements
+          </AppText>
+        </View>
         <AnnouncementList />
       </ScrollView>
     </Screen>

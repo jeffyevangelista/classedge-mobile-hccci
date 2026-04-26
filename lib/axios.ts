@@ -10,6 +10,7 @@ const api = axios.create({
   baseURL: env.EXPO_PUBLIC_API_URL,
   headers: {
     "Content-Type": "application/json",
+    "X-Platform": "mobile",
   },
   withCredentials: true,
 });
