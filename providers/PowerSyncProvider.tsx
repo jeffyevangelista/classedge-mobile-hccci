@@ -14,34 +14,26 @@ const PowerSyncProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const initialize = async () => {
-      // Only initialize PowerSync if user is authenticated
-      if (!accessToken) {
-        // Disconnect PowerSync if user logs out
-        await powersync.disconnect();
-        wasConnectedRef.current = false;
-        setIsReady(true);
-        return;
-      }
-
-      if (!isOnline) {
-        // Disconnect when offline to stop infinite retry loops (saves battery).
-        // Local reads from the SQLite DB still work.
-        await powersync.disconnect();
-        wasConnectedRef.current = false;
-        setIsReady(true);
-        return;
-      }
-
       try {
-        // Only reconnect if we weren't already connected
-        if (!wasConnectedRef.current) {
-          await setupPowerSync();
-          wasConnectedRef.current = true;
+        // Initialize PowerSync database first (this makes it available for local queries)
+        await powersync.init();
+        logDbPath();
+
+        // Only connect to sync service if authenticated and online
+        if (accessToken && isOnline) {
+          if (!wasConnectedRef.current) {
+            await setupPowerSync();
+            wasConnectedRef.current = true;
+          }
+        } else {
+          // Disconnect sync but keep database available
+          await powersync.disconnect();
+          wasConnectedRef.current = false;
         }
+
         setIsReady(true);
       } catch (error) {
-        console.error("PowerSync failed to connect:", error);
-        // Still set ready to true so app can render
+        console.error("PowerSync initialization failed:", error);
         setIsReady(true);
       }
     };

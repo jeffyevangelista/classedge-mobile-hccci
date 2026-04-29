@@ -74,12 +74,6 @@ export class Connector implements PowerSyncBackendConnector {
     const { accessToken, isConnected, isInternetReachable } =
       useStore.getState();
 
-    // Skip upload when offline — transaction stays in the local queue
-    // and will be retried when PowerSync reconnects.
-    if (!isConnected || !isInternetReachable) {
-      throw new Error("Offline: upload deferred until reconnected");
-    }
-
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",

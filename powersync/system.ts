@@ -36,15 +36,6 @@ export const logDbPath = () => {
 };
 
 export const setupPowerSync = async () => {
-  // Create local-only tables
-  await powersync.execute(`
-    CREATE TABLE IF NOT EXISTS course_visits (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      course_id INTEGER NOT NULL,
-      visited_at TEXT NOT NULL
-    )
-  `);
-
   const connector = new Connector();
   powersync.connect(connector);
 };

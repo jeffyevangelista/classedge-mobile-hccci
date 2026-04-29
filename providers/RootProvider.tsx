@@ -15,13 +15,13 @@ const RootProvider = ({ children }: { children: React.ReactNode }) => {
         <OneSignalProvider>
           <NetworkProvider>
             <NetworkBannerProvider>
-              <QueryProvider>
-                <PowerSyncProvider>
+              <PowerSyncProvider>
+                <QueryProvider>
                   <HeroUIProvider>
                     <KeyboardProvider>{children}</KeyboardProvider>
                   </HeroUIProvider>
-                </PowerSyncProvider>
-              </QueryProvider>
+                </QueryProvider>
+              </PowerSyncProvider>
             </NetworkBannerProvider>
           </NetworkProvider>
         </OneSignalProvider>

@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import NetworkBanner from "@/features/network/NetworkBanner";
+import "@azure/core-asynciterator-polyfill";
 
 SplashScreen.preventAutoHideAsync();
 

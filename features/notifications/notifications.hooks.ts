@@ -20,5 +20,6 @@ export const useNotificationCount = () => {
   return useQuery({
     queryKey: ["notification-count"],
     query: toCompilableQuery(getNotificationCount(authUser?.id.toString()!)),
+    enabled: !!authUser?.id,
   });
 };

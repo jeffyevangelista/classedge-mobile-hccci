@@ -13,6 +13,7 @@
     "format": "biome format --write ."
   },
   "dependencies": {
+    "@azure/core-asynciterator-polyfill": "^1.0.2",
     "@blazejkustra/react-native-onboarding": "^1.0.0",
     "@expo-google-fonts/poppins": "^0.4.1",
     "@gorhom/bottom-sheet": "^5.2.8",
@@ -24,7 +25,7 @@
     "@powersync/drizzle-driver": "^0.7.1",
     "@powersync/op-sqlite": "^0.7.18",
     "@powersync/react-native": "^1.28.1",
-    "@powersync/tanstack-react-query": "^0.2.5",
+    "@powersync/tanstack-react-query": "^0.1.14",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-native-community/netinfo": "11.4.1",
@@ -93,6 +94,11 @@
     "zod": "^4.3.6",
     "zustand": "^5.0.9",
     "zxcvbn": "^4.4.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "@powersync/react": "1.8.3"
+    }
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
