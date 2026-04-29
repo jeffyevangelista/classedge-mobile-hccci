@@ -1,6 +1,5 @@
-import { useQuery } from "@powersync/tanstack-react-query";
+import { useQuery } from "@powersync/react-native";
 import useStore from "@/lib/store";
-
 import {
   getNotificationCount,
   getNotifications,
@@ -9,17 +8,34 @@ import { toCompilableQuery } from "@powersync/drizzle-driver";
 
 export const useNotifications = () => {
   const { authUser } = useStore.getState();
-  return useQuery({
-    queryKey: ["notifications"],
-    query: toCompilableQuery(getNotifications(authUser?.id.toString()!)),
-  });
+  const { data, isLoading, isFetching, error, refresh } = useQuery(
+    toCompilableQuery(getNotifications(authUser?.id.toString()!)),
+  );
+
+  return {
+    data,
+    isLoading,
+    isFetching,
+    isError: !!error,
+    error,
+    refetch: refresh ?? (async () => {}),
+    isRefetching: isFetching && !isLoading,
+  };
 };
 
 export const useNotificationCount = () => {
   const { authUser } = useStore.getState();
-  return useQuery({
-    queryKey: ["notification-count"],
-    query: toCompilableQuery(getNotificationCount(authUser?.id.toString()!)),
-    enabled: !!authUser?.id,
-  });
+  const { data, isLoading, isFetching, error, refresh } = useQuery(
+    toCompilableQuery(getNotificationCount(authUser?.id.toString()!)),
+  );
+
+  return {
+    data,
+    isLoading,
+    isFetching,
+    isError: !!error,
+    error,
+    refetch: refresh ?? (async () => {}),
+    isRefetching: isFetching && !isLoading,
+  };
 };

@@ -34,7 +34,7 @@ const TeachingScreen = () => {
     );
 
   return (
-    <Screen className="px-2.5">
+    <Screen className="">
       <View className="w-full max-w-6xl mx-auto flex-1">
         <FlashList
           refreshControl={

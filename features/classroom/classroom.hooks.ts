@@ -1,67 +1,61 @@
 import { toCompilableQuery } from "@powersync/drizzle-driver";
-import { useQuery as useWatchedQuery } from "@powersync/react";
-import { useQuery } from "@powersync/tanstack-react-query";
+import { useQuery } from "@powersync/react-native";
 import {
   getActivityTypes,
   getClassroomStudents,
   getGradingPeriods,
-  getStudentScoresForActivity,
 } from "./ classroom.service";
 import { snakeToCamel } from "@/lib/case-transform";
 import type { Assessment } from "@/powersync/schema";
 
+const wrap = <T>(result: {
+  data: T;
+  isLoading: boolean;
+  isFetching: boolean;
+  error: Error | undefined;
+  refresh?: (signal?: AbortSignal) => Promise<void>;
+}) => ({
+  ...result,
+  isError: !!result.error,
+  refetch: result.refresh ?? (async () => {}),
+  isRefetching: result.isFetching && !result.isLoading,
+});
+
 export const useClassroomActivities = (subjectId: string) => {
-  const result = useWatchedQuery(
+  const result = useQuery(
     "SELECT * FROM activity_activity WHERE subject_id = ? AND classroom_mode = 1 ORDER BY start_time DESC",
     [parseInt(subjectId)],
   );
 
-  return { ...result, data: snakeToCamel<Assessment[]>(result.data) };
+  return { ...wrap(result), data: snakeToCamel<Assessment[]>(result.data) };
 };
 
 export const useClassroomActivity = (activityId: string) => {
-  const result = useWatchedQuery(
+  const result = useQuery(
     "SELECT * FROM activity_activity WHERE local_id = ? LIMIT 1",
     [activityId],
   );
 
-  return {
-    ...result,
-    data: snakeToCamel<Assessment[]>(result.data),
-    isError: !!result.error,
-  };
+  return { ...wrap(result), data: snakeToCamel<Assessment[]>(result.data) };
 };
 
 export const useClassroomGradingPeriods = () => {
-  return useQuery({
-    query: toCompilableQuery(getGradingPeriods()),
-    queryKey: ["classroom-grading-periods"],
-  });
+  return wrap(useQuery(toCompilableQuery(getGradingPeriods())));
 };
 
 export const useActivityTypes = () => {
-  return useQuery({
-    query: toCompilableQuery(getActivityTypes()),
-    queryKey: ["activity-types"],
-  });
+  return wrap(useQuery(toCompilableQuery(getActivityTypes())));
 };
 
 export const useClassroomStudents = (classroomId: string) => {
-  return useQuery({
-    query: toCompilableQuery(getClassroomStudents(classroomId)),
-    queryKey: ["classroom-students", classroomId],
-  });
+  return wrap(useQuery(toCompilableQuery(getClassroomStudents(classroomId))));
 };
 
 export const useStudentScoresForActivity = (activityLocalId: string) => {
-  const result = useWatchedQuery(
+  const result = useQuery(
     "SELECT * FROM activity_studentactivity WHERE activity_local_id = ?",
     [activityLocalId],
   );
 
-  return {
-    ...result,
-    data: snakeToCamel(result.data),
-    isError: !!result.error,
-  };
+  return { ...wrap(result), data: snakeToCamel(result.data) };
 };

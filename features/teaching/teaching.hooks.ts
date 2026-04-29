@@ -1,21 +1,22 @@
 import useStore from "@/lib/store";
-import { useQuery } from "@powersync/tanstack-react-query";
-import { getTeachingCourses } from "./teaching.services";
+import { useQuery } from "@powersync/react-native";
 import { toCompilableQuery } from "@powersync/drizzle-driver";
+import { getTeachingCourses } from "./teaching.services";
 
 export const useTeachingCourses = () => {
   const { authUser } = useStore.getState();
 
-  return useQuery({
-    queryKey: ["teaching-courses", authUser?.id],
-    enabled: !!authUser?.id,
-    query: toCompilableQuery(getTeachingCourses(authUser?.id!)),
-    streams: [
-      {
-        name: "current_term_courses",
-        parameters: {},
-        waitForStream: true,
-      },
-    ],
-  });
+  const { data, isLoading, isFetching, error, refresh } = useQuery(
+    toCompilableQuery(getTeachingCourses(authUser?.id!)),
+  );
+
+  return {
+    data,
+    isLoading,
+    isFetching,
+    isError: !!error,
+    error,
+    refetch: refresh ?? (async () => {}),
+    isRefetching: isFetching && !isLoading,
+  };
 };
