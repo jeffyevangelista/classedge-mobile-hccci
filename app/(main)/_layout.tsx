@@ -1,13 +1,15 @@
 import BackButton from "@/components/BackButton";
 import TabsHeader from "@/components/TabsHeader";
 import { SyncSheetProvider } from "@/features/sync/SyncSheetContext";
+import SyncGate from "@/features/sync/components/SyncGate";
 import SyncSheet from "@/features/sync/components/SyncSheet";
 import { Stack } from "expo-router";
 
 const MainLayout = () => {
   return (
     <SyncSheetProvider>
-      <Stack screenOptions={{ headerShown: false }}>
+      <SyncGate>
+        <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen
           name="(tabs)"
           options={{
@@ -72,7 +74,8 @@ const MainLayout = () => {
             animation: "slide_from_bottom",
           }}
         />
-      </Stack>
+        </Stack>
+      </SyncGate>
       <SyncSheet />
     </SyncSheetProvider>
   );
