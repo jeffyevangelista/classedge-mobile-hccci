@@ -10,5 +10,12 @@ export const useTeachingCourses = () => {
     queryKey: ["teaching-courses", authUser?.id],
     enabled: !!authUser?.id,
     query: toCompilableQuery(getTeachingCourses(authUser?.id!)),
+    streams: [
+      {
+        name: "current_term_courses",
+        parameters: {},
+        waitForStream: true,
+      },
+    ],
   });
 };

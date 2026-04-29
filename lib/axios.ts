@@ -2,7 +2,6 @@ import { refresh } from "@/features/auth/refreshToken";
 import { env } from "@/utils/env";
 import axios from "axios";
 import useStore from "./store";
-import { Alert } from "react-native";
 import { ApiError, isStandardizedError } from "./api-error";
 import { snakeToCamel } from "./case-transform";
 

@@ -1,11 +1,6 @@
-import {
-  assessmentTable,
-  coursesTable,
-  materialsTable,
-  studentEnrolledCoursesTable,
-} from "@/powersync/schema";
+import { assessmentTable, materialsTable } from "@/powersync/schema";
 import { db } from "@/powersync/system";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, or, sql } from "drizzle-orm";
 import { union } from "drizzle-orm/sqlite-core";
 
 export const getStudentCourses = async (studentId: number) => {
@@ -41,20 +36,20 @@ export const getStudentCourses = async (studentId: number) => {
 export async function getCourseTimeline(courseId: string) {
   const materials = db
     .select({
-      id: materialsTable.id,
+      id: sql<string>`CAST(${materialsTable.id} AS TEXT)`.as("id"),
       fileName: materialsTable.fileName,
       startDate: materialsTable.startDate,
-      type: sql`'material'`.as("type"),
+      type: sql<string>`'material'`.as("type"),
     })
     .from(materialsTable)
     .where(eq(materialsTable.subjectId, Number(courseId)));
 
   const assessments = db
     .select({
-      id: assessmentTable.id,
+      id: assessmentTable.localId,
       fileName: assessmentTable.activityName,
       startDate: assessmentTable.endTime,
-      type: sql`'assessment'`.as("type"),
+      type: sql<string>`'assessment'`.as("type"),
     })
     .from(assessmentTable)
     .where(eq(assessmentTable.subjectId, Number(courseId)));
@@ -73,10 +68,13 @@ export const getCourseMaterial = (materialId: string) => {
   });
 };
 
-export const getCourseAssessment = (assessmentId: string) => {
+export const getCourseAssessment = (assessmentIdentifier: string) => {
   return db.query.assessmentTable.findFirst({
     where: (assessmentTable, { eq }) =>
-      eq(assessmentTable.id, Number(assessmentId)),
+      or(
+        eq(assessmentTable.localId, assessmentIdentifier),
+        eq(assessmentTable.id, assessmentIdentifier),
+      ),
   });
 };
 

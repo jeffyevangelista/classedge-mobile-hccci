@@ -17,7 +17,7 @@ import { useEffect } from "react";
 const InputGradeScreen = () => {
   const { activityId } = useLocalSearchParams<{ activityId: string }>();
 
-  const navigation = useNavigation();
+  const parentNavigation = useNavigation("/(main)/classroom/[classroomId]");
 
   const { data, isLoading, isError, error } = useClassroomActivity(
     activityId ?? "",
@@ -25,16 +25,16 @@ const InputGradeScreen = () => {
 
   const activity = data?.[0];
 
-  const { data: existingScores, isLoading: scoresLoading } =
-    useStudentScoresForActivity(activity?.localId ?? "");
+  // const { data: existingScores, isLoading: scoresLoading } =
+  //   useStudentScoresForActivity(activity?.localId ?? "");
 
-  const hasExistingScores = !scoresLoading && (existingScores?.length ?? 0) > 0;
+  // const hasExistingScores = !scoresLoading && (existingScores?.length ?? 0) > 0;
 
   useEffect(() => {
     if (activity?.activityName) {
-      navigation.setOptions({ title: activity.activityName });
+      parentNavigation.setOptions({ headerTitle: activity.activityName });
     }
-  }, [activity?.activityName, navigation]);
+  }, [activity?.activityName, parentNavigation]);
 
   if (isLoading) return <InputGradeSkeleton />;
 
@@ -49,51 +49,44 @@ const InputGradeScreen = () => {
     );
 
   return (
-    <Screen>
-      <Card className="rounded-xl p-4 mb-4 shadow-none gap-2 w-full max-w-3xl mx-auto mt-2.5">
-        <AppText className="text-sm text-muted-foreground">
-          {activity.activityInstruction}
-        </AppText>
-        <View className="flex-row justify-between">
-          <View className="gap-1">
+    <Screen className="p-2.5">
+      {/* <Card className="rounded-xl p-3 mb-2 shadow-none w-full max-w-3xl mx-auto ">
+        <View className="flex-row justify-between items-center">
+          <View className="flex-row items-center gap-1">
             <AppText className="text-xs text-muted-foreground">
-              Max Score
+              Max Score:
             </AppText>
-            <AppText weight="semibold">{activity.maxScore}</AppText>
+            <AppText weight="semibold" className="text-sm">
+              {activity.maxScore}
+            </AppText>
           </View>
-          <View className="gap-1">
+          <View className="flex-row items-center gap-1">
             <AppText className="text-xs text-muted-foreground">
-              Passing Score
+              Passing:
             </AppText>
-            <AppText weight="semibold">
+            <AppText weight="semibold" className="text-sm">
               {activity.passingScore}
               {activity.passingScoreType === "percentage" ? "%" : ""}
             </AppText>
           </View>
         </View>
-      </Card>
-      {hasExistingScores ? (
+      </Card> */}
+      {/* {hasExistingScores ? (
         <ScoreDisplayList activityDetail={activity} />
       ) : (
         <StudentScoringList activityDetail={activity} />
-      )}
+      )} */}
+      <StudentScoringList activityDetail={activity} />
     </Screen>
   );
 };
 
 const InputGradeSkeleton = () => (
   <Screen>
-    <Card className="rounded-xl p-4 mb-4 shadow-none gap-3 w-full max-w-3xl mx-auto mt-2.5">
-      <Skeleton className="h-3 w-full rounded-full" />
-      <View className="flex-row justify-between">
-        <View className="gap-1">
-          <Skeleton className="h-2 w-16 rounded-full" />
-          <Skeleton className="h-4 w-10 rounded-full" />
-        </View>
-        <View className="gap-1">
-          <Skeleton className="h-2 w-20 rounded-full" />
-          <Skeleton className="h-4 w-12 rounded-full" />
-        </View>
+    <Card className="rounded-xl p-3 mb-2 shadow-none w-full max-w-3xl mx-auto mt-2.5">
+      <View className="flex-row justify-between items-center">
+        <Skeleton className="h-3 w-24 rounded-full" />
+        <Skeleton className="h-3 w-20 rounded-full" />
       </View>
     </Card>
     <View className="max-w-3xl w-full mx-auto gap-2 px-2.5">

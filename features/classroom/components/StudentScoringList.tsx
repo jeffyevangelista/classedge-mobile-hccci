@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useGlobalSearchParams } from "expo-router";
+import { useGlobalSearchParams, useNavigation } from "expo-router";
 import {
   useClassroomStudents,
   useStudentScoresForActivity,
@@ -18,7 +18,14 @@ import {
 } from "@/features/classroom/ classroom.service";
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
-import { Avatar, Button, Card, Input, Skeleton } from "heroui-native";
+import {
+  Avatar,
+  Button,
+  Card,
+  Input,
+  InputGroup,
+  Skeleton,
+} from "heroui-native";
 import { Icon } from "@/components/Icon";
 import ErrorFallback from "@/components/ErrorFallback";
 import { CameraView } from "expo-camera";
@@ -26,6 +33,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Image from "@/components/Image";
 import { useCamera } from "@/features/camera/useCamera";
 import type { CapturedPhoto } from "@/features/camera/useCamera";
+import { env } from "@/utils/env";
 
 type LocalImages = Record<number, CapturedPhoto | null>;
 
@@ -51,14 +59,11 @@ const StudentScoringList = ({
     error,
   } = useClassroomStudents(classroomId as string);
 
-  const validStudents = useMemo(
-    () => students?.filter((s) => s.studentId != null) ?? [],
-    [students],
-  );
-
   const { data: existingScores } = useStudentScoresForActivity(
     activityDetail.localId,
   );
+
+  console.log("[existingScores]", existingScores);
 
   const scoresMap = useMemo(() => {
     const map: Record<number, number> = {};
@@ -71,8 +76,9 @@ const StudentScoringList = ({
   }, [existingScores]);
 
   const [localScores, setLocalScores] = useState<Record<number, string>>({});
-  const [localImages, setLocalImages] = useState<LocalImages>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [defaultScore, setDefaultScore] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (existingScores) {
@@ -93,12 +99,28 @@ const StudentScoringList = ({
     setLocalScores((prev) => ({ ...prev, [studentId]: value }));
   }, []);
 
-  const handleImageChange = useCallback(
-    (studentId: number, image: CapturedPhoto | null) => {
-      setLocalImages((prev) => ({ ...prev, [studentId]: image }));
-    },
-    [],
+  const validStudents = useMemo(
+    () =>
+      (students?.filter((s) => s.studentId != null) ?? []).sort((a, b) => {
+        const lastA = a.profile?.lastName?.toLowerCase() ?? "";
+        const lastB = b.profile?.lastName?.toLowerCase() ?? "";
+        return lastA.localeCompare(lastB);
+      }),
+    [students],
   );
+
+  const handleApplyDefault = useCallback(() => {
+    if (defaultScore === "") return;
+    const num = parseInt(defaultScore, 10);
+    if (isNaN(num) || num < 0 || num > activityDetail.maxScore) return;
+    setLocalScores((prev) => {
+      const next = { ...prev };
+      for (const s of validStudents) {
+        next[s.studentId] = defaultScore;
+      }
+      return next;
+    });
+  }, [defaultScore, validStudents, activityDetail.maxScore]);
 
   const dirtyStudentIds = useMemo(() => {
     if (!validStudents.length) return new Set<number>();
@@ -116,18 +138,10 @@ const StudentScoringList = ({
       const saved = scoresMap[s.studentId];
       if (saved === undefined || saved !== numericScore) {
         dirty.add(s.studentId);
-      } else if (localImages[s.studentId]) {
-        dirty.add(s.studentId);
       }
     }
     return dirty;
-  }, [
-    validStudents,
-    localScores,
-    localImages,
-    scoresMap,
-    activityDetail.maxScore,
-  ]);
+  }, [validStudents, localScores, scoresMap, activityDetail.maxScore]);
 
   const hasUnsavedChanges = dirtyStudentIds.size > 0;
 
@@ -135,30 +149,46 @@ const StudentScoringList = ({
     if (dirtyStudentIds.size === 0) return;
     setIsSubmitting(true);
     try {
-      const promises = Array.from(dirtyStudentIds).map(async (studentId) => {
-        let fileUri: string | null = null;
-        const image = localImages[studentId];
-        if (image) {
-          fileUri = await saveAttachment(image.uri);
-        }
-        return upsertStudentScore({
-          studentId,
-          activityId: activityDetail.id,
-          termId: activityDetail.termId,
-          activityLocalId: activityDetail.localId,
-          subjectId: activityDetail.subjectId,
-          totalScore: parseInt(localScores[studentId], 10),
-          file: fileUri,
-        });
-      });
+      const entries = Array.from(dirtyStudentIds).map((studentId) => ({
+        studentId,
+        activityId: activityDetail.id,
+        termId: activityDetail.termId,
+        activityLocalId: activityDetail.localId,
+        subjectId: activityDetail.subjectId,
+        totalScore: parseInt(localScores[studentId], 10),
+      }));
+      console.log("[handleSubmitAll] saving:", JSON.stringify(entries));
+      const promises = entries.map((entry) => upsertStudentScore(entry));
       await Promise.all(promises);
-      setLocalImages({});
+      console.log("[handleSubmitAll] save complete");
     } catch (err) {
       console.error("[StudentScoringList] Failed to save scores:", err);
     } finally {
       setIsSubmitting(false);
     }
-  }, [dirtyStudentIds, localScores, localImages, activityDetail]);
+  }, [dirtyStudentIds, localScores, activityDetail]);
+
+  const parentNavigation = useNavigation("/(main)/classroom/[classroomId]");
+
+  useEffect(() => {
+    parentNavigation.setOptions({
+      headerRight: () => (
+        <Pressable
+          onPress={handleSubmitAll}
+          disabled={isSubmitting || !hasUnsavedChanges}
+          style={{ opacity: isSubmitting || !hasUnsavedChanges ? 0.4 : 1 }}
+        >
+          {isSubmitting ? (
+            <ActivityIndicator size="small" />
+          ) : (
+            <AppText weight="semibold" className="text-blue-500 text-base">
+              Save
+            </AppText>
+          )}
+        </Pressable>
+      ),
+    });
+  }, [parentNavigation, handleSubmitAll, isSubmitting, hasUnsavedChanges]);
 
   if (isLoading) return <StudentScoringSkeleton />;
 
@@ -167,43 +197,122 @@ const StudentScoringList = ({
       <ErrorFallback message={error?.message ?? "Failed to load students"} />
     );
 
+  const isDefaultOverMax =
+    defaultScore !== "" && parseInt(defaultScore, 10) > activityDetail.maxScore;
+
   return (
     <View className="flex-1">
+      <Card className="rounded-xl shadow-none mb-2 max-w-3xl w-full mx-auto">
+        <View className="flex-row items-center gap-2">
+          <AppText className="text-sm flex-1">Apply score to all</AppText>
+          <View className="flex-row items-center">
+            <Input
+              placeholder="0"
+              value={defaultScore}
+              onChangeText={(text: string) => {
+                if (text !== "" && !/^\d+$/.test(text)) return;
+                setDefaultScore(text);
+              }}
+              keyboardType="numeric"
+              className={`w-14 text-center bg-accent-foreground ${isDefaultOverMax ? "border-red-500" : "border-gray-300"}`}
+            />
+            <AppText className="text-xs text-muted-foreground ml-1">
+              /{activityDetail.maxScore}
+            </AppText>
+          </View>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="rounded-xl"
+            onPress={handleApplyDefault}
+            isDisabled={defaultScore === "" || isDefaultOverMax}
+          >
+            <AppText className="text-xs font-semibold">Apply</AppText>
+          </Button>
+        </View>
+      </Card>
+      <InputGroup className="mb-2 shadow-none">
+        <InputGroup.Prefix>
+          <Icon name="MagnifyingGlass" size={20} color="gray" />
+        </InputGroup.Prefix>
+        <InputGroup.Input
+          placeholder="Search student..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          className="max-w-3xl w-full mx-auto"
+        />
+      </InputGroup>
       <FlashList
         className="max-w-3xl w-full mx-auto"
-        data={validStudents}
-        renderItem={({ item }) => (
-          <StudentScoreItem
-            studentId={item.studentId}
-            activityDetail={activityDetail}
-            score={localScores[item.studentId] ?? ""}
-            onScoreChange={handleScoreChange}
-            capturedImage={localImages[item.studentId] ?? null}
-            onImageChange={handleImageChange}
-            isSaved={
-              scoresMap[item.studentId] !== undefined &&
-              !dirtyStudentIds.has(item.studentId)
-            }
-          />
-        )}
+        data={
+          searchQuery.trim()
+            ? validStudents.filter((s) => {
+                const name = s.profile
+                  ? `${s.profile.lastName} ${s.profile.firstName}`.toLowerCase()
+                  : "";
+                return name.includes(searchQuery.trim().toLowerCase());
+              })
+            : validStudents
+        }
+        renderItem={({ item }) => {
+          const profile = item.profile;
+          const fullName = profile
+            ? `${profile.lastName}, ${profile.firstName}`
+            : `Student ${item.studentId}`;
+          const photoUri = profile?.studentPhoto
+            ? `${env.EXPO_PUBLIC_API_BASE_URL}/media/${profile.studentPhoto}`
+            : undefined;
+          const score = localScores[item.studentId] ?? "";
+          const isOverMax =
+            score !== "" && parseInt(score, 10) > activityDetail.maxScore;
+          const isSaved =
+            scoresMap[item.studentId] !== undefined &&
+            !dirtyStudentIds.has(item.studentId);
+
+          return (
+            <Card className="rounded-xl items-center gap-3 mb-1.5 shadow-none flex-row">
+              <Avatar alt={fullName} size="sm">
+                <Avatar.Image
+                  source={
+                    photoUri
+                      ? { uri: photoUri }
+                      : require("@/assets/placeholder/avatar-placeholder.png")
+                  }
+                />
+                <Avatar.Fallback>
+                  {profile?.firstName?.[0] ?? ""}
+                  {profile?.lastName?.[0] ?? ""}
+                </Avatar.Fallback>
+              </Avatar>
+              <AppText className="flex-1 text-sm" numberOfLines={1}>
+                {fullName}
+              </AppText>
+              <View className="flex-row items-center gap-1.5">
+                <View className="flex-row items-center">
+                  <Input
+                    placeholder="0"
+                    value={score}
+                    onChangeText={(text: string) => {
+                      if (text !== "" && !/^\d+$/.test(text)) return;
+                      handleScoreChange(item.studentId, text);
+                    }}
+                    keyboardType="numeric"
+                    className={`w-14 text-center bg-accent-foreground ${isOverMax ? "border-red-500" : "border-gray-300"}`}
+                  />
+                  <AppText className="text-xs text-muted-foreground ml-1">
+                    /{activityDetail.maxScore}
+                  </AppText>
+                </View>
+                {isSaved && (
+                  <Icon name="CheckCircle" size={16} color="#22c55e" />
+                )}
+              </View>
+            </Card>
+          );
+        }}
         keyExtractor={(item) => item.studentId.toString()}
-        extraData={{ localScores, localImages }}
+        extraData={{ localScores }}
       />
-      <View className="p-4 max-w-3xl w-full mx-auto">
-        <Button
-          onPress={handleSubmitAll}
-          isDisabled={isSubmitting || !hasUnsavedChanges}
-          className="rounded-xl"
-        >
-          {isSubmitting ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <AppText className="text-white font-semibold">
-              Submit All Scores
-            </AppText>
-          )}
-        </Button>
-      </View>
     </View>
   );
 };

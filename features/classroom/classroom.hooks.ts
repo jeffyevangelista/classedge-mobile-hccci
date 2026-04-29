@@ -1,26 +1,35 @@
 import { toCompilableQuery } from "@powersync/drizzle-driver";
+import { useQuery as useWatchedQuery } from "@powersync/react";
 import { useQuery } from "@powersync/tanstack-react-query";
 import {
-  getActivities,
-  getActivityById,
   getActivityTypes,
   getClassroomStudents,
   getGradingPeriods,
   getStudentScoresForActivity,
 } from "./ classroom.service";
+import { snakeToCamel } from "@/lib/case-transform";
+import type { Assessment } from "@/powersync/schema";
 
 export const useClassroomActivities = (subjectId: string) => {
-  return useQuery({
-    query: toCompilableQuery(getActivities(subjectId)),
-    queryKey: ["classroom-activities", subjectId],
-  });
+  const result = useWatchedQuery(
+    "SELECT * FROM activity_activity WHERE subject_id = ? AND classroom_mode = 1 ORDER BY start_time DESC",
+    [parseInt(subjectId)],
+  );
+
+  return { ...result, data: snakeToCamel<Assessment[]>(result.data) };
 };
 
 export const useClassroomActivity = (activityId: string) => {
-  return useQuery({
-    query: toCompilableQuery(getActivityById(activityId)),
-    queryKey: ["classroom-activity", activityId],
-  });
+  const result = useWatchedQuery(
+    "SELECT * FROM activity_activity WHERE local_id = ? LIMIT 1",
+    [activityId],
+  );
+
+  return {
+    ...result,
+    data: snakeToCamel<Assessment[]>(result.data),
+    isError: !!result.error,
+  };
 };
 
 export const useClassroomGradingPeriods = () => {
@@ -45,8 +54,14 @@ export const useClassroomStudents = (classroomId: string) => {
 };
 
 export const useStudentScoresForActivity = (activityLocalId: string) => {
-  return useQuery({
-    query: toCompilableQuery(getStudentScoresForActivity(activityLocalId)),
-    queryKey: ["student-scores", activityLocalId],
-  });
+  const result = useWatchedQuery(
+    "SELECT * FROM activity_studentactivity WHERE activity_local_id = ?",
+    [activityLocalId],
+  );
+
+  return {
+    ...result,
+    data: snakeToCamel(result.data),
+    isError: !!result.error,
+  };
 };

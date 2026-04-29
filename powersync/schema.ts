@@ -151,6 +151,10 @@ export const studentEnrolledCoursesRelations = relations(
       references: [academicTermsTable.id],
     }),
     schedules: many(courseScheduleTable),
+    profile: one(accountDetailsTable, {
+      fields: [studentEnrolledCoursesTable.studentId],
+      references: [accountDetailsTable.userId],
+    }),
   }),
 );
 
@@ -247,7 +251,7 @@ export const assessmentTable = sqliteTable("activity_activity", {
   activityName: text("activity_name").notNull(),
   startTime: text("start_time").notNull(),
   endTime: text("end_time").notNull(),
-  showScore: integer("show_score").notNull(),
+  showScore: integer("show_score", { mode: "boolean" }).notNull(),
   maxRetake: integer("max_retake").notNull(),
   timeDuration: integer("time_duration").notNull(),
   maxScore: integer("max_score").notNull(),
@@ -255,13 +259,14 @@ export const assessmentTable = sqliteTable("activity_activity", {
   passingScoreType: text("passing_score_type").notNull(),
   retakeMethod: text("retake_method").notNull(),
   activityInstruction: text("activity_instruction").notNull(),
-  isGraded: integer("is_graded").notNull(),
-  shuffleQuestions: integer("shuffle_questions").notNull(),
+  isGraded: integer("is_graded", { mode: "boolean" }).notNull(),
+  shuffleQuestions: integer("shuffle_questions", { mode: "boolean" }).notNull(),
   subjectId: integer("subject_id").notNull(),
   activityTypeId: integer("activity_type_id").notNull(),
-  classroomMode: integer("classroom_mode").notNull(),
+  classroomMode: integer("classroom_mode", { mode: "boolean" }).notNull(),
   localId: text("local_id")
     .notNull()
+    .unique()
     .$defaultFn(() => createId()),
   termId: integer("term_id").notNull(),
 });
@@ -297,8 +302,8 @@ export const studentAssessmentRelations = relations(
       references: [accountDetailsTable.userId],
     }),
     activityId: one(assessmentTable, {
-      fields: [studentAssessment.activityId],
-      references: [assessmentTable.id],
+      fields: [studentAssessment.activityLocalId],
+      references: [assessmentTable.localId],
     }),
     termId: one(academicTermsTable, {
       fields: [studentAssessment.termId],
@@ -367,7 +372,7 @@ export const assessmentQuestionTableRelation = relations(
   ({ one }) => ({
     activityId: one(assessmentTable, {
       fields: [assessmentQuestionTable.activityId],
-      references: [assessmentTable.id],
+      references: [assessmentTable.localId],
     }),
     subjectId: one(coursesTable, {
       fields: [assessmentQuestionTable.subjectId],

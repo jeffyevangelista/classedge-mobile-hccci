@@ -1,6 +1,6 @@
 import { assessmentTable, studentAssessment } from "@/powersync/schema";
 import { db, powersync } from "@/powersync/system";
-import { eq, and, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import * as FileSystem from "expo-file-system/legacy";
 
@@ -18,20 +18,6 @@ export const saveAttachment = async (imageUri: string): Promise<string> => {
   return permanentUri;
 };
 
-export const getActivities = (subjectId: string) => {
-  return db.query.assessmentTable.findMany({
-    where: (assessment, { eq }) =>
-      eq(assessment.subjectId, parseInt(subjectId)) &&
-      eq(assessment.classroomMode, 1),
-  });
-};
-
-export const getActivityById = (activityId: string) => {
-  return db.query.assessmentTable.findFirst({
-    where: (assessment, { eq }) => eq(assessment.localId, activityId),
-  });
-};
-
 export const getGradingPeriods = () => {
   return db.query.gradingPeriodTable.findMany();
 };
@@ -40,27 +26,40 @@ export const getActivityTypes = () => {
   return db.query.activtyType.findMany();
 };
 
-export const createActivity = async (data: any) => {
-  console.log("[createActivity] inserting:", JSON.stringify(data));
-  const result = await db.insert(assessmentTable).values(data);
+export const createActivity = async (
+  data: Omit<typeof assessmentTable.$inferInsert, "id" | "localId"> & {
+    id?: string;
+    localId?: string;
+  },
+) => {
+  const localId = data.localId ?? createId();
+  const id = data.id ?? localId;
+
+  const payload = { ...data, id, localId };
+  console.log("[createActivity] inserting:", JSON.stringify(payload));
+
+  const result = await db.insert(assessmentTable).values(payload);
   console.log("[createActivity] insert result:", JSON.stringify(result));
 
   // Verify the row actually landed in the local DB by reading it back directly.
   const verify = await powersync.execute(
     "SELECT id, local_id, activity_name FROM activity_activity WHERE local_id = ?",
-    [data.localId],
+    [localId],
   );
   console.log(
     "[createActivity] verify after insert:",
     JSON.stringify(verify.rows?._array),
   );
 
-  return result;
+  return { result, id, localId };
 };
 
 export const getClassroomStudents = (classroomId: string) => {
   return db.query.studentEnrolledCoursesTable.findMany({
     where: (student, { eq }) => eq(student.subjectId, parseInt(classroomId)),
+    with: {
+      profile: true,
+    },
   });
 };
 
@@ -122,7 +121,7 @@ export const upsertStudentScore = async (data: {
       [
         id,
         data.studentId,
-        data.activityId,
+        data.activityLocalId,
         data.termId,
         data.subjectId,
         data.totalScore,

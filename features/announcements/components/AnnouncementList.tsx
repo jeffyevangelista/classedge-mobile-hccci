@@ -16,13 +16,12 @@ import React, { useState } from "react";
 import EventDetailModal from "@/features/calendar/components/EventDetailModal";
 
 const AnnouncementList = () => {
-  const { data, isError, error, isLoading, refetch, isRefetching } =
-    useAnnouncementsWithEvents();
+  const { data, error, isLoading, refresh } = useAnnouncementsWithEvents();
 
   if (isLoading) return <AnnouncementSkeleton />;
-  if (isError)
+  if (error)
     return (
-      <ErrorComponent message={getApiErrorMessage(error)} onRetry={refetch} />
+      <ErrorComponent message={getApiErrorMessage(error)} onRetry={refresh} />
     );
 
   return (
@@ -36,8 +35,8 @@ const AnnouncementList = () => {
         />
       }
       data={data}
-      onRefresh={refetch}
-      refreshing={isRefetching}
+      onRefresh={refresh}
+      refreshing={false}
       renderItem={({ item }) => (
         <View className="mb-2 max-w-3xl sm:mx-auto w-full px-2.5">
           <Card className="shadow-none rounded-xl">

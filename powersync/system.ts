@@ -48,3 +48,8 @@ export const setupPowerSync = async () => {
   const connector = new Connector();
   powersync.connect(connector);
 };
+
+export const resetPowerSync = async () => {
+  await powersync.disconnectAndClear();
+  await setupPowerSync();
+};

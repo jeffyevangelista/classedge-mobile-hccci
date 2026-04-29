@@ -2,6 +2,7 @@ import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
 import Screen from "@/components/screen";
 import LogoutButton from "@/features/auth/components/LogoutButton";
+import ResyncButton from "@/features/auth/components/ResyncButton";
 import HeaderComponent from "@/features/profile/components/HeaderComponent";
 import { Href, Link } from "expo-router";
 import { Card } from "heroui-native";
@@ -49,6 +50,7 @@ const ProfileScreen = () => {
             {profileNav.map((item) => (
               <ProfileNavItem key={item.title} {...item} />
             ))}
+            <ResyncButton />
             <LogoutButton />
           </Card>
         </View>

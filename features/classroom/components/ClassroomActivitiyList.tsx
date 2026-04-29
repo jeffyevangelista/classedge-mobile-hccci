@@ -1,4 +1,4 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import React from "react";
 import { useClassroomActivities } from "../classroom.hooks";
 import { Link, useLocalSearchParams } from "expo-router";
@@ -9,6 +9,7 @@ import { Card, Skeleton } from "heroui-native";
 const ClassroomActivitiyList = () => {
   const { classroomId } = useLocalSearchParams();
   const { data, isLoading } = useClassroomActivities(classroomId as string);
+
   if (isLoading) return <ActivityListSkeleton />;
 
   return (

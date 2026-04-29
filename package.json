@@ -24,7 +24,7 @@
     "@powersync/drizzle-driver": "^0.7.1",
     "@powersync/op-sqlite": "^0.7.18",
     "@powersync/react-native": "^1.28.1",
-    "@powersync/tanstack-react-query": "^0.1.14",
+    "@powersync/tanstack-react-query": "^0.2.5",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-native-community/netinfo": "11.4.1",

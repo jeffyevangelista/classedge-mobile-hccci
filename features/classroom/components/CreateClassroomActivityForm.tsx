@@ -21,7 +21,6 @@ import {
   useActivityTypes,
 } from "../classroom.hooks";
 import { createActivity } from "../ classroom.service";
-import { createId } from "@paralleldrive/cuid2";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 type SelectOption = {
@@ -126,29 +125,27 @@ const CreateClassroomActivityForm = () => {
     const startDateTime = combineDateTime(startDate, startTime);
     const endDateTime = combineDateTime(endDate, endTime);
 
-    const localId = createId();
-
+    const data = {
+      activityName: title,
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime.toISOString(),
+      showScore: false,
+      maxRetake: 1,
+      timeDuration: 0,
+      maxScore: maxScoreNum,
+      passingScore: passingScoreNum,
+      passingScoreType: type?.value ?? "percentage",
+      retakeMethod: "highest",
+      activityInstruction: instructions,
+      classroomMode: true,
+      isGraded: true,
+      shuffleQuestions: false,
+      subjectId: parseInt(classroomId as string, 10),
+      activityTypeId: Number.isNaN(activityTypeIdNum) ? 2 : activityTypeIdNum,
+      termId: termIdNum,
+    };
     try {
-      await createActivity({
-        localId,
-        activityName: title,
-        startTime: startDateTime.toISOString(),
-        endTime: endDateTime.toISOString(),
-        showScore: 0,
-        maxRetake: 1,
-        timeDuration: 0,
-        maxScore: maxScoreNum,
-        passingScore: passingScoreNum,
-        passingScoreType: type?.value,
-        retakeMethod: "highest",
-        activityInstruction: instructions,
-        classroomMode: 1,
-        isGraded: 1,
-        shuffleQuestions: 0,
-        subjectId: parseInt(classroomId as string, 10),
-        activityTypeId: Number.isNaN(activityTypeIdNum) ? 2 : activityTypeIdNum,
-        termId: termIdNum,
-      });
+      const { localId } = await createActivity(data);
 
       router.replace(`/classroom/${classroomId}/input-grades/${localId}`);
     } catch (error) {

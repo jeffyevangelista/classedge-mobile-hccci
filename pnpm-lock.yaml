@@ -42,8 +42,8 @@ importers:
         specifier: ^1.28.1
         version: 1.28.1(@powersync/common@1.45.0)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@powersync/tanstack-react-query':
-        specifier: ^0.1.14
-        version: 0.1.14(@powersync/common@1.45.0)(react@19.1.0)
+        specifier: ^0.2.5
+        version: 0.2.5(@powersync/common@1.45.0)(react@19.1.0)
       '@react-native-async-storage/async-storage':
         specifier: 2.2.0
         version: 2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))
@@ -1461,16 +1461,22 @@ packages:
       '@journeyapps/react-native-quick-sqlite':
         optional: true
 
+  '@powersync/react@1.10.0':
+    resolution: {integrity: sha512-orM29qocbF8zYTBM27j9nPNztyplpbNVaw8djpqxl8N2wESqHTbHOKpatg+Fa5aofgjzmrkiGwevJvCbiWYYWQ==}
+    peerDependencies:
+      '@powersync/common': ^1.51.0
+      react: '*'
+
   '@powersync/react@1.8.2':
     resolution: {integrity: sha512-15z8JKt66dq2bqX2P7QQ71eUIx3DWLc5WMdB/PDc9MIAHf1SERqKfzbzWGxKplQGHC/GogDA7G8IDoRadhNXOA==}
     peerDependencies:
       '@powersync/common': ^1.41.1
       react: '*'
 
-  '@powersync/tanstack-react-query@0.1.14':
-    resolution: {integrity: sha512-mx1TR+Syh3PtoGaajPbHIZe5S8oJLtxBfmNaTZaHzhwchcrZR/EoJfiS+7hdwwx3mb3YOjKmZbqAx1YKlZwUgw==}
+  '@powersync/tanstack-react-query@0.2.5':
+    resolution: {integrity: sha512-pIkSOPMQn5+ATk0/A03jlKpNBOIhadgxKNdJPrnGyExTo8rkvvKKQ/6k6sd42Q2HmcsLzlioSlRdM1qhzDK8iQ==}
     peerDependencies:
-      '@powersync/common': ^1.46.0
+      '@powersync/common': ^1.52.0
       react: '*'
 
   '@radix-ui/primitive@1.1.3':
@@ -6950,15 +6956,20 @@ snapshots:
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0)
 
+  '@powersync/react@1.10.0(@powersync/common@1.45.0)(react@19.1.0)':
+    dependencies:
+      '@powersync/common': 1.45.0
+      react: 19.1.0
+
   '@powersync/react@1.8.2(@powersync/common@1.45.0)(react@19.1.0)':
     dependencies:
       '@powersync/common': 1.45.0
       react: 19.1.0
 
-  '@powersync/tanstack-react-query@0.1.14(@powersync/common@1.45.0)(react@19.1.0)':
+  '@powersync/tanstack-react-query@0.2.5(@powersync/common@1.45.0)(react@19.1.0)':
     dependencies:
       '@powersync/common': 1.45.0
-      '@powersync/react': 1.8.2(@powersync/common@1.45.0)(react@19.1.0)
+      '@powersync/react': 1.10.0(@powersync/common@1.45.0)(react@19.1.0)
       '@tanstack/react-query': 5.90.16(react@19.1.0)
       react: 19.1.0
 
