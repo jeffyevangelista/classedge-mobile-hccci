@@ -453,12 +453,12 @@ const LinkCard = ({ url }: { url: string }) => {
       onPress={() => WebBrowser.openBrowserAsync(url)}
       className="flex-row items-center gap-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl px-4 py-3"
     >
-      <View className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/50 items-center justify-center shrink-0">
+      <View className="w-10 h-10 rounded-lg bg-accent-soft items-center justify-center shrink-0">
         <Icon name="LinkIcon" size={20} color="#3b82f6" />
       </View>
       <AppText
         numberOfLines={2}
-        className="flex-1 text-blue-600 dark:text-blue-400 text-sm"
+        className="flex-1 text-accent text-sm"
       >
         {display}
       </AppText>

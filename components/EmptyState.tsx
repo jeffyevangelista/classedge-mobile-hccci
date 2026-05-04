@@ -14,11 +14,11 @@ const EmptyState = ({ icon, title, description }: EmptyStateProps) => {
 
   return (
     <View className="flex-1 items-center justify-center px-6 py-12 sm:py-16 md:py-20 gap-4 sm:gap-5 md:gap-6">
-      <View className="p-4 sm:p-5 md:p-6 rounded-full bg-blue-50 dark:bg-blue-950">
+      <View className="p-4 sm:p-5 md:p-6 rounded-full bg-accent-soft">
         <Icon
           name={icon}
           size={iconSize}
-          className="text-blue-500 dark:text-blue-400"
+          className="text-accent"
         />
       </View>
       <View className="items-center gap-1.5 sm:gap-2 max-w-xs sm:max-w-sm md:max-w-md">

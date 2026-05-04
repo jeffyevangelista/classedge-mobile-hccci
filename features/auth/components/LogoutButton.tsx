@@ -49,7 +49,7 @@ const LogoutButton = () => {
               <View
                 className={`flex-row items-center p-3 rounded-2xl border border-transparent`}
               >
-                <Icon name={"SignOut"} size={28} className="text-blue-500" />
+                <Icon name={"SignOut"} size={28} className="text-accent" />
 
                 <AppText
                   weight="semibold"

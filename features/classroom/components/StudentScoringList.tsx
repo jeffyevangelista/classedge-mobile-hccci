@@ -179,7 +179,7 @@ const StudentScoringList = ({
           {isSubmitting ? (
             <ActivityIndicator size="small" />
           ) : (
-            <AppText weight="semibold" className="text-blue-500 text-base">
+            <AppText weight="semibold" className="text-accent text-base">
               Save
             </AppText>
           )}

@@ -85,7 +85,7 @@ const NotificationItem = ({
     >
       <Pressable
         onPress={handleReadNotification}
-        className={`flex-row items-start p-4 ${isReadBool ? "bg-transparent" : "bg-blue-400/15 dark:bg-blue-400/10"}`}
+        className={`flex-row items-start p-4 ${isReadBool ? "bg-transparent" : "bg-accent-soft"}`}
       >
         <Avatar alt="avatar" size="sm">
           <AttachmentAvatarImage path={createdById.studentPhoto} />
@@ -108,7 +108,7 @@ const NotificationItem = ({
         </View>
 
         {!isReadBool && (
-          <View className="w-2.5 h-2.5 rounded-full bg-blue-600 self-center ml-2" />
+          <View className="w-2.5 h-2.5 rounded-full bg-accent self-center ml-2" />
         )}
       </Pressable>
     </Link>

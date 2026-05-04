@@ -16,7 +16,7 @@ const HeaderComponent = () => {
 
   return (
     <View className="items-center">
-      <View className="p-1 border-3 border-blue-500 rounded-full">
+      <View className="p-1 border-3 border-accent rounded-full">
         <Avatar
           className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40"
           alt={
