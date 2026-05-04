@@ -43,7 +43,7 @@ const NotificationList = () => {
         />
       }
       ItemSeparatorComponent={() => (
-        <View className="h-px bg-slate-200 dark:bg-slate-700" />
+        <View className="h-px bg-border" />
       )}
       renderItem={({ item }) => <NotificationItem {...item} />}
       data={data}
@@ -129,7 +129,7 @@ const NotificationListSkeleton = () => {
                 <Skeleton className="h-3 w-16 rounded" />
               </View>
             </View>
-            <View className="h-px bg-slate-200 dark:bg-slate-700" />
+            <View className="h-px bg-border" />
           </View>
         ))}
     </View>

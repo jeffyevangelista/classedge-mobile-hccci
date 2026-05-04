@@ -79,7 +79,7 @@ const StudentList = () => {
 
 const StudentItem = React.memo(({ name, studentPhoto }: Student) => {
   return (
-    <Card className="shadow-none rounded-xl mt-2.5 w-full max-w-3xl mx-auto dark:bg-neutral-800/50">
+    <Card className="shadow-none rounded-xl mt-2.5 w-full max-w-3xl mx-auto">
       <View className="flex-row gap-2 items-center">
         <Avatar alt="student-photo" size="sm">
           <Avatar.Fallback>{name.split(" ")[0][0]}</Avatar.Fallback>

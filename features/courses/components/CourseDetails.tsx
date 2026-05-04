@@ -130,7 +130,7 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
     <View className="mb-6 mx-1 gap-3">
       {/* Instructor & Room Row */}
       <View className="flex-row gap-3">
-        <View className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4">
+        <View className="flex-1 bg-surface-secondary rounded-2xl p-4">
           <View className="w-9 h-9 rounded-full bg-accent-soft items-center justify-center mb-3">
             <Icon name="UserCircleIcon" size={20} color={themeColorAccent} />
           </View>
@@ -142,7 +142,7 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
           </AppText>
         </View>
 
-        <View className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4">
+        <View className="flex-1 bg-surface-secondary rounded-2xl p-4">
           <View className="w-9 h-9 rounded-full bg-green-100 dark:bg-green-900 items-center justify-center mb-3">
             <Icon name="MapPinIcon" size={20} color="#22c55e" />
           </View>
@@ -157,7 +157,7 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
 
       {/* Schedule Card */}
       {activeSchedules.length > 0 && (
-        <View className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4">
+        <View className="bg-surface-secondary rounded-2xl p-4">
           <View className="flex-row items-center mb-3">
             <View className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-900 items-center justify-center mr-3">
               <Icon name="ClockIcon" size={20} color="#f97316" />
@@ -180,7 +180,7 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
               return (
                 <View
                   key={schedule.id}
-                  className="flex-row items-center justify-between bg-white dark:bg-gray-700 rounded-xl px-3.5 py-3"
+                  className="flex-row items-center justify-between bg-surface rounded-xl px-3.5 py-3"
                 >
                   <View className="flex-row items-center gap-1.5 flex-1 flex-wrap">
                     {days.map((day: string) => (
@@ -263,7 +263,7 @@ const CourseDetailsHeader = ({ courseDetails }: { courseDetails: any }) => {
 
 const StudentItem = ({ student }: { student: any; index: number }) => {
   return (
-    <View className="flex-row items-center bg-white dark:bg-gray-800 rounded-xl p-3 mb-2 border border-gray-100 dark:border-gray-700 mx-1">
+    <View className="flex-row items-center bg-surface rounded-xl p-3 mb-2 border border-gray-100 dark:border-gray-700 mx-1">
       <View className="relative">
         <AttachmentImage
           path={student?.studentPhoto}
@@ -318,14 +318,14 @@ const CourseDetailsSkeleton = () => {
 
       {/* Info cards row */}
       <View className="flex-row gap-3 mx-1 mb-3">
-        <View className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 gap-3">
+        <View className="flex-1 bg-surface-secondary rounded-2xl p-4 gap-3">
           <Skeleton className="w-9 h-9 rounded-full" />
           <View className="gap-1.5">
             <Skeleton className="h-3 w-16 rounded" />
             <Skeleton className="h-4 w-24 rounded" />
           </View>
         </View>
-        <View className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 gap-3">
+        <View className="flex-1 bg-surface-secondary rounded-2xl p-4 gap-3">
           <Skeleton className="w-9 h-9 rounded-full" />
           <View className="gap-1.5">
             <Skeleton className="h-3 w-12 rounded" />
@@ -335,7 +335,7 @@ const CourseDetailsSkeleton = () => {
       </View>
 
       {/* Schedule skeleton */}
-      <View className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 mx-1 mb-6 gap-3">
+      <View className="bg-surface-secondary rounded-2xl p-4 mx-1 mb-6 gap-3">
         <View className="flex-row items-center gap-3">
           <Skeleton className="w-9 h-9 rounded-full" />
           <Skeleton className="h-4 w-28 rounded" />

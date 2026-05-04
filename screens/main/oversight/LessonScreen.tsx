@@ -38,7 +38,7 @@ const LessonScreen = () => {
     : null;
 
   return (
-    <Screen className="bg-white dark:bg-neutral-900">
+    <Screen>
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
@@ -88,7 +88,7 @@ const LessonScreen = () => {
 };
 
 const LessonScreenSkeleton = () => (
-  <Screen className="bg-white dark:bg-neutral-900">
+  <Screen>
     <View className="gap-6 w-full max-w-3xl mx-auto p-4">
       <View>
         <Skeleton className="h-3 w-32 rounded-full" />

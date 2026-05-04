@@ -85,7 +85,7 @@ const AssessmentSkeleton = () => {
       {Array.from({ length: 5 }).map((_, index) => (
         <Card
           key={index}
-          className="shadow-none rounded-xl mt-2.5 flex-row max-w-3xl mx-auto w-full gap-2.5 items-center dark:bg-neutral-800/50"
+          className="shadow-none rounded-xl mt-2.5 flex-row max-w-3xl mx-auto w-full gap-2.5 items-center"
         >
           <View className="gap-2 flex-row flex-1">
             <Skeleton className="rounded-md h-16 w-16" />

@@ -98,7 +98,7 @@ const MaterialItem = React.memo(
 
     return (
       <Link className="max-w-3xl mx-auto w-full mt-2.5" href={`/lesson/${id}`}>
-        <Card className="shadow-none rounded-xl flex-row items-center dark:bg-neutral-800/50">
+        <Card className="shadow-none rounded-xl flex-row items-center">
           <View className="flex-row gap-2 flex-1">
             <View className="p-2.5 bg-purple-50 dark:bg-purple-900/50 rounded-full">
               <Icon

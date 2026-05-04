@@ -73,7 +73,7 @@ const MaterialDetailsScreen = () => {
     });
 
   return (
-    <Screen className="bg-white dark:bg-neutral-900">
+    <Screen>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="gap-6 w-full max-w-3xl mx-auto p-4">
           <View>
@@ -155,7 +155,7 @@ const MaterialFile = ({
 
   if (state === "unknown" || state === "queued" || state === "downloading") {
     return (
-      <View className="w-full h-20 bg-neutral-100 dark:bg-neutral-800 rounded-xl flex-row items-center gap-3 px-4">
+      <View className="w-full h-20 bg-default rounded-xl flex-row items-center gap-3 px-4">
         <ActivityIndicator />
         <AppText className="text-sm text-neutral-500 dark:text-neutral-400">
           {state === "downloading" ? "Downloading..." : "Preparing file..."}
@@ -166,7 +166,7 @@ const MaterialFile = ({
 
   if (state === "failed") {
     return (
-      <View className="w-full h-20 bg-neutral-100 dark:bg-neutral-800 rounded-xl flex-row items-center gap-3 px-4">
+      <View className="w-full h-20 bg-default rounded-xl flex-row items-center gap-3 px-4">
         <Icon name="WarningCircleIcon" size={24} color="#ef4444" />
         <AppText className="flex-1 text-sm text-neutral-500 dark:text-neutral-400">
           Failed to load file
@@ -189,7 +189,7 @@ const MaterialFile = ({
   if (type === "pdf") return <PDFViewer uri={uri} />;
 
   return (
-    <View className="w-full h-20 bg-neutral-100 dark:bg-neutral-800 rounded-xl items-center justify-center">
+    <View className="w-full h-20 bg-default rounded-xl items-center justify-center">
       <AppText className="text-sm text-neutral-500 dark:text-neutral-400">
         Cannot preview this file type
       </AppText>
@@ -210,7 +210,7 @@ const ImageCard = ({
     <TouchableOpacity
       activeOpacity={0.7}
       onPress={() => showImage(uri)}
-      className="flex-row items-center gap-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl px-4 py-3"
+      className="flex-row items-center gap-3 bg-default rounded-xl px-4 py-3"
     >
       <View className="w-10 h-10 rounded-lg bg-teal-100 dark:bg-teal-900/50 items-center justify-center shrink-0">
         <Icon name="ImageIcon" size={20} color="#0d9488" />
@@ -452,7 +452,7 @@ const LinkCard = ({ url }: { url: string }) => {
     <TouchableOpacity
       activeOpacity={0.7}
       onPress={() => WebBrowser.openBrowserAsync(url)}
-      className="flex-row items-center gap-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl px-4 py-3"
+      className="flex-row items-center gap-3 bg-default rounded-xl px-4 py-3"
     >
       <View className="w-10 h-10 rounded-lg bg-accent-soft items-center justify-center shrink-0">
         <Icon name="LinkIcon" size={20} color={themeColorAccent} />
@@ -469,7 +469,7 @@ const LinkCard = ({ url }: { url: string }) => {
 };
 
 const MaterialDetailsSkeleton = () => (
-  <Screen className="bg-white dark:bg-neutral-900">
+  <Screen>
     <View className="gap-6 w-full max-w-3xl mx-auto p-4">
       <View>
         <Skeleton className="h-3 w-40 rounded-full" />

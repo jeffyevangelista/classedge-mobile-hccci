@@ -111,7 +111,7 @@ const AssessmentDetailsScreen = () => {
   const maxRetakesReached = (assessmentAttempts?.length ?? 0) >= data.maxRetake;
 
   return (
-    <Screen className="max-w-3xl mx-auto w-full bg-white dark:bg-neutral-900 pb-2.5 ">
+    <Screen className="max-w-3xl mx-auto w-full pb-2.5 ">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="gap-6 p-4">
           <View>
@@ -169,7 +169,7 @@ const AssessmentDetailsScreen = () => {
       </ScrollView>
       {!maxRetakesReached && (
         <View
-          className="p-4 bg-white dark:bg-neutral-900"
+          className="p-4 bg-surface"
           style={{ paddingBottom: Math.max(insets.bottom, 16) }}
         >
           <Button isDisabled={disableButton} onPress={handleStartAssessment}>
@@ -182,7 +182,7 @@ const AssessmentDetailsScreen = () => {
 };
 
 const AssessmentDetailsSkeleton = () => (
-  <Screen className="max-w-3xl mx-auto w-full bg-white dark:bg-neutral-900 pb-2.5">
+  <Screen className="max-w-3xl mx-auto w-full pb-2.5">
     <View className="gap-6 p-4">
       <View>
         <Skeleton className="h-3 w-32 rounded-full" />

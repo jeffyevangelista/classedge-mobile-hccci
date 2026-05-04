@@ -67,7 +67,7 @@ const FinancialRecordsScreen = () => {
 };
 
 const AcademicTermBanner = ({ record }: { record: FinancialRecord }) => (
-  <Card className="shadow-none rounded-xl bg-primary-50 dark:bg-slate-800 border border-primary-200 dark:border-slate-600">
+  <Card className="shadow-none rounded-xl bg-accent-soft border border-primary-200 dark:border-slate-600">
     <Card.Body className="py-3 px-4">
       <AppText
         weight="semibold"

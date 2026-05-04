@@ -79,7 +79,7 @@ const OnboardingScreen = () => {
 
   return (
     <View
-      className="flex-1 bg-white dark:bg-black"
+      className="flex-1 bg-background"
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
       <ScrollView

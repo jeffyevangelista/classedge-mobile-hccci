@@ -41,7 +41,7 @@ const ActivityScreen = () => {
   let actionButton = null;
 
   return (
-    <View className="flex-1 w-full max-w-3xl mx-auto bg-white dark:bg-neutral-900">
+    <View className="flex-1 w-full max-w-3xl mx-auto bg-background">
       <ScrollView
         className="pb-24"
         refreshControl={
@@ -108,7 +108,7 @@ const LoadingComponent = ({
   refetch: () => void;
 }) => {
   return (
-    <View className="flex-1 w-full max-w-3xl mx-auto p-2.5 bg-white dark:bg-neutral-900">
+    <View className="flex-1 w-full max-w-3xl mx-auto p-2.5 bg-background">
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
@@ -131,7 +131,7 @@ const LoadingComponent = ({
           </View>
         </View>
       </ScrollView>
-      <View className="bg-neutral-50 dark:bg-neutral-800 absolute bottom-0 left-0 right-0 z-10 p-4">
+      <View className="bg-surface-secondary absolute bottom-0 left-0 right-0 z-10 p-4">
         <Skeleton className="h-12 w-full max-w-3xl mx-auto rounded-full" />
       </View>
     </View>
