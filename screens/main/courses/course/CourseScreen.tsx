@@ -2,10 +2,10 @@ import { AppText } from "@/components/AppText";
 import BackButton from "@/components/BackButton";
 import { Icon } from "@/components/Icon";
 import Image from "@/components/Image";
+import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import CourseTimeline from "@/features/courses/components/CourseTimeline";
 import { useCourseDetails } from "@/features/courses/courses.hooks";
 import { queryClient } from "@/providers/QueryProvider";
-import { env } from "@/utils/env";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Skeleton } from "heroui-native";
 import { ErrorComponent } from "@/components/ErrorComponent";
@@ -16,6 +16,7 @@ import {
   Pressable,
   RefreshControl,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from "react-native";
 import Animated, {
@@ -29,7 +30,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUniwind } from "uniwind";
 
 const NAV_HEIGHT = 44;
-const IMAGE_HEIGHT = 200;
 
 const CourseScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
@@ -37,6 +37,8 @@ const CourseScreen = () => {
   const { theme } = useUniwind();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { height: screenHeight } = useWindowDimensions();
+  const IMAGE_HEIGHT = Math.round(screenHeight * 0.28);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const { data, isLoading, isError, error } = useCourseDetails(
@@ -219,18 +221,22 @@ const CourseScreen = () => {
         <Animated.View
           style={[
             styles.imageHeader,
-            { backgroundColor: isDark ? "#333" : "#D0D0D0" },
+            {
+              height: IMAGE_HEIGHT,
+              backgroundColor: isDark ? "#333" : "#D0D0D0",
+            },
             headerAnimatedStyle,
           ]}
         >
           {!isLoading && (
-            <Image
-              source={
-                data?.subjectId.subjectPhoto
-                  ? {
-                      uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${data.subjectId.subjectPhoto}`,
-                    }
-                  : require("@/assets/placeholder/bg-placeholder.png")
+            <AttachmentImage
+              path={data?.subjectId.subjectPhoto}
+              fallback={
+                <Image
+                  source={require("@/assets/placeholder/bg-placeholder.png")}
+                  style={StyleSheet.absoluteFill}
+                  contentFit="cover"
+                />
               }
               style={StyleSheet.absoluteFill}
               contentFit="cover"
@@ -274,7 +280,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imageHeader: {
-    height: IMAGE_HEIGHT,
     overflow: "hidden",
   },
   content: {

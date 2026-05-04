@@ -1,5 +1,6 @@
 import { AppText } from "@/components/AppText";
 import Image from "@/components/Image";
+import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import { FlashList } from "@shopify/flash-list";
 import { Link } from "expo-router";
 import { Card, Skeleton } from "heroui-native";
@@ -11,7 +12,6 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { env } from "@/utils/env";
 import { useStudentCourses } from "../courses.hooks";
 import { StudentEnrolledCourses } from "../courses.types";
 import EmptyState from "@/components/EmptyState";
@@ -82,13 +82,14 @@ const Course = ({
       <Pressable>
         <Card className="p-0 shadow-none rounded-xl">
           <Card.Body className="gap-2.5">
-            <Image
-              source={
-                item.subjectId.subjectPhoto
-                  ? {
-                      uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${item.subjectId.subjectPhoto}`,
-                    }
-                  : require("@/assets/placeholder/bg-placeholder.png")
+            <AttachmentImage
+              path={item.subjectId.subjectPhoto}
+              fallback={
+                <Image
+                  source={require("@/assets/placeholder/bg-placeholder.png")}
+                  className="rounded-t-xl w-full aspect-video"
+                  contentFit="cover"
+                />
               }
               className="rounded-t-xl w-full aspect-video"
               contentFit="cover"

@@ -12,8 +12,9 @@ import { AppText } from "@/components/AppText";
 import { FlashList } from "@shopify/flash-list";
 import { Card, Skeleton } from "heroui-native";
 import { Link } from "expo-router";
+import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import Image from "@/components/Image";
-import { env } from "@/utils/env";
+
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
 import { Subject } from "@/powersync/schema";
@@ -77,13 +78,14 @@ const TeachingCourse = ({
       <Pressable>
         <Card className="p-0 shadow-none rounded-xl">
           <Card.Body className="gap-2.5">
-            <Image
-              source={
-                item.subjectPhoto
-                  ? {
-                      uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${item.subjectPhoto}`,
-                    }
-                  : require("@/assets/placeholder/bg-placeholder.png")
+            <AttachmentImage
+              path={item.subjectPhoto}
+              fallback={
+                <Image
+                  source={require("@/assets/placeholder/bg-placeholder.png")}
+                  className="rounded-t-xl w-full aspect-video"
+                  contentFit="cover"
+                />
               }
               className="rounded-t-xl w-full aspect-video"
               contentFit="cover"

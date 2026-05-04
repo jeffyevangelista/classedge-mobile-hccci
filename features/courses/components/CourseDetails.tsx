@@ -4,21 +4,22 @@ import { useLocalSearchParams } from "expo-router";
 import { useCourseDetails, useCourseStudents } from "../courses.hooks";
 import { FlashList } from "@shopify/flash-list";
 import Image from "@/components/Image";
+import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppText } from "@/components/AppText";
-import { env } from "@/utils/env";
 import { Icon } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
 import { Skeleton } from "heroui-native";
 
 const CourseDetails = () => {
-  const { courseId } = useLocalSearchParams();
+  const { classroomId, courseId } = useLocalSearchParams();
+  const enrollmentId = (classroomId ?? courseId) as string;
 
   const {
     data: courseDetails,
     isLoading: isLoadingDetails,
     refetch: refetchDetails,
-  } = useCourseDetails(courseId as string);
+  } = useCourseDetails(enrollmentId);
   const {
     data: students,
     isLoading: isLoadingStudents,
@@ -217,13 +218,14 @@ const CourseDetailsHeader = ({ courseDetails }: { courseDetails: any }) => {
   return (
     <>
       <View className="relative mt-2.5">
-        <Image
-          source={
-            courseDetails?.subjectId?.subjectPhoto
-              ? {
-                  uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${courseDetails?.subjectId?.subjectPhoto}`,
-                }
-              : require("@/assets/placeholder/bg-placeholder.png")
+        <AttachmentImage
+          path={courseDetails?.subjectId?.subjectPhoto}
+          fallback={
+            <Image
+              source={require("@/assets/placeholder/bg-placeholder.png")}
+              className="rounded-2xl w-full aspect-video"
+              contentFit="cover"
+            />
           }
           className="rounded-2xl w-full aspect-video"
           contentFit="cover"
@@ -257,17 +259,18 @@ const CourseDetailsHeader = ({ courseDetails }: { courseDetails: any }) => {
   );
 };
 
-const StudentItem = ({ student, index }: { student: any; index: number }) => {
+const StudentItem = ({ student }: { student: any; index: number }) => {
   return (
     <View className="flex-row items-center bg-white dark:bg-gray-800 rounded-xl p-3 mb-2 border border-gray-100 dark:border-gray-700 mx-1">
       <View className="relative">
-        <Image
-          source={
-            student?.studentPhoto
-              ? {
-                  uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${student.studentPhoto}`,
-                }
-              : require("@/assets/placeholder/avatar-placeholder.png")
+        <AttachmentImage
+          path={student?.studentPhoto}
+          fallback={
+            <Image
+              source={require("@/assets/placeholder/avatar-placeholder.png")}
+              className="w-12 h-12 rounded-full"
+              contentFit="cover"
+            />
           }
           className="w-12 h-12 rounded-full"
           contentFit="cover"
