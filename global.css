@@ -16,3 +16,101 @@
   --font-semibold: "Poppins-SemiBold";
   --font-bold: "Poppins-Bold";
 }
+
+@layer theme {
+  :root {
+    @variant light {
+      /* Royal Azure — Light */
+      --background: #ffffff;
+      --foreground: #0f172a;
+      --muted: #64748b;
+
+      --surface: #ffffff;
+      --surface-foreground: #0f172a;
+
+      --surface-secondary: #f8fafc;
+      --surface-secondary-foreground: #0f172a;
+
+      --surface-tertiary: #f1f5f9;
+      --surface-tertiary-foreground: #0f172a;
+
+      --overlay: #ffffff;
+      --overlay-foreground: #0f172a;
+
+      --default: #f1f5f9;
+      --default-foreground: #0f172a;
+
+      --accent: #2563eb;
+      --accent-foreground: #ffffff;
+
+      --field-background: #ffffff;
+      --field-foreground: #0f172a;
+      --field-placeholder: #94a3b8;
+      --field-border: #e2e8f0;
+
+      --success: #15803d;
+      --success-foreground: #ffffff;
+
+      --warning: #b45309;
+      --warning-foreground: #ffffff;
+
+      --danger: #b91c1c;
+      --danger-foreground: #ffffff;
+
+      --segment: #ffffff;
+      --segment-foreground: #0f172a;
+
+      --border: #e2e8f0;
+      --separator: #cbd5e1;
+      --focus: var(--accent);
+      --link: #2563eb;
+    }
+
+    @variant dark {
+      /* Royal Azure — Dark */
+      --background: #0b1220;
+      --foreground: #f1f5f9;
+      --muted: #94a3b8;
+
+      --surface: #111a2e;
+      --surface-foreground: #f1f5f9;
+
+      --surface-secondary: #1e293b;
+      --surface-secondary-foreground: #f1f5f9;
+
+      --surface-tertiary: #334155;
+      --surface-tertiary-foreground: #f1f5f9;
+
+      --overlay: #1e293b;
+      --overlay-foreground: #f1f5f9;
+
+      --default: #1e293b;
+      --default-foreground: #f1f5f9;
+
+      --accent: #3b82f6;
+      --accent-foreground: #ffffff;
+
+      --field-background: #1e293b;
+      --field-foreground: #f1f5f9;
+      --field-placeholder: #64748b;
+      --field-border: #334155;
+
+      --success: #22c55e;
+      --success-foreground: #052e16;
+
+      --warning: #f59e0b;
+      --warning-foreground: #1c1917;
+
+      --danger: #ef4444;
+      --danger-foreground: #ffffff;
+
+      --segment: #334155;
+      --segment-foreground: #f1f5f9;
+
+      --border: #1e293b;
+      --separator: #334155;
+      --focus: var(--accent);
+      --link: #60a5fa;
+    }
+  }
+}
