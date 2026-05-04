@@ -17,7 +17,7 @@ This builds on the Royal Azure theme already merged in commit `88a4e5f`.
 ## Non-goals
 
 - Inner-page Stack headers on Calendar, Notifications, Teaching, Oversight tabs (out of scope; would unify the second header pattern — deferred).
-- `utils/colors.ts` `primary[]` migration (out of scope; orphan ramp still used by `ScheduleComponent.tsx` and `LoginScreen.tsx`).
+- Other consumers of `utils/colors.ts` `primary[]` (e.g., `LoginScreen.tsx`). `ScheduleComponent.tsx` is migrated as part of this work because it renders on the Home tab and reads visibly off-theme against the new chrome.
 - Tab bar layout/animation changes — keep the existing `Animated.View` insets-aware wrapper.
 - TabsHeader content changes (greeting + name + sync + avatar layout untouched).
 
@@ -101,6 +101,21 @@ Optional: introduce `variant?: "background" | "surface"` prop. Default `"backgro
 
 The existing `Animated.View` wrapper in `(tabs)/_layout.tsx` already paints the safe area below the tab bar with `backgroundColor: tabBarBg`. After the token swap, this automatically becomes the surface color. No layout changes needed.
 
+### 7. ScheduleComponent (Home tab) — token migration
+
+The two-card schedule widget on the Home tab currently uses the legacy `colors.primary[*]` ramp + manual `useColorScheme()` branching for every color. It renders on top of the new chrome and looks visibly off-theme. Migrate it to HeroUI semantic tokens via `className`, dropping `useColorScheme` and `colors` imports entirely. The chip ("time" / "Up Next" pill) is preserved — it just adopts theme tokens.
+
+Four-state mapping (kept simple):
+
+| State | Card | Label | Body | Chip bg | Chip text |
+|---|---|---|---|---|---|
+| **Now — has currentClass** | `bg-accent` | `text-accent-foreground/70` | `text-accent-foreground` | `bg-white/15` | `text-accent-foreground` |
+| **Now — no currentClass** | `bg-surface-secondary` | `text-muted` | `text-foreground` | `bg-default` | `text-muted` |
+| **Up Next — has nextClass** | `bg-accent-soft border border-border` | `text-accent` | `text-foreground` | `bg-default` | `text-accent` |
+| **Up Next — no nextClass** | `bg-surface-secondary border border-border` | `text-muted` | `text-muted` | `bg-default` | `text-muted` |
+
+`bg-white/15` translucent chip on solid accent is the only opacity-modifier in the migration; the codebase has prior precedent (`bg-blue-400/15` was used in `NotificationList` before migration).
+
 ## Files changed
 
 | File | Change |
@@ -108,6 +123,7 @@ The existing `Animated.View` wrapper in `(tabs)/_layout.tsx` already paints the 
 | `app/(main)/(tabs)/_layout.tsx` | Replace hardcoded hex with `useThemeColor` calls; add active/inactive tints; add hairline tab bar top border; set `headerStyle.backgroundColor`. |
 | `components/TabsHeader.tsx` | Swap `bg-white dark:bg-neutral-900` → `bg-surface`; add `border-b border-border`; swap raw slate text classes → `text-muted` / `text-foreground`. |
 | `components/screen.tsx` | Default `className` includes `bg-background`. Existing per-screen overrides still win via `twMerge`. |
+| `features/announcements/components/ScheduleComponent.tsx` | Drop `colors.primary[*]` and `useColorScheme`. Move inline `style={{ backgroundColor / color }}` to `className`. The two cards (Now / Up Next) and their inner chips/labels follow a four-state mapping table (in-scope addition). |
 
 No other files in scope.
 
@@ -135,4 +151,5 @@ No other files in scope.
 - Active tab uses accent tint with the existing filled-glyph treatment; no separate indicator pill.
 - `components/TabsHeader.tsx` uses `bg-surface` + `border-b border-border` and `text-foreground` / `text-muted` for typography.
 - `components/screen.tsx` default applies `bg-background`. Existing screens with explicit bg classes still render correctly.
+- `features/announcements/components/ScheduleComponent.tsx` no longer imports `colors` or `useColorScheme`; all colors come from `className` with semantic tokens; the four-state mapping above is implemented.
 - Manual visual verification passes in both light and dark mode.
