@@ -26,7 +26,6 @@ const MainLayout = () => {
           options={{
             headerShown: true,
             headerTitle: "",
-            headerShadowVisible: false,
             headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
           }}
           name="assessment/[assessmentId]/index"
@@ -35,7 +34,6 @@ const MainLayout = () => {
           options={{
             headerShown: true,
             headerTitle: "",
-            headerShadowVisible: false,
             headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
           }}
           name="material/[materialId]/index"
@@ -44,7 +42,6 @@ const MainLayout = () => {
           options={{
             headerShown: true,
             headerTitle: "",
-            headerShadowVisible: false,
             headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
           }}
           name="attempt/[attemptId]/index"
@@ -53,7 +50,6 @@ const MainLayout = () => {
           options={{
             headerShown: true,
             headerTitle: "",
-            headerShadowVisible: false,
             headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
           }}
           name="lesson/[lessonId]/index"
@@ -62,7 +58,6 @@ const MainLayout = () => {
           options={{
             headerShown: true,
             headerTitle: "",
-            headerShadowVisible: false,
             headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
           }}
           name="activity/[activityId]/index"
