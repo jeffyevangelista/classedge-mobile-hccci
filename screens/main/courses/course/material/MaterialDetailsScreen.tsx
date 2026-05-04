@@ -18,7 +18,7 @@ import { useCourseMaterial } from "@/features/courses/courses.hooks";
 import { useLocalSearchParams } from "expo-router";
 import { AppText } from "@/components/AppText";
 import Screen from "@/components/screen";
-import { Skeleton } from "heroui-native";
+import { Skeleton, useThemeColor } from "heroui-native";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -446,6 +446,7 @@ const IFrameViewer = ({ html }: { html: string }) => {
 
 const LinkCard = ({ url }: { url: string }) => {
   const display = url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const themeColorAccent = useThemeColor("accent");
 
   return (
     <TouchableOpacity
@@ -454,7 +455,7 @@ const LinkCard = ({ url }: { url: string }) => {
       className="flex-row items-center gap-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl px-4 py-3"
     >
       <View className="w-10 h-10 rounded-lg bg-accent-soft items-center justify-center shrink-0">
-        <Icon name="LinkIcon" size={20} color="#3b82f6" />
+        <Icon name="LinkIcon" size={20} color={themeColorAccent} />
       </View>
       <AppText
         numberOfLines={2}
