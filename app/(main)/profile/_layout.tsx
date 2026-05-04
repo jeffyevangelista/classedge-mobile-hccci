@@ -1,14 +1,11 @@
 import BackButton from "@/components/BackButton";
-import { colors } from "@/utils/colors";
 import { Stack } from "expo-router";
+import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 
 const ProfileLayout = () => {
+  const headerOptions = useThemedHeaderOptions();
   return (
-    <Stack
-      screenOptions={{
-        headerShadowVisible: false,
-      }}
-    >
+    <Stack screenOptions={headerOptions}>
       <Stack.Screen
         name="index"
         options={{

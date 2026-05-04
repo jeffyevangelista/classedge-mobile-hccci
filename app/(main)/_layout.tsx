@@ -4,12 +4,14 @@ import { SyncSheetProvider } from "@/features/sync/SyncSheetContext";
 import SyncGate from "@/features/sync/components/SyncGate";
 import SyncSheet from "@/features/sync/components/SyncSheet";
 import { Stack } from "expo-router";
+import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 
 const MainLayout = () => {
+  const headerOptions = useThemedHeaderOptions();
   return (
     <SyncSheetProvider>
       <SyncGate>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack screenOptions={{ ...headerOptions, headerShown: false }}>
         <Stack.Screen
           name="(tabs)"
           options={{

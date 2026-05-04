@@ -1,12 +1,14 @@
 import { Stack, useLocalSearchParams } from "expo-router";
 import BackButton from "@/components/BackButton";
+import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 
 const SubjectLayout = () => {
   const { subjectId } = useLocalSearchParams();
+  const headerOptions = useThemedHeaderOptions();
   return (
     <Stack
       screenOptions={{
-        headerShadowVisible: false,
+        ...headerOptions,
         headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
         headerTitle: "",
       }}

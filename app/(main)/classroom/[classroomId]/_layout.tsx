@@ -2,14 +2,16 @@ import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import BackButton from "@/components/BackButton";
 import { Platform, Pressable } from "react-native";
 import { Icon } from "@/components/Icon";
+import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 
 const ClassroomLayout = () => {
   const { classroomId } = useLocalSearchParams();
+  const headerOptions = useThemedHeaderOptions();
 
   return (
     <Stack
       screenOptions={{
-        headerShadowVisible: false,
+        ...headerOptions,
         headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
         headerTitle: "",
       }}
