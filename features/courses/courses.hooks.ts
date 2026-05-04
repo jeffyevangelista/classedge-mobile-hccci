@@ -14,7 +14,7 @@ import {
 } from "@tanstack/react-query";
 
 export const useStudentCourses = () => {
-  const { authUser } = useStore.getState();
+  const authUser = useStore((state) => state.authUser);
 
   return useQuery({
     queryKey: ["student", authUser?.id, "courses"],

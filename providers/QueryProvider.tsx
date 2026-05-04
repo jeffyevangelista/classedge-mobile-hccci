@@ -8,6 +8,10 @@ export const queryClient = new QueryClient({
     queries: {
       gcTime: 1000 * 60 * 60 * 24, // 24 hours
       staleTime: 1000 * 60 * 5, // 5 minutes
+      networkMode: "always", // always read from local SQLite regardless of connectivity
+    },
+    mutations: {
+      networkMode: "always",
     },
   },
 });
