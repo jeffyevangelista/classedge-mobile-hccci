@@ -122,7 +122,7 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
             <Icon
               name="CalendarIcon"
               size={20}
-              className="text-blue-600 dark:text-blue-400"
+              className="text-accent"
             />
           </View>
           <View className="flex-1">
@@ -150,7 +150,7 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
               <Icon
                 name="MapPinIcon"
                 size={20}
-                className="text-blue-600 dark:text-blue-400"
+                className="text-accent"
               />
             </View>
             <View className="flex-1">
@@ -174,7 +174,7 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
               <Icon
                 name="UserIcon"
                 size={20}
-                className="text-blue-600 dark:text-blue-400"
+                className="text-accent"
               />
             </View>
             <View className="flex-1">
@@ -197,7 +197,7 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
             <Icon
               name="ClockIcon"
               size={20}
-              className="text-blue-600 dark:text-blue-400"
+              className="text-accent"
             />
           </View>
           <View className="flex-1">

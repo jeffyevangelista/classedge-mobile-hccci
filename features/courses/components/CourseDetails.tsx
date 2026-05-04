@@ -9,7 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
-import { Skeleton } from "heroui-native";
+import { Skeleton, useThemeColor } from "heroui-native";
 
 const CourseDetails = () => {
   const { classroomId, courseId } = useLocalSearchParams();
@@ -111,6 +111,8 @@ const formatTime = (time: string) => {
 const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
+  const themeColorAccent = useThemeColor("accent");
+
   const instructorName = useMemo(() => {
     const first = courseDetails?.subjectId?.assignTeacherId?.firstName;
     const last = courseDetails?.subjectId?.assignTeacherId?.lastName;
@@ -129,8 +131,8 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
       {/* Instructor & Room Row */}
       <View className="flex-row gap-3">
         <View className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4">
-          <View className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900 items-center justify-center mb-3">
-            <Icon name="UserCircleIcon" size={20} color="#3b82f6" />
+          <View className="w-9 h-9 rounded-full bg-accent-soft items-center justify-center mb-3">
+            <Icon name="UserCircleIcon" size={20} color={themeColorAccent} />
           </View>
           <AppText className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">
             Instructor

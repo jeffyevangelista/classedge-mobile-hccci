@@ -18,7 +18,7 @@ const ThemeToggleButton = () => {
         <Icon
           name={isDark ? "MoonIcon" : "SunIcon"}
           size={28}
-          className="text-blue-500"
+          className="text-accent"
         />
         <AppText
           weight="semibold"

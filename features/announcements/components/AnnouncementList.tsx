@@ -126,7 +126,7 @@ const EventCard = ({
                 <Icon
                   name="MapPinIcon"
                   size={16}
-                  className="text-blue-600 dark:text-blue-400"
+                  className="text-accent"
                 />
                 <AppText>{event.location}</AppText>
               </View>
@@ -134,7 +134,7 @@ const EventCard = ({
                 <Icon
                   name="ClockIcon"
                   size={16}
-                  className="text-blue-600 dark:text-blue-400"
+                  className="text-accent"
                 />
                 <AppText className="text-xs text-gray-500 dark:text-gray-400">
                   {formatDate(event.startDate)} -{formatTime(event.time)}
