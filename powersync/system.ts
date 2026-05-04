@@ -36,6 +36,24 @@ export const logDbPath = () => {
 };
 
 export const setupPowerSync = async () => {
+  await powersync.execute(`
+    CREATE TABLE IF NOT EXISTS attachments_local (
+      id TEXT PRIMARY KEY,
+      resource TEXT NOT NULL,
+      source_table TEXT NOT NULL,
+      source_col TEXT NOT NULL,
+      priority INTEGER NOT NULL,
+      state TEXT NOT NULL,
+      local_uri TEXT,
+      size_bytes INTEGER,
+      error TEXT,
+      retry_count INTEGER NOT NULL DEFAULT 0,
+      updated_at TEXT NOT NULL
+    );
+  `);
+  await powersync.execute(
+    `CREATE INDEX IF NOT EXISTS idx_attachments_state_priority ON attachments_local (state, priority);`,
+  );
   const connector = new Connector();
   powersync.connect(connector);
 };
