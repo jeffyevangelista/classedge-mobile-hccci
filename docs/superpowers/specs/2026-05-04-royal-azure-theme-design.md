@@ -107,26 +107,41 @@ Structure mirrors `node_modules/heroui-native/src/styles/variables.css` — same
 
 ### 2. Hardcoded blue color replacements
 
-These files use raw Tailwind blue classes (`text-blue-500`, `text-blue-600`, `bg-blue-500`, `bg-blue-600`, with optional `dark:` variants). Replace each with the corresponding semantic token so the theme controls them:
+These files use raw Tailwind blue classes. Replace each with the corresponding semantic token so the theme controls them. HeroUI auto-derives `accent-soft` via `color-mix(in oklab, var(--accent) 15%, transparent)`, so tinted backgrounds map to `bg-accent-soft`.
+
+**Foreground / accent text and solid accent backgrounds → `text-accent` / `bg-accent`:**
 
 | File | Line | Current | Replace with |
 |------|-----:|---------|--------------|
 | `screens/profile/ProfileScreen.tsx` | 72 | `text-blue-500` | `text-accent` |
-| `features/auth/LogoutButton.tsx` | 52 | `text-blue-500` | `text-accent` |
-| `features/auth/ResyncButton.tsx` | 57 | `text-blue-500` | `text-accent` |
-| `features/profile/ThemeToggleButton.tsx` | 21 | `text-blue-500` | `text-accent` |
-| `features/classroom/StudentScoringList.tsx` | 182 | `text-blue-500` | `text-accent` |
+| `features/auth/components/LogoutButton.tsx` | 52 | `text-blue-500` | `text-accent` |
+| `features/auth/components/ResyncButton.tsx` | 57 | `text-blue-500` | `text-accent` |
+| `features/profile/components/ThemeToggleButton.tsx` | 21 | `text-blue-500` | `text-accent` |
+| `features/classroom/components/StudentScoringList.tsx` | 182 | `text-blue-500` | `text-accent` |
 | `components/EmptyState.tsx` | 21 | `text-blue-500 dark:text-blue-400` | `text-accent` |
 | `components/NoDataFallback.tsx` | 27 | `text-blue-500 dark:text-blue-400` | `text-accent` |
 | `components/NoDataFallback.tsx` | 45 | `bg-blue-600 dark:bg-blue-500` | `bg-accent` |
-| `features/notifications/NotificationList.tsx` | 111 | `bg-blue-600` (unread dot) | `bg-accent` |
-| `features/announcements/AnnouncementList.tsx` | 129 | `text-blue-600 dark:text-blue-400` | `text-accent` |
-| `features/announcements/AnnouncementList.tsx` | 137 | `text-blue-600 dark:text-blue-400` | `text-accent` |
-| `features/calendar/EventDetailModal.tsx` | 125 | `text-blue-600 dark:text-blue-400` | `text-accent` |
-| `features/calendar/EventDetailModal.tsx` | 153 | `text-blue-600 dark:text-blue-400` | `text-accent` |
-| `features/calendar/EventDetailModal.tsx` | 177 | `text-blue-600 dark:text-blue-400` | `text-accent` |
-| `features/calendar/EventDetailModal.tsx` | 200 | `text-blue-600 dark:text-blue-400` | `text-accent` |
+| `features/notifications/components/NotificationList.tsx` | 111 | `bg-blue-600` (unread dot) | `bg-accent` |
+| `features/announcements/components/AnnouncementList.tsx` | 129 | `text-blue-600 dark:text-blue-400` | `text-accent` |
+| `features/announcements/components/AnnouncementList.tsx` | 137 | `text-blue-600 dark:text-blue-400` | `text-accent` |
+| `features/calendar/components/EventDetailModal.tsx` | 125 | `text-blue-600 dark:text-blue-400` | `text-accent` |
+| `features/calendar/components/EventDetailModal.tsx` | 153 | `text-blue-600 dark:text-blue-400` | `text-accent` |
+| `features/calendar/components/EventDetailModal.tsx` | 177 | `text-blue-600 dark:text-blue-400` | `text-accent` |
+| `features/calendar/components/EventDetailModal.tsx` | 200 | `text-blue-600 dark:text-blue-400` | `text-accent` |
 | `screens/main/courses/course/material/MaterialDetailsScreen.tsx` | 461 | `text-blue-600 dark:text-blue-400` | `text-accent` |
+
+**Tinted backgrounds and accent borders → `bg-accent-soft` / `border-accent`:**
+
+| File | Line | Current | Replace with |
+|------|-----:|---------|--------------|
+| `components/EmptyState.tsx` | 17 | `bg-blue-50 dark:bg-blue-950` | `bg-accent-soft` |
+| `components/NoDataFallback.tsx` | 23 | `bg-blue-50 dark:bg-blue-950` | `bg-accent-soft` |
+| `features/notifications/components/NotificationList.tsx` | 88 | `bg-blue-400/15 dark:bg-blue-400/10` (unread row) | `bg-accent-soft` |
+| `screens/main/courses/course/material/MaterialDetailsScreen.tsx` | 456 | `bg-blue-100 dark:bg-blue-900/50` | `bg-accent-soft` |
+| `features/courses/components/CourseDetails.tsx` | 132 | `bg-blue-100 dark:bg-blue-900` | `bg-accent-soft` |
+| `features/profile/components/HeaderComponent.tsx` | 19 | `border-blue-500` (avatar ring) | `border-accent` |
+
+**Note on `text-blue-100`** — `features/notifications/components/NotificationList.tsx:104` has a `text-blue-100` for the unread timestamp label (no `dark:` variant). It's intentionally a fixed light-blue against the tinted unread row background. Leaving as-is; can revisit if it reads poorly post-theme-swap.
 
 Already correctly using semantic tokens (no change needed):
 - `features/auth/components/MSAuthButton.tsx`, `LoginForm.tsx`, `OTPVerificationForm.tsx`, `ForgotPasswordForm.tsx`, `PasswordResetForm.tsx` — use `useThemeColor`
@@ -158,6 +173,6 @@ Already correctly using semantic tokens (no change needed):
 ## Acceptance criteria
 
 - `global.css` contains the full token override block for both light and dark.
-- All 16 hardcoded blue usages in the table above are replaced with semantic tokens.
+- All 22 hardcoded blue usages in the tables above (16 accent + 6 soft/border) are replaced with semantic tokens.
 - Manual visual check passes in both modes on at least one device build.
 - `git grep -E "text-blue-[0-9]|bg-blue-[0-9]"` returns no results in `app/`, `components/`, `features/`, `screens/` after the change.
