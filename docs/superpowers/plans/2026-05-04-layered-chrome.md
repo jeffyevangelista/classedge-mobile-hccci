@@ -1,0 +1,582 @@
+# Layered Chrome Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Re-theme the Home tab header, the bottom tab bar (active/inactive tints + indicator pill + surfaces), and the default screen background using HeroUI Native semantic tokens, establishing a layered-depth visual hierarchy (recessed body, raised chrome).
+
+**Architecture:** Pure token + minor structural changes across four files. No new components, no new providers. The `TabIcon` component grows a 3×24 indicator pill below the icon. The `Screen` wrapper gains a default `bg-background` so screens own their background explicitly. Tab bar config swaps hardcoded hex for `useThemeColor(...)` calls.
+
+**Tech Stack:** React Native 0.81, Expo Router 6, React Navigation Tabs, HeroUI Native 1.0.0, Uniwind (Tailwind v4 for RN), Phosphor icons.
+
+**Spec:** `docs/superpowers/specs/2026-05-04-layered-chrome-design.md`
+
+---
+
+## File Structure
+
+**Modified:**
+- `components/TabIcon.tsx` — wrap icon in vertical stack; add indicator pill (3×24px, `bg-accent` when focused, transparent otherwise)
+- `components/TabsHeader.tsx` — swap `bg-white dark:bg-neutral-900` → `bg-surface`; add hairline bottom border; swap raw slate text classes → `text-foreground` / `text-muted`. Apply to both the rendered header and the skeleton variant.
+- `components/screen.tsx` — default className includes `bg-background`. Existing per-screen `bg-*` overrides keep winning via `twMerge`.
+- `app/(main)/(tabs)/_layout.tsx` — replace hardcoded `tabBarBg` hex with `useThemeColor("surface")`; add active/inactive tints, hairline tab bar top border, and `headerStyle.backgroundColor` (matches tab bar).
+
+**Not modified:**
+- Inner-page Stack headers on Calendar/Notifications/Teaching/Oversight (out of scope per spec).
+- Per-screen `bg-white dark:bg-neutral-900` overrides (out of scope per spec — they keep working as overrides).
+- `utils/colors.ts` `primary[]` palette (out of scope per spec).
+
+---
+
+## Branching
+
+We're on `main` after the Royal Azure merge. Create a feature branch before starting.
+
+```bash
+git checkout main
+git pull --ff-only
+git checkout -b feat/layered-chrome
+```
+
+All tasks below land commits on `feat/layered-chrome`.
+
+---
+
+## Task 1: Add tab indicator pill to `TabIcon`
+
+**Files:**
+- Modify: `components/TabIcon.tsx`
+
+**Why:** Active tabs currently rely on color alone for focus communication. A 3×24px pill below the icon makes the active state unambiguous and accessible. The pill renders as transparent when inactive so the icon does not shift vertically on focus changes (no layout jank).
+
+**Reference (full current file content for context):**
+```tsx
+import { Icon, PhosphorIcon } from "./Icon";
+
+const ICON_SIZE = 28;
+
+interface TabIconProps {
+  focused: boolean;
+  color: string;
+  // Phosphor icons share the same Icon type
+  IconElement: PhosphorIcon;
+}
+
+const TabIcon = ({ focused, color, IconElement }: TabIconProps) => {
+  return (
+    <Icon
+      name={IconElement}
+      color={color}
+      size={ICON_SIZE}
+      // Toggle between 'regular' (outline) and 'fill' (solid)
+      weight={focused ? "fill" : "regular"}
+    />
+  );
+};
+
+export default TabIcon;
+```
+
+> **Note on the existing pre-existing TS error:** `import { Icon, PhosphorIcon } from "./Icon"` — `PhosphorIcon` is not exported from `./Icon`. This is a pre-existing type error on `main` (it survived the Royal Azure merge). The file in fact exports `IconName`, not `PhosphorIcon`. Do **not** fix the type error in this task; it's out of scope. If you want to fix it as a tiny side-cleanup, surface the change as a separate commit and tell the controller. For this task, keep the import line as-is to avoid scope creep.
+
+- [ ] **Step 1: Replace the contents of `components/TabIcon.tsx`**
+
+```tsx
+import { View } from "react-native";
+import { Icon, PhosphorIcon } from "./Icon";
+
+const ICON_SIZE = 28;
+
+interface TabIconProps {
+  focused: boolean;
+  color: string;
+  // Phosphor icons share the same Icon type
+  IconElement: PhosphorIcon;
+}
+
+const TabIcon = ({ focused, color, IconElement }: TabIconProps) => {
+  return (
+    <View className="items-center">
+      <Icon
+        name={IconElement}
+        color={color}
+        size={ICON_SIZE}
+        // Toggle between 'regular' (outline) and 'fill' (solid)
+        weight={focused ? "fill" : "regular"}
+      />
+      <View
+        className={`mt-1 h-[3px] w-6 rounded-full ${
+          focused ? "bg-accent" : "bg-transparent"
+        }`}
+      />
+    </View>
+  );
+};
+
+export default TabIcon;
+```
+
+The `View` from `react-native` is added to the imports. Everything else above the wrapper is unchanged.
+
+- [ ] **Step 2: Verify the file**
+
+Read `components/TabIcon.tsx`. Confirm:
+- `import { View } from "react-native";` is present
+- The icon is wrapped in `<View className="items-center">`
+- A second `<View>` renders below the icon with `mt-1 h-[3px] w-6 rounded-full` and the conditional `bg-accent` / `bg-transparent`
+- No other lines changed
+
+- [ ] **Step 3: Run TypeScript check on this file**
+
+```bash
+npx tsc --noEmit 2>&1 | grep -E "TabIcon" || echo "TabIcon clean"
+```
+
+Expected: prints `TabIcon clean`. If `TabIcon` appears, you introduced a new error — fix it before committing. (The pre-existing `PhosphorIcon` import error appears for the *file* but not the *line numbers we touched*; if it appears, confirm the message is still about `PhosphorIcon` not being exported from `./Icon` and not about your new code.)
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add components/TabIcon.tsx
+git commit -m "$(cat <<'EOF'
+feat(chrome): add accent indicator pill to active tab icon
+
+Wrap each TabIcon in a vertical stack with a 3x24 pill below the
+icon. The pill renders bg-accent when focused, transparent otherwise,
+so the icon does not shift on focus changes.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+EOF
+)"
+```
+
+---
+
+## Task 2: Re-theme `TabsHeader` to use surface tokens
+
+**Files:**
+- Modify: `components/TabsHeader.tsx`
+
+**Why:** The header currently uses `bg-white dark:bg-neutral-900`. The layered chrome design wants both light and dark modes to derive from `--surface`, and the header to have a hairline `--border` bottom edge. Text colors switch from raw slate scales to `text-foreground` / `text-muted` so they follow the theme.
+
+**Two views in the file** receive identical container changes: `TabsHeader` (rendered) and `TabsHeaderSkeleton` (loading state). Both have a top-level `<View>` with the same `style={{ paddingTop: insets.top }}` and a `bg-white dark:bg-neutral-900 px-5 pb-3 flex flex-row justify-between items-center` className.
+
+- [ ] **Step 1: Update both top-level container classNames**
+
+In `components/TabsHeader.tsx`, find both occurrences (lines 35–38 in `TabsHeader`, lines 73–75 in `TabsHeaderSkeleton`):
+
+```tsx
+className="bg-white dark:bg-neutral-900 px-5 pb-3 flex flex-row justify-between items-center"
+```
+
+Replace with (use `replace_all: true` since the string is identical in both spots):
+
+```tsx
+className="bg-surface px-5 pb-3 flex flex-row justify-between items-center border-b border-border"
+```
+
+- [ ] **Step 2: Update greeting text color**
+
+Find:
+```tsx
+<AppText className="text-xs text-gray-500 dark:text-gray-400">
+  {greeting}
+</AppText>
+```
+
+Replace with:
+```tsx
+<AppText className="text-xs text-muted">
+  {greeting}
+</AppText>
+```
+
+- [ ] **Step 3: Update name text color**
+
+Find:
+```tsx
+<AppText
+  weight="semibold"
+  className="text-2xl leading-tight dark:text-white"
+>
+```
+
+Replace with:
+```tsx
+<AppText
+  weight="semibold"
+  className="text-2xl leading-tight text-foreground"
+>
+```
+
+- [ ] **Step 4: Verify**
+
+Read `components/TabsHeader.tsx`. Confirm:
+- Both container `<View>` elements use `bg-surface ... border-b border-border` (no `bg-white dark:bg-neutral-900`)
+- Greeting uses `text-muted` (no `text-gray-500 dark:text-gray-400`)
+- Name uses `text-foreground` (no `dark:text-white`)
+- Skeleton's two `Skeleton` placeholder children are unchanged
+- Imports unchanged
+
+Then run a quick grep:
+
+```bash
+git grep -n "bg-white\|dark:bg-neutral-900\|text-gray-\|dark:text-gray\|dark:text-white" -- components/TabsHeader.tsx
+```
+
+Expected: no output. If there are still hits, finish the migration.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add components/TabsHeader.tsx
+git commit -m "$(cat <<'EOF'
+refactor(chrome): re-theme TabsHeader with surface tokens
+
+Replace bg-white/dark:bg-neutral-900 with bg-surface; add a hairline
+border-b border-border. Switch greeting and name typography to
+text-muted and text-foreground so they follow the theme. Apply to
+both the rendered TabsHeader and the TabsHeaderSkeleton loading state.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+EOF
+)"
+```
+
+---
+
+## Task 3: Default `Screen` background to `bg-background`
+
+**Files:**
+- Modify: `components/screen.tsx`
+
+**Why:** The `Screen` wrapper currently sets only `flex-1`. Whatever sits behind it bleeds through, making the body color depend on the navigator wrapper. Defaulting to `bg-background` makes screens explicit owners of their background. Existing per-screen `bg-white dark:bg-neutral-900` overrides keep working because `twMerge` resolves later classes first.
+
+**Reference (full current file content):**
+```tsx
+import { colors } from "@/utils/colors";
+import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { twMerge } from "tailwind-merge";
+
+type ScreenProps = {
+  children: React.ReactNode;
+  safeArea?: boolean;
+  className?: string;
+  withPadding?: boolean;
+} & React.ComponentProps<typeof View> &
+  React.ComponentProps<typeof SafeAreaView>;
+
+export default function Screen({
+  children,
+  safeArea = false,
+  className,
+  withPadding = false,
+  ...props
+}: ScreenProps) {
+  const combinedClasses = twMerge(`flex-1`, withPadding && "p-2.5", className);
+
+  const Container = safeArea ? SafeAreaView : View;
+  return (
+    <Container {...props} style={[props.style]} className={combinedClasses}>
+      {children}
+    </Container>
+  );
+}
+```
+
+> **Note on the unused import:** `colors` is imported but never used in this file. Don't fix it in this task — out of scope. If desired, surface as a follow-up.
+
+- [ ] **Step 1: Add `bg-background` to the default class string**
+
+Find:
+```tsx
+const combinedClasses = twMerge(`flex-1`, withPadding && "p-2.5", className);
+```
+
+Replace with:
+```tsx
+const combinedClasses = twMerge(
+  "flex-1 bg-background",
+  withPadding && "p-2.5",
+  className,
+);
+```
+
+`twMerge` resolves later classes first, so any caller passing `className="bg-white"` or `className="bg-neutral-900"` etc. keeps winning.
+
+- [ ] **Step 2: Verify**
+
+Read `components/screen.tsx`. Confirm:
+- `combinedClasses` includes `"flex-1 bg-background"` as its first argument
+- `withPadding` and `className` arguments are still passed in the same order
+- No other changes
+
+- [ ] **Step 3: Run a TS check**
+
+```bash
+npx tsc --noEmit 2>&1 | grep -E "screen\.tsx" || echo "screen.tsx clean"
+```
+
+Expected: `screen.tsx clean` (no new TS errors).
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add components/screen.tsx
+git commit -m "$(cat <<'EOF'
+refactor(chrome): default <Screen> to bg-background
+
+Make screens own their background explicitly via bg-background
+on the Screen wrapper. Existing per-screen bg-* overrides keep
+winning via twMerge precedence.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+EOF
+)"
+```
+
+---
+
+## Task 4: Theme the bottom tab bar via `useThemeColor`
+
+**Files:**
+- Modify: `app/(main)/(tabs)/_layout.tsx`
+
+**Why:** The tab bar currently hardcodes `tabBarBg = colorScheme === "dark" ? "#1c1c1e" : "#ffffff";`. This bypasses the theme. We replace with `useThemeColor` calls, add active/inactive tint colors, paint the safe-area gutter with the theme surface, set a hairline tab bar top border, and align the (mostly hidden) header with the same surface so any tab that opts back into the stock header is also themed.
+
+**Imports needed:**
+- `useThemeColor` from `heroui-native`
+- `StyleSheet` from `react-native` (for `StyleSheet.hairlineWidth`)
+
+- [ ] **Step 1: Add the new imports**
+
+Find:
+```tsx
+import { Platform, useColorScheme } from "react-native";
+```
+
+Replace with:
+```tsx
+import { Platform, StyleSheet, useColorScheme } from "react-native";
+```
+
+Find:
+```tsx
+import TabIcon from "@/components/TabIcon";
+```
+
+Add an import line right after the existing `heroui-native` consumers (if any in this file — there are none currently). The cleanest spot is right after the `import TabIcon ...` line:
+
+```tsx
+import TabIcon from "@/components/TabIcon";
+import { useThemeColor } from "heroui-native";
+```
+
+- [ ] **Step 2: Replace the hardcoded `tabBarBg` constant with theme hook calls**
+
+Find:
+```tsx
+const colorScheme = useColorScheme();
+const tabBarBg = colorScheme === "dark" ? "#1c1c1e" : "#ffffff";
+```
+
+Replace with:
+```tsx
+const colorScheme = useColorScheme();
+const surfaceColor = useThemeColor("surface");
+const borderColor = useThemeColor("border");
+const accentColor = useThemeColor("accent");
+const mutedColor = useThemeColor("muted");
+```
+
+> **Note:** `colorScheme` is no longer used by us, but the file may consume it elsewhere. Keep the existing `useColorScheme()` line — do not remove it.
+
+- [ ] **Step 3: Replace `tabBarBg` references in the animated style**
+
+Find:
+```tsx
+const animatedStyle = useAnimatedStyle(() => ({
+  flex: 1,
+  paddingBottom: bottomPadding.value,
+  backgroundColor: tabBarBg,
+}));
+```
+
+Replace with:
+```tsx
+const animatedStyle = useAnimatedStyle(() => ({
+  flex: 1,
+  paddingBottom: bottomPadding.value,
+  backgroundColor: surfaceColor,
+}));
+```
+
+> Reanimated note: `useAnimatedStyle` runs on the UI thread, but `surfaceColor` is a plain string captured by the JS-side closure — fine here. The hook re-runs on theme change, producing a new `animatedStyle` with the updated value, same as the original code did via `tabBarBg`.
+
+- [ ] **Step 4: Update `screenOptions` to use the theme tokens**
+
+Find:
+```tsx
+screenOptions={{
+  headerShown: false,
+  headerShadowVisible: false,
+  animation: "shift",
+  headerTitleAlign: "left",
+  headerTitleStyle: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: Platform.OS === "ios" ? 28 : 32,
+  },
+  tabBarLabelStyle: {
+    fontFamily: "Poppins-Medium",
+  },
+  tabBarStyle: {
+    elevation: 0,
+    shadowOpacity: 0,
+    borderTopWidth: 0,
+    backgroundColor: tabBarBg,
+  },
+  headerStyle: {
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+}}
+```
+
+Replace with:
+```tsx
+screenOptions={{
+  headerShown: false,
+  headerShadowVisible: false,
+  animation: "shift",
+  headerTitleAlign: "left",
+  headerTitleStyle: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: Platform.OS === "ios" ? 28 : 32,
+  },
+  tabBarLabelStyle: {
+    fontFamily: "Poppins-Medium",
+  },
+  tabBarActiveTintColor: accentColor,
+  tabBarInactiveTintColor: mutedColor,
+  tabBarStyle: {
+    elevation: 0,
+    shadowOpacity: 0,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: borderColor,
+    backgroundColor: surfaceColor,
+  },
+  headerStyle: {
+    elevation: 0,
+    shadowOpacity: 0,
+    backgroundColor: surfaceColor,
+  },
+}}
+```
+
+Two changes summary: (a) `borderTopWidth: 0` → `StyleSheet.hairlineWidth` + `borderTopColor: borderColor`; (b) `tabBarActiveTintColor` and `tabBarInactiveTintColor` are added; (c) `headerStyle.backgroundColor` is added; (d) `tabBarStyle.backgroundColor` value changes from `tabBarBg` to `surfaceColor`.
+
+- [ ] **Step 5: Verify**
+
+Read `app/(main)/(tabs)/_layout.tsx`. Confirm:
+- `import { useThemeColor } from "heroui-native";` is present
+- `import { Platform, StyleSheet, useColorScheme } from "react-native";` includes `StyleSheet`
+- The four `useThemeColor(...)` calls (`surfaceColor`, `borderColor`, `accentColor`, `mutedColor`) are declared exactly once each
+- `const tabBarBg = ...` is gone
+- The animated style uses `surfaceColor`
+- `tabBarStyle.borderTopWidth: StyleSheet.hairlineWidth` and `tabBarStyle.borderTopColor: borderColor` are set
+- `tabBarActiveTintColor: accentColor` and `tabBarInactiveTintColor: mutedColor` are set
+- `headerStyle.backgroundColor: surfaceColor` is set
+- All `<Tabs.Screen>` definitions are unchanged
+
+Run a grep to catch any leftover hardcoded chrome hex:
+
+```bash
+git grep -nE "#1c1c1e|#ffffff|tabBarBg" -- 'app/(main)/(tabs)/_layout.tsx'
+```
+
+Expected: no output.
+
+- [ ] **Step 6: TypeScript check (whole project, scoped to this file)**
+
+```bash
+npx tsc --noEmit 2>&1 | grep -E "app/\(main\)/\(tabs\)/_layout\.tsx" || echo "_layout.tsx clean"
+```
+
+Expected: `_layout.tsx clean`. If errors mention this file, fix them before committing.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add 'app/(main)/(tabs)/_layout.tsx'
+git commit -m "$(cat <<'EOF'
+feat(chrome): drive bottom tab bar from HeroUI theme tokens
+
+Replace the hardcoded tabBarBg hex with useThemeColor("surface").
+Add tabBarActiveTintColor (accent), tabBarInactiveTintColor (muted),
+a hairline tab bar top border in --border, and a matching surface
+background on headerStyle. The Animated.View safe-area gutter now
+also follows the theme via the same surface token.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+EOF
+)"
+```
+
+---
+
+## Task 5: Manual visual verification
+
+**Files:** none (verification only)
+
+**Why:** All four code changes are visual-by-nature. There is no automated test that catches "this looks wrong". A manual sweep is the only acceptance gate.
+
+- [ ] **Step 1: Build and launch**
+
+```bash
+npm run ios
+# or: npm run android
+```
+
+- [ ] **Step 2: Light-mode walkthrough**
+
+Ensure light mode is active (use the Profile → Dark Mode toggle if needed). Confirm:
+- **Home tab:** header background is white (`#ffffff`), with a 1px hairline at the bottom. Greeting and name typography use the theme (no leftover gray/neutral classes). Body between header and tab bar is slightly off-white (`#f1f5f9` from `bg-background` on screens that use `<Screen>`, or whatever screen-specific bg the screen sets).
+- **Tab bar:** background is white, with a hairline top border. The active tab's icon and label are accent blue (`#2563eb`); a 3×24 accent pill renders below the label. Inactive tabs are muted slate. Tap each tab and confirm the indicator moves correctly.
+- **Safe area below the tab bar:** matches the tab bar surface (white).
+
+- [ ] **Step 3: Dark-mode walkthrough**
+
+Toggle to dark mode. Confirm:
+- Header background is `#111a2e`, with a hairline border below in `#1e293b`.
+- Tab bar background is `#111a2e`, with a hairline top border in `#1e293b`.
+- Active tab icon, label, and pill are bright accent (`#3b82f6`).
+- Inactive tabs are slate-400 (`#94a3b8`).
+- Recessed body background is the deep blue-tinted `#0b1220` (slightly darker than surface).
+- Safe area gutter under the tab bar is `#111a2e` (matches tab bar).
+
+- [ ] **Step 4: Spot-check existing per-screen bg overrides**
+
+Open these screens and confirm they still render with their original backgrounds (not the new `bg-background` default leaking through):
+- `MaterialDetailsScreen` — explicitly sets `bg-white dark:bg-neutral-900` at `screens/main/courses/course/material/MaterialDetailsScreen.tsx:76`. Should look identical to before.
+- Any other screen that wraps in `<Screen className="bg-...">` — look unchanged.
+
+- [ ] **Step 5: Indicator pill no-shift check**
+
+Switch tabs rapidly. The icon's vertical position must not shift between focused and unfocused — the transparent pill in the inactive state preserves layout. If the icon jumps, the pill is missing in the inactive case (it should be `bg-transparent`, not omitted).
+
+- [ ] **Step 6: No commit needed**
+
+This task produces no code. If verification surfaces issues, those go into a follow-up commit with a clear message identifying what looked wrong.
+
+---
+
+## Done
+
+After Task 5, the spec's acceptance criteria are met:
+- [x] `app/(main)/(tabs)/_layout.tsx` no longer references `#ffffff` or `#1c1c1e`. All chrome colors come from `useThemeColor`.
+- [x] Tab bar shows active/inactive tints driven by theme tokens.
+- [x] Tab bar has a hairline top border driven by `--border`.
+- [x] A 3×24 pill renders below the active tab's label in `accent` color, transparent otherwise.
+- [x] `components/TabsHeader.tsx` uses `bg-surface` + `border-b border-border` and `text-foreground` / `text-muted`.
+- [x] `components/screen.tsx` defaults to `bg-background`. Existing screens with explicit bg classes still render correctly.
+- [x] Manual visual verification passes in both light and dark mode.
