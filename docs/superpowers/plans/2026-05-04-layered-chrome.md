@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Re-theme the Home tab header, the bottom tab bar (active/inactive tints + indicator pill + surfaces), and the default screen background using HeroUI Native semantic tokens, establishing a layered-depth visual hierarchy (recessed body, raised chrome).
+**Goal:** Re-theme the Home tab header, the bottom tab bar (active/inactive tints + surfaces), and the default screen background using HeroUI Native semantic tokens, establishing a layered-depth visual hierarchy (recessed body, raised chrome).
 
-**Architecture:** Pure token + minor structural changes across four files. No new components, no new providers. The `TabIcon` component grows a 3×24 indicator pill below the icon. The `Screen` wrapper gains a default `bg-background` so screens own their background explicitly. Tab bar config swaps hardcoded hex for `useThemeColor(...)` calls.
+**Architecture:** Pure token + minor structural changes across three files. No new components, no new providers. The `Screen` wrapper gains a default `bg-background` so screens own their background explicitly. Tab bar config swaps hardcoded hex for `useThemeColor(...)` calls. `TabIcon` is unchanged — color + filled-glyph weight handles focus differentiation.
 
 **Tech Stack:** React Native 0.81, Expo Router 6, React Navigation Tabs, HeroUI Native 1.0.0, Uniwind (Tailwind v4 for RN), Phosphor icons.
 
@@ -15,7 +15,6 @@
 ## File Structure
 
 **Modified:**
-- `components/TabIcon.tsx` — wrap icon in vertical stack; add indicator pill (3×24px, `bg-accent` when focused, transparent otherwise)
 - `components/TabsHeader.tsx` — swap `bg-white dark:bg-neutral-900` → `bg-surface`; add hairline bottom border; swap raw slate text classes → `text-foreground` / `text-muted`. Apply to both the rendered header and the skeleton variant.
 - `components/screen.tsx` — default className includes `bg-background`. Existing per-screen `bg-*` overrides keep winning via `twMerge`.
 - `app/(main)/(tabs)/_layout.tsx` — replace hardcoded `tabBarBg` hex with `useThemeColor("surface")`; add active/inactive tints, hairline tab bar top border, and `headerStyle.backgroundColor` (matches tab bar).
@@ -41,117 +40,7 @@ All tasks below land commits on `feat/layered-chrome`.
 
 ---
 
-## Task 1: Add tab indicator pill to `TabIcon`
-
-**Files:**
-- Modify: `components/TabIcon.tsx`
-
-**Why:** Active tabs currently rely on color alone for focus communication. A 3×24px pill below the icon makes the active state unambiguous and accessible. The pill renders as transparent when inactive so the icon does not shift vertically on focus changes (no layout jank).
-
-**Reference (full current file content for context):**
-```tsx
-import { Icon, PhosphorIcon } from "./Icon";
-
-const ICON_SIZE = 28;
-
-interface TabIconProps {
-  focused: boolean;
-  color: string;
-  // Phosphor icons share the same Icon type
-  IconElement: PhosphorIcon;
-}
-
-const TabIcon = ({ focused, color, IconElement }: TabIconProps) => {
-  return (
-    <Icon
-      name={IconElement}
-      color={color}
-      size={ICON_SIZE}
-      // Toggle between 'regular' (outline) and 'fill' (solid)
-      weight={focused ? "fill" : "regular"}
-    />
-  );
-};
-
-export default TabIcon;
-```
-
-> **Note on the existing pre-existing TS error:** `import { Icon, PhosphorIcon } from "./Icon"` — `PhosphorIcon` is not exported from `./Icon`. This is a pre-existing type error on `main` (it survived the Royal Azure merge). The file in fact exports `IconName`, not `PhosphorIcon`. Do **not** fix the type error in this task; it's out of scope. If you want to fix it as a tiny side-cleanup, surface the change as a separate commit and tell the controller. For this task, keep the import line as-is to avoid scope creep.
-
-- [ ] **Step 1: Replace the contents of `components/TabIcon.tsx`**
-
-```tsx
-import { View } from "react-native";
-import { Icon, PhosphorIcon } from "./Icon";
-
-const ICON_SIZE = 28;
-
-interface TabIconProps {
-  focused: boolean;
-  color: string;
-  // Phosphor icons share the same Icon type
-  IconElement: PhosphorIcon;
-}
-
-const TabIcon = ({ focused, color, IconElement }: TabIconProps) => {
-  return (
-    <View className="items-center">
-      <Icon
-        name={IconElement}
-        color={color}
-        size={ICON_SIZE}
-        // Toggle between 'regular' (outline) and 'fill' (solid)
-        weight={focused ? "fill" : "regular"}
-      />
-      <View
-        className={`mt-1 h-[3px] w-6 rounded-full ${
-          focused ? "bg-accent" : "bg-transparent"
-        }`}
-      />
-    </View>
-  );
-};
-
-export default TabIcon;
-```
-
-The `View` from `react-native` is added to the imports. Everything else above the wrapper is unchanged.
-
-- [ ] **Step 2: Verify the file**
-
-Read `components/TabIcon.tsx`. Confirm:
-- `import { View } from "react-native";` is present
-- The icon is wrapped in `<View className="items-center">`
-- A second `<View>` renders below the icon with `mt-1 h-[3px] w-6 rounded-full` and the conditional `bg-accent` / `bg-transparent`
-- No other lines changed
-
-- [ ] **Step 3: Run TypeScript check on this file**
-
-```bash
-npx tsc --noEmit 2>&1 | grep -E "TabIcon" || echo "TabIcon clean"
-```
-
-Expected: prints `TabIcon clean`. If `TabIcon` appears, you introduced a new error — fix it before committing. (The pre-existing `PhosphorIcon` import error appears for the *file* but not the *line numbers we touched*; if it appears, confirm the message is still about `PhosphorIcon` not being exported from `./Icon` and not about your new code.)
-
-- [ ] **Step 4: Commit**
-
-```bash
-git add components/TabIcon.tsx
-git commit -m "$(cat <<'EOF'
-feat(chrome): add accent indicator pill to active tab icon
-
-Wrap each TabIcon in a vertical stack with a 3x24 pill below the
-icon. The pill renders bg-accent when focused, transparent otherwise,
-so the icon does not shift on focus changes.
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
-EOF
-)"
-```
-
----
-
-## Task 2: Re-theme `TabsHeader` to use surface tokens
+## Task 1: Re-theme `TabsHeader` to use surface tokens
 
 **Files:**
 - Modify: `components/TabsHeader.tsx`
@@ -244,7 +133,7 @@ EOF
 
 ---
 
-## Task 3: Default `Screen` background to `bg-background`
+## Task 2: Default `Screen` background to `bg-background`
 
 **Files:**
 - Modify: `components/screen.tsx`
@@ -337,7 +226,7 @@ EOF
 
 ---
 
-## Task 4: Theme the bottom tab bar via `useThemeColor`
+## Task 3: Theme the bottom tab bar via `useThemeColor`
 
 **Files:**
 - Modify: `app/(main)/(tabs)/_layout.tsx`
@@ -524,7 +413,7 @@ EOF
 
 ---
 
-## Task 5: Manual visual verification
+## Task 4: Manual visual verification
 
 **Files:** none (verification only)
 
@@ -572,11 +461,11 @@ This task produces no code. If verification surfaces issues, those go into a fol
 
 ## Done
 
-After Task 5, the spec's acceptance criteria are met:
+After Task 4, the spec's acceptance criteria are met:
 - [x] `app/(main)/(tabs)/_layout.tsx` no longer references `#ffffff` or `#1c1c1e`. All chrome colors come from `useThemeColor`.
 - [x] Tab bar shows active/inactive tints driven by theme tokens.
 - [x] Tab bar has a hairline top border driven by `--border`.
-- [x] A 3×24 pill renders below the active tab's label in `accent` color, transparent otherwise.
+- [x] Active tab uses accent tint with the existing filled-glyph treatment; no separate indicator pill.
 - [x] `components/TabsHeader.tsx` uses `bg-surface` + `border-b border-border` and `text-foreground` / `text-muted`.
 - [x] `components/screen.tsx` defaults to `bg-background`. Existing screens with explicit bg classes still render correctly.
 - [x] Manual visual verification passes in both light and dark mode.

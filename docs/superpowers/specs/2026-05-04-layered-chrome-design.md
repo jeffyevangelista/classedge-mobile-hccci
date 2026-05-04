@@ -12,7 +12,6 @@ This builds on the Royal Azure theme already merged in commit `88a4e5f`.
 
 - Replace hardcoded `#ffffff` / `#1c1c1e` chrome colors in `app/(main)/(tabs)/_layout.tsx` with HeroUI Native theme tokens so chrome follows light/dark.
 - Establish visible layering between body and chrome via two surface tones (`surface-tertiary` for body, `surface` for header + tab bar).
-- Add an explicit active-tab indicator (3×24px pill) that does not rely on color alone for focus communication.
 - Make screens explicitly declare their background color via the `Screen` component, so the rendered surface stops depending on whatever sits behind the navigator.
 
 ## Non-goals
@@ -26,7 +25,7 @@ This builds on the Royal Azure theme already merged in commit `88a4e5f`.
 
 1. Scope **A** chosen: tab bar + Home header + screen background only. No inner-page header changes, no `colors.primary[]` migration.
 2. Structural style **B** chosen: layered depth (recessed body, raised chrome).
-3. Active tab uses accent color **plus** a 3×24px pill indicator under the label.
+3. Active tab uses accent color only (no extra indicator pill — kept simple).
 4. TabsHeader retains its current content; only the surface/border tokens change.
 
 ## Token mapping
@@ -38,7 +37,7 @@ This builds on the Royal Azure theme already merged in commit `88a4e5f`.
 | Header bg (TabsHeader) | `surface` (`#ffffff`) | `surface` (`#111a2e`) |
 | Tab bar bg | `surface` (`#ffffff`) | `surface` (`#111a2e`) |
 | Header & tab bar hairline | `border` (`#e2e8f0`) | `border` (`#1e293b`) |
-| Active tab tint (icon + label + pill) | `accent` (`#2563eb`) | `accent` (`#3b82f6`) |
+| Active tab tint (icon + label) | `accent` (`#2563eb`) | `accent` (`#3b82f6`) |
 | Inactive tab tint | `muted` (`#64748b`)† | `muted` (`#94a3b8`) |
 | Status bar | follows `StatusBar style="auto"` | follows `StatusBar style="auto"` |
 
@@ -75,30 +74,9 @@ Replace the hardcoded `tabBarBg` constant in `app/(main)/(tabs)/_layout.tsx`:
 
 The existing `Animated.View` that pads/animates the safe-area gutter keeps `backgroundColor: tabBarBg` so the bottom inset matches.
 
-### 3. Active tab indicator (3×24 pill)
+### 3. Active tab differentiation
 
-React Navigation's bottom tabs don't have a built-in indicator like top tabs. Implement via a wrapper around the existing `TabIcon`:
-
-```tsx
-// components/TabIcon.tsx (refactor)
-const TabIcon = ({ focused, color, IconElement }: TabIconProps) => {
-  return (
-    <View className="items-center">
-      <Icon
-        name={IconElement}
-        color={color}
-        size={ICON_SIZE}
-        weight={focused ? "fill" : "regular"}
-      />
-      <View
-        className={`mt-1 h-[3px] w-6 rounded-full ${focused ? "bg-accent" : "bg-transparent"}`}
-      />
-    </View>
-  );
-};
-```
-
-The pill renders at all times (transparent when inactive) so the icon position doesn't shift on focus changes.
+Color + glyph weight only. The existing Phosphor `weight={focused ? "fill" : "regular"}` toggle in `TabIcon` continues to differentiate focused vs. unfocused (filled vs. outlined glyph). Combined with `tabBarActiveTintColor: accent` and `tabBarInactiveTintColor: muted`, that's the full focus treatment — no separate indicator pill.
 
 ### 4. Home header (TabsHeader) re-theme
 
@@ -128,7 +106,6 @@ The existing `Animated.View` wrapper in `(tabs)/_layout.tsx` already paints the 
 | File | Change |
 |------|--------|
 | `app/(main)/(tabs)/_layout.tsx` | Replace hardcoded hex with `useThemeColor` calls; add active/inactive tints; add hairline tab bar top border; set `headerStyle.backgroundColor`. |
-| `components/TabIcon.tsx` | Wrap icon in vertical stack; add 3×24 pill indicator below; pill uses `bg-accent` when focused, transparent otherwise. |
 | `components/TabsHeader.tsx` | Swap `bg-white dark:bg-neutral-900` → `bg-surface`; add `border-b border-border`; swap raw slate text classes → `text-muted` / `text-foreground`. |
 | `components/screen.tsx` | Default `className` includes `bg-background`. Existing per-screen overrides still win via `twMerge`. |
 
@@ -138,7 +115,7 @@ No other files in scope.
 
 1. **Visual check (manual):** start dev build, in both light + dark:
    - Open Home tab — confirm header has white surface (light) / `#111a2e` (dark), hairline below, body sits in `#f1f5f9` (light) / `#0b1220` (dark) — cards float clearly.
-   - Tap each tab — confirm active icon + label use accent color and the 3×24 pill renders below the label. Inactive tabs use muted color, pill transparent.
+   - Tap each tab — confirm active icon + label use accent color, and the Phosphor glyph switches to filled. Inactive tabs use muted color and outlined glyph.
    - Status bar tint matches header surface (handled automatically).
 2. **Token check:** `git grep -nE "#ffffff|#1c1c1e|bg-white|dark:bg-neutral-900" -- 'app/(main)/(tabs)/_layout.tsx' 'components/TabsHeader.tsx'` should return zero.
 3. **Screen background sanity:** confirm individual screens that explicitly set their own bg color (e.g., `MaterialDetailsScreen.tsx:76` uses `bg-white dark:bg-neutral-900`) still render as before. The `Screen` default only kicks in when callers don't pass a bg class.
@@ -148,14 +125,14 @@ No other files in scope.
 - **No drop shadows on chrome edges.** Hairline borders are used instead. If the user wants a softer separation between header/body or tab-bar/body, swap the border for `--surface-shadow` / a custom shadow style. Borders chosen for sharpness and dark-mode legibility.
 - **`--surface-tertiary` in dark mode currently equals `#334155`** — too light against `--surface` (`#111a2e`) for the recessed-body purpose. The design uses `--background` (`#0b1220`) for the dark recessed body instead, which inverts the layering relationship vs. light mode (light: surface > body lightness; dark: surface > body lightness still holds because `#111a2e` > `#0b1220`). Consistent visually; just worth noting.
 - **Per-screen `bg-white dark:bg-neutral-900` overrides** in existing screens are not migrated as part of this task. They keep working because `twMerge` preserves caller classes. If desired later, those can swap to `bg-surface` for full token coherence.
-- **No active-tab background pill** (e.g., a colored rounded-rect behind the icon). Just the indicator below. Less visual noise; can add if desired.
+- **No extra active-tab indicator** (no pill, no dot, no background). Color + filled-glyph weight is the entire focus treatment. If accessibility/clarity feedback later wants a stronger marker, add then.
 
 ## Acceptance criteria
 
 - `app/(main)/(tabs)/_layout.tsx` no longer references `#ffffff` or `#1c1c1e`. All chrome colors come from `useThemeColor`.
 - Tab bar shows active/inactive tints driven by theme tokens.
 - Tab bar has a hairline top border in light mode, hairline in dark mode (or none if visually noisy — to be confirmed in manual check).
-- A 3×24px pill renders below the active tab's label in `accent` color.
+- Active tab uses accent tint with the existing filled-glyph treatment; no separate indicator pill.
 - `components/TabsHeader.tsx` uses `bg-surface` + `border-b border-border` and `text-foreground` / `text-muted` for typography.
 - `components/screen.tsx` default applies `bg-background`. Existing screens with explicit bg classes still render correctly.
 - Manual visual verification passes in both light and dark mode.
