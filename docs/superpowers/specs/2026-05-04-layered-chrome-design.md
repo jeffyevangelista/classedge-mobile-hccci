@@ -16,10 +16,10 @@ This builds on the Royal Azure theme already merged in commit `88a4e5f`.
 
 ## Non-goals
 
-- Inner-page Stack headers on Calendar, Notifications, Teaching, Oversight tabs (out of scope; would unify the second header pattern — deferred).
 - Other consumers of `utils/colors.ts` `primary[]` (e.g., `LoginScreen.tsx`). `ScheduleComponent.tsx` is migrated as part of this work because it renders on the Home tab and reads visibly off-theme against the new chrome.
 - Tab bar layout/animation changes — keep the existing `Animated.View` insets-aware wrapper.
 - TabsHeader content changes (greeting + name + sync + avatar layout untouched).
+- Stack header back-button / title-content layout — only colors and surface treatment change.
 
 ## Constraints (from user decisions)
 
@@ -101,7 +101,55 @@ Optional: introduce `variant?: "background" | "surface"` prop. Default `"backgro
 
 The existing `Animated.View` wrapper in `(tabs)/_layout.tsx` already paints the safe area below the tab bar with `backgroundColor: tabBarBg`. After the token swap, this automatically becomes the surface color. No layout changes needed.
 
-### 7. ScheduleComponent (Home tab) — token migration
+### 7. Inner-page Stack headers (all six layouts)
+
+React Navigation's stock Stack header is used on every inner-page screen accessed from the tabs (Profile child screens, course-details, material/lesson/activity/attempt/assessment, classroom child screens, subject-details, and the auth login-email back screen). Without explicit `headerStyle`, RN falls back to a platform default that doesn't follow our theme — visibly white-ish on iOS and gray on Android, broken in dark mode.
+
+A shared hook `hooks/useThemedHeaderOptions.tsx` returns one set of `screenOptions` that all six layouts consume:
+
+```tsx
+import { useThemeColor } from "heroui-native";
+import { View } from "react-native";
+
+export const useThemedHeaderOptions = () => {
+  const surfaceColor = useThemeColor("surface");
+  const foregroundColor = useThemeColor("foreground");
+  return {
+    headerStyle: { backgroundColor: surfaceColor },
+    headerTintColor: foregroundColor,
+    headerTitleStyle: {
+      color: foregroundColor,
+      fontFamily: "Poppins-SemiBold",
+    },
+    headerShadowVisible: false,
+    headerBackground: () => (
+      <View className="flex-1 bg-surface border-b border-border" />
+    ),
+  };
+};
+```
+
+Each layout consumes the hook via spread:
+
+```tsx
+const headerOptions = useThemedHeaderOptions();
+return (
+  <Stack
+    screenOptions={{
+      ...headerOptions,
+      // existing layout-specific options (headerLeft BackButton, headerTitle, etc.)
+    }}
+  >
+    ...
+  </Stack>
+);
+```
+
+`headerBackground` paints the entire header surface area — including the safe-area inset — with `bg-surface` and a hairline `border-b border-border`, matching the TabsHeader treatment exactly. `headerStyle.backgroundColor` is kept as a fallback color in case `headerBackground` doesn't render in some edge case.
+
+The `(tabs)` Stack.Screen entry inside `(main)/_layout.tsx` continues to use its custom `header: () => <TabsHeader />` — the hook's options apply only when a screen falls through to the stock RN Navigation header.
+
+### 8. ScheduleComponent (Home tab) — token migration
 
 The two-card schedule widget on the Home tab currently uses the legacy `colors.primary[*]` ramp + manual `useColorScheme()` branching for every color. It renders on top of the new chrome and looks visibly off-theme. Migrate it to HeroUI semantic tokens via `className`, dropping `useColorScheme` and `colors` imports entirely. The chip ("time" / "Up Next" pill) is preserved — it just adopts theme tokens.
 
@@ -124,6 +172,13 @@ Four-state mapping (kept simple):
 | `components/TabsHeader.tsx` | Swap `bg-white dark:bg-neutral-900` → `bg-surface`; add `border-b border-border`; swap raw slate text classes → `text-muted` / `text-foreground`. |
 | `components/screen.tsx` | Default `className` includes `bg-background`. Existing per-screen overrides still win via `twMerge`. |
 | `features/announcements/components/ScheduleComponent.tsx` | Drop `colors.primary[*]` and `useColorScheme`. Move inline `style={{ backgroundColor / color }}` to `className`. The two cards (Now / Up Next) and their inner chips/labels follow a four-state mapping table (in-scope addition). |
+| `hooks/useThemedHeaderOptions.tsx` *(new)* | Shared hook returning themed RN Navigation `screenOptions`: `surface` background, `foreground` tint + title, Poppins-SemiBold title font, hairline `border` bottom via `headerBackground`, no shadow. |
+| `app/(main)/_layout.tsx` | Apply the hook's options to top-level `screenOptions`. |
+| `app/(main)/course/[courseId]/_layout.tsx` | Apply the hook's options to top-level `screenOptions`. |
+| `app/(main)/profile/_layout.tsx` | Apply the hook's options to top-level `screenOptions`. Drop the unused `colors` import while there. |
+| `app/(main)/classroom/[classroomId]/_layout.tsx` | Apply the hook's options to top-level `screenOptions`. |
+| `app/(main)/subject/[subjectId]/_layout.tsx` | Apply the hook's options to top-level `screenOptions`. |
+| `app/(auth)/_layout.tsx` | Apply the hook's options to top-level `screenOptions`. Drop the unused `colors` import while there. |
 
 No other files in scope.
 
@@ -152,4 +207,5 @@ No other files in scope.
 - `components/TabsHeader.tsx` uses `bg-surface` + `border-b border-border` and `text-foreground` / `text-muted` for typography.
 - `components/screen.tsx` default applies `bg-background`. Existing screens with explicit bg classes still render correctly.
 - `features/announcements/components/ScheduleComponent.tsx` no longer imports `colors` or `useColorScheme`; all colors come from `className` with semantic tokens; the four-state mapping above is implemented.
+- All six inner-page Stack layouts apply `useThemedHeaderOptions()` so their headers render the surface color, foreground tint, Poppins-SemiBold title, and a hairline border-bottom in both modes.
 - Manual visual verification passes in both light and dark mode.

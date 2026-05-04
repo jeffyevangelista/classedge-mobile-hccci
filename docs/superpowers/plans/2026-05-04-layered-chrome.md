@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Re-theme the Home tab header, the bottom tab bar (active/inactive tints + surfaces), the default screen background, and the Home `ScheduleComponent` to use HeroUI Native semantic tokens, establishing a layered-depth visual hierarchy (recessed body, raised chrome).
+**Goal:** Re-theme the Home tab header, the bottom tab bar (active/inactive tints + surfaces), the default screen background, the Home `ScheduleComponent`, and every inner-page Stack header (six layouts) to use HeroUI Native semantic tokens, establishing a layered-depth visual hierarchy (recessed body, raised chrome) consistently across the app.
 
-**Architecture:** Pure token + minor structural changes across four files. No new components, no new providers. The `Screen` wrapper gains a default `bg-background`. Tab bar config swaps hardcoded hex for `useThemeColor(...)` calls. `ScheduleComponent` migrates off the legacy `colors.primary[*]` palette to semantic `className` tokens. `TabIcon` is unchanged — color + filled-glyph weight handles focus differentiation.
+**Architecture:** Pure token + minor structural changes. No new components beyond a small shared hook. The `Screen` wrapper gains a default `bg-background`. Tab bar config swaps hardcoded hex for `useThemeColor(...)` calls. `ScheduleComponent` migrates off the legacy `colors.primary[*]` palette to semantic `className` tokens. A new `useThemedHeaderOptions` hook returns RN Navigation `screenOptions` that paint inner-page Stack headers with the same surface + hairline + Poppins-SemiBold treatment as the TabsHeader; six layout files consume it. `TabIcon` is unchanged — color + filled-glyph weight handles focus differentiation.
 
 **Tech Stack:** React Native 0.81, Expo Router 6, React Navigation Tabs, HeroUI Native 1.0.0, Uniwind (Tailwind v4 for RN), Phosphor icons.
 
@@ -14,11 +14,20 @@
 
 ## File Structure
 
+**Created:**
+- `hooks/useThemedHeaderOptions.tsx` — shared hook returning themed RN Navigation `screenOptions` (surface bg via `headerBackground`, foreground tint, Poppins-SemiBold title, hairline border).
+
 **Modified:**
 - `components/TabsHeader.tsx` — swap `bg-white dark:bg-neutral-900` → `bg-surface`; add hairline bottom border; swap raw slate text classes → `text-foreground` / `text-muted`. Apply to both the rendered header and the skeleton variant.
 - `components/screen.tsx` — default className includes `bg-background`. Existing per-screen `bg-*` overrides keep winning via `twMerge`.
 - `app/(main)/(tabs)/_layout.tsx` — replace hardcoded `tabBarBg` hex with `useThemeColor("surface")`; add active/inactive tints, hairline tab bar top border, and `headerStyle.backgroundColor` (matches tab bar).
 - `features/announcements/components/ScheduleComponent.tsx` — drop `useColorScheme` and `colors` imports; remove all `style={{ backgroundColor / color }}` inline branching; rewrite the two `Pressable` cards and their inner `<View>` chips + `<AppText>` labels using a four-state semantic-token mapping in `className`.
+- `app/(main)/_layout.tsx` — apply `useThemedHeaderOptions()` to top-level `screenOptions`.
+- `app/(main)/course/[courseId]/_layout.tsx` — apply `useThemedHeaderOptions()` to top-level `screenOptions`.
+- `app/(main)/profile/_layout.tsx` — apply `useThemedHeaderOptions()`; drop unused `colors` import.
+- `app/(main)/classroom/[classroomId]/_layout.tsx` — apply `useThemedHeaderOptions()` to top-level `screenOptions`.
+- `app/(main)/subject/[subjectId]/_layout.tsx` — apply `useThemedHeaderOptions()` to top-level `screenOptions`.
+- `app/(auth)/_layout.tsx` — apply `useThemedHeaderOptions()`; drop unused `colors` import.
 
 **Not modified:**
 - Inner-page Stack headers on Calendar/Notifications/Teaching/Oversight (out of scope per spec).
@@ -607,7 +616,308 @@ EOF
 
 ---
 
-## Task 5: Manual visual verification
+## Task 5: Theme inner-page Stack headers
+
+**Files:**
+- Create: `hooks/useThemedHeaderOptions.tsx`
+- Modify: `app/(main)/_layout.tsx`
+- Modify: `app/(main)/course/[courseId]/_layout.tsx`
+- Modify: `app/(main)/profile/_layout.tsx`
+- Modify: `app/(main)/classroom/[classroomId]/_layout.tsx`
+- Modify: `app/(main)/subject/[subjectId]/_layout.tsx`
+- Modify: `app/(auth)/_layout.tsx`
+
+**Why:** Six layout files render React Navigation's stock Stack header (Profile child screens, course-details, material/lesson/activity/attempt/assessment, classroom child screens, subject-details, login-email back screen). They currently fall back to the platform default — visibly off-theme, especially in dark mode. A shared hook provides one consistent themed `screenOptions` shape across all six.
+
+- [ ] **Step 1: Create the hook**
+
+Create `hooks/useThemedHeaderOptions.tsx` with these exact contents:
+
+```tsx
+import { useThemeColor } from "heroui-native";
+import { View } from "react-native";
+
+export const useThemedHeaderOptions = () => {
+  const surfaceColor = useThemeColor("surface");
+  const foregroundColor = useThemeColor("foreground");
+  return {
+    headerStyle: { backgroundColor: surfaceColor },
+    headerTintColor: foregroundColor,
+    headerTitleStyle: {
+      color: foregroundColor,
+      fontFamily: "Poppins-SemiBold",
+    },
+    headerShadowVisible: false,
+    headerBackground: () => (
+      <View className="flex-1 bg-surface border-b border-border" />
+    ),
+  };
+};
+```
+
+The file must be `.tsx` (JSX in `headerBackground`), not `.ts`. Path uses the `@/` alias: callers import via `@/hooks/useThemedHeaderOptions`.
+
+- [ ] **Step 2: Apply to `app/(main)/_layout.tsx`**
+
+Find:
+```tsx
+import { Stack } from "expo-router";
+
+const MainLayout = () => {
+  return (
+    <SyncSheetProvider>
+      <SyncGate>
+        <Stack screenOptions={{ headerShown: false }}>
+```
+
+Replace with:
+```tsx
+import { Stack } from "expo-router";
+import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
+
+const MainLayout = () => {
+  const headerOptions = useThemedHeaderOptions();
+  return (
+    <SyncSheetProvider>
+      <SyncGate>
+        <Stack screenOptions={{ ...headerOptions, headerShown: false }}>
+```
+
+The five inner `<Stack.Screen>` entries that explicitly set `headerShown: true` (assessment, material, attempt, lesson, activity) inherit the spread `headerOptions` automatically and override `headerShown` per-screen. The `(tabs)` Stack.Screen with custom `header: () => <TabsHeader />` is unaffected — `header` overrides the entire chrome.
+
+- [ ] **Step 3: Apply to `app/(main)/course/[courseId]/_layout.tsx`**
+
+Find:
+```tsx
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
+import BackButton from "@/components/BackButton";
+import { Platform, Pressable } from "react-native";
+import { Icon } from "@/components/Icon";
+
+const CourseDetailsLayout = () => {
+  const { courseId } = useLocalSearchParams();
+
+  return (
+    <Stack
+      screenOptions={{
+        headerShadowVisible: false,
+        headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
+        headerTitle: "",
+      }}
+    >
+```
+
+Replace with:
+```tsx
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
+import BackButton from "@/components/BackButton";
+import { Platform, Pressable } from "react-native";
+import { Icon } from "@/components/Icon";
+import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
+
+const CourseDetailsLayout = () => {
+  const { courseId } = useLocalSearchParams();
+  const headerOptions = useThemedHeaderOptions();
+
+  return (
+    <Stack
+      screenOptions={{
+        ...headerOptions,
+        headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
+        headerTitle: "",
+      }}
+    >
+```
+
+(`headerShadowVisible: false` is now provided by the hook, so it's removed from the inline options to avoid duplication.)
+
+- [ ] **Step 4: Apply to `app/(main)/profile/_layout.tsx`**
+
+Find:
+```tsx
+import BackButton from "@/components/BackButton";
+import { colors } from "@/utils/colors";
+import { Stack } from "expo-router";
+
+const ProfileLayout = () => {
+  return (
+    <Stack
+      screenOptions={{
+        headerShadowVisible: false,
+      }}
+    >
+```
+
+Replace with:
+```tsx
+import BackButton from "@/components/BackButton";
+import { Stack } from "expo-router";
+import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
+
+const ProfileLayout = () => {
+  const headerOptions = useThemedHeaderOptions();
+  return (
+    <Stack screenOptions={headerOptions}>
+```
+
+(The unused `colors` import is dropped — pre-existing dead code, fixed in passing while we're touching the file.)
+
+- [ ] **Step 5: Apply to `app/(main)/classroom/[classroomId]/_layout.tsx`**
+
+Find:
+```tsx
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
+import BackButton from "@/components/BackButton";
+import { Platform, Pressable } from "react-native";
+import { Icon } from "@/components/Icon";
+
+const ClassroomLayout = () => {
+  const { classroomId } = useLocalSearchParams();
+
+  return (
+    <Stack
+      screenOptions={{
+        headerShadowVisible: false,
+        headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
+        headerTitle: "",
+      }}
+    >
+```
+
+Replace with:
+```tsx
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
+import BackButton from "@/components/BackButton";
+import { Platform, Pressable } from "react-native";
+import { Icon } from "@/components/Icon";
+import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
+
+const ClassroomLayout = () => {
+  const { classroomId } = useLocalSearchParams();
+  const headerOptions = useThemedHeaderOptions();
+
+  return (
+    <Stack
+      screenOptions={{
+        ...headerOptions,
+        headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
+        headerTitle: "",
+      }}
+    >
+```
+
+- [ ] **Step 6: Apply to `app/(main)/subject/[subjectId]/_layout.tsx`**
+
+Find:
+```tsx
+import { Stack, useLocalSearchParams } from "expo-router";
+import BackButton from "@/components/BackButton";
+
+const SubjectLayout = () => {
+  const { subjectId } = useLocalSearchParams();
+  return (
+    <Stack
+      screenOptions={{
+        headerShadowVisible: false,
+        headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
+        headerTitle: "",
+      }}
+    >
+```
+
+Replace with:
+```tsx
+import { Stack, useLocalSearchParams } from "expo-router";
+import BackButton from "@/components/BackButton";
+import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
+
+const SubjectLayout = () => {
+  const { subjectId } = useLocalSearchParams();
+  const headerOptions = useThemedHeaderOptions();
+  return (
+    <Stack
+      screenOptions={{
+        ...headerOptions,
+        headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
+        headerTitle: "",
+      }}
+    >
+```
+
+- [ ] **Step 7: Apply to `app/(auth)/_layout.tsx`**
+
+Find:
+```tsx
+import BackButton from "@/components/BackButton";
+import { colors } from "@/utils/colors";
+import { Stack } from "expo-router";
+
+const AuthLayout = () => {
+  return (
+    <Stack
+      screenOptions={{
+        headerShadowVisible: false,
+      }}
+    >
+```
+
+Replace with:
+```tsx
+import BackButton from "@/components/BackButton";
+import { Stack } from "expo-router";
+import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
+
+const AuthLayout = () => {
+  const headerOptions = useThemedHeaderOptions();
+  return (
+    <Stack screenOptions={headerOptions}>
+```
+
+(Unused `colors` import dropped — pre-existing dead code, fixed in passing.)
+
+- [ ] **Step 8: Verify**
+
+Read each of the 7 files (1 created + 6 modified) to confirm the changes match the patterns above.
+
+Run a grep to confirm the hook is imported wherever it's used:
+
+```bash
+git grep -nE "useThemedHeaderOptions" -- 'app/(main)/' 'app/(auth)/' 'hooks/'
+```
+
+Expected: at least 7 hits — 1 in the new hook file (the export) and 1 import + 1 use in each of the 6 layouts. (Some layouts may have 2 hits per file: import line + hook call.)
+
+Run a TS check across the touched files:
+
+```bash
+npx tsc --noEmit 2>&1 | grep -E "useThemedHeaderOptions|_layout\.tsx" || echo "header layouts clean"
+```
+
+Expected: `header layouts clean`. Pre-existing errors elsewhere don't matter — this scoped grep should show no `_layout.tsx` errors.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add hooks/useThemedHeaderOptions.tsx 'app/(main)/_layout.tsx' 'app/(main)/course/[courseId]/_layout.tsx' 'app/(main)/profile/_layout.tsx' 'app/(main)/classroom/[classroomId]/_layout.tsx' 'app/(main)/subject/[subjectId]/_layout.tsx' 'app/(auth)/_layout.tsx'
+git commit -m "$(cat <<'EOF'
+feat(chrome): theme inner-page Stack headers via shared hook
+
+Add useThemedHeaderOptions hook returning RN Navigation screenOptions
+with surface background, foreground tint, Poppins-SemiBold title, no
+shadow, and a hairline border-bottom via headerBackground. Apply to
+all six inner-page Stack layouts so navigation chrome follows the
+theme in both light and dark mode.
+
+Drop unused colors imports from profile and auth layouts in passing.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+EOF
+)"
+```
+
+---
+
+## Task 6: Manual visual verification
 
 **Files:** none (verification only)
 
@@ -655,7 +965,7 @@ This task produces no code. If verification surfaces issues, those go into a fol
 
 ## Done
 
-After Task 5, the spec's acceptance criteria are met:
+After Task 6, the spec's acceptance criteria are met:
 - [x] `app/(main)/(tabs)/_layout.tsx` no longer references `#ffffff` or `#1c1c1e`. All chrome colors come from `useThemeColor`.
 - [x] Tab bar shows active/inactive tints driven by theme tokens.
 - [x] Tab bar has a hairline top border driven by `--border`.
@@ -663,4 +973,5 @@ After Task 5, the spec's acceptance criteria are met:
 - [x] `components/TabsHeader.tsx` uses `bg-surface` + `border-b border-border` and `text-foreground` / `text-muted`.
 - [x] `components/screen.tsx` defaults to `bg-background`. Existing screens with explicit bg classes still render correctly.
 - [x] `features/announcements/components/ScheduleComponent.tsx` no longer imports `colors` or `useColorScheme`; all colors come from `className` semantic tokens; the four-state mapping is implemented.
+- [x] All six inner-page Stack layouts apply `useThemedHeaderOptions()` so their headers render the surface color, foreground tint, Poppins-SemiBold title, and a hairline border-bottom in both modes.
 - [x] Manual visual verification passes in both light and dark mode.
