@@ -179,10 +179,8 @@ const ScheduleComponent = () => {
 
         {/* Right Card — Upcoming Class */}
         <Pressable
-          className={`flex-1 rounded-2xl p-5 justify-between border ${
-            nextClass
-              ? "bg-accent-soft border-border"
-              : "bg-surface-secondary border-border"
+          className={`flex-1 rounded-2xl p-5 justify-between border border-border ${
+            nextClass ? "bg-accent-soft" : "bg-surface-secondary"
           }`}
           style={{ minHeight: 180 }}
           onPress={() => router.push("/(main)/profile/class-schedule")}
