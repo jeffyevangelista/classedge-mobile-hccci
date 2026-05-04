@@ -32,8 +32,8 @@ This builds on the Royal Azure theme already merged in commit `88a4e5f`.
 
 | Area | Light token / hex | Dark token / hex |
 |---|---|---|
-| Recessed body (between header & tab bar) | `surface-tertiary` (`#f1f5f9`) | `background` (`#0b1220`) |
-| Screen content default (inside `<Screen>`) | `background` (`#ffffff`) | `background` (`#0b1220`) |
+| Recessed body (between header & tab bar) | `background` (`#f1f5f9`) | `background` (`#0b1220`) |
+| Screen content default (inside `<Screen>`) | `background` (`#f1f5f9`) | `background` (`#0b1220`) |
 | Header bg (TabsHeader) | `surface` (`#ffffff`) | `surface` (`#111a2e`) |
 | Tab bar bg | `surface` (`#ffffff`) | `surface` (`#111a2e`) |
 | Header & tab bar hairline | `border` (`#e2e8f0`) | `border` (`#1e293b`) |
@@ -41,7 +41,7 @@ This builds on the Royal Azure theme already merged in commit `88a4e5f`.
 | Inactive tab tint | `muted` (`#64748b`)† | `muted` (`#94a3b8`) |
 | Status bar | follows `StatusBar style="auto"` | follows `StatusBar style="auto"` |
 
-**Why two different tokens for the recessed body across modes.** In light mode we want a step *down* from white chrome, so we use `surface-tertiary` (`#f1f5f9`) — slightly off-white. In dark mode, our `surface-tertiary` is `#334155`, which is *lighter* than `surface` (`#111a2e`) — the wrong direction for a recessed feel. So we use `background` (`#0b1220`) for the dark recessed body, which is darker than `surface` and gives the same "chrome floats above body" effect. The raised-vs-recessed relationship holds in both modes; we just pick the token that puts the body *below* the chrome luminance-wise.
+**Symmetric recess via `--background` in both modes.** `--background` is now `#f1f5f9` light / `#0b1220` dark — both one luminance step away from `--surface` (`#ffffff` light / `#111a2e` dark) in the recessed direction. This gives the consistent "chrome floats above body" effect across modes.
 
 † `--muted` in light mode is `#64748b` (slate-500). If actual use shows it reading too dark for an inactive tab tint, surface as follow-up; it's the canonical token for "low-emphasis text" so we honor it here.
 

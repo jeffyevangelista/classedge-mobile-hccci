@@ -21,7 +21,7 @@
   :root {
     @variant light {
       /* Royal Azure — Light */
-      --background: #ffffff;
+      --background: #f1f5f9;
       --foreground: #0f172a;
       --muted: #64748b;
 

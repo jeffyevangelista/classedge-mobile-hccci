@@ -33,7 +33,7 @@
 
 | Token | Value | Notes |
 |-------|-------|-------|
-| `--background` | `#ffffff` | Pure white canvas |
+| `--background` | `#f1f5f9` | Slate-100 — recessed body, mirrors dark mode's `#0b1220` step below `--surface` |
 | `--foreground` | `#0f172a` | slate-900 |
 | `--muted` | `#64748b` | slate-500 |
 | `--surface` | `#ffffff` | Same as background |
