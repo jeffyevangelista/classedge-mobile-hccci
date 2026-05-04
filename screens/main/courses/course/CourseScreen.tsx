@@ -7,7 +7,7 @@ import CourseTimeline from "@/features/courses/components/CourseTimeline";
 import { useCourseDetails } from "@/features/courses/courses.hooks";
 import { queryClient } from "@/providers/QueryProvider";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Skeleton } from "heroui-native";
+import { Skeleton, useThemeColor } from "heroui-native";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useCallback, useMemo, useState } from "react";
@@ -27,14 +27,12 @@ import Animated, {
   useScrollViewOffset,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useUniwind } from "uniwind";
 
 const NAV_HEIGHT = 44;
 
 const CourseScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { courseId } = useLocalSearchParams();
-  const { theme } = useUniwind();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { height: screenHeight } = useWindowDimensions();
@@ -45,12 +43,9 @@ const CourseScreen = () => {
     courseId as string,
   );
 
-  const isDark = theme === "dark";
-  const spinnerColor = isDark ? "#FFF" : "#000";
-  const bgColor = isDark ? "#333" : "#FFF";
-  const navBg = isDark ? "#1a1a1a" : "#ffffff";
-  const tintColor = isDark ? "#fff" : "#000";
-  const contentBg = isDark ? "#1a1a1a" : "#ffffff";
+  const surfaceColor = useThemeColor("surface");
+  const foregroundColor = useThemeColor("foreground");
+  const borderColor = useThemeColor("border");
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -68,12 +63,12 @@ const CourseScreen = () => {
       <RefreshControl
         refreshing={refreshing}
         onRefresh={onRefresh}
-        tintColor={spinnerColor}
-        colors={[spinnerColor]}
-        progressBackgroundColor={bgColor}
+        tintColor={foregroundColor}
+        colors={[foregroundColor]}
+        progressBackgroundColor={surfaceColor}
       />
     ),
-    [refreshing, onRefresh, spinnerColor, bgColor],
+    [refreshing, onRefresh, foregroundColor, surfaceColor],
   );
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
@@ -144,9 +139,9 @@ const CourseScreen = () => {
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: navBg,
+              backgroundColor: surfaceColor,
               borderBottomWidth: StyleSheet.hairlineWidth,
-              borderBottomColor: isDark ? "#333" : "#e5e5e5",
+              borderBottomColor: borderColor,
             },
             navBgStyle,
           ]}
@@ -161,24 +156,17 @@ const CourseScreen = () => {
         >
           <View>
             <Animated.View
-              style={[
-                styles.floatingBtn,
-                {
-                  backgroundColor: isDark
-                    ? "rgba(0,0,0,0.5)"
-                    : "rgba(255,255,255,0.7)",
-                },
-                floatingBtnStyle,
-              ]}
+              style={[styles.floatingBtn, floatingBtnStyle]}
+              className="bg-white/70 dark:bg-black/50"
             />
-            <BackButton tintColor={isDark ? "#fff" : "#1a1a1a"} />
+            <BackButton tintColor={foregroundColor} />
           </View>
           <Animated.View
             style={[{ flex: 1, marginHorizontal: 4 }, navTitleStyle]}
           >
             <AppText
               weight="semibold"
-              className="text-sm dark:text-white"
+              className="text-sm text-foreground"
               numberOfLines={1}
             >
               {data?.subjectId.subjectName ?? ""}
@@ -186,15 +174,8 @@ const CourseScreen = () => {
           </Animated.View>
           <View>
             <Animated.View
-              style={[
-                styles.floatingBtn,
-                {
-                  backgroundColor: isDark
-                    ? "rgba(0,0,0,0.5)"
-                    : "rgba(255,255,255,0.7)",
-                },
-                floatingBtnStyle,
-              ]}
+              style={[styles.floatingBtn, floatingBtnStyle]}
+              className="bg-white/70 dark:bg-black/50"
             />
             <Pressable
               onPress={() =>
@@ -204,7 +185,7 @@ const CourseScreen = () => {
             >
               <Icon
                 name="InfoIcon"
-                color={tintColor}
+                color={foregroundColor}
                 style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
               />
             </Pressable>
@@ -221,12 +202,10 @@ const CourseScreen = () => {
         <Animated.View
           style={[
             styles.imageHeader,
-            {
-              height: IMAGE_HEIGHT,
-              backgroundColor: isDark ? "#333" : "#D0D0D0",
-            },
+            { height: IMAGE_HEIGHT },
             headerAnimatedStyle,
           ]}
+          className="bg-default"
         >
           {!isLoading && (
             <AttachmentImage
@@ -245,7 +224,7 @@ const CourseScreen = () => {
           )}
         </Animated.View>
 
-        <View style={[styles.content, { backgroundColor: contentBg }]}>
+        <View style={styles.content} className="bg-surface">
           {isLoading ? (
             <View className="gap-2">
               <Skeleton className="h-6 w-3/4 rounded-full" />
@@ -257,12 +236,12 @@ const CourseScreen = () => {
             <View className="gap-1">
               <AppText
                 weight="semibold"
-                className="text-lg md:text-xl dark:text-white leading-snug"
+                className="text-lg md:text-xl text-foreground leading-snug"
               >
                 {data?.subjectId.subjectName}
               </AppText>
               {data?.subjectId.subjectType && (
-                <AppText className="text-xs md:text-sm text-slate-600 dark:text-slate-400">
+                <AppText className="text-xs md:text-sm text-muted">
                   {data.subjectId.subjectType}
                 </AppText>
               )}
