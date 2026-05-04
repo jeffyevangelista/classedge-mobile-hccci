@@ -10,7 +10,6 @@ import {
   useFonts,
 } from "@expo-google-fonts/poppins";
 import { SplashScreen, Stack } from "expo-router";
-import { useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -20,7 +19,6 @@ import "@azure/core-asynciterator-polyfill";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const themeColorForeground = useThemeColor("foreground");
   const { restoreSession, clearCredentials, isAuthenticated, authUser } =
     useStore();
   useTokenRefresh();
