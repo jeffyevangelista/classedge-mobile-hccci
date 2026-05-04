@@ -4,6 +4,7 @@ import Screen from "@/components/screen";
 import LogoutButton from "@/features/auth/components/LogoutButton";
 import ResyncButton from "@/features/auth/components/ResyncButton";
 import HeaderComponent from "@/features/profile/components/HeaderComponent";
+import ThemeToggleButton from "@/features/profile/components/ThemeToggleButton";
 import { Href, Link } from "expo-router";
 import { Card } from "heroui-native";
 import { ScrollView, View, Pressable } from "react-native";
@@ -50,6 +51,7 @@ const ProfileScreen = () => {
             {profileNav.map((item) => (
               <ProfileNavItem key={item.title} {...item} />
             ))}
+            <ThemeToggleButton />
             <ResyncButton />
             <LogoutButton />
           </Card>
