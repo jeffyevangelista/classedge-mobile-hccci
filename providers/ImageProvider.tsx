@@ -70,7 +70,7 @@ const ImageView = forwardRef<ImageViewRef>((props, ref) => {
       <View style={styles.overlayBackground} />
       <View style={styles.overlayContent}>
         <TouchableOpacity style={styles.closeButton} onPress={hide}>
-          <Icon size={"md"} color="#006BB5" name="XIcon" />
+          <Icon size={24} color="#ffffff" name="XIcon" />
         </TouchableOpacity>
         <Zoomable isDoubleTapEnabled>
           <Image
@@ -106,10 +106,13 @@ const styles = StyleSheet.create({
   closeButton: {
     position: "absolute",
     top: 60,
-    right: 10,
-    padding: 5,
-    backgroundColor: "#F9F9F9",
-    borderRadius: 20,
+    right: 16,
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.55)",
+    borderRadius: 22,
     zIndex: 100001,
   },
   closeIcon: {

@@ -4,7 +4,7 @@ import { useNotificationCount } from "@/features/notifications/notifications.hoo
 import useStore from "@/lib/store";
 import { Tabs } from "expo-router";
 import { useEffect, useRef } from "react";
-import { Platform } from "react-native";
+import { Platform, useColorScheme } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -20,6 +20,9 @@ const TabsLayout = () => {
   const insets = useSafeAreaInsets();
   const isOffline = !isConnected || !isInternetReachable;
   const isBannerVisible = bannerHeight > 0;
+
+  const colorScheme = useColorScheme();
+  const tabBarBg = colorScheme === "dark" ? "#1c1c1e" : "#ffffff";
 
   const shouldHidePadding = isOffline || isBannerVisible;
   const targetPadding = shouldHidePadding ? 0 : insets.bottom;
@@ -43,6 +46,7 @@ const TabsLayout = () => {
   const animatedStyle = useAnimatedStyle(() => ({
     flex: 1,
     paddingBottom: bottomPadding.value,
+    backgroundColor: tabBarBg,
   }));
 
   return (
@@ -65,6 +69,7 @@ const TabsLayout = () => {
             elevation: 0,
             shadowOpacity: 0,
             borderTopWidth: 0,
+            backgroundColor: tabBarBg,
           },
           headerStyle: {
             elevation: 0,
