@@ -5,7 +5,7 @@ import { useNotificationCount } from "@/features/notifications/notifications.hoo
 import useStore from "@/lib/store";
 import { Tabs } from "expo-router";
 import { useEffect, useRef } from "react";
-import { Platform, StyleSheet, useColorScheme } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -22,7 +22,6 @@ const TabsLayout = () => {
   const isOffline = !isConnected || !isInternetReachable;
   const isBannerVisible = bannerHeight > 0;
 
-  const colorScheme = useColorScheme();
   const surfaceColor = useThemeColor("surface");
   const borderColor = useThemeColor("border");
   const accentColor = useThemeColor("accent");
