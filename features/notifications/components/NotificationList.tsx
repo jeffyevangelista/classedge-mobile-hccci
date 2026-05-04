@@ -3,6 +3,7 @@ import { useNotifications } from "../notifications.hooks";
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
 import { Avatar, Card, Skeleton } from "heroui-native";
+import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Notification } from "@/powersync/schema";
@@ -87,13 +88,7 @@ const NotificationItem = ({
         className={`flex-row items-start p-4 ${isReadBool ? "bg-transparent" : "bg-blue-400/15 dark:bg-blue-400/10"}`}
       >
         <Avatar alt="avatar" size="sm">
-          <Avatar.Image
-            source={
-              createdById.studentPhoto
-                ? { uri: createdById.studentPhoto }
-                : require("@/assets/placeholder/avatar-placeholder.png")
-            }
-          />
+          <AttachmentAvatarImage path={createdById.studentPhoto} />
           <Avatar.Fallback>{createdById.firstName.charAt(0)}</Avatar.Fallback>
         </Avatar>
 

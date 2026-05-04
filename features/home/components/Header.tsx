@@ -5,7 +5,7 @@ import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { env } from "@/utils/env";
+import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import { useEffect, useState } from "react";
 import useGreeting from "@/hooks/useGreeting";
 
@@ -33,15 +33,7 @@ const Header = () => {
       <Link href="/(main)/profile">
         <View className="flex flex-row items-center gap-3">
           <Avatar size="sm" alt="user-profile">
-            <Avatar.Image
-              source={
-                userDetails?.studentPhoto
-                  ? {
-                      uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${userDetails.studentPhoto}`,
-                    }
-                  : require("@/assets/placeholder/avatar-placeholder.png")
-              }
-            />
+            <AttachmentAvatarImage path={userDetails?.studentPhoto} />
             <Avatar.Fallback>
               {userDetails?.firstName?.[0] ?? ""}
               {userDetails?.lastName?.[0] ?? ""}

@@ -8,6 +8,7 @@ import { Student } from "@/features/oversight/oversight.type";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 
 const CONTENT_CONTAINER_STYLE = { paddingTop: 16 } as const;
 
@@ -82,11 +83,7 @@ const StudentItem = React.memo(({ name, studentPhoto }: Student) => {
       <View className="flex-row gap-2 items-center">
         <Avatar alt="student-photo" size="sm">
           <Avatar.Fallback>{name.split(" ")[0][0]}</Avatar.Fallback>
-          <Avatar.Image
-            source={{
-              uri: studentPhoto,
-            }}
-          />
+          <AttachmentAvatarImage path={studentPhoto} />
         </Avatar>
         <AppText className="text-neutral-900 dark:text-neutral-100 font-poppins-regular text-lg flex-1">
           {name}

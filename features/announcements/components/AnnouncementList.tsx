@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, View } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { Avatar, Card, Separator, Skeleton, Surface } from "heroui-native";
+import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { Icon } from "@/components/Icon";
@@ -43,13 +44,7 @@ const AnnouncementList = () => {
             <Card.Header>
               <View className="flex-row items-center gap-2">
                 <Avatar alt="" size="sm" className="border border-accent">
-                  <Avatar.Image
-                    source={
-                      item.createdById.studentPhoto
-                        ? { uri: item.createdById.studentPhoto }
-                        : require("@/assets/placeholder/avatar-placeholder.png")
-                    }
-                  />
+                  <AttachmentAvatarImage path={item.createdById.studentPhoto} />
                   <Avatar.Fallback>
                     {item.createdById.firstName.charAt(0)}
                   </Avatar.Fallback>

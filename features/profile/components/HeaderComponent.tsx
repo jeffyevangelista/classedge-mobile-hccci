@@ -3,8 +3,8 @@ import { useUserDetails } from "@/features/profile/profile.hooks";
 import { Avatar, Skeleton } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
-import { env } from "@/utils/env";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 
 const HeaderComponent = () => {
   const { data, isLoading, error } = useUserDetails();
@@ -25,15 +25,7 @@ const HeaderComponent = () => {
               : "User"
           }
         >
-          <Avatar.Image
-            source={
-              userDetails?.studentPhoto
-                ? {
-                    uri: `${env.EXPO_PUBLIC_API_BASE_URL}/media/${userDetails.studentPhoto}`,
-                  }
-                : require("@/assets/placeholder/avatar-placeholder.png")
-            }
-          />
+          <AttachmentAvatarImage path={userDetails?.studentPhoto} />
           <Avatar.Fallback>
             {userDetails?.firstName?.[0] ?? ""}
             {userDetails?.lastName?.[0] ?? ""}

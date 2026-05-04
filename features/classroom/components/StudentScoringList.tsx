@@ -33,9 +33,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Image from "@/components/Image";
 import { useCamera } from "@/features/camera/useCamera";
 import type { CapturedPhoto } from "@/features/camera/useCamera";
-import { env } from "@/utils/env";
-
-type LocalImages = Record<number, CapturedPhoto | null>;
+import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 
 type ActivityDetail = {
   localId: string;
@@ -259,9 +257,6 @@ const StudentScoringList = ({
           const fullName = profile
             ? `${profile.lastName}, ${profile.firstName}`
             : `Student ${item.studentId}`;
-          const photoUri = profile?.studentPhoto
-            ? `${env.EXPO_PUBLIC_API_BASE_URL}/media/${profile.studentPhoto}`
-            : undefined;
           const score = localScores[item.studentId] ?? "";
           const isOverMax =
             score !== "" && parseInt(score, 10) > activityDetail.maxScore;
@@ -272,13 +267,7 @@ const StudentScoringList = ({
           return (
             <Card className="rounded-xl items-center gap-3 mb-1.5 shadow-none flex-row">
               <Avatar alt={fullName} size="sm">
-                <Avatar.Image
-                  source={
-                    photoUri
-                      ? { uri: photoUri }
-                      : require("@/assets/placeholder/avatar-placeholder.png")
-                  }
-                />
+                <AttachmentAvatarImage path={profile?.studentPhoto} />
                 <Avatar.Fallback>
                   {profile?.firstName?.[0] ?? ""}
                   {profile?.lastName?.[0] ?? ""}
