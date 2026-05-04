@@ -14,7 +14,6 @@ import { Skeleton, useThemeColor } from "heroui-native";
 const CourseDetails = () => {
   const { classroomId, courseId } = useLocalSearchParams();
   const enrollmentId = (classroomId ?? courseId) as string;
-  const themeColorAccent = useThemeColor("accent");
 
   const {
     data: courseDetails,
@@ -112,6 +111,8 @@ const formatTime = (time: string) => {
 const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
+  const themeColorAccent = useThemeColor("accent");
+
   const instructorName = useMemo(() => {
     const first = courseDetails?.subjectId?.assignTeacherId?.firstName;
     const last = courseDetails?.subjectId?.assignTeacherId?.lastName;
