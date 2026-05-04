@@ -1,9 +1,8 @@
-import { View, Pressable, useColorScheme } from "react-native";
+import { View, Pressable } from "react-native";
 import React, { useMemo } from "react";
 import { useClock } from "@/hooks/useClock";
 import { useClassSchedule } from "@/features/profile/profile.hooks";
 import { Skeleton } from "heroui-native";
-import { colors } from "@/utils/colors";
 import { AppText } from "@/components/AppText";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useRouter } from "expo-router";
@@ -17,7 +16,6 @@ const formatTime = (time: string) => {
 
 const ScheduleComponent = () => {
   const now = useClock();
-  const isDark = useColorScheme() === "dark";
   const router = useRouter();
 
   const currentDay = now.getDay();
@@ -130,28 +128,18 @@ const ScheduleComponent = () => {
       <View className="flex-row gap-3">
         {/* Left Card — Current Class */}
         <Pressable
-          className="flex-1 rounded-2xl p-5 justify-between"
-          style={{
-            backgroundColor: currentClass
-              ? colors.primary[700]
-              : isDark
-                ? "#1e293b"
-                : colors.primary[50],
-            minHeight: 180,
-          }}
+          className={`flex-1 rounded-2xl p-5 justify-between ${
+            currentClass ? "bg-accent" : "bg-surface-secondary"
+          }`}
+          style={{ minHeight: 180 }}
           onPress={() => router.push("/(main)/profile/class-schedule")}
         >
           <View className="flex-row items-center gap-2 mb-3">
             <AppText
               weight="bold"
-              className="uppercase text-[11px] tracking-widest"
-              style={{
-                color: currentClass
-                  ? "rgba(255,255,255,0.7)"
-                  : isDark
-                    ? colors.primary[300]
-                    : colors.primary[400],
-              }}
+              className={`uppercase text-[11px] tracking-widest ${
+                currentClass ? "text-accent-foreground/70" : "text-muted"
+              }`}
             >
               {currentClass ? "Now" : "No Class"}
             </AppText>
@@ -160,14 +148,9 @@ const ScheduleComponent = () => {
           <View className="flex-1 justify-center">
             <AppText
               weight="bold"
-              className="text-[15px] leading-5"
-              style={{
-                color: currentClass
-                  ? "#ffffff"
-                  : isDark
-                    ? colors.primary[100]
-                    : colors.primary[800],
-              }}
+              className={`text-[15px] leading-5 ${
+                currentClass ? "text-accent-foreground" : "text-foreground"
+              }`}
               numberOfLines={2}
             >
               {currentClass
@@ -177,25 +160,15 @@ const ScheduleComponent = () => {
           </View>
 
           <View
-            className="rounded-xl px-3 py-2 mt-3 self-start"
-            style={{
-              backgroundColor: currentClass
-                ? "rgba(255,255,255,0.15)"
-                : isDark
-                  ? colors.primary[900]
-                  : colors.primary[100],
-            }}
+            className={`rounded-xl px-3 py-2 mt-3 self-start ${
+              currentClass ? "bg-white/15" : "bg-default"
+            }`}
           >
             <AppText
               weight="semibold"
-              className="text-xs"
-              style={{
-                color: currentClass
-                  ? "#ffffff"
-                  : isDark
-                    ? colors.primary[300]
-                    : colors.primary[600],
-              }}
+              className={`text-xs ${
+                currentClass ? "text-accent-foreground" : "text-muted"
+              }`}
             >
               {currentClass
                 ? `${formatTime(currentClass.scheduleStartTime)} – ${formatTime(currentClass.scheduleEndTime)}`
@@ -206,39 +179,20 @@ const ScheduleComponent = () => {
 
         {/* Right Card — Upcoming Class */}
         <Pressable
-          className="flex-1 rounded-2xl p-5 justify-between border"
-          style={{
-            borderColor: nextClass
-              ? isDark
-                ? colors.primary[800]
-                : colors.primary[200]
-              : isDark
-                ? "#374151"
-                : "#e5e7eb",
-            backgroundColor: nextClass
-              ? isDark
-                ? colors.primary[950]
-                : colors.primary[50]
-              : isDark
-                ? "#111827"
-                : "#f9fafb",
-            minHeight: 180,
-          }}
+          className={`flex-1 rounded-2xl p-5 justify-between border ${
+            nextClass
+              ? "bg-accent-soft border-border"
+              : "bg-surface-secondary border-border"
+          }`}
+          style={{ minHeight: 180 }}
           onPress={() => router.push("/(main)/profile/class-schedule")}
         >
           <View className="flex-row items-center gap-2 mb-3">
             <AppText
               weight="bold"
-              className="uppercase text-[11px] tracking-widest"
-              style={{
-                color: nextClass
-                  ? isDark
-                    ? colors.primary[400]
-                    : colors.primary[500]
-                  : isDark
-                    ? "#6b7280"
-                    : "#9ca3af",
-              }}
+              className={`uppercase text-[11px] tracking-widest ${
+                nextClass ? "text-accent" : "text-muted"
+              }`}
             >
               Up Next
             </AppText>
@@ -247,16 +201,9 @@ const ScheduleComponent = () => {
           <View className="flex-1 justify-center">
             <AppText
               weight="bold"
-              className="text-[15px] leading-5"
-              style={{
-                color: nextClass
-                  ? isDark
-                    ? colors.primary[100]
-                    : colors.primary[900]
-                  : isDark
-                    ? "#9ca3af"
-                    : "#6b7280",
-              }}
+              className={`text-[15px] leading-5 ${
+                nextClass ? "text-foreground" : "text-muted"
+              }`}
               numberOfLines={2}
             >
               {nextClass
@@ -267,30 +214,10 @@ const ScheduleComponent = () => {
             </AppText>
           </View>
 
-          <View
-            className="rounded-xl px-3 py-2 mt-3 self-start"
-            style={{
-              backgroundColor: nextClass
-                ? isDark
-                  ? colors.primary[900]
-                  : colors.primary[100]
-                : isDark
-                  ? "#1f2937"
-                  : "#f3f4f6",
-            }}
-          >
+          <View className="rounded-xl px-3 py-2 mt-3 self-start bg-default">
             <AppText
               weight="semibold"
-              className="text-xs"
-              style={{
-                color: nextClass
-                  ? isDark
-                    ? colors.primary[300]
-                    : colors.primary[700]
-                  : isDark
-                    ? "#6b7280"
-                    : "#9ca3af",
-              }}
+              className={`text-xs ${nextClass ? "text-accent" : "text-muted"}`}
             >
               {nextClass
                 ? nextClassDayLabel
