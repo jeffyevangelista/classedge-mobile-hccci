@@ -181,10 +181,11 @@ const CourseScreen = () => {
               onPress={() =>
                 router.push(`/(main)/course/${courseId}/course-details`)
               }
-              className="w-9 h-9 rounded-full flex justify-center items-center"
+              className="w-11 h-11 rounded-full flex justify-center items-center"
             >
               <Icon
                 name="InfoIcon"
+                size={24}
                 color={foregroundColor}
                 style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
               />
@@ -224,7 +225,7 @@ const CourseScreen = () => {
           )}
         </Animated.View>
 
-        <View style={styles.content} className="bg-surface">
+        <View style={styles.content} className="bg-background">
           {isLoading ? (
             <View className="gap-2">
               <Skeleton className="h-6 w-3/4 rounded-full" />
