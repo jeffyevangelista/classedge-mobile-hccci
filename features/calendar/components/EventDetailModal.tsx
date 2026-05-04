@@ -55,7 +55,7 @@ const EventDetailModal = ({
           enableDynamicSizing={false}
           topInset={50}
           style={contentStyle}
-          className="bg-surface"
+          className="bg-overlay"
         >
           <BottomSheetContent eventId={eventId} />
         </BottomSheet.Content>

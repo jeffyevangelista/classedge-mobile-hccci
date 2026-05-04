@@ -1,4 +1,4 @@
-import { View, Pressable, RefreshControl, useColorScheme } from "react-native";
+import { View, Pressable, RefreshControl } from "react-native";
 import { useNotifications } from "../notifications.hooks";
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
@@ -15,8 +15,6 @@ import ErrorFallback from "@/components/ErrorFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 const NotificationList = () => {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
   const { data, isLoading, isError, error, isRefetching, refetch } =
     useNotifications();
   if (isLoading) {

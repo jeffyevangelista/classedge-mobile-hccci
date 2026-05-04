@@ -169,7 +169,7 @@ const AssessmentDetailsScreen = () => {
       </ScrollView>
       {!maxRetakesReached && (
         <View
-          className="p-4 bg-surface"
+          className="p-4 bg-surface-secondary"
           style={{ paddingBottom: Math.max(insets.bottom, 16) }}
         >
           <Button isDisabled={disableButton} onPress={handleStartAssessment}>
