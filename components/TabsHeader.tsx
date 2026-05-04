@@ -34,7 +34,7 @@ const TabsHeader = () => {
   return (
     <View
       style={{ paddingTop: insets.top }}
-      className="bg-white dark:bg-neutral-900 px-5 pb-3 flex flex-row justify-between items-center"
+      className="bg-surface px-5 pb-3 flex flex-row justify-between items-center border-b border-border"
     >
       <Link href="/(main)/profile">
         <View className="flex flex-row items-center gap-3">
@@ -46,12 +46,12 @@ const TabsHeader = () => {
             </Avatar.Fallback>
           </Avatar>
           <View>
-            <AppText className="text-xs text-gray-500 dark:text-gray-400">
+            <AppText className="text-xs text-muted">
               {greeting}
             </AppText>
             <AppText
               weight="semibold"
-              className="text-2xl leading-tight dark:text-white"
+              className="text-2xl leading-tight text-foreground"
             >
               {userDetails?.firstName
                 ? userDetails.firstName.split(" ")[0]
@@ -71,7 +71,7 @@ const TabsHeaderSkeleton = () => {
   return (
     <View
       style={{ paddingTop: insets.top }}
-      className="bg-white dark:bg-neutral-900 px-5 pb-3 flex flex-row justify-between items-center"
+      className="bg-surface px-5 pb-3 flex flex-row justify-between items-center border-b border-border"
     >
       <View className="flex flex-row items-center gap-3">
         <Skeleton className="w-8 h-8 rounded-full" />
