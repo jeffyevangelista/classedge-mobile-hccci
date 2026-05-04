@@ -1,5 +1,4 @@
 import BackButton from "@/components/BackButton";
-import TabsHeader from "@/components/TabsHeader";
 import { SyncSheetProvider } from "@/features/sync/SyncSheetContext";
 import SyncGate from "@/features/sync/components/SyncGate";
 import SyncSheet from "@/features/sync/components/SyncSheet";
@@ -12,13 +11,7 @@ const MainLayout = () => {
     <SyncSheetProvider>
       <SyncGate>
         <Stack screenOptions={{ ...headerOptions, headerShown: false }}>
-        <Stack.Screen
-          name="(tabs)"
-          options={{
-            headerShown: true,
-            header: () => <TabsHeader />,
-          }}
-        />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="profile" />
         <Stack.Screen name="course" />
         <Stack.Screen name="subject" />
