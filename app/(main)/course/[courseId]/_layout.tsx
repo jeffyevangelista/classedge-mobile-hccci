@@ -27,11 +27,10 @@ const CourseDetailsLayout = () => {
                 onPress={() =>
                   router.push(`/(main)/course/${courseId}/course-details`)
                 }
-                className="w-11 h-11 rounded-full flex justify-center items-center"
+                className="w-9 h-9 rounded-full flex justify-center items-center"
               >
                 <Icon
                   name="InfoIcon"
-                  size={24}
                   color={tintColor}
                   style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
                 />

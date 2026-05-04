@@ -12,7 +12,7 @@ const BackButton = ({ tintColor, to }: BackButtonProps) => {
 
   return (
     <Pressable
-      className="w-11 h-11 rounded-full flex justify-center items-center"
+      className="w-9 h-9 rounded-full flex justify-center items-center"
       onPress={() => {
         if (to) {
           router.push(to);
@@ -25,7 +25,6 @@ const BackButton = ({ tintColor, to }: BackButtonProps) => {
     >
       <Icon
         name="ArrowLeftIcon"
-        size={24}
         color={tintColor as string}
         style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }} // adjust visual centering for iOS
       />
