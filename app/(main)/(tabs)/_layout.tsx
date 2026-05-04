@@ -1,10 +1,11 @@
 import TabIcon from "@/components/TabIcon";
+import { useThemeColor } from "heroui-native";
 import { useNetworkBannerHeight } from "@/features/network/NetworkBannerContext";
 import { useNotificationCount } from "@/features/notifications/notifications.hooks";
 import useStore from "@/lib/store";
 import { Tabs } from "expo-router";
 import { useEffect, useRef } from "react";
-import { Platform, useColorScheme } from "react-native";
+import { Platform, StyleSheet, useColorScheme } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -22,7 +23,10 @@ const TabsLayout = () => {
   const isBannerVisible = bannerHeight > 0;
 
   const colorScheme = useColorScheme();
-  const tabBarBg = colorScheme === "dark" ? "#1c1c1e" : "#ffffff";
+  const surfaceColor = useThemeColor("surface");
+  const borderColor = useThemeColor("border");
+  const accentColor = useThemeColor("accent");
+  const mutedColor = useThemeColor("muted");
 
   const shouldHidePadding = isOffline || isBannerVisible;
   const targetPadding = shouldHidePadding ? 0 : insets.bottom;
@@ -46,7 +50,7 @@ const TabsLayout = () => {
   const animatedStyle = useAnimatedStyle(() => ({
     flex: 1,
     paddingBottom: bottomPadding.value,
-    backgroundColor: tabBarBg,
+    backgroundColor: surfaceColor,
   }));
 
   return (
@@ -65,15 +69,19 @@ const TabsLayout = () => {
           tabBarLabelStyle: {
             fontFamily: "Poppins-Medium",
           },
+          tabBarActiveTintColor: accentColor,
+          tabBarInactiveTintColor: mutedColor,
           tabBarStyle: {
             elevation: 0,
             shadowOpacity: 0,
-            borderTopWidth: 0,
-            backgroundColor: tabBarBg,
+            borderTopWidth: StyleSheet.hairlineWidth,
+            borderTopColor: borderColor,
+            backgroundColor: surfaceColor,
           },
           headerStyle: {
             elevation: 0,
             shadowOpacity: 0,
+            backgroundColor: surfaceColor,
           },
         }}
       >
