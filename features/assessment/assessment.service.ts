@@ -1,4 +1,4 @@
-import { attemptsTable, attemptAnswerTable } from "@/powersync/schema";
+import { attemptsTable, attemptAnswerTable, assessmentQuestionsTable } from "@/powersync/schema";
 import { db } from "@/powersync/system";
 import { eq } from "drizzle-orm";
 
@@ -153,13 +153,34 @@ export const updateLastIndex = (attemptLocalId: string, lastIndex: number) => {
     .where(eq(attemptsTable.localId, attemptLocalId));
 };
 
-export const submitAttempt = async (attemptLocalId: string, score: number) => {
+export const getChoicesForActivity = (activityId: number) => {
+  return db.query.assessmentQuestionsTable.findMany({
+    where: (t, { eq }) => eq(t.activityId, activityId),
+    orderBy: (t, { asc }) => [asc(t.id)],
+  });
+};
+
+export const getOngoingAttempt = (
+  studentActivityId: number,
+  studentId: number,
+) => {
+  return db.query.attemptsTable.findFirst({
+    where: (t, { and, eq }) =>
+      and(
+        eq(t.studentActivityId, studentActivityId),
+        eq(t.studentId, studentId),
+        eq(t.status, "ongoing"),
+      ),
+  });
+};
+
+export const finalizeAttempt = (attemptLocalId: string) => {
   return db
     .update(attemptsTable)
     .set({
       status: "completed",
-      score,
       lastHeartbeatAt: new Date().toISOString(),
     })
     .where(eq(attemptsTable.localId, attemptLocalId));
 };
+
