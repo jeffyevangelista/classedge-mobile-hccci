@@ -1,4 +1,4 @@
-import { attemptsTable, attemptAnswerTable, assessmentQuestionsTable } from "@/powersync/schema";
+import { attemptsTable, attemptAnswerTable } from "@/powersync/schema";
 import { db } from "@/powersync/system";
 import { eq } from "drizzle-orm";
 
