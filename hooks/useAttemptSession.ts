@@ -3,7 +3,7 @@ import { AppState, type AppStateStatus } from "react-native";
 import {
   updateHeartbeat,
   updateLastIndex,
-  submitAttempt,
+  finalizeAttempt,
 } from "@/features/assessment/assessment.service";
 
 const HEARTBEAT_INTERVAL_MS = 10_000;
@@ -68,7 +68,7 @@ export const useAttemptSession = ({
 
     try {
       await updateHeartbeat(attempt.localId, elapsedRef.current);
-      await submitAttempt(attempt.localId, 0);
+      await finalizeAttempt(attempt.localId);
       onAutoSubmit();
     } catch (err) {
       console.error("[AttemptSession] Auto-submit failed:", err);
