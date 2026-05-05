@@ -168,7 +168,7 @@ const CourseScreen = () => {
           >
             <AppText
               weight="semibold"
-              className="text- text-foreground"
+              className="text-lg text-foreground"
               numberOfLines={1}
             >
               {data?.subjectId.subjectName ?? ""}
