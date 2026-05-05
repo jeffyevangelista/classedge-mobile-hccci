@@ -6,6 +6,8 @@ import {
   getQuestions,
   getOrderedQuestions,
   getAnswersForAttempt,
+  getChoicesForActivity,
+  getOngoingAttempt,
 } from "./assessment.service";
 
 export const useAssessmentDetails = ({
@@ -64,5 +66,27 @@ export const useGetAnswersForAttempt = (retakeRecordId: string) => {
     queryKey: ["attempt-answers", retakeRecordId],
     queryFn: () => getAnswersForAttempt(retakeRecordId),
     enabled: !!retakeRecordId,
+  });
+};
+
+export const useChoicesForActivity = (activityId: number) => {
+  return useQuery({
+    queryKey: ["activity-choices", activityId],
+    queryFn: () => getChoicesForActivity(activityId),
+    enabled: !!activityId,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useOngoingAttempt = (
+  studentActivityId?: number,
+  studentId?: number,
+) => {
+  return useQuery({
+    queryKey: ["ongoing-attempt", studentActivityId, studentId],
+    queryFn: () => getOngoingAttempt(studentActivityId!, studentId!),
+    enabled: !!studentActivityId && !!studentId,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 };
