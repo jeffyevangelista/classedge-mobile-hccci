@@ -159,14 +159,16 @@ const CourseScreen = () => {
               style={[styles.floatingBtn, floatingBtnStyle]}
               className="bg-white/70 dark:bg-black/50"
             />
-            <BackButton tintColor={foregroundColor} />
+            <View className="w-11 h-11 rounded-full flex justify-center items-center">
+              <BackButton tintColor={foregroundColor} />
+            </View>
           </View>
           <Animated.View
             style={[{ flex: 1, marginHorizontal: 4 }, navTitleStyle]}
           >
             <AppText
               weight="semibold"
-              className="text-sm text-foreground"
+              className="text- text-foreground"
               numberOfLines={1}
             >
               {data?.subjectId.subjectName ?? ""}

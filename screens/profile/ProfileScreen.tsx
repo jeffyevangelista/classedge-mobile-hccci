@@ -41,21 +41,20 @@ const profileNav: ProfileNavProps[] = [
 const ProfileScreen = () => {
   return (
     <Screen className="px-2.5 md:px-8">
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="flex mx-auto max-w-2xl gap-8 w-full items-center py-8">
-          {/* Header Section */}
-          <HeaderComponent />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerClassName="mx-auto max-w-2xl gap-8 w-full items-center pb-8 grow py-8"
+      >
+        <HeaderComponent />
 
-          {/* Navigation Links */}
-          <Card className="shadow-none rounded-xl overflow-hidden w-full">
-            {profileNav.map((item) => (
-              <ProfileNavItem key={item.title} {...item} />
-            ))}
-            <ThemeToggleButton />
-            <ResyncButton />
-            <LogoutButton />
-          </Card>
-        </View>
+        <Card className="shadow-none rounded-xl overflow-hidden w-full">
+          {profileNav.map((item) => (
+            <ProfileNavItem key={item.title} {...item} />
+          ))}
+          <ThemeToggleButton />
+          <ResyncButton />
+          <LogoutButton />
+        </Card>
       </ScrollView>
     </Screen>
   );
@@ -65,26 +64,18 @@ const ProfileNavItem = ({ title, href, name }: ProfileNavProps) => {
   return (
     <Link href={href} asChild>
       <Pressable className="active:opacity-70">
-        {({ pressed }) => (
-          <View
-            className={`flex-row items-center p-3 rounded-2xl border border-transparent`}
+        <View className="flex-row items-center p-3 rounded-2xl border border-transparent">
+          <Icon name={name} size={28} className="text-accent" />
+
+          <AppText
+            weight="semibold"
+            className="text-base sm:text-lg ml-4 flex-1 text-foreground"
           >
-            <Icon name={name} size={28} className="text-accent" />
+            {title}
+          </AppText>
 
-            <AppText
-              weight="semibold"
-              className="text-base sm:text-lg ml-4 flex-1 text-slate-800 dark:text-slate-100"
-            >
-              {title}
-            </AppText>
-
-            <Icon
-              name={"CaretRightIcon"}
-              size={18}
-              className="text-slate-400 dark:text-slate-500"
-            />
-          </View>
-        )}
+          <Icon name={"CaretRightIcon"} size={18} className="text-muted" />
+        </View>
       </Pressable>
     </Link>
   );

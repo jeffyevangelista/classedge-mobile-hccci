@@ -36,14 +36,14 @@ const HeaderComponent = () => {
       <View className="items-center mt-6">
         <AppText
           weight="bold"
-          className="text-2xl sm:text-3xl text-slate-900 dark:text-slate-100"
+          className="text-2xl sm:text-3xl text-foreground"
         >
           {userDetails?.firstName} {userDetails?.lastName}
         </AppText>
-        <AppText className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
+        <AppText className="text-sm sm:text-base text-muted">
           {userDetails?.userId?.email}
         </AppText>
-        <AppText weight="semibold" className="text-xs sm:text-sm">
+        <AppText weight="semibold" className="text-xs sm:text-sm text-foreground">
           {userDetails?.idNumber}
         </AppText>
       </View>
@@ -54,7 +54,7 @@ const HeaderComponent = () => {
 const ProfileHeaderSkeleton = () => {
   return (
     <View className="items-center">
-      <View className="p-1 border-3 border-gray-200 dark:border-gray-700 rounded-full">
+      <View className="p-1 border-3 border-border rounded-full">
         <Skeleton className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full" />
       </View>
       <View className="items-center mt-6 gap-2">

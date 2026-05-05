@@ -1,19 +1,20 @@
 import { useThemeColor } from "heroui-native";
-import { View } from "react-native";
 
 export const useThemedHeaderOptions = () => {
   const surfaceColor = useThemeColor("surface");
   const foregroundColor = useThemeColor("foreground");
+  const borderColor = useThemeColor("border");
   return {
-    headerStyle: { backgroundColor: surfaceColor },
+    headerStyle: {
+      backgroundColor: surfaceColor,
+      borderBottomColor: borderColor,
+      borderBottomWidth: 1,
+    },
     headerTintColor: foregroundColor,
     headerTitleStyle: {
       color: foregroundColor,
       fontFamily: "Poppins-SemiBold",
     },
     headerShadowVisible: false,
-    headerBackground: () => (
-      <View className="flex-1 bg-surface border-b border-border" />
-    ),
   };
 };
