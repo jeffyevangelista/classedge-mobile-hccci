@@ -27,12 +27,6 @@ const StudentList = () => {
     isRefetching,
   } = useStudents(classroomId as string);
 
-  if (isLoading) return <StudentsSkeleton />;
-  if (isError)
-    return (
-      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
-    );
-
   const students = useMemo(
     () =>
       data?.pages.flatMap((page) =>
@@ -51,6 +45,12 @@ const StudentList = () => {
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  if (isLoading) return <StudentsSkeleton />;
+  if (isError)
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   if (!isLoading && students.length === 0)
     return (

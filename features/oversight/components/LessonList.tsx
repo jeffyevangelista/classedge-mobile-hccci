@@ -38,12 +38,6 @@ const MaterialList = () => {
     fetchNextPage,
   } = useLessons(subjectId as string);
 
-  if (isLoading && !data) return <MaterialsSkeleton />;
-  if (isError)
-    return (
-      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
-    );
-
   const materials = useMemo(
     () => data?.pages.flatMap((page) => page.results) ?? [],
     [data],
@@ -62,6 +56,12 @@ const MaterialList = () => {
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  if (isLoading && !data) return <MaterialsSkeleton />;
+  if (isError)
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   if (!isLoading && materials.length === 0)
     return (
