@@ -1,4 +1,4 @@
-import { useFormattedDate } from "@/hooks/userFormattedDate";
+import { formatDate } from "@/utils/formatDate";
 import { Assessment } from "../oversight.type";
 import { Link } from "expo-router";
 import { Card } from "heroui-native";
@@ -36,7 +36,7 @@ const CourseworkItem = ({
 }: Assessment) => {
   const { label } = getActivityIcon(activityTypeName);
 
-  const formattedDate = endTime ? useFormattedDate(endTime, true) : null;
+  const formattedDate = endTime ? formatDate(endTime, true) : null;
 
   // Calculate urgency
   const getUrgency = () => {

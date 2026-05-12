@@ -2,7 +2,7 @@ import { AppText } from "@/components/AppText";
 import FileRenderer from "@/components/FileRenderer";
 import Screen from "@/components/screen";
 import { useLesson } from "@/features/oversight/oversight.hooks";
-import { useFormattedDate } from "@/hooks/userFormattedDate";
+import { formatDate } from "@/utils/formatDate";
 import { useLocalSearchParams } from "expo-router";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { Skeleton } from "heroui-native";
@@ -34,7 +34,7 @@ const LessonScreen = () => {
     );
 
   const formattedDate = data?.startDate
-    ? useFormattedDate(data.startDate)
+    ? formatDate(data.startDate)
     : null;
 
   return (

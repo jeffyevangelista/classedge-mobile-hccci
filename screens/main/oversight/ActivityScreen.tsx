@@ -1,7 +1,7 @@
 import { AppText } from "@/components/AppText";
 import FileRenderer from "@/components/FileRenderer";
 import { useAssessment } from "@/features/oversight/oversight.hooks";
-import { useFormattedDate } from "@/hooks/userFormattedDate";
+import { formatDate } from "@/utils/formatDate";
 import { useLocalSearchParams } from "expo-router";
 import { Skeleton } from "heroui-native";
 import ErrorFallback from "@/components/ErrorFallback";
@@ -51,7 +51,7 @@ const ActivityScreen = () => {
       >
         <View className="p-4">
           <AppText className="text-sm text-neutral-500 dark:text-neutral-400">
-            Due {useFormattedDate(data.endTime, true)}
+            Due {formatDate(data.endTime, true)}
           </AppText>
           <AppText
             weight="semibold"

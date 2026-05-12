@@ -4,13 +4,21 @@ import { AppText } from "@/components/AppText";
 import { useCourseTimeline } from "../courses.hooks";
 import { Card, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
-import { useFormattedDate } from "@/hooks/userFormattedDate";
+import { formatDate } from "@/utils/formatDate";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
 
+type TimelineItem = {
+  id: string;
+  fileName: string;
+  startDate: string;
+  type: "material" | "assessment";
+};
+
 const CourseTimeline = () => {
   const { courseId } = useLocalSearchParams();
+
   const { data, isLoading, isError, error } = useCourseTimeline(
     courseId as string,
   );
@@ -19,9 +27,9 @@ const CourseTimeline = () => {
   if (isError) return <ErrorFallback message={getApiErrorMessage(error)} />;
 
   return (
-    <FlatList
+    <FlatList<TimelineItem>
       style={{ flex: 1 }}
-      data={data}
+      data={data as TimelineItem[] | undefined}
       scrollEnabled={false}
       ListEmptyComponent={
         <EmptyState
@@ -37,26 +45,42 @@ const CourseTimeline = () => {
   );
 };
 
-const ListItem = ({ item }: { item: any }) => {
-  const ListComponent =
-    item.type === "material" ? MaterialCard : AssessmentCard;
-  return <ListComponent item={item} />;
-};
+const ASSESSMENT_ICON_COLOR = "#f97316";
+const MATERIAL_ICON_COLOR = "#10b981";
 
-const AssessmentCard = ({ item }: { item: any }) => {
-  const formattedDate = useFormattedDate(item.startDate);
-
+const ListItem = ({ item }: { item: TimelineItem }) => {
   const router = useRouter();
+  const formattedDate = formatDate(item.startDate);
+
+  const isAssessment = item.type === "assessment";
+  const iconName = isAssessment ? "PencilLineIcon" : "BookOpenTextIcon";
+  const iconColor = isAssessment ? ASSESSMENT_ICON_COLOR : MATERIAL_ICON_COLOR;
+  const iconBgClass = isAssessment
+    ? "bg-orange-100 dark:bg-orange-900/50"
+    : "bg-emerald-100 dark:bg-emerald-900/50";
+  const accessibilityLabel = `Open ${isAssessment ? "assessment" : "material"}: ${item.fileName}`;
+
+  const handlePress = () => {
+    if (isAssessment) {
+      router.push(`/assessment/${item.id}`);
+    } else {
+      router.push(`/material/${item.id}`);
+    }
+  };
+
   return (
     <Pressable
-      onPress={() => router.push(`/assessment/${item.id}`)}
+      onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
       className="w-full max-w-3xl mx-auto"
     >
-      <Card className="rounded-xl flex-row items-center gap-2 shadow-none mb-2">
-        <View className="p-2 bg-orange-50 rounded-full">
-          <Icon name="PencilLineIcon" size={24} className="text-orange-500" />
+      <Card className="rounded-xl flex-row items-center gap-3 shadow-none mb-2">
+        <View className={`p-2 rounded-full ${iconBgClass}`}>
+          <Icon name={iconName} size={24} color={iconColor} />
         </View>
-        <View>
+        <View className="flex-1">
           <AppText
             weight="semibold"
             className="text-lg"
@@ -65,41 +89,7 @@ const AssessmentCard = ({ item }: { item: any }) => {
           >
             {item.fileName}
           </AppText>
-          <AppText className="text-xs text-gray-500">
-            Posted {formattedDate}
-          </AppText>
-        </View>
-      </Card>
-    </Pressable>
-  );
-};
-
-const MaterialCard = ({ item }: { item: any }) => {
-  const formattedDate = useFormattedDate(item.startDate);
-  const router = useRouter();
-  return (
-    <Pressable
-      onPress={() => router.push(`/material/${item.id}`)}
-      className="w-full max-w-3xl mx-auto"
-    >
-      <Card className="rounded-xl flex-row items-center gap-2 shadow-none mb-2">
-        <View className="p-2 bg-emerald-50 rounded-full">
-          <Icon
-            name="BookOpenTextIcon"
-            size={24}
-            className="text-emerald-500"
-          />
-        </View>
-        <View>
-          <AppText
-            weight="semibold"
-            className="text-lg"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {item.fileName}
-          </AppText>
-          <AppText className="text-xs text-gray-500">
+          <AppText className="text-xs text-muted">
             Posted {formattedDate}
           </AppText>
         </View>
@@ -115,7 +105,7 @@ const CourseTimelineSkeleton = () => {
         .fill(0)
         .map((_, index) => (
           <View key={index} className="w-full max-w-3xl mx-auto">
-            <Card className="rounded-xl flex-row items-center gap-2 shadow-none mb-2">
+            <Card className="rounded-xl flex-row items-center gap-3 shadow-none mb-2">
               <Skeleton className="w-10 h-10 rounded-full" />
               <View className="flex-1 gap-1.5">
                 <Skeleton className="h-5 w-3/4 rounded" />

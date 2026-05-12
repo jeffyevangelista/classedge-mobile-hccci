@@ -1,9 +1,6 @@
 import dayjs from "dayjs";
 
-export function useFormattedDate(
-  dateString: string,
-  includeTime: boolean = false,
-) {
+export function formatDate(dateString: string, includeTime = false) {
   const date = dayjs(dateString);
 
   if (includeTime) {
