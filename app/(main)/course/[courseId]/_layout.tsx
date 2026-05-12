@@ -6,6 +6,7 @@ import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 
 const CourseDetailsLayout = () => {
   const { courseId } = useLocalSearchParams();
+  const router = useRouter();
   const headerOptions = useThemedHeaderOptions();
 
   return (
@@ -20,23 +21,20 @@ const CourseDetailsLayout = () => {
         name="index"
         options={{
           headerShown: false,
-          headerRight: ({ tintColor }) => {
-            const router = useRouter();
-            return (
-              <Pressable
-                onPress={() =>
-                  router.push(`/(main)/course/${courseId}/course-details`)
-                }
-                className="w-9 h-9 rounded-full flex justify-center items-center"
-              >
-                <Icon
-                  name="InfoIcon"
-                  color={tintColor}
-                  style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
-                />
-              </Pressable>
-            );
-          },
+          headerRight: ({ tintColor }) => (
+            <Pressable
+              onPress={() =>
+                router.push(`/(main)/course/${courseId}/course-details`)
+              }
+              className="w-9 h-9 rounded-full flex justify-center items-center"
+            >
+              <Icon
+                name="InfoIcon"
+                color={tintColor}
+                style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
+              />
+            </Pressable>
+          ),
         }}
       />
       <Stack.Screen
