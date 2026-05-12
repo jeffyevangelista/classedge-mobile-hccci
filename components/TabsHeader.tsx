@@ -6,20 +6,20 @@ import { ErrorComponent } from "@/components/ErrorComponent";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import { useEffect, useState } from "react";
-import useGreeting from "@/hooks/useGreeting";
+import { getGreeting } from "@/utils/getGreeting";
 import SyncCenter from "@/features/sync/components/SyncCenter";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 const TabsHeader = () => {
   const { data, isLoading, error, refresh } = useUserDetails();
-  const [greeting, setGreeting] = useState(useGreeting());
+  const [greeting, setGreeting] = useState(getGreeting());
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (nextAppState === "active") {
-        setGreeting(useGreeting());
+        setGreeting(getGreeting());
       }
     });
 
