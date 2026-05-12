@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "format": "biome format --write ."
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@azure/core-asynciterator-polyfill": "^1.0.2",
@@ -45,11 +46,13 @@
     "expo-constants": "~18.0.12",
     "expo-crypto": "~15.0.8",
     "expo-dev-client": "~6.0.20",
+    "expo-document-picker": "~14.0.8",
     "expo-drizzle-studio-plugin": "^0.2.1",
     "expo-file-system": "^19.0.21",
     "expo-font": "~14.0.10",
     "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.11",
+    "expo-image-picker": "~17.0.11",
     "expo-intent-launcher": "~13.0.8",
     "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.11",
@@ -102,6 +105,7 @@
     }
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
     "@types/react": "~19.1.0",
     "@types/zxcvbn": "^4.4.5",
     "drizzle-kit": "^0.31.8",
