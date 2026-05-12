@@ -29,7 +29,10 @@ const AssessmentResult = ({
             <AppText weight="semibold">Score</AppText>
             <AppText>{assessmentData.score}</AppText>
           </View>
-          <AssessmentAttempts assessmentData={assessmentData} />
+          <AssessmentAttempts
+            studentActivityId={assessmentData.studentActivityId}
+            studentId={assessmentData.studentId}
+          />
         </View>
       </View>
     </View>

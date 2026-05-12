@@ -7,6 +7,10 @@ import {
 } from "./ classroom.service";
 import { snakeToCamel } from "@/lib/case-transform";
 import type { Assessment } from "@/powersync/schema";
+import { studentAssessment } from "@/powersync/schema";
+import type { InferSelectModel } from "drizzle-orm";
+
+type StudentAssessment = InferSelectModel<typeof studentAssessment>;
 
 const wrap = <T>(result: {
   data: T;
@@ -57,5 +61,8 @@ export const useStudentScoresForActivity = (activityLocalId: string) => {
     [activityLocalId],
   );
 
-  return { ...wrap(result), data: snakeToCamel(result.data) };
+  return {
+    ...wrap(result),
+    data: snakeToCamel<StudentAssessment[]>(result.data),
+  };
 };
