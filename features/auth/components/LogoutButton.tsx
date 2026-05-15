@@ -1,6 +1,7 @@
 import { powersync } from "@/powersync/system";
 import useStore from "@/lib/store";
-import { Button, Dialog, useToast } from "heroui-native";
+import { clearAllAttachments } from "@/features/attachments/attachments.api";
+import { Button, Dialog, useThemeColor, useToast } from "heroui-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { Icon } from "@/components/Icon";
@@ -10,6 +11,7 @@ const LogoutButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [unsyncedCount, setUnsyncedCount] = useState(0);
   const [isPending, setIsPending] = useState(false);
+  const accentColor = useThemeColor("accent");
 
   const checkUnsyncedData = useCallback(async () => {
     const result = await powersync.getAll<{ count: number }>(
@@ -29,14 +31,17 @@ const LogoutButton = () => {
     setIsPending(true);
     setIsOpen(false);
     try {
+      await clearAllAttachments();
       await powersync.disconnectAndClear();
       await useStore.getState().clearCredentials();
-    } catch (error: any) {
+    } catch (err: unknown) {
       setIsPending(false);
+      const message =
+        err instanceof Error ? err.message : "Something went wrong.";
       toast.show({
         variant: "danger",
         label: "Logout Failed",
-        description: error?.message,
+        description: message,
       });
     }
   };
@@ -44,21 +49,21 @@ const LogoutButton = () => {
     <>
       <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
         <Dialog.Trigger asChild>
-          <Pressable className="active:opacity-70">
-            {({ pressed }) => (
-              <View
-                className={`flex-row items-center p-3 rounded-2xl border border-transparent`}
-              >
-                <Icon name={"SignOut"} size={28} className="text-accent" />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Logout"
+            className="active:opacity-70"
+          >
+            <View className="flex-row items-center p-3 rounded-2xl border border-transparent">
+              <Icon name="SignOutIcon" size={28} color={accentColor} />
 
-                <AppText
-                  weight="semibold"
-                  className="text-base sm:text-lg ml-4 flex-1 text-slate-800 dark:text-slate-100"
-                >
-                  Logout
-                </AppText>
-              </View>
-            )}
+              <AppText
+                weight="semibold"
+                className="text-base sm:text-lg ml-4 flex-1"
+              >
+                Logout
+              </AppText>
+            </View>
           </Pressable>
         </Dialog.Trigger>
         <Dialog.Portal>
@@ -78,7 +83,7 @@ const LogoutButton = () => {
                 </AppText>
               )}
             </View>
-            <View>
+            <View className="gap-2">
               <Button
                 variant="danger"
                 isDisabled={isPending}

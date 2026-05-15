@@ -1,47 +1,83 @@
-import { View, TextInput, Image } from "react-native";
-import { useState, useEffect } from "react";
-import { AppText } from "@/components/AppText";
-import { questionStyles as styles } from "./styles";
+import { useState } from "react";
+import { Alert } from "react-native";
 import type { QuestionComponentProps } from "./types";
+import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
+import { UploadCard } from "./upload/UploadCard";
+import type { UploadSource } from "./upload/SourcePickerSheet";
 
 const ImageBasedQuestion = ({
   question,
-  currentAnswer,
-  onAnswer,
+  currentUpload,
+  onUpload,
   disabled,
 }: QuestionComponentProps) => {
-  const [localAnswer, setLocalAnswer] = useState(currentAnswer);
+  const [error, setError] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
 
-  useEffect(() => {
-    setLocalAnswer(currentAnswer);
-  }, [currentAnswer]);
+  const handlePickSource = async (source: UploadSource): Promise<void> => {
+    if (disabled || !onUpload || picking) return;
+    setError(null);
+    setPicking(true);
 
-  const handleChange = (text: string) => {
-    setLocalAnswer(text);
-    onAnswer(question.id, text);
+    try {
+      if (source === "camera") {
+        const perm = await ImagePicker.requestCameraPermissionsAsync();
+        if (!perm.granted) {
+          Alert.alert("Permission required", "Camera access was denied.");
+          return;
+        }
+        const result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ["images"],
+          quality: 0.8,
+        });
+        if (!result.canceled && result.assets[0]) {
+          onUpload(question.id, result.assets[0].uri);
+        }
+      } else if (source === "library") {
+        const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!perm.granted) {
+          Alert.alert("Permission required", "Photo library access was denied.");
+          return;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ["images"],
+          quality: 0.8,
+        });
+        if (!result.canceled && result.assets[0]) {
+          onUpload(question.id, result.assets[0].uri);
+        }
+      } else {
+        const result = await DocumentPicker.getDocumentAsync({
+          copyToCacheDirectory: true,
+        });
+        if (!result.canceled && result.assets[0]) {
+          onUpload(question.id, result.assets[0].uri);
+        }
+      }
+    } catch (err) {
+      console.error("[ImageBasedQuestion] Pick failed:", err);
+      setError("Couldn't attach. Try again.");
+    } finally {
+      setPicking(false);
+    }
+  };
+
+  const handleRemove = () => {
+    if (disabled || !onUpload) return;
+    setError(null);
+    onUpload(question.id, "");
   };
 
   return (
-    <View style={styles.questionContainer}>
-      <AppText style={styles.questionText}>{question.questionText}</AppText>
-      <AppText style={styles.scoreText}>Score: {question.score}</AppText>
-      {question.questionInstruction && (
-        <Image
-          source={{ uri: question.questionInstruction }}
-          style={styles.questionImage}
-          resizeMode="contain"
-        />
-      )}
-      <TextInput
-        style={styles.essayInput}
-        multiline
-        numberOfLines={4}
-        placeholder="Type your answer based on the image..."
-        value={localAnswer}
-        onChangeText={handleChange}
-        editable={!disabled}
-      />
-    </View>
+    <UploadCard
+      uri={currentUpload}
+      disabled={disabled}
+      picking={picking}
+      errorMessage={error}
+      onPickSource={handlePickSource}
+      onRemove={handleRemove}
+    />
   );
 };
 

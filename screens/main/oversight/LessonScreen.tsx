@@ -4,7 +4,8 @@ import Screen from "@/components/screen";
 import { useLesson } from "@/features/oversight/oversight.hooks";
 import { formatDate } from "@/utils/formatDate";
 import { useLocalSearchParams } from "expo-router";
-import { RefreshControl, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { Skeleton } from "heroui-native";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
@@ -41,7 +42,7 @@ const LessonScreen = () => {
     <Screen>
       <ScrollView
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
         }
         showsVerticalScrollIndicator={false}
       >

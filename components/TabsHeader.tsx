@@ -34,11 +34,11 @@ const TabsHeader = () => {
   return (
     <View
       style={{ paddingTop: insets.top }}
-      className="bg-surface px-5 pb-3 flex flex-row justify-between items-center border-b border-border"
+      className="bg-surface px-5 pb-2 flex flex-row justify-between items-center border-b border-border"
     >
       <Link href="/(main)/profile">
         <View className="flex flex-row items-center gap-3">
-          <Avatar size="sm" alt="user-profile">
+          <Avatar size="sm" alt="user-profile ">
             <AttachmentAvatarImage path={userDetails?.studentPhoto} />
             <Avatar.Fallback>
               {userDetails?.firstName?.[0] ?? ""}
@@ -46,9 +46,7 @@ const TabsHeader = () => {
             </Avatar.Fallback>
           </Avatar>
           <View>
-            <AppText className="text-xs text-muted">
-              {greeting}
-            </AppText>
+            <AppText className="text-xs text-muted">{greeting}</AppText>
             <AppText
               weight="semibold"
               className="text-2xl leading-tight text-foreground"

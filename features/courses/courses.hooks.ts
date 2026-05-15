@@ -1,5 +1,7 @@
 import useStore from "@/lib/store";
 import { useQuery } from "@powersync/tanstack-react-query";
+import { useQuery as usePowerSyncQuery } from "@powersync/react-native";
+import { useEffect, useMemo, useState } from "react";
 import {
   getCourseAssessment,
   getCourseDetails,
@@ -24,11 +26,16 @@ export const useStudentCourses = () => {
 };
 
 export const useCourseTimeline = (courseId: string) => {
+  const authUser = useStore((state) => state.authUser);
   return useQuery({
-    queryKey: ["course_timeline", courseId],
+    queryKey: ["course_timeline", courseId, authUser?.id],
+    enabled: !!authUser?.id,
     queryFn: async () => {
       const course = await getCourseDetails(courseId);
-      return await getCourseTimeline(course?.subjectId.id.toString()!);
+      return await getCourseTimeline(
+        course?.subjectId.id.toString()!,
+        authUser!.id,
+      );
     },
   });
 };
@@ -69,4 +76,60 @@ export const useCourseAssessment = (assessmentId: string) => {
     queryKey: ["course-assessment", assessmentId],
     queryFn: () => getCourseAssessment(assessmentId),
   });
+};
+
+export type CoursePendingCount = { due: number; overdue: number };
+
+export const useCoursePendingCounts = (studentId: number | undefined) => {
+  const [nowMinute, setNowMinute] = useState(() =>
+    Math.floor(Date.now() / 60_000),
+  );
+  useEffect(() => {
+    const id = setInterval(
+      () => setNowMinute(Math.floor(Date.now() / 60_000)),
+      60_000,
+    );
+    return () => clearInterval(id);
+  }, []);
+  const nowIso = useMemo(
+    () => new Date(nowMinute * 60_000).toISOString(),
+    [nowMinute],
+  );
+
+  const result = usePowerSyncQuery<{
+    subject_id: number;
+    due: number;
+    overdue: number;
+  }>(
+    `
+    SELECT
+      a.subject_id AS subject_id,
+      SUM(CASE WHEN a.end_time >= ? AND r.cnt IS NULL THEN 1 ELSE 0 END) AS due,
+      SUM(CASE WHEN a.end_time <  ? AND r.cnt IS NULL THEN 1 ELSE 0 END) AS overdue
+    FROM activity_activity a
+    LEFT JOIN activity_studentactivity sa
+      ON sa.activity_id = a.id AND sa.student_id = ?
+    LEFT JOIN (
+      SELECT student_activity_id, COUNT(*) AS cnt
+      FROM activity_retakerecord
+      WHERE status = 'submitted'
+      GROUP BY student_activity_id
+    ) r ON r.student_activity_id = sa.id
+    WHERE a.classroom_mode = 0
+      AND a.start_time <= ?
+    GROUP BY a.subject_id
+    `,
+    [nowIso, nowIso, studentId ?? 0, nowIso],
+  );
+
+  return useMemo(() => {
+    const m = new Map<number, CoursePendingCount>();
+    for (const row of result.data ?? []) {
+      m.set(row.subject_id, {
+        due: row.due ?? 0,
+        overdue: row.overdue ?? 0,
+      });
+    }
+    return m;
+  }, [result.data]);
 };

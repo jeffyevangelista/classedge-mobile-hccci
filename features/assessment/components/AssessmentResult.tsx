@@ -32,6 +32,8 @@ const AssessmentResult = ({
           <AssessmentAttempts
             studentActivityId={assessmentData.studentActivityId}
             studentId={assessmentData.studentId}
+            maxScore={assessmentData.maxScore ?? 0}
+            showScore={!!assessmentData.showScore}
           />
         </View>
       </View>

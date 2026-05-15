@@ -1,4 +1,4 @@
-import { Icon, PhosphorIcon } from "./Icon";
+import { Icon, type IconName } from "./Icon";
 
 const ICON_SIZE = 28;
 
@@ -6,7 +6,7 @@ interface TabIconProps {
   focused: boolean;
   color: string;
   // Phosphor icons share the same Icon type
-  IconElement: PhosphorIcon;
+  IconElement: IconName;
 }
 
 const TabIcon = ({ focused, color, IconElement }: TabIconProps) => {

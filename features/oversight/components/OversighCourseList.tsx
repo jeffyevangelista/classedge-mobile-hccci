@@ -5,11 +5,11 @@ import { Link } from "expo-router";
 import { Avatar, Card, Skeleton } from "heroui-native";
 import {
   Pressable,
-  RefreshControl,
   ScrollView,
   useWindowDimensions,
   View,
 } from "react-native";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { useGetSubjects } from "../oversight.hooks";
 import { SubjectType } from "../oversight.type";
 import EmptyState from "@/components/EmptyState";
@@ -36,7 +36,7 @@ const SubjectsList = () => {
     <View className="w-full max-w-6xl mx-auto flex-1">
       <FlashList
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
         }
         ListEmptyComponent={
           <EmptyState

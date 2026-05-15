@@ -1,10 +1,10 @@
 import {
   Pressable,
-  RefreshControl,
   ScrollView,
   useWindowDimensions,
   View,
 } from "react-native";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 import React from "react";
 import Screen from "@/components/screen";
 import { useTeachingCourses } from "@/features/teaching/teaching.hooks";
@@ -39,7 +39,7 @@ const TeachingScreen = () => {
       <View className="w-full max-w-6xl mx-auto flex-1">
         <FlashList
           refreshControl={
-            <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+            <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
           }
           ListEmptyComponent={
             <EmptyState

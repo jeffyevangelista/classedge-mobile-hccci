@@ -1,8 +1,20 @@
-import { View, TextInput } from "react-native";
+import { TextInput } from "react-native";
 import { useState, useEffect } from "react";
-import { AppText } from "@/components/AppText";
+import { useThemeColor } from "heroui-native";
 import { questionStyles as styles } from "./styles";
 import type { QuestionComponentProps } from "./types";
+
+const sanitizeNumeric = (raw: string): string => {
+  const negative = raw.startsWith("-") ? "-" : "";
+  const digitsAndDot = raw.replace(/[^\d.]/g, "");
+  const firstDot = digitsAndDot.indexOf(".");
+  if (firstDot === -1) return negative + digitsAndDot;
+  return (
+    negative +
+    digitsAndDot.slice(0, firstDot + 1) +
+    digitsAndDot.slice(firstDot + 1).replace(/\./g, "")
+  );
+};
 
 const NumericQuestion = ({
   question,
@@ -11,29 +23,38 @@ const NumericQuestion = ({
   disabled,
 }: QuestionComponentProps) => {
   const [localAnswer, setLocalAnswer] = useState(currentAnswer);
+  const borderColor = useThemeColor("border");
+  const foregroundColor = useThemeColor("foreground");
+  const mutedColor = useThemeColor("muted");
 
   useEffect(() => {
     setLocalAnswer(currentAnswer);
   }, [currentAnswer]);
 
   const handleChange = (text: string) => {
-    setLocalAnswer(text);
-    onAnswer(question.id, text);
+    const clean = sanitizeNumeric(text);
+    setLocalAnswer(clean);
+    onAnswer(question.id, clean);
   };
 
   return (
-    <View style={styles.questionContainer}>
-      <AppText style={styles.questionText}>{question.questionText}</AppText>
-      <AppText style={styles.scoreText}>Score: {question.score}</AppText>
-      <TextInput
-        style={styles.fillBlankInput}
-        placeholder="Enter numeric answer..."
-        keyboardType="numeric"
-        value={localAnswer}
-        onChangeText={handleChange}
-        editable={!disabled}
-      />
-    </View>
+    <TextInput
+      style={[
+        styles.fillBlankInput,
+        {
+          textAlign: "right",
+          borderColor,
+          color: foregroundColor,
+        },
+      ]}
+      placeholder="Enter numeric answer..."
+      placeholderTextColor={mutedColor}
+      keyboardType="decimal-pad"
+      returnKeyType="done"
+      value={localAnswer}
+      onChangeText={handleChange}
+      editable={!disabled}
+    />
   );
 };
 

@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
-import { ScrollView, View, RefreshControl } from "react-native";
+import { ScrollView, View } from "react-native";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { useUserDetails } from "../profile.hooks";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
@@ -59,7 +60,7 @@ const ProfileInformation = () => {
     <ScrollView
       className="p-2.5"
       refreshControl={
-        <RefreshControl refreshing={false} onRefresh={() => refresh?.()} />
+        <RefreshIndicator refreshing={false} onRefresh={() => refresh?.()} />
       }
     >
       {INFO_FIELDS.map((field) => (

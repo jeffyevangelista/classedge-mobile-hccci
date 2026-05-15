@@ -23,6 +23,7 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { mutateAsync: login, isPending, isError, error } = useLogin();
   const themeColorAccentForeground = useThemeColor("accent-foreground");
+  const mutedColor = useThemeColor("muted");
 
   const handleLogin = async () => {
     try {
@@ -69,7 +70,7 @@ const LoginForm = () => {
               <Icon
                 name={showPassword ? "EyeIcon" : "EyeSlashIcon"}
                 size={20}
-                color="gray"
+                color={mutedColor}
               />
             </Pressable>
           </View>

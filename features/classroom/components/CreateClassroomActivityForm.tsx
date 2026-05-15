@@ -137,6 +137,7 @@ const CreateClassroomActivityForm = () => {
       passingScoreType: type?.value ?? "percentage",
       retakeMethod: "highest",
       activityInstruction: instructions,
+      activityFileInstruction: "",
       classroomMode: true,
       isGraded: true,
       shuffleQuestions: false,

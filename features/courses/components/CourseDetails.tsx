@@ -1,4 +1,5 @@
-import { View, RefreshControl } from "react-native";
+import { View } from "react-native";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 import React, { useCallback, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { useCourseDetails, useCourseStudents } from "../courses.hooks";
@@ -7,9 +8,22 @@ import Image from "@/components/Image";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppText } from "@/components/AppText";
-import { Icon } from "@/components/Icon";
+import { Icon, type IconName } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
 import { Skeleton, useThemeColor } from "heroui-native";
+
+type Schedule = {
+  id: number;
+  daysOfWeek: string;
+  scheduleStartTime: string;
+  scheduleEndTime: string;
+  isActiveSemester: number;
+};
+
+type Student = {
+  name: string;
+  studentPhoto?: string | null;
+};
 
 const CourseDetails = () => {
   const { classroomId, courseId } = useLocalSearchParams();
@@ -40,7 +54,7 @@ const CourseDetails = () => {
     <FlashList
       className="w-full"
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />
       }
       ListHeaderComponent={
         <View className="w-full max-w-3xl mx-auto">
@@ -57,7 +71,7 @@ const CourseDetails = () => {
       data={isLoadingStudents || isErrorStudents ? [] : students || []}
       renderItem={({ item, index }) => (
         <View className="w-full max-w-3xl mx-auto">
-          <StudentItem student={item} index={index} />
+          <StudentItem student={item as Student} index={index} />
         </View>
       )}
       ListEmptyComponent={
@@ -110,8 +124,38 @@ const formatTime = (time: string) => {
 
 const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+interface InfoTileProps {
+  icon: IconName;
+  iconColor: string;
+  iconBgClass: string;
+  label: string;
+  value: string;
+}
+
+const InfoTile = ({
+  icon,
+  iconColor,
+  iconBgClass,
+  label,
+  value,
+}: InfoTileProps) => (
+  <View className="flex-1 bg-surface-secondary rounded-2xl p-4">
+    <View
+      className={`w-9 h-9 rounded-full items-center justify-center mb-3 ${iconBgClass}`}
+    >
+      <Icon name={icon} size={20} color={iconColor} />
+    </View>
+    <AppText className="text-[11px] text-muted uppercase tracking-wider mb-1">
+      {label}
+    </AppText>
+    <AppText weight="semibold" className="text-sm">
+      {value}
+    </AppText>
+  </View>
+);
+
 const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
-  const themeColorAccent = useThemeColor("accent");
+  const accentColor = useThemeColor("accent");
 
   const instructorName = useMemo(() => {
     const first = courseDetails?.subjectId?.assignTeacherId?.firstName;
@@ -119,43 +163,33 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
     return [first, last].filter(Boolean).join(" ") || "Unassigned";
   }, [courseDetails]);
 
-  const activeSchedules = useMemo(() => {
+  const activeSchedules: Schedule[] = useMemo(() => {
     return (
-      courseDetails?.schedules?.filter((s: any) => s.isActiveSemester === 1) ||
-      []
+      courseDetails?.schedules?.filter(
+        (s: Schedule) => s.isActiveSemester === 1,
+      ) || []
     );
   }, [courseDetails]);
 
   return (
     <View className="mb-6 mx-1 gap-3">
-      {/* Instructor & Room Row */}
       <View className="flex-row gap-3">
-        <View className="flex-1 bg-surface-secondary rounded-2xl p-4">
-          <View className="w-9 h-9 rounded-full bg-accent-soft items-center justify-center mb-3">
-            <Icon name="UserCircleIcon" size={20} color={themeColorAccent} />
-          </View>
-          <AppText className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">
-            Instructor
-          </AppText>
-          <AppText weight="semibold" className="text-sm">
-            {instructorName}
-          </AppText>
-        </View>
-
-        <View className="flex-1 bg-surface-secondary rounded-2xl p-4">
-          <View className="w-9 h-9 rounded-full bg-green-100 dark:bg-green-900 items-center justify-center mb-3">
-            <Icon name="MapPinIcon" size={20} color="#22c55e" />
-          </View>
-          <AppText className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">
-            Room
-          </AppText>
-          <AppText weight="semibold" className="text-sm">
-            {courseDetails?.subjectId?.roomNumber || "TBA"}
-          </AppText>
-        </View>
+        <InfoTile
+          icon="UserCircleIcon"
+          iconColor={accentColor}
+          iconBgClass="bg-accent-soft"
+          label="Instructor"
+          value={instructorName}
+        />
+        <InfoTile
+          icon="MapPinIcon"
+          iconColor="#22c55e"
+          iconBgClass="bg-green-100 dark:bg-green-900"
+          label="Room"
+          value={courseDetails?.subjectId?.roomNumber || "TBA"}
+        />
       </View>
 
-      {/* Schedule Card */}
       {activeSchedules.length > 0 && (
         <View className="bg-surface-secondary rounded-2xl p-4">
           <View className="flex-row items-center mb-3">
@@ -168,7 +202,7 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
           </View>
 
           <View className="gap-2.5">
-            {activeSchedules.map((schedule: any) => {
+            {activeSchedules.map((schedule) => {
               const days = schedule.daysOfWeek
                 .split(",")
                 .map((d: string) => d.trim())
@@ -199,7 +233,7 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
                   </View>
                   <AppText
                     weight="semibold"
-                    className="text-xs text-gray-500 dark:text-gray-400 ml-2"
+                    className="text-xs text-muted ml-2"
                   >
                     {formatTime(schedule.scheduleStartTime)} –{" "}
                     {formatTime(schedule.scheduleEndTime)}
@@ -253,7 +287,7 @@ const CourseDetailsHeader = ({ courseDetails }: { courseDetails: any }) => {
         <AppText weight="bold" className="text-2xl mb-1">
           {courseDetails?.subjectId?.subjectName}
         </AppText>
-        <AppText className="text-base text-gray-400">
+        <AppText className="text-base text-muted">
           {courseDetails?.subjectId?.subjectCode}
         </AppText>
       </View>
@@ -261,9 +295,9 @@ const CourseDetailsHeader = ({ courseDetails }: { courseDetails: any }) => {
   );
 };
 
-const StudentItem = ({ student }: { student: any; index: number }) => {
+const StudentItem = ({ student }: { student: Student; index: number }) => {
   return (
-    <View className="flex-row items-center bg-surface rounded-xl p-3 mb-2 border border-gray-100 dark:border-gray-700 mx-1">
+    <View className="flex-row items-center bg-surface rounded-xl p-3 mb-2 border border-border mx-1">
       <View className="relative">
         <AttachmentImage
           path={student?.studentPhoto}
@@ -316,7 +350,6 @@ const CourseDetailsSkeleton = () => {
         <Skeleton className="h-5 w-1/3 rounded" />
       </View>
 
-      {/* Info cards row */}
       <View className="flex-row gap-3 mx-1 mb-3">
         <View className="flex-1 bg-surface-secondary rounded-2xl p-4 gap-3">
           <Skeleton className="w-9 h-9 rounded-full" />
@@ -334,7 +367,6 @@ const CourseDetailsSkeleton = () => {
         </View>
       </View>
 
-      {/* Schedule skeleton */}
       <View className="bg-surface-secondary rounded-2xl p-4 mx-1 mb-6 gap-3">
         <View className="flex-row items-center gap-3">
           <Skeleton className="w-9 h-9 rounded-full" />
@@ -344,7 +376,6 @@ const CourseDetailsSkeleton = () => {
         <Skeleton className="h-12 w-full rounded-xl" />
       </View>
 
-      {/* Students skeleton */}
       <View className="gap-2 mx-1">
         <Skeleton className="h-5 w-40 rounded mb-2" />
         {Array(3)

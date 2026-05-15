@@ -5,23 +5,30 @@ import { Icon } from "./Icon";
 interface BackButtonProps {
   tintColor?: ColorValue;
   to?: RelativePathString;
+  onPress?: () => void;
 }
 
-const BackButton = ({ tintColor, to }: BackButtonProps) => {
+const BackButton = ({ tintColor, to, onPress }: BackButtonProps) => {
   const router = useRouter();
+
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+      return;
+    }
+    if (to) {
+      router.push(to);
+    } else if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/" as RelativePathString);
+    }
+  };
 
   return (
     <Pressable
       className="w-9 h-9 rounded-full flex justify-center items-center"
-      onPress={() => {
-        if (to) {
-          router.push(to);
-        } else if (router.canGoBack()) {
-          router.back();
-        } else {
-          router.replace("/" as RelativePathString);
-        }
-      }}
+      onPress={handlePress}
     >
       <Icon
         name="ArrowLeftIcon"

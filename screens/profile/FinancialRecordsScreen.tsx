@@ -2,15 +2,27 @@ import { AppText } from "@/components/AppText";
 import EmptyState from "@/components/EmptyState";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import Screen from "@/components/screen";
-import { useFinancialInformation } from "@/features/profile/profile.hooks";
+import { Icon } from "@/components/Icon";
 import {
+  useAcademicTerms,
+  useFinancialInformation,
+} from "@/features/profile/profile.hooks";
+import {
+  AcademicTermItem,
+  DiscountSummary,
   FinancialRecord,
   GrantedScholarship,
   MiscellaneousFee,
+  OtherFee,
+  PaymentReceipt,
+  PromissoryNote,
   SubjectFee,
 } from "@/features/profile/profile.types";
-import { Card, Separator, Skeleton } from "heroui-native";
-import { RefreshControl, ScrollView, View } from "react-native";
+import { Card, Select, Separator, Skeleton, useThemeColor } from "heroui-native";
+import { Pressable, ScrollView, View } from "react-native";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { useEffect, useMemo, useState } from "react";
+import * as WebBrowser from "expo-web-browser";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 const formatCurrency = (value: string | number) => {
@@ -19,28 +31,62 @@ const formatCurrency = (value: string | number) => {
 };
 
 const FinancialRecordsScreen = () => {
-  const { data, isLoading, isRefetching, isError, error, refetch } =
-    useFinancialInformation();
+  const {
+    data,
+    isLoading: isLoadingFinancials,
+    isRefetching,
+    isError: isErrorFinancials,
+    error: financialsError,
+    refetch,
+  } = useFinancialInformation();
+  const {
+    data: terms,
+    isLoading: isLoadingTerms,
+    isError: isErrorTerms,
+    error: termsError,
+  } = useAcademicTerms();
 
-  if (isLoading) return <FinancialRecordsSkeleton />;
-  if (isError)
+  const [selectedTermId, setSelectedTermId] = useState<string | undefined>(
+    undefined,
+  );
+
+  // Default the selection to the current semester (if flagged) or the first term.
+  useEffect(() => {
+    if (terms && terms.length > 0 && !selectedTermId) {
+      const current = terms.find((t) => t.currentSemester);
+      setSelectedTermId(String((current ?? terms[0]).id));
+    }
+  }, [terms, selectedTermId]);
+
+  const selectedRecord: FinancialRecord | undefined = useMemo(() => {
+    const results = data?.results ?? [];
+    if (!selectedTermId) return results[0];
+    return results.find(
+      (r) => String(r.academicTerm.id) === selectedTermId,
+    );
+  }, [data, selectedTermId]);
+
+  if (isLoadingFinancials || isLoadingTerms) {
+    return <FinancialRecordsSkeleton />;
+  }
+
+  if (isErrorFinancials || isErrorTerms) {
     return (
       <ErrorComponent
-        message={getApiErrorMessage(error)}
+        message={getApiErrorMessage(financialsError ?? termsError)}
         onRetry={() => refetch()}
       />
     );
+  }
 
-  const record = data?.results?.[0];
-
-  if (!record) {
+  if (!terms || terms.length === 0) {
     return (
       <Screen>
         <View className="flex-1 justify-center items-center">
           <EmptyState
             icon="ReceiptIcon"
-            title="No financial records"
-            description="Your financial records will appear here once available."
+            title="No academic terms"
+            description="No academic terms are available yet."
           />
         </View>
       </Screen>
@@ -53,31 +99,89 @@ const FinancialRecordsScreen = () => {
         className="flex-1"
         contentContainerClassName="p-3 pb-8 gap-3 mx-auto w-full max-w-3xl"
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
         }
       >
-        <AcademicTermBanner record={record} />
-        <TuitionSummaryCard record={record} />
-        <SubjectFeesCard fees={record.subjectFees} />
-        <MiscellaneousFeesCard fees={record.miscellaneousFees} />
-        <ScholarshipsCard scholarships={record.grantedScholarships} />
+        <TermSelect
+          terms={terms}
+          selectedTermId={selectedTermId}
+          onChange={setSelectedTermId}
+        />
+
+        {selectedRecord ? (
+          <>
+            <TuitionSummaryCard record={selectedRecord} />
+            <SubjectFeesCard fees={selectedRecord.subjectFees} />
+            <MiscellaneousFeesCard fees={selectedRecord.miscellaneousFees} />
+            <OtherFeesCard fees={selectedRecord.otherFees} />
+            <ScholarshipsCard
+              scholarships={selectedRecord.grantedScholarships}
+            />
+            <DiscountSummaryCard summary={selectedRecord.discountSummary} />
+            <PaymentReceiptsCard receipts={selectedRecord.paymentReceipts} />
+            <PromissoryNotesCard notes={selectedRecord.promissoryNotes} />
+          </>
+        ) : (
+          <EmptyState
+            icon="ReceiptIcon"
+            title="No records for this term"
+            description="There are no financial records for the selected term yet."
+          />
+        )}
       </ScrollView>
     </Screen>
   );
 };
 
-const AcademicTermBanner = ({ record }: { record: FinancialRecord }) => (
-  <Card className="shadow-none rounded-xl bg-accent-soft border border-primary-200 dark:border-slate-600">
-    <Card.Body className="py-3 px-4">
-      <AppText
-        weight="semibold"
-        className="text-primary-700 dark:text-white text-sm"
-      >
-        {record.academicTerm.academicTermCode}
-      </AppText>
-    </Card.Body>
-  </Card>
-);
+const TermSelect = ({
+  terms,
+  selectedTermId,
+  onChange,
+}: {
+  terms: AcademicTermItem[];
+  selectedTermId: string | undefined;
+  onChange: (id: string) => void;
+}) => {
+  const selectedTerm = terms.find((t) => String(t.id) === selectedTermId);
+  const value = selectedTerm
+    ? {
+        value: String(selectedTerm.id),
+        label: selectedTerm.academicTermCode,
+      }
+    : undefined;
+
+  return (
+    <Select
+      value={value}
+      onValueChange={(v) => {
+        if (!Array.isArray(v) && v) {
+          onChange(v.value);
+        }
+      }}
+    >
+      <Select.Trigger>
+        <Select.Value placeholder="Select term" />
+        <Select.TriggerIndicator />
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Overlay />
+        <Select.Content presentation="popover" width="trigger">
+          {terms.map((t) => (
+            <Select.Item
+              key={t.id}
+              value={String(t.id)}
+              label={
+                t.currentSemester
+                  ? `${t.academicTermCode} · Current`
+                  : t.academicTermCode
+              }
+            />
+          ))}
+        </Select.Content>
+      </Select.Portal>
+    </Select>
+  );
+};
 
 const TuitionSummaryCard = ({ record }: { record: FinancialRecord }) => {
   const { tuition } = record;
@@ -163,6 +267,50 @@ const MiscellaneousFeesCard = ({ fees }: { fees: MiscellaneousFee[] }) => {
   );
 };
 
+const OtherFeesCard = ({ fees }: { fees: OtherFee[] }) => {
+  if (!fees || fees.length === 0) return null;
+
+  const total = fees.reduce((sum, f) => sum + f.finalCost, 0);
+
+  return (
+    <Card className="shadow-none rounded-xl">
+      <Card.Header className="pb-0">
+        <AppText weight="semibold" className="text-base">
+          Other Fees
+        </AppText>
+      </Card.Header>
+      <Card.Body className="gap-2">
+        {fees.map((fee, i) => (
+          <View
+            key={`${fee.name}-${i}`}
+            className="flex-row justify-between items-center"
+          >
+            <AppText className="text-sm flex-1">{fee.name}</AppText>
+            <View className="items-end">
+              {fee.discountAmount > 0 ? (
+                <>
+                  <AppText className="text-xs text-muted line-through">
+                    {formatCurrency(fee.originalCost)}
+                  </AppText>
+                  <AppText className="text-sm">
+                    {formatCurrency(fee.finalCost)}
+                  </AppText>
+                </>
+              ) : (
+                <AppText className="text-sm">
+                  {formatCurrency(fee.finalCost)}
+                </AppText>
+              )}
+            </View>
+          </View>
+        ))}
+        <Separator className="my-1" />
+        <FeeRow label="Total" value={formatCurrency(total)} bold />
+      </Card.Body>
+    </Card>
+  );
+};
+
 const ScholarshipsCard = ({
   scholarships,
 }: {
@@ -207,6 +355,132 @@ const ScholarshipsCard = ({
   );
 };
 
+const DiscountSummaryCard = ({ summary }: { summary: DiscountSummary }) => {
+  if (!summary || summary.totalFeeDiscounts <= 0) return null;
+
+  return (
+    <Card className="shadow-none rounded-xl">
+      <Card.Header className="pb-0">
+        <AppText weight="semibold" className="text-base">
+          Discount Summary
+        </AppText>
+      </Card.Header>
+      <Card.Body className="gap-2">
+        {summary.subjectDiscountTotal > 0 && (
+          <FeeRow
+            label="Subject Discounts"
+            value={`-${formatCurrency(summary.subjectDiscountTotal)}`}
+          />
+        )}
+        {summary.miscDiscountTotal > 0 && (
+          <FeeRow
+            label="Miscellaneous Discounts"
+            value={`-${formatCurrency(summary.miscDiscountTotal)}`}
+          />
+        )}
+        {summary.otherDiscountTotal > 0 && (
+          <FeeRow
+            label="Other Discounts"
+            value={`-${formatCurrency(summary.otherDiscountTotal)}`}
+          />
+        )}
+        <Separator className="my-1" />
+        <FeeRow
+          label="Total Discounts"
+          value={`-${formatCurrency(summary.totalFeeDiscounts)}`}
+          bold
+        />
+      </Card.Body>
+    </Card>
+  );
+};
+
+const PaymentReceiptsCard = ({ receipts }: { receipts: PaymentReceipt[] }) => {
+  if (!receipts || receipts.length === 0) return null;
+
+  const totalPaid = receipts.reduce((sum, r) => sum + r.amount, 0);
+
+  return (
+    <Card className="shadow-none rounded-xl">
+      <Card.Header className="pb-0">
+        <AppText weight="semibold" className="text-base">
+          Payment History
+        </AppText>
+      </Card.Header>
+      <Card.Body className="gap-3">
+        {receipts.map((r) => (
+          <View
+            key={r.receiptNumber}
+            className="flex-row justify-between items-start"
+          >
+            <View className="flex-1 pr-2">
+              <AppText weight="semibold" className="text-sm">
+                Receipt #{r.receiptNumber}
+              </AppText>
+              <AppText className="text-xs text-muted">
+                {r.receiptDate} · {r.paymentMethod}
+              </AppText>
+              <AppText className="text-xs text-muted">
+                Cashier: {r.cashier}
+              </AppText>
+            </View>
+            <AppText weight="semibold" className="text-sm">
+              {formatCurrency(r.amount)}
+            </AppText>
+          </View>
+        ))}
+        <Separator className="my-1" />
+        <FeeRow label="Total Paid" value={formatCurrency(totalPaid)} bold />
+      </Card.Body>
+    </Card>
+  );
+};
+
+const PromissoryNotesCard = ({ notes }: { notes: PromissoryNote[] }) => {
+  const mutedColor = useThemeColor("muted");
+  if (!notes || notes.length === 0) return null;
+
+  return (
+    <Card className="shadow-none rounded-xl">
+      <Card.Header className="pb-0">
+        <AppText weight="semibold" className="text-base">
+          Promissory Notes
+        </AppText>
+      </Card.Header>
+      <Card.Body className="gap-2">
+        {notes.map((note) => (
+          <Pressable
+            key={note.id}
+            onPress={() => WebBrowser.openBrowserAsync(note.promisoryNoteUrl)}
+            accessibilityRole="button"
+            accessibilityLabel={`Open promissory note for ${note.academicTermCode}`}
+            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            className="flex-row items-start gap-3 rounded-lg bg-default border border-border px-3 py-3"
+          >
+            <View className="flex-1">
+              <AppText weight="semibold" className="text-sm">
+                {note.academicTermCode}
+              </AppText>
+              <AppText className="text-xs text-muted mt-0.5">
+                Date: {note.date}
+              </AppText>
+              {note.notes ? (
+                <AppText
+                  className="text-xs text-muted mt-0.5"
+                  numberOfLines={2}
+                >
+                  {note.notes}
+                </AppText>
+              ) : null}
+            </View>
+            <Icon name="ArrowSquareOutIcon" size={18} color={mutedColor} />
+          </Pressable>
+        ))}
+      </Card.Body>
+    </Card>
+  );
+};
+
 const FeeRow = ({
   label,
   value,
@@ -221,13 +495,13 @@ const FeeRow = ({
   <View className="flex-row justify-between items-center">
     <AppText
       weight={bold ? "semibold" : "regular"}
-      className={`text-sm flex-1 ${highlight ? "text-red-600 dark:text-red-400" : ""}`}
+      className={`text-sm flex-1 ${highlight ? "text-danger" : ""}`}
     >
       {label}
     </AppText>
     <AppText
       weight={bold ? "semibold" : "regular"}
-      className={`text-sm ${highlight ? "text-red-600 dark:text-red-400" : ""}`}
+      className={`text-sm ${highlight ? "text-danger" : ""}`}
     >
       {value}
     </AppText>
@@ -236,11 +510,7 @@ const FeeRow = ({
 
 const FinancialRecordsSkeleton = () => (
   <View className="p-3 gap-3 mx-auto w-full max-w-3xl">
-    <Card className="shadow-none rounded-xl">
-      <Card.Body>
-        <Skeleton className="h-4 w-2/3 rounded" />
-      </Card.Body>
-    </Card>
+    <Skeleton className="h-12 w-full rounded-xl" />
     {Array(3)
       .fill(0)
       .map((_, index) => (

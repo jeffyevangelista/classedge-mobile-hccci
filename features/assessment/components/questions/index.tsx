@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { View } from "react-native";
 import { AppText } from "@/components/AppText";
 import MultipleChoiceQuestion from "./MultipleChoiceQuestion";
@@ -8,6 +9,7 @@ import MatchingQuestion from "./MatchingQuestion";
 import NumericQuestion from "./NumericQuestion";
 import ImageBasedQuestion from "./ImageBasedQuestion";
 import { questionStyles as styles } from "./styles";
+import { useQuestionTypes } from "../../assessment.hooks";
 import type { Choice, QuestionComponentProps } from "./types";
 
 export type { Choice, Question, QuestionComponentProps } from "./types";
@@ -16,15 +18,27 @@ interface QuestionRendererProps extends QuestionComponentProps {
   choices: Choice[];
 }
 
-export const QuestionRenderer = ({
-  question,
-  currentAnswer,
-  onAnswer,
-  disabled,
-  choices,
-}: QuestionRendererProps) => {
-  switch (question.quizTypeId) {
-    case 1:
+const normalize = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
+
+const renderQuestion = (
+  typeKey: string | null,
+  props: QuestionComponentProps & { choices: Choice[] },
+) => {
+  const {
+    question,
+    currentAnswer,
+    onAnswer,
+    disabled,
+    choices,
+    currentUpload,
+    onUpload,
+  } = props;
+  switch (typeKey) {
+    case "multiple_choice":
       return (
         <MultipleChoiceQuestion
           question={question}
@@ -34,7 +48,7 @@ export const QuestionRenderer = ({
           choices={choices}
         />
       );
-    case 2:
+    case "essay":
       return (
         <EssayQuestion
           question={question}
@@ -43,7 +57,7 @@ export const QuestionRenderer = ({
           disabled={disabled}
         />
       );
-    case 3:
+    case "true_false":
       return (
         <TrueFalseQuestion
           question={question}
@@ -52,7 +66,7 @@ export const QuestionRenderer = ({
           disabled={disabled}
         />
       );
-    case 4:
+    case "fill_in_the_blank":
       return (
         <FillInTheBlankQuestion
           question={question}
@@ -61,16 +75,17 @@ export const QuestionRenderer = ({
           disabled={disabled}
         />
       );
-    case 5:
+    case "matching_type":
       return (
         <MatchingQuestion
           question={question}
           currentAnswer={currentAnswer}
           onAnswer={onAnswer}
           disabled={disabled}
+          choices={choices}
         />
       );
-    case 6:
+    case "calculated_numeric":
       return (
         <NumericQuestion
           question={question}
@@ -79,20 +94,67 @@ export const QuestionRenderer = ({
           disabled={disabled}
         />
       );
-    case 7:
+    case "document":
       return (
         <ImageBasedQuestion
           question={question}
           currentAnswer={currentAnswer}
           onAnswer={onAnswer}
           disabled={disabled}
+          currentUpload={currentUpload}
+          onUpload={onUpload}
         />
       );
     default:
-      return (
-        <View style={styles.questionContainer}>
-          <AppText>Unknown question type</AppText>
-        </View>
-      );
+      return <AppText>Unknown question type</AppText>;
   }
+};
+
+export const QuestionRenderer = ({
+  question,
+  currentAnswer,
+  onAnswer,
+  disabled,
+  choices,
+  currentUpload,
+  onUpload,
+}: QuestionRendererProps) => {
+  const { data: types } = useQuestionTypes();
+
+  const typeRow = useMemo(
+    () =>
+      types?.find((t) => Number(t.id) === Number(question.quizTypeId)) ?? null,
+    [types, question.quizTypeId],
+  );
+  const typeKey = typeRow ? normalize(typeRow.name) : null;
+  const displayName = typeRow?.name ?? "Unknown";
+
+  return (
+    <View
+      style={styles.questionContainer}
+      className="bg-surface border-border"
+    >
+      <View className="flex-row items-center justify-between mb-2">
+        <View className="px-2 py-1 rounded-full bg-accent-soft">
+          <AppText className="text-xs text-accent">{displayName}</AppText>
+        </View>
+        <AppText
+          className="text-muted"
+          style={[styles.scoreText, { marginBottom: 0 }]}
+        >
+          {question.score} Points
+        </AppText>
+      </View>
+      <AppText style={styles.questionText}>{question.questionText}</AppText>
+      {renderQuestion(typeKey, {
+        question,
+        currentAnswer,
+        onAnswer,
+        disabled,
+        choices,
+        currentUpload,
+        onUpload,
+      })}
+    </View>
+  );
 };

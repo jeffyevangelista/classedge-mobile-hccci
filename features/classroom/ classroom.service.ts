@@ -79,19 +79,15 @@ export const upsertStudentScore = async (data: {
   totalScore: number;
   file?: string | null;
 }) => {
-  console.log("[upsertStudentScore] called with:", JSON.stringify(data));
-
   const existing = await powersync.execute(
     "SELECT * FROM activity_studentactivity WHERE activity_local_id = ? AND student_id = ? LIMIT 1",
     [data.activityLocalId, data.studentId],
   );
 
   const existingRow = existing.rows?._array?.[0] ?? existing.rows?.item(0);
-  console.log("[upsertStudentScore] existing:", existingRow);
 
   if (existingRow) {
-    console.log("[upsertStudentScore] updating existing record");
-    const result = await powersync.execute(
+    return powersync.execute(
       "UPDATE activity_studentactivity SET total_score = ?, file = ? WHERE local_id = ?",
       [
         data.totalScore,
@@ -99,27 +95,16 @@ export const upsertStudentScore = async (data: {
         existingRow.local_id,
       ],
     );
-    console.log("[upsertStudentScore] updated:", JSON.stringify(result));
-    return result;
   }
 
   try {
-    // Check table schema
-    const tableInfo = await powersync.execute(
-      "PRAGMA table_info(activity_studentactivity)",
-    );
-    console.log(
-      "[upsertStudentScore] table schema:",
-      JSON.stringify(tableInfo.rows?._array),
-    );
-
     const localId = createId();
-    const id = createId();
-    const result = await powersync.execute(
-      `INSERT INTO activity_studentactivity (id, student_id, activity_id, term_id, subject_id, total_score, retake_count, is_editable, local_id, activity_local_id, file)
+    return await powersync.execute(
+      `INSERT INTO activity_studentactivity (local_id, id, student_id, activity_id, term_id, subject_id, total_score, retake_count, is_editable, activity_local_id, file)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        id,
+        localId,
+        localId,
         data.studentId,
         data.activityLocalId,
         data.termId,
@@ -127,24 +112,10 @@ export const upsertStudentScore = async (data: {
         data.totalScore,
         0,
         1,
-        localId,
         data.activityLocalId,
         data.file ?? null,
       ],
     );
-    console.log("[upsertStudentScore] insert result:", JSON.stringify(result));
-
-    // Verify the data was actually written
-    const verify = await powersync.execute(
-      "SELECT * FROM activity_studentactivity WHERE id = ?",
-      [id],
-    );
-    console.log(
-      "[upsertStudentScore] verify after insert:",
-      JSON.stringify(verify.rows?._array),
-    );
-
-    return result;
   } catch (err) {
     console.error("[upsertStudentScore] INSERT FAILED:", err);
     throw err;

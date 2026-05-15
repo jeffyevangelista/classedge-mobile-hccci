@@ -1,16 +1,33 @@
-import { View } from "react-native";
-import React, { useEffect, useCallback } from "react";
-import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import { View, BackHandler } from "react-native";
+import Screen from "@/components/screen";
+import { useEffect, useCallback, useState, useRef } from "react";
+import {
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
 import { useGetAssessmentAttempt } from "@/features/assessment/assessment.hooks";
-import { useAssessmentTimer } from "@/hooks/useAssessmentTimer";
-import { useAttemptSession } from "@/hooks/useAttemptSession";
+import {
+  submitAttempt,
+  updateLastIndex,
+} from "@/features/assessment/assessment.service";
+import { useCountdown } from "@/hooks/useCountdown";
+import { useExpiry } from "@/hooks/useExpiry";
+import { useHeartbeat } from "@/hooks/useHeartbeat";
 import QuestionList from "@/features/assessment/components/QuestionList";
 import useStore from "@/lib/store";
-import { Skeleton } from "heroui-native";
+import { Skeleton, Dialog, Button, useToast, useThemeColor } from "heroui-native";
+import { AppText } from "@/components/AppText";
+import BackButton from "@/components/BackButton";
+import ErrorFallback from "@/components/ErrorFallback";
+import NoDataFallback from "@/components/NoDataFallback";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const AttemptScreen = () => {
   const { attemptId } = useLocalSearchParams();
   const { authUser } = useStore();
+  const { toast } = useToast();
   const {
     data: attempt,
     isLoading,
@@ -19,56 +36,129 @@ const AttemptScreen = () => {
   } = useGetAssessmentAttempt(attemptId as string);
   const navigation = useNavigation();
 
-  const onAutoSubmit = useCallback(() => {
-    router.replace({
-      pathname: "/(main)/assessment/[assessmentId]",
-      params: { assessmentId: String(attempt?.activityId) },
-    });
+  const [exitOpen, setExitOpen] = useState(false);
+  const submittingRef = useRef(false);
+
+  const routeBack = useCallback(() => {
+    // Defer past the current commit so reactive query updates and dialog
+    // exit animations don't race react-native-screens.
+    setTimeout(() => {
+      if (router.canGoBack()) {
+        router.back();
+        return;
+      }
+      router.replace({
+        pathname: "/(main)/assessment/[assessmentId]",
+        params: { assessmentId: String(attempt?.activityId) },
+      });
+    }, 100);
   }, [attempt?.activityId]);
 
-  const { saveLastIndex, elapsedRef } = useAttemptSession({
-    attempt: attempt ?? null,
-    onAutoSubmit,
-  });
+  const submit = useCallback(async () => {
+    if (!attempt || submittingRef.current) return;
+    submittingRef.current = true;
+    try {
+      await submitAttempt(attempt.localId);
+    } catch (err) {
+      submittingRef.current = false;
+      throw err;
+    }
+  }, [attempt]);
 
-  const { formattedTime, remainingTime } = useAssessmentTimer(
-    attempt?.duration || 0,
-    elapsedRef,
+  const onAutoSubmit = useCallback(() => {
+    submit()
+      .then(routeBack)
+      .catch((err) => console.error("[AttemptScreen] auto-submit failed:", err));
+  }, [submit, routeBack]);
+
+  const isTimeUp = useExpiry(attempt?.willEndAt, onAutoSubmit);
+  useHeartbeat(attempt?.localId);
+
+  const handleSubmit = useCallback(async () => {
+    try {
+      await submit();
+      routeBack();
+    } catch (err) {
+      console.error("[AttemptScreen] Submit failed:", err);
+      toast.show({
+        label: "Submit failed",
+        description: "Please try again.",
+        variant: "danger",
+      });
+    }
+  }, [submit, routeBack, toast]);
+
+  const saveLastIndex = useCallback(
+    async (index: number) => {
+      if (!attempt) return;
+      try {
+        await updateLastIndex(attempt.localId, index);
+      } catch (err) {
+        console.error("[AttemptScreen] Failed to save lastIndex:", err);
+      }
+    },
+    [attempt],
   );
 
   useEffect(() => {
     if (!attempt || isLoading) return;
 
     navigation.setOptions({
-      headerTitle: formattedTime,
+      gestureEnabled: false,
+      headerTitle: () => <HeaderTimer willEndAt={attempt.willEndAt} />,
       headerTitleAlign: "center",
-      headerTitleStyle: {
-        color: remainingTime < 60 ? "red" : "black",
-        fontWeight: "700",
-      },
+      headerLeft: ({ tintColor }: { tintColor?: string }) => (
+        <BackButton
+          tintColor={tintColor}
+          onPress={() => setExitOpen(true)}
+        />
+      ),
     });
-  }, [formattedTime, remainingTime, navigation, attempt, isLoading]);
+  }, [navigation, attempt, isLoading]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+        setExitOpen(true);
+        return true;
+      });
+      return () => sub.remove();
+    }, []),
+  );
 
   if (isLoading) return <AttemptScreenSkeleton />;
-  if (isError)
-    return (
-      <View style={{ flex: 1, padding: 16 }}>
-        <Skeleton className="h-5 w-48 rounded-full" />
-      </View>
-    );
+  if (isError) return <ErrorFallback message={getApiErrorMessage(error)} />;
   if (!attempt)
     return (
-      <View style={{ flex: 1, padding: 16 }}>
-        <Skeleton className="h-5 w-48 rounded-full" />
-      </View>
+      <NoDataFallback
+        title="Attempt not found"
+        description="This attempt couldn't be loaded."
+      />
     );
 
-  const questionOrder: number[] = attempt.questionOrder
-    ? JSON.parse(attempt.questionOrder)
-    : [];
+  const parseQuestionOrder = (raw: unknown): number[] => {
+    let value: unknown = raw;
+    for (let i = 0; i < 3; i++) {
+      if (Array.isArray(value)) return value.map((n) => Number(n));
+      if (typeof value !== "string" || value.trim().length === 0) return [];
+      try {
+        value = JSON.parse(value);
+      } catch (err) {
+        console.warn(
+          "[AttemptScreen] failed to JSON.parse questionOrder:",
+          raw,
+          err,
+        );
+        return [];
+      }
+    }
+    return [];
+  };
+
+  const questionOrder: number[] = parseQuestionOrder(attempt.questionOrder);
 
   return (
-    <View style={{ flex: 1 }}>
+    <Screen>
       <QuestionList
         activityId={attempt.activityId}
         attemptId={attempt.localId}
@@ -77,11 +167,51 @@ const AttemptScreen = () => {
         questionOrder={questionOrder}
         initialIndex={attempt.lastIndex}
         onIndexChange={saveLastIndex}
-        isTimeUp={
-          attempt.duration > 0 && elapsedRef.current >= attempt.duration
-        }
+        isTimeUp={isTimeUp}
+        onSubmit={handleSubmit}
       />
-    </View>
+
+      <Dialog isOpen={exitOpen} onOpenChange={setExitOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay />
+          <Dialog.Content className="w-full max-w-lg mx-auto">
+            <View className="mb-5 gap-3">
+              <Dialog.Title>Leave this attempt?</Dialog.Title>
+              <Dialog.Description>
+                Your timer keeps running while you're away.
+              </Dialog.Description>
+            </View>
+            <View className="gap-2">
+              <Button
+                variant="danger"
+                onPress={() => {
+                  setExitOpen(false);
+                  setTimeout(() => routeBack(), 300);
+                }}
+              >
+                Leave
+              </Button>
+              <Button variant="ghost" onPress={() => setExitOpen(false)}>
+                Stay
+              </Button>
+            </View>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog>
+    </Screen>
+  );
+};
+
+const HeaderTimer = ({ willEndAt }: { willEndAt: string }) => {
+  const dangerColor = useThemeColor("danger");
+  const { formatted, remaining } = useCountdown(willEndAt);
+  return (
+    <AppText
+      weight="bold"
+      style={{ color: remaining < 60 ? dangerColor : undefined }}
+    >
+      {formatted}
+    </AppText>
   );
 };
 

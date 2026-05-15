@@ -1,23 +1,22 @@
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
-import { Link } from "expo-router";
+import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   Pressable,
-  RefreshControl,
   ScrollView,
-  Text,
   useWindowDimensions,
   View,
 } from "react-native";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { Calendar } from "react-native-calendars";
 import { useEvents } from "../calendar.hooks";
 import { formatDate } from "./date-formatter";
 import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { Card, Skeleton, Surface } from "heroui-native";
+import { Card, Skeleton, Surface, useThemeColor } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import EventDetailModal from "./EventDetailModal";
 import { useUniwind } from "uniwind";
@@ -41,54 +40,72 @@ type CustomMarkedDate = {
 
 type MarkedDates = Record<string, CustomMarkedDate>;
 
-const EventCard = ({
-  item,
+type CalendarItem = {
+  id: number;
+  type: "event" | "activity";
+  title: string;
+  startDate: string;
+  endDate: string;
+  createdById?: {
+    firstName: string;
+    lastName: string;
+  } | null;
+};
+
+const EVENT_COLOR = "#0d9488";
+const ACTIVITY_COLOR = "#f97316";
+const EVENT_PERIOD_COLOR = "#50cebb";
+const ACTIVITY_DOT_COLOR = "#FF5A5F";
+
+const CalendarItemCard = ({
+  iconName,
+  iconColor,
+  iconBgClass,
+  title,
+  subtitle,
+  caption,
   onPress,
 }: {
-  item: any;
-  onPress: (id: number) => void;
+  iconName: "CalendarDotsIcon" | "PencilLineIcon";
+  iconColor: string;
+  iconBgClass: string;
+  title: string;
+  subtitle: string;
+  caption?: string;
+  onPress: () => void;
 }) => {
   return (
-    <Pressable onPress={() => onPress(item.id)}>
-      <View className="mx-auto w-full max-w-3xl">
-        <Card className="mb-1 rounded-xl flex-row items-center shadow-none">
-          <View className="flex-row flex-1">
-            <View className={"rounded-full p-2.5 bg-teal-50 dark:bg-teal-900"}>
-              <Icon
-                className={"h-6 w-6 text-teal-600 dark:text-teal-400"}
-                name="CalendarDotsIcon"
-              />
-            </View>
-            <View className="flex-1">
-              <AppText
-                weight="semibold"
-                className="text-neutral-900 dark:text-neutral-100 text-lg flex-1"
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {item.title}
-              </AppText>
-              <View className="flex-row items-center">
-                <AppText
-                  className="text-neutral-500 dark:text-neutral-400 text-xs"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {formatDate(item.startDate)} - {formatDate(item.endDate)}
-                </AppText>
-              </View>
-              {item.createdById && (
-                <AppText
-                  className="text-neutral-400 dark:text-neutral-500 text-xs"
-                  numberOfLines={1}
-                >
-                  By {item.createdById.firstName} {item.createdById.lastName}
-                </AppText>
-              )}
-            </View>
-          </View>
-        </Card>
-      </View>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+    >
+      <Card className="mb-1 rounded-xl flex-row items-center gap-2 shadow-none border border-border">
+        <View className={`rounded-full p-2.5 ${iconBgClass}`}>
+          <Icon name={iconName} size={20} color={iconColor} />
+        </View>
+        <View className="flex-1">
+          <AppText
+            weight="semibold"
+            className="text-lg"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {title}
+          </AppText>
+          <AppText
+            className="text-xs text-muted"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {subtitle}
+          </AppText>
+          {caption ? (
+            <AppText className="text-muted text-xs" numberOfLines={1}>
+              {caption}
+            </AppText>
+          ) : null}
+        </View>
+      </Card>
     </Pressable>
   );
 };
@@ -101,6 +118,11 @@ const CalendarComponent = () => {
   const { theme } = useUniwind();
   const isDark = theme === "dark";
 
+  const accentColor = useThemeColor("accent");
+  const accentForegroundColor = useThemeColor("accent-foreground");
+  const foregroundColor = useThemeColor("foreground");
+  const mutedColor = useThemeColor("muted");
+
   const [selectedDate, setSelectedDate] = useState<string>(today);
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
 
@@ -111,23 +133,11 @@ const CalendarComponent = () => {
     return Math.min(cellSize, 52);
   }, [width]);
 
-  if (isLoading) return <CalendarSkeleton />;
-  if (isError)
-    return (
-      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
-    );
-
-  // ----------------------------------------------------
-  // BUILD MARKED DATES
-  // ----------------------------------------------------
   const markedDates: MarkedDates = useMemo(() => {
     const marks: MarkedDates = {};
 
     if (!data) return marks;
 
-    // ------------------------------------------------
-    // 1. EVENTS (period)
-    // ------------------------------------------------
     data.forEach((item) => {
       if (item.type === "event") {
         const start = dayjs(item.startDate);
@@ -143,15 +153,12 @@ const CalendarComponent = () => {
           if (i === 0) marks[date].startingDay = true;
           if (i === diff) marks[date].endingDay = true;
 
-          marks[date].color = "#50cebb";
+          marks[date].color = EVENT_PERIOD_COLOR;
           marks[date].textColor = "white";
         }
       }
     });
 
-    // ------------------------------------------------
-    // 2. ACTIVITIES (dot on end)
-    // ------------------------------------------------
     data.forEach((item) => {
       if (item.type === "activity") {
         const endDate = dayjs(item.endDate).format("YYYY-MM-DD");
@@ -159,41 +166,36 @@ const CalendarComponent = () => {
         if (!marks[endDate]) marks[endDate] = {};
 
         marks[endDate].marked = true;
-        marks[endDate].dotColor = "#FF5A5F";
+        marks[endDate].dotColor = ACTIVITY_DOT_COLOR;
       }
     });
 
-    // ------------------------------------------------
-    // 3. SELECTED DATE STYLE (using period properties)
-    // ------------------------------------------------
     if (!marks[selectedDate]) marks[selectedDate] = {};
 
-    // Apply selected date styling using period marking properties
-    // This ensures it works with markingType="period"
     marks[selectedDate].startingDay = true;
     marks[selectedDate].endingDay = true;
-    marks[selectedDate].color = "#146BB5";
-    marks[selectedDate].textColor = "white";
+    marks[selectedDate].color = accentColor;
+    marks[selectedDate].textColor = accentForegroundColor;
 
-    // ------------------------------------------------
-    // 4. TODAY STYLE (using period properties)
-    // ------------------------------------------------
     if (!marks[today]) marks[today] = {};
 
-    // Only apply today style if it's NOT the selected date
     if (today !== selectedDate) {
       marks[today].startingDay = true;
       marks[today].endingDay = true;
       marks[today].color = isDark ? "#1e3a5f" : "#E3F2FD";
-      marks[today].textColor = isDark ? "#90caf9" : "#146BB5";
+      marks[today].textColor = accentColor;
     }
 
     return marks;
-  }, [data, selectedDate, isDark]);
+  }, [
+    data,
+    selectedDate,
+    isDark,
+    today,
+    accentColor,
+    accentForegroundColor,
+  ]);
 
-  // ----------------------------------------------------
-  // FILTER ITEMS FOR SELECTED DATE
-  // ----------------------------------------------------
   const itemsForSelected = useMemo(() => {
     if (!data) return [];
 
@@ -216,10 +218,16 @@ const CalendarComponent = () => {
     });
   }, [data, selectedDate]);
 
+  if (isLoading) return <CalendarSkeleton />;
+  if (isError)
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
+
   return (
     <ScrollView
       refreshControl={
-        <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+        <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
       }
     >
       <View className="p-2.5 max-w-3xl mx-auto w-full">
@@ -232,14 +240,15 @@ const CalendarComponent = () => {
             theme={
               {
                 calendarBackground: "transparent",
-                monthTextColor: isDark ? "#e5e5e5" : "#2d4150",
-                dayTextColor: isDark ? "#e5e5e5" : "#2d4150",
-                textDisabledColor: isDark ? "#555555" : "#d9e1e8",
-                arrowColor: isDark ? "#90caf9" : "#146BB5",
+                monthTextColor: foregroundColor,
+                dayTextColor: foregroundColor,
+                textDisabledColor: mutedColor,
+                arrowColor: accentColor,
+                textDayFontFamily: "Poppins-Regular",
+                textMonthFontFamily: "Poppins-SemiBold",
+                textDayHeaderFontFamily: "Poppins-SemiBold",
                 textDayFontSize: Math.max(14, dayCellSize * 0.35),
-                textDayFontWeight: "400",
-                textDayHeaderFontSize: Math.max(12, dayCellSize * 0.3),
-                textDayHeaderFontWeight: "600",
+                textDayHeaderFontSize: Math.max(11, dayCellSize * 0.26),
                 "stylesheet.day.basic": {
                   base: {
                     width: dayCellSize,
@@ -249,39 +258,39 @@ const CalendarComponent = () => {
                   },
                   text: {
                     marginTop: 0,
+                    fontFamily: "Poppins-Regular",
                     fontSize: Math.max(14, dayCellSize * 0.35),
-                    fontWeight: "400",
-                    color: isDark ? "#e5e5e5" : "#2d4150",
+                    color: foregroundColor,
                   },
                 },
                 "stylesheet.calendar.header": {
                   dayTextAtIndex0: {
-                    color: isDark ? "#90caf9" : "#146BB5",
-                    fontWeight: "600",
+                    color: accentColor,
+                    fontFamily: "Poppins-SemiBold",
                   },
                   dayTextAtIndex1: {
-                    color: isDark ? "#90caf9" : "#146BB5",
-                    fontWeight: "600",
+                    color: accentColor,
+                    fontFamily: "Poppins-SemiBold",
                   },
                   dayTextAtIndex2: {
-                    color: isDark ? "#90caf9" : "#146BB5",
-                    fontWeight: "600",
+                    color: accentColor,
+                    fontFamily: "Poppins-SemiBold",
                   },
                   dayTextAtIndex3: {
-                    color: isDark ? "#90caf9" : "#146BB5",
-                    fontWeight: "600",
+                    color: accentColor,
+                    fontFamily: "Poppins-SemiBold",
                   },
                   dayTextAtIndex4: {
-                    color: isDark ? "#90caf9" : "#146BB5",
-                    fontWeight: "600",
+                    color: accentColor,
+                    fontFamily: "Poppins-SemiBold",
                   },
                   dayTextAtIndex5: {
-                    color: isDark ? "#90caf9" : "#146BB5",
-                    fontWeight: "600",
+                    color: accentColor,
+                    fontFamily: "Poppins-SemiBold",
                   },
                   dayTextAtIndex6: {
-                    color: isDark ? "#90caf9" : "#146BB5",
-                    fontWeight: "600",
+                    color: accentColor,
+                    fontFamily: "Poppins-SemiBold",
                   },
                 },
               } as any
@@ -293,67 +302,43 @@ const CalendarComponent = () => {
         </Surface>
       </View>
 
-      {/* Items under calendar */}
-      <View className="mt-5 mx-5">
+      <View className="mt-5 px-5 max-w-3xl w-full mx-auto">
         {itemsForSelected.length === 0 ? (
-          <Text className="text-center text-neutral-500 dark:text-neutral-400">
+          <AppText className="text-center text-muted">
             No events or activities for this date.
-          </Text>
+          </AppText>
         ) : (
           itemsForSelected.map((item) => {
             if (item.type === "activity") {
               return (
-                <Link
-                  key={item.title}
-                  href={`/assessment/${item.id}`}
-                  className="mx-auto w-full"
-                  asChild
-                >
-                  <Card className="shadow-none rounded-xl mb-1 flex-row items-center active:bg-orange-50/50 dark:active:bg-orange-900/50 border-neutral-200 dark:border-neutral-700 border">
-                    <View className="flex-row flex-1 gap-2">
-                      <View
-                        className={
-                          "rounded-full p-2.5 bg-orange-50 dark:bg-orange-900"
-                        }
-                      >
-                        <Icon
-                          className={
-                            "h-6 w-6 text-orange-600 dark:text-orange-400"
-                          }
-                          name="PencilLineIcon"
-                        />
-                      </View>
-                      <View className="flex-1">
-                        <AppText
-                          weight="semibold"
-                          className="text-neutral-900 dark:text-neutral-100 text-lg flex-1"
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
-                        >
-                          {item.title}
-                        </AppText>
-                        <View className="flex-row items-center">
-                          <AppText
-                            className="text-neutral-500 dark:text-neutral-400 text-xs"
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                          >
-                            Due {formatDate(item.endDate)}
-                          </AppText>
-                        </View>
-                      </View>
-                    </View>
-                  </Card>
-                </Link>
+                <CalendarItemCard
+                  key={item.id}
+                  iconName="PencilLineIcon"
+                  iconColor={ACTIVITY_COLOR}
+                  iconBgClass="bg-orange-50 dark:bg-orange-900"
+                  title={item.title}
+                  subtitle={`Due ${formatDate(item.endDate)}`}
+                  onPress={() => router.push(`/assessment/${item.id}`)}
+                />
               );
             }
 
             if (item.type === "event") {
+              const ev = item as CalendarItem;
               return (
-                <EventCard
-                  key={item.id}
-                  item={item}
-                  onPress={setSelectedEventId}
+                <CalendarItemCard
+                  key={ev.id}
+                  iconName="CalendarDotsIcon"
+                  iconColor={EVENT_COLOR}
+                  iconBgClass="bg-teal-50 dark:bg-teal-900"
+                  title={ev.title}
+                  subtitle={`${formatDate(ev.startDate)} - ${formatDate(ev.endDate)}`}
+                  caption={
+                    ev.createdById
+                      ? `By ${ev.createdById.firstName} ${ev.createdById.lastName}`
+                      : undefined
+                  }
+                  onPress={() => setSelectedEventId(ev.id)}
                 />
               );
             }
@@ -404,7 +389,7 @@ const CalendarSkeleton = () => {
             ))}
         </Surface>
       </View>
-      <View className="mt-5 mx-5 gap-2">
+      <View className="mt-5 px-5 max-w-3xl w-full mx-auto gap-2">
         {Array(3)
           .fill(0)
           .map((_, index) => (

@@ -26,7 +26,7 @@ export const ATTACHMENT_COLUMNS: AttachmentColumnConfig[] = [
   },
   {
     table: "activity_retakerecorddetail",
-    column: "upload_file",
+    column: "uploaded_file",
     resource: "uploadDocuments",
     priority: 1,
   },
@@ -34,6 +34,18 @@ export const ATTACHMENT_COLUMNS: AttachmentColumnConfig[] = [
     table: "module_module",
     column: "file",
     resource: "module",
+    priority: 2,
+  },
+  {
+    table: "activity_activity",
+    column: "activity_file_instruction",
+    resource: "activity_instructions",
+    priority: 2,
+  },
+  {
+    table: "activity_questionchoice",
+    column: "choice_image",
+    resource: "choice_images",
     priority: 2,
   },
 ];

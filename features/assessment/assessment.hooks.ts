@@ -8,6 +8,8 @@ import {
   getAnswersForAttempt,
   getChoicesForActivity,
   getOngoingAttempt,
+  getQuestionTypes,
+  getQuestionCount,
 } from "./assessment.service";
 
 export const useAssessmentDetails = ({
@@ -19,15 +21,18 @@ export const useAssessmentDetails = ({
 }) => {
   return useQuery({
     queryKey: ["assessment-details", assessmentId, userId],
-    queryFn: () => getAssessmentDetails(Number(assessmentId), userId),
+    queryFn: () => getAssessmentDetails(assessmentId, userId),
     enabled: !!assessmentId && assessmentId !== "undefined" && !!userId,
   });
 };
 
-export const useAttemptRecords = (activityId: number, studentId: number) => {
+export const useAttemptRecords = (
+  studentActivityId: string,
+  studentId: number,
+) => {
   return useQuery({
-    queryKey: ["retake-records", activityId, studentId],
-    queryFn: () => getAttemptRecords(activityId, studentId),
+    queryKey: ["retake-records", studentActivityId, studentId],
+    queryFn: () => getAttemptRecords(studentActivityId, studentId),
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
@@ -43,7 +48,7 @@ export const useGetAssessmentAttempt = (localId: string) => {
   });
 };
 
-export const useGetQuestions = (activityId: number) => {
+export const useGetQuestions = (activityId: string) => {
   return useQuery({
     queryKey: ["questions", activityId],
     queryFn: () => getQuestions(activityId),
@@ -51,13 +56,16 @@ export const useGetQuestions = (activityId: number) => {
 };
 
 export const useGetOrderedQuestions = (
-  activityId: number,
+  activityId: string,
   questionOrder: number[],
 ) => {
   return useQuery({
     queryKey: ["ordered-questions", activityId, questionOrder],
     queryFn: () => getOrderedQuestions(activityId, questionOrder),
-    enabled: !!activityId && questionOrder.length > 0,
+    enabled:
+      !!activityId &&
+      Array.isArray(questionOrder) &&
+      questionOrder.length > 0,
   });
 };
 
@@ -66,20 +74,23 @@ export const useGetAnswersForAttempt = (retakeRecordId: string) => {
     queryKey: ["attempt-answers", retakeRecordId],
     queryFn: () => getAnswersForAttempt(retakeRecordId),
     enabled: !!retakeRecordId,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 };
 
-export const useChoicesForActivity = (activityId: number) => {
+export const useChoicesForActivity = (activityId: string) => {
   return useQuery({
     queryKey: ["activity-choices", activityId],
     queryFn: () => getChoicesForActivity(activityId),
     enabled: !!activityId,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 };
 
 export const useOngoingAttempt = (
-  studentActivityId?: number,
+  studentActivityId?: string,
   studentId?: number,
 ) => {
   return useQuery({
@@ -88,5 +99,22 @@ export const useOngoingAttempt = (
     enabled: !!studentActivityId && !!studentId,
     staleTime: 0,
     refetchOnMount: true,
+  });
+};
+
+export const useQuestionTypes = () => {
+  return useQuery({
+    queryKey: ["question-types"],
+    queryFn: () => getQuestionTypes(),
+    staleTime: 1000 * 60 * 60,
+  });
+};
+
+export const useQuestionCount = (activityId: string | undefined) => {
+  return useQuery({
+    queryKey: ["question-count", activityId],
+    queryFn: () => getQuestionCount(activityId!),
+    enabled: !!activityId,
+    staleTime: 1000 * 60 * 5,
   });
 };

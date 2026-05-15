@@ -25,6 +25,7 @@ import { getApiErrorMessage } from "@/lib/api-error";
 
 const PasswordResetForm = () => {
   const themeColorAccentForeground = useThemeColor("accent-foreground");
+  const mutedColor = useThemeColor("muted");
   const { toast } = useToast();
   const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null);
   const { height } = useWindowDimensions();
@@ -107,7 +108,7 @@ const PasswordResetForm = () => {
                   <Icon
                     name={showPassword ? "EyeIcon" : "EyeSlashIcon"}
                     size={20}
-                    color="gray"
+                    color={mutedColor}
                   />
                 </Pressable>
               </View>
@@ -126,12 +127,12 @@ const PasswordResetForm = () => {
                       <Icon
                         name={req.met ? "CheckCircle" : "XCircle"}
                         size={16}
-                        color={req.met ? "#22c55e" : "#9ca3af"}
+                        color={req.met ? "#22c55e" : mutedColor}
                         weight={req.met ? "fill" : "regular"}
                       />
                       <AppText
                         className="text-sm"
-                        style={{ color: req.met ? "#22c55e" : "#9ca3af" }}
+                        style={{ color: req.met ? "#22c55e" : mutedColor }}
                       >
                         {req.label}
                       </AppText>

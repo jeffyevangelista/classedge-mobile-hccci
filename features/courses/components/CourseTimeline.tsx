@@ -1,4 +1,4 @@
-import { FlatList, Pressable, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { AppText } from "@/components/AppText";
 import { useCourseTimeline } from "../courses.hooks";
@@ -14,6 +14,11 @@ type TimelineItem = {
   fileName: string;
   startDate: string;
   type: "material" | "assessment";
+  hasSubmission: number;
+  showScore: number;
+  maxScore: number;
+  totalScore: number;
+  classroomMode: number;
 };
 
 const CourseTimeline = () => {
@@ -26,22 +31,24 @@ const CourseTimeline = () => {
   if (isLoading) return <CourseTimelineSkeleton />;
   if (isError) return <ErrorFallback message={getApiErrorMessage(error)} />;
 
+  const items = (data as TimelineItem[] | undefined) ?? [];
+
+  if (items.length === 0) {
+    return (
+      <EmptyState
+        icon="FolderOpenIcon"
+        title="No content yet"
+        description="No content found for this course"
+      />
+    );
+  }
+
   return (
-    <FlatList<TimelineItem>
-      style={{ flex: 1 }}
-      data={data as TimelineItem[] | undefined}
-      scrollEnabled={false}
-      ListEmptyComponent={
-        <EmptyState
-          icon="FolderOpenIcon"
-          title="No content yet"
-          description="No content found for this course"
-        />
-      }
-      renderItem={({ item }) => <ListItem item={item} />}
-      keyExtractor={(item) => `#${item.id}-${item.type}`}
-      className="mt-5"
-    />
+    <View className="mt-5">
+      {items.map((item) => (
+        <ListItem key={`${item.id}-${item.type}`} item={item} />
+      ))}
+    </View>
   );
 };
 
@@ -50,22 +57,32 @@ const MATERIAL_ICON_COLOR = "#10b981";
 
 const ListItem = ({ item }: { item: TimelineItem }) => {
   const router = useRouter();
-  const formattedDate = formatDate(item.startDate);
-
   const isAssessment = item.type === "assessment";
+  const formattedDate = formatDate(item.startDate);
+  const dateLabel = isAssessment
+    ? `Due ${formattedDate}`
+    : `Posted ${formattedDate}`;
+  const isClassroomActivity = isAssessment && !!item.classroomMode;
+  const isOverdue =
+    isAssessment &&
+    !isClassroomActivity &&
+    !item.hasSubmission &&
+    new Date(item.startDate).getTime() < Date.now();
+
   const iconName = isAssessment ? "PencilLineIcon" : "BookOpenTextIcon";
   const iconColor = isAssessment ? ASSESSMENT_ICON_COLOR : MATERIAL_ICON_COLOR;
   const iconBgClass = isAssessment
     ? "bg-orange-100 dark:bg-orange-900/50"
     : "bg-emerald-100 dark:bg-emerald-900/50";
-  const accessibilityLabel = `Open ${isAssessment ? "assessment" : "material"}: ${item.fileName}`;
+
+  const accessibilityLabel = `Open ${
+    isAssessment ? "assessment" : "material"
+  }: ${item.fileName}${isOverdue ? " (overdue)" : ""}`;
 
   const handlePress = () => {
-    if (isAssessment) {
-      router.push(`/assessment/${item.id}`);
-    } else {
-      router.push(`/material/${item.id}`);
-    }
+    router.push(
+      isAssessment ? `/assessment/${item.id}` : `/material/${item.id}`,
+    );
   };
 
   return (
@@ -89,9 +106,40 @@ const ListItem = ({ item }: { item: TimelineItem }) => {
           >
             {item.fileName}
           </AppText>
-          <AppText className="text-xs text-muted">
-            Posted {formattedDate}
-          </AppText>
+          <View className="flex-row items-center gap-1.5 mt-0.5 flex-wrap">
+            <AppText className="text-xs text-muted">{dateLabel}</AppText>
+            {isClassroomActivity ? (
+              <View className="px-2 py-0.5 rounded-full bg-accent-soft">
+                <AppText
+                  weight="semibold"
+                  className="text-[10px] text-accent"
+                >
+                  In class
+                </AppText>
+              </View>
+            ) : item.hasSubmission ? (
+              <View className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50">
+                <AppText
+                  weight="semibold"
+                  className="text-[10px]"
+                  style={{ color: "#10b981" }}
+                >
+                  {item.showScore
+                    ? `Submitted · ${item.totalScore}/${item.maxScore}`
+                    : "Submitted"}
+                </AppText>
+              </View>
+            ) : isOverdue ? (
+              <View className="px-2 py-0.5 rounded-full bg-danger-soft">
+                <AppText
+                  weight="semibold"
+                  className="text-[10px] text-danger"
+                >
+                  Overdue
+                </AppText>
+              </View>
+            ) : null}
+          </View>
         </View>
       </Card>
     </Pressable>

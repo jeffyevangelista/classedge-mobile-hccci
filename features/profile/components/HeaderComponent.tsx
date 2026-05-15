@@ -34,16 +34,13 @@ const HeaderComponent = () => {
       </View>
 
       <View className="items-center mt-6">
-        <AppText
-          weight="bold"
-          className="text-2xl sm:text-3xl text-foreground"
-        >
+        <AppText weight="bold" className="text-2xl sm:text-3xl">
           {userDetails?.firstName} {userDetails?.lastName}
         </AppText>
         <AppText className="text-sm sm:text-base text-muted">
           {userDetails?.userId?.email}
         </AppText>
-        <AppText weight="semibold" className="text-xs sm:text-sm text-foreground">
+        <AppText weight="semibold" className="text-xs sm:text-sm">
           {userDetails?.idNumber}
         </AppText>
       </View>
