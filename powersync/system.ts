@@ -59,6 +59,10 @@ export const setupPowerSync = async () => {
 };
 
 export const resetPowerSync = async () => {
+  const { clearAllAttachments } = await import(
+    "@/features/attachments/attachments.api"
+  );
+  await clearAllAttachments();
   await powersync.disconnectAndClear();
   await setupPowerSync();
 };

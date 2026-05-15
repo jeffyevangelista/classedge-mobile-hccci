@@ -3,6 +3,7 @@ import { Card, Spinner } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import { useSyncData } from "../useSyncData";
+import { useAttachmentSyncStatus } from "@/features/attachments/hooks/useAttachmentSyncStatus";
 
 type StatusConfig = {
   label: string;
@@ -68,6 +69,42 @@ const getSyncActivity = (
   };
 };
 
+const getAttachmentStatus = (status: {
+  total: number;
+  synced: number;
+  inFlight: number;
+  failed: number;
+}): StatusConfig => {
+  const { total, synced, inFlight, failed } = status;
+
+  if (total === 0) {
+    return {
+      label: "No attachments",
+      color: "#6B7280",
+      icon: "ImageSquareIcon",
+    };
+  }
+  if (inFlight > 0) {
+    return {
+      label: `${synced} of ${total} downloaded · ${inFlight} pending`,
+      color: "#3B82F6",
+      icon: "CloudArrowDownIcon",
+    };
+  }
+  if (failed > 0) {
+    return {
+      label: `${failed} failed · ${synced} of ${total} downloaded`,
+      color: "#F59E0B",
+      icon: "WarningCircleIcon",
+    };
+  }
+  return {
+    label: `All ${total} downloaded`,
+    color: "#10B981",
+    icon: "CheckCircleIcon",
+  };
+};
+
 const StatusRow = ({
   label,
   value,
@@ -88,7 +125,14 @@ const StatusRow = ({
     }}
   >
     <AppText className="text-sm text-gray-500">{label}</AppText>
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+        flexShrink: 1,
+      }}
+    >
       {showSpinner ? (
         <Spinner size="sm" />
       ) : config ? (
@@ -97,6 +141,7 @@ const StatusRow = ({
       <AppText
         className="text-sm"
         style={{ color: config?.color ?? "#374151" }}
+        numberOfLines={1}
       >
         {config?.label ?? value ?? "—"}
       </AppText>
@@ -117,6 +162,8 @@ const SyncStatusCard = () => {
     uploadError,
   } = useSyncData();
 
+  const attachments = useAttachmentSyncStatus();
+
   const connectionStatus = getConnectionStatus(!!connected, !!connecting);
   const syncActivity = getSyncActivity(
     !!uploading,
@@ -124,6 +171,7 @@ const SyncStatusCard = () => {
     !!hasSynced,
     unsyncedCount,
   );
+  const attachmentStatus = getAttachmentStatus(attachments);
 
   return (
     <Card className="p-4 rounded-xl shadow-none">
@@ -141,6 +189,11 @@ const SyncStatusCard = () => {
           label="Sync Activity"
           config={syncActivity}
           showSpinner={!!uploading || !!downloading}
+        />
+        <StatusRow
+          label="Attachments"
+          config={attachmentStatus}
+          showSpinner={attachments.inFlight > 0}
         />
         <StatusRow
           label="Last Synced"

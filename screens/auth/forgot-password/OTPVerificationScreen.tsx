@@ -1,8 +1,7 @@
-import { View, Text, useWindowDimensions, StyleSheet } from "react-native";
+import { View, useWindowDimensions, StyleSheet } from "react-native";
 import { AppText } from "@/components/AppText";
 import OTPVerificationForm from "@/features/auth/components/OTPVerificationForm";
 import Screen from "@/components/screen";
-import { useRouter } from "expo-router";
 import MailSent from "@/assets/illustrations/forgot-password/mail-sent.svg";
 import useStore from "@/lib/store";
 
@@ -26,14 +25,16 @@ const OTPVerificationScreen = () => {
           style={styles.image}
         />
         <AppText
-          className="text-center text-2xl text-gray-500 mb-2"
+          className="text-center text-2xl text-foreground mb-2"
           weight="semibold"
         >
-          Please check you email
+          Please check your email
         </AppText>
-        <AppText className="text-center text-gray-500 mb-8">
+        <AppText className="text-center text-muted mb-8">
           We've sent a 6-digit verification code to{" "}
-          <AppText className="text-center font-semibold">{email}</AppText>
+          <AppText weight="semibold" className="text-foreground">
+            {email}
+          </AppText>
         </AppText>
 
         <OTPVerificationForm />

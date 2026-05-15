@@ -14,11 +14,11 @@ import { useCallback, useMemo, useState } from "react";
 import {
   Platform,
   Pressable,
-  RefreshControl,
   StyleSheet,
   useWindowDimensions,
   View,
 } from "react-native";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -27,6 +27,7 @@ import Animated, {
   useScrollViewOffset,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeBottomInset } from "@/hooks/useSafeBottomInset";
 
 const NAV_HEIGHT = 44;
 
@@ -35,6 +36,7 @@ const CourseScreen = () => {
   const { courseId } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const safeBottom = useSafeBottomInset();
   const { height: screenHeight } = useWindowDimensions();
   const IMAGE_HEIGHT = Math.round(screenHeight * 0.28);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -59,16 +61,8 @@ const CourseScreen = () => {
   }, [courseId]);
 
   const refreshControl = useMemo(
-    () => (
-      <RefreshControl
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        tintColor={foregroundColor}
-        colors={[foregroundColor]}
-        progressBackgroundColor={surfaceColor}
-      />
-    ),
-    [refreshing, onRefresh, foregroundColor, surfaceColor],
+    () => <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />,
+    [refreshing, onRefresh],
   );
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
@@ -201,6 +195,7 @@ const CourseScreen = () => {
         ref={scrollRef}
         scrollEventThrottle={16}
         refreshControl={refreshControl}
+        contentContainerStyle={{ paddingBottom: safeBottom + 16 }}
       >
         <Animated.View
           style={[

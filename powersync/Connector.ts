@@ -24,10 +24,10 @@ function isLocalFileUri(value: unknown): value is string {
 function buildMultipartBody(record: Record<string, any>): FormData {
   const formData = new FormData();
   for (const [key, value] of Object.entries(record)) {
-    if (key === "file" && isLocalFileUri(value)) {
+    if (isLocalFileUri(value)) {
       const filename = value.split("/").pop() ?? "upload.jpg";
       const ext = filename.split(".").pop()?.toLowerCase() ?? "jpg";
-      formData.append("file", {
+      formData.append(key, {
         uri: value,
         name: filename,
         type: MIME_MAP[ext] ?? "application/octet-stream",
@@ -40,10 +40,12 @@ function buildMultipartBody(record: Record<string, any>): FormData {
 }
 
 async function hasLocalFile(record: Record<string, any>): Promise<boolean> {
-  const uri = record.file;
-  if (!isLocalFileUri(uri)) return false;
-  const info = await FileSystem.getInfoAsync(uri);
-  return info.exists;
+  for (const value of Object.values(record)) {
+    if (!isLocalFileUri(value)) continue;
+    const info = await FileSystem.getInfoAsync(value);
+    if (info.exists) return true;
+  }
+  return false;
 }
 
 // const logger = createBaseLogger();
@@ -90,20 +92,33 @@ export class Connector implements PowerSyncBackendConnector {
         // op.id is the automatically managed 'id' column
         const record = { ...op.opData, id: Number(op.id) };
         const hasFile = await hasLocalFile(record);
+        const fileFields = Object.entries(record)
+          .filter(([, v]) => isLocalFileUri(v))
+          .map(([k, v]) => ({ field: k, uri: v }));
+        console.log("[Connector] op:", {
+          op: op.op,
+          table: op.table,
+          id: op.id,
+          hasFile,
+          fileFields,
+          url:
+            op.op === UpdateType.PUT
+              ? `${env.EXPO_PUBLIC_API_URL}/${op.table}/`
+              : `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
+        });
 
         switch (op.op) {
           case UpdateType.PUT:
             if (hasFile) {
-              const headers: Record<string, string> = {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                "X-Platform": "mobile", // Hardcoded here
+              const multipartHeaders: Record<string, string> = {
+                "X-Platform": "mobile",
               };
-              if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+              if (accessToken)
+                multipartHeaders.Authorization = `Bearer ${accessToken}`;
 
               await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/`, {
                 method: "POST",
-                headers,
+                headers: multipartHeaders,
                 body: buildMultipartBody(record),
               });
             } else {

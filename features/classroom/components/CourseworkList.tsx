@@ -26,12 +26,6 @@ const CourseworkList = () => {
     isRefetching,
   } = useAssessments(classroomId as string, true);
 
-  if (isLoading) return <AssessmentSkeleton />;
-  if (isError)
-    return (
-      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
-    );
-
   const assessments = useMemo(
     () => data?.pages.flatMap((page) => page.results) ?? [],
     [data],
@@ -50,6 +44,12 @@ const CourseworkList = () => {
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  if (isLoading) return <AssessmentSkeleton />;
+  if (isError)
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   if (!isLoading && assessments.length === 0)
     return (

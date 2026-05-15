@@ -2,7 +2,11 @@ import useStore from "@/lib/store";
 import { useQuery as usePowersyncQuery } from "@powersync/tanstack-react-query";
 import { getStudentCourseSchedules, getUserDetails } from "./user.service";
 import { toCompilableQuery } from "@powersync/drizzle-driver";
-import { getFinancialInformation } from "./profile.apis";
+import {
+  getAcademicRecords,
+  getAcademicTerms,
+  getFinancialInformation,
+} from "./profile.apis";
 import { useQuery } from "@tanstack/react-query";
 import { useQuery as usePowersyncReactQuery } from "@powersync/react";
 
@@ -28,5 +32,19 @@ export const useFinancialInformation = () => {
   return useQuery({
     queryKey: ["financial-information"],
     queryFn: () => getFinancialInformation(),
+  });
+};
+
+export const useAcademicRecords = () => {
+  return useQuery({
+    queryKey: ["academic-records"],
+    queryFn: () => getAcademicRecords(),
+  });
+};
+
+export const useAcademicTerms = () => {
+  return useQuery({
+    queryKey: ["academic-terms"],
+    queryFn: () => getAcademicTerms(),
   });
 };

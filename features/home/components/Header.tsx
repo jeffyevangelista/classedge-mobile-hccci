@@ -7,16 +7,16 @@ import { useUserDetails } from "@/features/profile/profile.hooks";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import { useEffect, useState } from "react";
-import useGreeting from "@/hooks/useGreeting";
+import { getGreeting } from "@/utils/getGreeting";
 
 const Header = () => {
   const { data, isLoading, error } = useUserDetails();
-  const [greeting, setGreeting] = useState(useGreeting());
+  const [greeting, setGreeting] = useState(getGreeting());
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (nextAppState === "active") {
-        setGreeting(useGreeting()); // Re-check the time
+        setGreeting(getGreeting()); // Re-check the time
       }
     });
 

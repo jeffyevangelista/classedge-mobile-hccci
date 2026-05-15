@@ -26,13 +26,13 @@ const PasswordResetScreen = () => {
           style={styles.image}
         />
         <AppText
-          className="text-center text-2xl text-gray-500 mb-2"
+          className="text-center text-2xl text-foreground mb-2"
           weight="semibold"
         >
           Set a New Password
         </AppText>
 
-        <AppText className="text-center text-gray-500 mb-8">
+        <AppText className="text-center text-muted mb-8">
           Create a new, more secure password to protect your account
         </AppText>
         <PasswordResetForm />

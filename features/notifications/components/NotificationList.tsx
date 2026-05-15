@@ -1,18 +1,20 @@
-import { View, Pressable, RefreshControl } from "react-native";
+import { View, Pressable } from "react-native";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { useNotifications } from "../notifications.hooks";
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
-import { Avatar, Card, Skeleton } from "heroui-native";
+import { Avatar, Skeleton } from "heroui-native";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Notification } from "@/powersync/schema";
 import { Link } from "expo-router";
 import { readNotification } from "../notifications.service";
-import { Icon } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
+
+dayjs.extend(relativeTime);
 
 const NotificationList = () => {
   const { data, isLoading, isError, error, isRefetching, refetch } =
@@ -29,21 +31,26 @@ const NotificationList = () => {
   return (
     <FlashList
       refreshControl={
-        <RefreshControl
-          refreshing={isRefetching} // Visual spinner shows while refetching
-          onRefresh={refetch} // Triggered on pull
-        />
+        <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
       }
       ListEmptyComponent={
-        <EmptyState
-          icon="BellSlashIcon"
-          title="You have no notifications yet"
-        />
+        <View className="max-w-3xl w-full mx-auto">
+          <EmptyState
+            icon="BellSlashIcon"
+            title="You have no notifications yet"
+          />
+        </View>
       }
       ItemSeparatorComponent={() => (
-        <View className="h-px bg-border" />
+        <View className="max-w-3xl w-full mx-auto">
+          <View className="h-px bg-border" />
+        </View>
       )}
-      renderItem={({ item }) => <NotificationItem {...item} />}
+      renderItem={({ item }) => (
+        <View className="max-w-3xl w-full mx-auto">
+          <NotificationItem {...item} />
+        </View>
+      )}
       data={data}
     />
   );
@@ -58,17 +65,17 @@ const NotificationItem = ({
   entityType,
   entityId,
 }: Notification) => {
-  dayjs.extend(relativeTime);
-
   const formattedTime = dayjs(createdAt).fromNow();
   const isReadBool = isRead === 1;
 
   const handleReadNotification = async () => {
     try {
       await readNotification(id.toString());
-      console.log("Notification read successfully");
-    } catch (error: any) {
-      console.log("failed to update notification", getApiErrorMessage(error));
+    } catch (err: unknown) {
+      console.warn(
+        "[NotificationItem] failed to update notification",
+        getApiErrorMessage(err),
+      );
     }
   };
 
@@ -83,6 +90,8 @@ const NotificationItem = ({
     >
       <Pressable
         onPress={handleReadNotification}
+        accessibilityRole="button"
+        accessibilityLabel={`${createdById.firstName} ${createdById.lastName} added ${message}`}
         className={`flex-row items-start p-4 ${isReadBool ? "bg-transparent" : "bg-accent-soft"}`}
       >
         <Avatar alt="avatar" size="sm">
@@ -93,13 +102,15 @@ const NotificationItem = ({
         <View className="flex-1 ml-3">
           <AppText
             weight={isReadBool ? "regular" : "semibold"}
-            className={`text-xs ${isReadBool ? "text-slate-500 dark:text-slate-400" : "text-slate-700 dark:text-slate-200"}`}
+            className={`text-xs ${isReadBool ? "text-muted" : ""}`}
             numberOfLines={2}
           >
             {createdById.firstName} {createdById.lastName} added {message}
           </AppText>
           <AppText
-            className={`text-[10px] mt-1 uppercase font-medium ${isReadBool ? "text-slate-400 dark:text-slate-500" : "text-blue-100"}`}
+            className={`text-[10px] mt-1 uppercase font-medium ${
+              isReadBool ? "text-muted" : "text-accent"
+            }`}
           >
             {formattedTime}
           </AppText>
@@ -119,7 +130,7 @@ const NotificationListSkeleton = () => {
       {Array(8)
         .fill(0)
         .map((_, index) => (
-          <View key={index}>
+          <View key={index} className="max-w-3xl w-full mx-auto">
             <View className="flex-row items-start p-4">
               <Skeleton className="w-8 h-8 rounded-full" />
               <View className="flex-1 ml-3 gap-1.5">

@@ -1,6 +1,6 @@
 import { StyleSheet, View, useWindowDimensions } from "react-native";
 import { AppText } from "@/components/AppText";
-import { Button, LinkButton } from "heroui-native";
+import { Button } from "heroui-native";
 import { useRouter } from "expo-router";
 import Screen from "@/components/screen";
 import Success from "@/assets/illustrations/forgot-password/success.svg";
@@ -25,12 +25,12 @@ const ResetSuccessScreen = () => {
           style={styles.image}
         />
         <AppText
-          className="mb-2 text-center text-2xl text-gray-500"
+          className="mb-2 text-center text-2xl text-foreground"
           weight="semibold"
         >
           Reset Password Success
         </AppText>
-        <AppText className="text-gray-500 text-center mb-8 max-w-md self-center">
+        <AppText className="text-muted text-center mb-8 max-w-md self-center">
           You can now use your new password to login to your account.
         </AppText>
 

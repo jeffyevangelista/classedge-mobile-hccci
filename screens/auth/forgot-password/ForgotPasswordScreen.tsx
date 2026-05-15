@@ -27,13 +27,13 @@ const ForgotPasswordScreen = () => {
         />
 
         <AppText
-          className="mb-2 text-center text-2xl text-gray-500"
+          className="mb-2 text-center text-2xl text-foreground"
           weight="semibold"
         >
           Forgot Password?
         </AppText>
-        <AppText className="self-center text-center mb-8 text-gray-500">
-          No worries! Enter you email address below and we'll send you reset
+        <AppText className="self-center text-center mb-8 text-muted">
+          No worries! Enter your email address below and we'll send you reset
           instructions.
         </AppText>
         <ForgotPasswordForm />

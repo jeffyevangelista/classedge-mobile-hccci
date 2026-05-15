@@ -1,5 +1,5 @@
 import { powersync, resetPowerSync } from "@/powersync/system";
-import { Button, Dialog, useToast } from "heroui-native";
+import { Button, Dialog, useThemeColor, useToast } from "heroui-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { Icon } from "@/components/Icon";
@@ -10,6 +10,7 @@ const ResyncButton = () => {
   const [unsyncedCount, setUnsyncedCount] = useState(0);
   const [isPending, setIsPending] = useState(false);
   const { toast } = useToast();
+  const accentColor = useThemeColor("accent");
 
   const checkUnsyncedData = useCallback(async () => {
     const result = await powersync.getAll<{ count: number }>(
@@ -34,11 +35,12 @@ const ResyncButton = () => {
         label: "Resync started",
         description: "Local data cleared. Re-downloading from server.",
       });
-    } catch (error: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
       toast.show({
         variant: "danger",
         label: "Resync failed",
-        description: error?.message ?? "Unknown error",
+        description: message,
       });
     } finally {
       setIsPending(false);
@@ -48,22 +50,24 @@ const ResyncButton = () => {
   return (
     <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
-        <Pressable className="active:opacity-70">
-          {() => (
-            <View className="flex-row items-center p-3 rounded-2xl border border-transparent">
-              <Icon
-                name="ArrowsClockwiseIcon"
-                size={28}
-                className="text-accent"
-              />
-              <AppText
-                weight="semibold"
-                className="text-base sm:text-lg ml-4 flex-1 text-slate-800 dark:text-slate-100"
-              >
-                Force Resync
-              </AppText>
-            </View>
-          )}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Force Resync"
+          className="active:opacity-70"
+        >
+          <View className="flex-row items-center p-3 rounded-2xl border border-transparent">
+            <Icon
+              name="ArrowsClockwiseIcon"
+              size={28}
+              color={accentColor}
+            />
+            <AppText
+              weight="semibold"
+              className="text-base sm:text-lg ml-4 flex-1"
+            >
+              Force Resync
+            </AppText>
+          </View>
         </Pressable>
       </Dialog.Trigger>
       <Dialog.Portal>
@@ -83,7 +87,7 @@ const ResyncButton = () => {
               </AppText>
             )}
           </View>
-          <View>
+          <View className="gap-2">
             <Button
               variant="danger"
               isDisabled={isPending}

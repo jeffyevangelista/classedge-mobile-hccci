@@ -6,20 +6,20 @@ import { ErrorComponent } from "@/components/ErrorComponent";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import { useEffect, useState } from "react";
-import useGreeting from "@/hooks/useGreeting";
+import { getGreeting } from "@/utils/getGreeting";
 import SyncCenter from "@/features/sync/components/SyncCenter";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 const TabsHeader = () => {
   const { data, isLoading, error, refresh } = useUserDetails();
-  const [greeting, setGreeting] = useState(useGreeting());
+  const [greeting, setGreeting] = useState(getGreeting());
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (nextAppState === "active") {
-        setGreeting(useGreeting());
+        setGreeting(getGreeting());
       }
     });
 
@@ -34,11 +34,11 @@ const TabsHeader = () => {
   return (
     <View
       style={{ paddingTop: insets.top }}
-      className="bg-surface px-5 pb-3 flex flex-row justify-between items-center border-b border-border"
+      className="bg-surface px-5 pb-2 flex flex-row justify-between items-center border-b border-border"
     >
       <Link href="/(main)/profile">
         <View className="flex flex-row items-center gap-3">
-          <Avatar size="sm" alt="user-profile">
+          <Avatar size="sm" alt="user-profile ">
             <AttachmentAvatarImage path={userDetails?.studentPhoto} />
             <Avatar.Fallback>
               {userDetails?.firstName?.[0] ?? ""}
@@ -46,9 +46,7 @@ const TabsHeader = () => {
             </Avatar.Fallback>
           </Avatar>
           <View>
-            <AppText className="text-xs text-muted">
-              {greeting}
-            </AppText>
+            <AppText className="text-xs text-muted">{greeting}</AppText>
             <AppText
               weight="semibold"
               className="text-2xl leading-tight text-foreground"

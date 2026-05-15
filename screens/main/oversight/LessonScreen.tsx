@@ -2,9 +2,10 @@ import { AppText } from "@/components/AppText";
 import FileRenderer from "@/components/FileRenderer";
 import Screen from "@/components/screen";
 import { useLesson } from "@/features/oversight/oversight.hooks";
-import { useFormattedDate } from "@/hooks/userFormattedDate";
+import { formatDate } from "@/utils/formatDate";
 import { useLocalSearchParams } from "expo-router";
-import { RefreshControl, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { Skeleton } from "heroui-native";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
@@ -34,14 +35,14 @@ const LessonScreen = () => {
     );
 
   const formattedDate = data?.startDate
-    ? useFormattedDate(data.startDate)
+    ? formatDate(data.startDate)
     : null;
 
   return (
     <Screen>
       <ScrollView
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
         }
         showsVerticalScrollIndicator={false}
       >

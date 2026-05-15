@@ -50,6 +50,36 @@ export type GrantedScholarship = {
   dateGranted: string;
 };
 
+export type PromissoryNote = {
+  id: number;
+  promisoryNoteUrl: string;
+  date: string;
+  academicTermCode: string;
+  notes: string;
+};
+
+export type OtherFee = {
+  name: string;
+  originalCost: number;
+  finalCost: number;
+  discountAmount: number;
+};
+
+export type PaymentReceipt = {
+  receiptNumber: string;
+  receiptDate: string;
+  amount: number;
+  paymentMethod: string;
+  cashier: string;
+};
+
+export type DiscountSummary = {
+  subjectDiscountTotal: number;
+  miscDiscountTotal: number;
+  otherDiscountTotal: number;
+  totalFeeDiscounts: number;
+};
+
 export type FinancialRecord = {
   student: FinancialStudent;
   academicTerm: AcademicTerm;
@@ -57,6 +87,10 @@ export type FinancialRecord = {
   miscellaneousFees: MiscellaneousFee[];
   subjectFees: SubjectFee[];
   grantedScholarships: GrantedScholarship[];
+  promissoryNotes: PromissoryNote[];
+  otherFees: OtherFee[];
+  paymentReceipts: PaymentReceipt[];
+  discountSummary: DiscountSummary;
 };
 
 export type FinancialRecordResponse = {
@@ -64,4 +98,34 @@ export type FinancialRecordResponse = {
   next: string | null;
   previous: string | null;
   results: FinancialRecord[];
+};
+
+export type AcademicSubject = {
+  subjectName: string;
+  transmutedGrade: number | null;
+  breakdown: {
+    final: number;
+    terms: Record<string, number>;
+  };
+};
+
+export type AcademicRecordTerm = {
+  studentId: number;
+  studentName: string;
+  studentSchoolEmail: string;
+  academicTermCode: string;
+  subjects: AcademicSubject[];
+};
+
+export type AcademicRecordsResponse = AcademicRecordTerm[];
+
+export type AcademicTermItem = {
+  id: number;
+  academicTermCode: string;
+  schoolYear: string;
+  semester: string;
+  startDate: string;
+  endDate: string;
+  currentSemester: boolean;
+  isClosed: boolean;
 };

@@ -6,7 +6,7 @@ import ResyncButton from "@/features/auth/components/ResyncButton";
 import HeaderComponent from "@/features/profile/components/HeaderComponent";
 import ThemeToggleButton from "@/features/profile/components/ThemeToggleButton";
 import { Href, Link } from "expo-router";
-import { Card } from "heroui-native";
+import { Card, useThemeColor } from "heroui-native";
 import { ScrollView, View, Pressable } from "react-native";
 
 type ProfileNavProps = {
@@ -61,20 +61,27 @@ const ProfileScreen = () => {
 };
 
 const ProfileNavItem = ({ title, href, name }: ProfileNavProps) => {
+  const accentColor = useThemeColor("accent");
+  const mutedColor = useThemeColor("muted");
+
   return (
     <Link href={href} asChild>
-      <Pressable className="active:opacity-70">
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={title}
+        className="active:opacity-70"
+      >
         <View className="flex-row items-center p-3 rounded-2xl border border-transparent">
-          <Icon name={name} size={28} className="text-accent" />
+          <Icon name={name} size={28} color={accentColor} />
 
           <AppText
             weight="semibold"
-            className="text-base sm:text-lg ml-4 flex-1 text-foreground"
+            className="text-base sm:text-lg ml-4 flex-1"
           >
             {title}
           </AppText>
 
-          <Icon name={"CaretRightIcon"} size={18} className="text-muted" />
+          <Icon name="CaretRightIcon" size={18} color={mutedColor} />
         </View>
       </Pressable>
     </Link>

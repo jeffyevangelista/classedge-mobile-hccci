@@ -269,6 +269,8 @@ export const assessmentTable = sqliteTable("activity_activity", {
     .unique()
     .$defaultFn(() => createId()),
   termId: integer("term_id").notNull(),
+  activityFileInstruction: text("activity_file_instruction").notNull(),
+  allowLate: integer("allow_late", { mode: "boolean" }),
 });
 
 export const assessmentRelations = relations(assessmentTable, ({ one }) => ({
@@ -279,17 +281,17 @@ export const assessmentRelations = relations(assessmentTable, ({ one }) => ({
 }));
 
 export const studentAssessment = sqliteTable("activity_studentactivity", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  localId: text("local_id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  id: text("id").notNull(),
   studentId: integer("student_id").notNull(),
-  activityId: integer("activity_id").notNull(),
+  activityId: text("activity_id").notNull(),
   termId: integer("term_id").notNull(),
   subjectId: integer("subject_id").notNull(),
   retakeCount: integer("retake_count").notNull(),
   totalScore: integer("total_score").notNull(),
   isEditable: integer("is_editable").notNull(),
-  localId: text("local_id")
-    .notNull()
-    .$defaultFn(() => createId()),
   activityLocalId: text("activity_local_id").notNull(),
   file: text("file"),
 });
@@ -302,8 +304,8 @@ export const studentAssessmentRelations = relations(
       references: [accountDetailsTable.userId],
     }),
     activityId: one(assessmentTable, {
-      fields: [studentAssessment.activityLocalId],
-      references: [assessmentTable.localId],
+      fields: [studentAssessment.activityId],
+      references: [assessmentTable.id],
     }),
     termId: one(academicTermsTable, {
       fields: [studentAssessment.termId],
@@ -323,7 +325,7 @@ export const studentAssessmentRelations = relations(
 
 export const attemptsTable = sqliteTable("activity_retakerecord", {
   id: text("id").primaryKey(),
-  studentActivityId: integer("student_activity_id").notNull(),
+  studentActivityId: text("student_activity_id").notNull(),
   retakeNumber: integer("retake_number").notNull(),
   score: integer("score").notNull(),
   status: text("status").notNull(),
@@ -334,7 +336,7 @@ export const attemptsTable = sqliteTable("activity_retakerecord", {
   localId: text("local_id")
     .notNull()
     .$defaultFn(() => createId()),
-  activityId: integer("activity_id").notNull(),
+  activityId: text("activity_id").notNull(),
   questionOrder: text("question_order").notNull().default("[]"),
   lastIndex: integer("last_index").notNull().default(0),
   lastHeartbeatAt: text("last_heartbeat_at").notNull().default(utcNow),
@@ -346,6 +348,10 @@ export const attemptsRelations = relations(attemptsTable, ({ one }) => ({
     fields: [attemptsTable.studentActivityId],
     references: [studentAssessment.id],
   }),
+  activityId: one(assessmentTable, {
+    fields: [attemptsTable.activityId],
+    references: [assessmentTable.id],
+  }),
 }));
 
 export const assessmentQuestionTable = sqliteTable(
@@ -356,7 +362,7 @@ export const assessmentQuestionTable = sqliteTable(
     questionInstruction: text("question_instruction").notNull(),
     correctAnswer: text("correct_answer").notNull(),
     score: integer("score").notNull(),
-    activityId: integer("activity_id").notNull(),
+    activityId: text("activity_id").notNull(),
     quizTypeId: integer("quiz_type_id").notNull(),
     subjectId: integer("subject_id").notNull(),
   },
@@ -372,7 +378,7 @@ export const assessmentQuestionTableRelation = relations(
   ({ one }) => ({
     activityId: one(assessmentTable, {
       fields: [assessmentQuestionTable.activityId],
-      references: [assessmentTable.localId],
+      references: [assessmentTable.id],
     }),
     subjectId: one(coursesTable, {
       fields: [assessmentQuestionTable.subjectId],
@@ -387,10 +393,11 @@ export const assessmentQuestionTableRelation = relations(
 
 export const assessmentQuestionsTable = sqliteTable("activity_questionchoice", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  activityId: integer("activity_id").notNull(),
   choiceText: text("choice_text").notNull(),
-  isLeftSide: text("is_left_side").notNull(),
+  isLeftSide: integer("is_left_side", { mode: "boolean" }).notNull(),
   questionId: integer("question_id").notNull(),
+  subjectId: integer("subject_id"),
+  choiceImage: text("choice_image"),
 });
 
 export const assessmentQuestionsTableRelations = relations(
@@ -407,7 +414,7 @@ export const attemptAnswerTable = sqliteTable("activity_retakerecorddetail", {
   id: text("id").primaryKey(),
   studentAnswer: text("student_answer").notNull(),
   score: integer("score").notNull(),
-  uploadFile: text("upload_file").notNull(),
+  uploadedFile: text("uploaded_file").notNull(),
   activityQuestionId: integer("activity_question_id").notNull(),
   retakeRecordId: text("retake_record_id").notNull(),
   studentId: integer("student_id").notNull(),
@@ -440,7 +447,7 @@ export const attachementsTable = sqliteTable("mobile_attachment", {
     .$defaultFn(() => createId()),
   file: text("file").notNull(),
   profileId: integer("profile_id"),
-  studentActivityId: integer("student_activity_id"),
+  studentActivityId: text("student_activity_id"),
 });
 
 export const activtyType = sqliteTable("activity_activitytype", {

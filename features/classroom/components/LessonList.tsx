@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from "react";
 import { ActivityIndicator, FlatList, View } from "react-native";
 import { Lesson } from "@/features/oversight/oversight.type";
-import { useFormattedDate } from "@/hooks/userFormattedDate";
+import { formatDate } from "@/utils/formatDate";
 import { Link, useGlobalSearchParams, useLocalSearchParams } from "expo-router";
 import { useLessons } from "@/features/oversight/oversight.hooks";
 import { Card, Skeleton } from "heroui-native";
@@ -38,12 +38,6 @@ const LessonList = () => {
     fetchNextPage,
   } = useLessons(classroomId as string);
 
-  if (isLoading && !data) return <MaterialsSkeleton />;
-  if (isError)
-    return (
-      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
-    );
-
   const materials = useMemo(() => {
     const all = data?.pages.flatMap((page) => page.results) ?? [];
     const seen = new Set<number>();
@@ -64,6 +58,12 @@ const LessonList = () => {
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  if (isLoading && !data) return <MaterialsSkeleton />;
+  if (isError)
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
 
   if (!isLoading && materials.length === 0)
     return (
@@ -96,7 +96,7 @@ const LessonList = () => {
 const MaterialItem = React.memo(
   ({ id, lessonName, lessonType, startDate }: Lesson) => {
     const { label } = getLessonIcon(lessonType);
-    const formattedDate = useFormattedDate(startDate);
+    const formattedDate = formatDate(startDate);
 
     return (
       <Link className="max-w-3xl mx-auto w-full mt-2.5" href={`/lesson/${id}`}>

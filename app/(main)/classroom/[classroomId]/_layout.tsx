@@ -6,6 +6,7 @@ import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 
 const ClassroomLayout = () => {
   const { classroomId } = useLocalSearchParams();
+  const router = useRouter();
   const headerOptions = useThemedHeaderOptions();
 
   return (
@@ -19,23 +20,20 @@ const ClassroomLayout = () => {
       <Stack.Screen
         name="index"
         options={{
-          headerRight: ({ tintColor }) => {
-            const router = useRouter();
-            return (
-              <Pressable
-                onPress={() =>
-                  router.push(`/(main)/classroom/${classroomId}/course-details`)
-                }
-                className="w-9 h-9 rounded-full flex justify-center items-center"
-              >
-                <Icon
-                  name="InfoIcon"
-                  color={tintColor}
-                  style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
-                />
-              </Pressable>
-            );
-          },
+          headerRight: ({ tintColor }) => (
+            <Pressable
+              onPress={() =>
+                router.push(`/(main)/classroom/${classroomId}/course-details`)
+              }
+              className="w-9 h-9 rounded-full flex justify-center items-center"
+            >
+              <Icon
+                name="InfoIcon"
+                color={tintColor}
+                style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
+              />
+            </Pressable>
+          ),
         }}
       />
       <Stack.Screen

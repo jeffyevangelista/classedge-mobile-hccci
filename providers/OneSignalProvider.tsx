@@ -34,13 +34,13 @@ const OneSignalProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         // Route based on entityType, matching NotificationList logic
-        const path =
-          entityType === "lesson" || entityType === "module"
-            ? `/material/${entityId}`
-            : `/assessment/${entityId}`;
-
-        console.log("Redirecting to path:", path);
-        router.push(path);
+        if (entityType === "lesson" || entityType === "module") {
+          console.log("Redirecting to material:", entityId);
+          router.push(`/material/${entityId}`);
+        } else {
+          console.log("Redirecting to assessment:", entityId);
+          router.push(`/assessment/${entityId}`);
+        }
       }
     };
 

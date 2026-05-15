@@ -1,14 +1,15 @@
 import { AppText } from "@/components/AppText";
 import FileRenderer from "@/components/FileRenderer";
 import { useAssessment } from "@/features/oversight/oversight.hooks";
-import { useFormattedDate } from "@/hooks/userFormattedDate";
+import { formatDate } from "@/utils/formatDate";
 import { useLocalSearchParams } from "expo-router";
 import { Skeleton } from "heroui-native";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { View } from "react-native";
-import { RefreshControl, ScrollView } from "react-native-gesture-handler";
+import { ScrollView } from "react-native-gesture-handler";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 
 const ActivityScreen = () => {
   const { activityId } = useLocalSearchParams();
@@ -45,13 +46,13 @@ const ActivityScreen = () => {
       <ScrollView
         className="pb-24"
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
         }
         showsVerticalScrollIndicator={false}
       >
         <View className="p-4">
           <AppText className="text-sm text-neutral-500 dark:text-neutral-400">
-            Due {useFormattedDate(data.endTime, true)}
+            Due {formatDate(data.endTime, true)}
           </AppText>
           <AppText
             weight="semibold"
@@ -111,7 +112,7 @@ const LoadingComponent = ({
     <View className="flex-1 w-full max-w-3xl mx-auto p-2.5 bg-background">
       <ScrollView
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
         }
         showsVerticalScrollIndicator={false}
       >
