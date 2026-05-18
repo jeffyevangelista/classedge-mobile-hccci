@@ -1,4 +1,12 @@
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import {
+  createMaterialTopTabNavigator,
+  type MaterialTopTabNavigationEventMap,
+  type MaterialTopTabNavigationOptions,
+} from "@react-navigation/material-top-tabs";
+import type {
+  ParamListBase,
+  TabNavigationState,
+} from "@react-navigation/native";
 import {
   useLocalSearchParams,
   useNavigation,
@@ -6,10 +14,16 @@ import {
 } from "expo-router";
 import { useThemeColor } from "heroui-native";
 import { useEffect } from "react";
+import { StyleSheet } from "react-native";
 import { useClassroom } from "@/features/classroom/classroom.hooks";
 
 const { Navigator } = createMaterialTopTabNavigator();
-const MaterialTopTabs = withLayoutContext(Navigator);
+const MaterialTopTabs = withLayoutContext<
+  MaterialTopTabNavigationOptions,
+  typeof Navigator,
+  TabNavigationState<ParamListBase>,
+  MaterialTopTabNavigationEventMap
+>(Navigator);
 
 const ClassroomTabsLayout = () => {
   const { classroomId } = useLocalSearchParams<{ classroomId: string }>();
@@ -36,7 +50,7 @@ const ClassroomTabsLayout = () => {
         tabBarIndicatorStyle: { backgroundColor: accent },
         tabBarStyle: {
           backgroundColor: surface,
-          borderBottomWidth: 1,
+          borderBottomWidth: StyleSheet.hairlineWidth,
           borderBottomColor: border,
           elevation: 0,
           shadowOpacity: 0,
