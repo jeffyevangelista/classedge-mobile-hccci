@@ -18,7 +18,7 @@ const ClassroomLayout = () => {
       }}
     >
       <Stack.Screen
-        name="index"
+        name="(tabs)"
         options={{
           headerRight: ({ tintColor }) => (
             <Pressable
