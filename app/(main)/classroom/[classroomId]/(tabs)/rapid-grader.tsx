@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Button } from "heroui-native";
-import ClassroomActivitiyList from "@/features/classroom/components/ClassroomActivitiyList";
 import Screen from "@/components/screen";
+import ClassroomActivitiyList from "@/features/classroom/components/ClassroomActivitiyList";
 
 export default function RapidGraderTab() {
   const { classroomId } = useLocalSearchParams<{ classroomId: string }>();
