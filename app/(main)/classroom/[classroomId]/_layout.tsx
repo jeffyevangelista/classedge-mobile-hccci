@@ -1,6 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Select } from "heroui-native";
 import { Platform, Pressable, View } from "react-native";
+import { AppText } from "@/components/AppText";
 import BackButton from "@/components/BackButton";
 import { Icon } from "@/components/Icon";
 import { useClassroom } from "@/features/classroom/classroom.hooks";
@@ -46,7 +47,11 @@ const ClassroomLayout = () => {
                 <Select.Portal>
                   <Select.Overlay />
                   <Select.Content presentation="popover">
-                    <Select.Item value="activity" label="Create Activity" />
+                    <Select.Item value="activity" label="Create Activity">
+                      <AppText className="text-sm text-foreground">
+                        Create Activity
+                      </AppText>
+                    </Select.Item>
                   </Select.Content>
                 </Select.Portal>
               </Select>

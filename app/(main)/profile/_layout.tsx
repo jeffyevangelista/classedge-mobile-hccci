@@ -5,14 +5,13 @@ import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 const ProfileLayout = () => {
   const headerOptions = useThemedHeaderOptions();
   return (
-    <Stack screenOptions={headerOptions}>
-      <Stack.Screen
-        name="index"
-        options={{
-          headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
-          title: "Profile",
-        }}
-      />
+    <Stack
+      screenOptions={{
+        ...headerOptions,
+        headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
+      }}
+    >
+      <Stack.Screen name="index" options={{ title: "Profile" }} />
       <Stack.Screen
         name="academic-records"
         options={{ title: "Academic Records" }}

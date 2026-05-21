@@ -20,6 +20,8 @@ const HomeScreen = () => {
     setRefreshing(false);
   }, []);
 
+  const isStudent = authUser?.role === "Student";
+
   return (
     <Screen>
       <ScrollView
@@ -27,13 +29,10 @@ const HomeScreen = () => {
         scrollIndicatorInsets={{ right: 1 }}
         contentContainerStyle={{ paddingBottom: safeBottom + 20 }}
         refreshControl={
-          <RefreshIndicator
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />
+          <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {authUser?.role === "Student" && (
+        {isStudent && (
           <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
             <SectionHeader title="My Schedule" />
             <ScheduleComponent />

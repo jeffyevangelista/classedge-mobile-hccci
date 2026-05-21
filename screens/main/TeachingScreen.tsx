@@ -5,15 +5,21 @@ import {
   View,
 } from "react-native";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
-import React from "react";
+import React, { useMemo, useState } from "react";
 import Screen from "@/components/screen";
 import { useTeachingCourses } from "@/features/teaching/teaching.hooks";
 import { AppText } from "@/components/AppText";
 import { FlashList } from "@shopify/flash-list";
-import { Card, Skeleton } from "heroui-native";
+import {
+  Card,
+  InputGroup,
+  Skeleton,
+  useThemeColor,
+} from "heroui-native";
 import { Link } from "expo-router";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import Image from "@/components/Image";
+import { Icon } from "@/components/Icon";
 
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
@@ -28,6 +34,17 @@ const TeachingScreen = () => {
   const { isLoading, isError, error, data, refetch, isRefetching } =
     useTeachingCourses();
 
+  const [search, setSearch] = useState("");
+
+  const visible = useMemo(() => {
+    const list = data ?? [];
+    const q = search.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter((c) =>
+      (c.subjectName ?? "").toLowerCase().includes(q),
+    );
+  }, [data, search]);
+
   if (isLoading) return <TeachingListSkeleton numColumns={numColumns} />;
   if (isError)
     return (
@@ -37,6 +54,7 @@ const TeachingScreen = () => {
   return (
     <Screen className="">
       <View className="w-full max-w-6xl mx-auto flex-1">
+        <TeachingToolbar search={search} onSearchChange={setSearch} />
         <FlashList
           refreshControl={
             <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
@@ -44,13 +62,17 @@ const TeachingScreen = () => {
           ListEmptyComponent={
             <EmptyState
               icon="BookOpenIcon"
-              title="No courses found"
-              description="You have no assigned courses yet"
+              title={search ? "No matching courses" : "No courses found"}
+              description={
+                search
+                  ? "Try a different search term"
+                  : "You have no assigned courses yet"
+              }
             />
           }
           key={numColumns}
           numColumns={numColumns}
-          data={data}
+          data={visible}
           className="p-1"
           contentContainerStyle={{ paddingBottom: 15 }}
           renderItem={({ item }) => (
@@ -59,6 +81,32 @@ const TeachingScreen = () => {
         />
       </View>
     </Screen>
+  );
+};
+
+const TeachingToolbar = ({
+  search,
+  onSearchChange,
+}: {
+  search: string;
+  onSearchChange: (value: string) => void;
+}) => {
+  const mutedColor = useThemeColor("muted");
+  return (
+    <View className="flex-row items-center gap-2 px-2 pt-2 pb-1">
+      <InputGroup className="flex-1 shadow-none">
+        <InputGroup.Prefix>
+          <Icon name="MagnifyingGlassIcon" size={18} color={mutedColor} />
+        </InputGroup.Prefix>
+        <InputGroup.Input
+          placeholder="Search courses"
+          value={search}
+          onChangeText={onSearchChange}
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+      </InputGroup>
+    </View>
   );
 };
 
@@ -116,6 +164,9 @@ const TeachingListSkeleton = ({ numColumns }: { numColumns: number }) => {
   return (
     <View className="w-full max-w-6xl mx-auto flex-1 px-1">
       <ScrollView contentContainerStyle={{ paddingBottom: 15 }}>
+        <View className="px-2 pt-2 pb-1">
+          <Skeleton className="h-10 w-full rounded-xl" />
+        </View>
         <View className="flex-row flex-wrap">
           {Array(6)
             .fill(0)

@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useGlobalSearchParams } from "expo-router";
 import { useStudents } from "../oversight.hooks";
-import { ActivityIndicator, FlatList, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Avatar, Card, Skeleton } from "heroui-native";
 import { Student } from "../oversight.type";
@@ -9,11 +9,18 @@ import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
-
-const CONTENT_CONTAINER_STYLE = { paddingTop: 16 } as const;
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
+import { StudentSearchBar } from "@/features/classroom/components/StudentSearchBar";
+import { Icon } from "@/components/Icon";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 const StudentList = () => {
-  const { subjectId } = useGlobalSearchParams();
+  const params = useGlobalSearchParams<{ subjectId?: string | string[] }>();
+  const subjectIdParam = Array.isArray(params.subjectId)
+    ? params.subjectId[0]
+    : params.subjectId;
+  const subjectId = subjectIdParam ?? "";
 
   const {
     data,
@@ -25,15 +32,26 @@ const StudentList = () => {
     fetchNextPage,
     refetch,
     isRefetching,
-  } = useStudents(subjectId as string);
+  } = useStudents(subjectId);
 
-  const students = useMemo(
-    () =>
-      data?.pages.flatMap((page) =>
-        Array.isArray(page) ? page : (page.results ?? []),
-      ) ?? [],
-    [data],
-  );
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const students = useMemo(() => {
+    const pages = data?.pages;
+    if (!Array.isArray(pages)) return [] as Student[];
+    return pages.flatMap((page) => {
+      if (!page) return [] as Student[];
+      if (Array.isArray(page)) return page as Student[];
+      const results = (page as { results?: Student[] }).results;
+      return Array.isArray(results) ? results : ([] as Student[]);
+    });
+  }, [data]);
+
+  const filteredStudents = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return students;
+    return students.filter((s) => (s.name ?? "").toLowerCase().includes(q));
+  }, [students, searchQuery]);
 
   const keyExtractor = useCallback((item: Student) => item.id.toString(), []);
 
@@ -46,6 +64,7 @@ const StudentList = () => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  if (!subjectId) return <StudentsSkeleton />;
   if (isLoading) return <StudentsSkeleton />;
   if (isError)
     return (
@@ -60,36 +79,66 @@ const StudentList = () => {
         onRefetch={refetch}
       />
     );
+
+  const hasQuery = searchQuery.trim().length > 0;
+  const isEmptySearch = hasQuery && filteredStudents.length === 0;
+
   return (
     <FlatList
-      data={students}
+      data={isEmptySearch ? [] : filteredStudents}
       keyExtractor={keyExtractor}
       renderItem={renderItem}
+      ListHeaderComponent={
+        <View className="w-full max-w-3xl mx-auto px-2.5">
+          <StudentSearchBar value={searchQuery} onChange={setSearchQuery} />
+        </View>
+      }
+      ListEmptyComponent={
+        isEmptySearch ? (
+          <View className="w-full max-w-3xl mx-auto px-2.5 items-center mt-8">
+            <Icon name="MagnifyingGlass" size={32} color="#9ca3af" />
+            <AppText className="text-sm text-muted-foreground mt-2 text-center">
+              No students match &ldquo;{searchQuery.trim()}&rdquo;
+            </AppText>
+            <Pressable onPress={() => setSearchQuery("")} className="mt-3">
+              <AppText weight="semibold" className="text-sm text-accent">
+                Clear search
+              </AppText>
+            </Pressable>
+          </View>
+        ) : null
+      }
       ListFooterComponent={isFetchingNextPage ? <ActivityIndicator /> : null}
-      refreshing={isRefetching}
-      onRefresh={refetch}
+      refreshControl={
+        <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
+      }
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.5}
       showsVerticalScrollIndicator={false}
       scrollEventThrottle={16}
-      contentContainerStyle={CONTENT_CONTAINER_STYLE}
     />
   );
 };
 
 const StudentItem = React.memo(({ name, studentPhoto }: Student) => {
+  const displayName = name ? toTitleCase(name) : "Unknown student";
   return (
-    <Card className="shadow-none rounded-xl mt-2.5 w-full max-w-3xl mx-auto">
-      <View className="flex-row gap-2 items-center">
-        <Avatar alt="student-photo" size="sm">
-          <Avatar.Fallback>{name.split(" ")[0][0]}</Avatar.Fallback>
+    <View className="w-full max-w-3xl mx-auto mb-2.5 px-2.5">
+      <Card className="rounded-xl flex-row items-center gap-3 shadow-none">
+        <Avatar alt={displayName} size="sm">
           <AttachmentAvatarImage path={studentPhoto} />
+          <AvatarFallbackImage />
         </Avatar>
-        <AppText className="text-neutral-900 dark:text-neutral-100 text-lg flex-1">
-          {name}
+        <AppText
+          weight="semibold"
+          className="text-lg flex-1"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {displayName}
         </AppText>
-      </View>
-    </Card>
+      </Card>
+    </View>
   );
 });
 StudentItem.displayName = "StudentItem";
@@ -98,15 +147,12 @@ const StudentsSkeleton = () => {
   return (
     <>
       {Array.from({ length: 8 }).map((_, index) => (
-        <Card
-          key={index}
-          className="shadow-none rounded-xl mt-2.5 w-full max-w-3xl mx-auto"
-        >
-          <View className="flex-row gap-2 items-center">
+        <View key={index} className="w-full max-w-3xl mx-auto px-2.5 mb-2.5">
+          <Card className="shadow-none rounded-xl flex-row gap-2.5 items-center">
             <Skeleton className="rounded-full h-8 w-8" />
             <Skeleton className="h-4 flex-1 rounded-full" />
-          </View>
-        </Card>
+          </Card>
+        </View>
       ))}
     </>
   );

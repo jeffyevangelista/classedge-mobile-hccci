@@ -94,7 +94,7 @@ export const useAssessment = (assessmentId: string) => {
 
 export const useStudents = (courseId: string) => {
   return useInfiniteQuery({
-    queryKey: ["course-students", courseId],
+    queryKey: ["oversight-students", courseId],
     queryFn: ({ pageParam = 1 }) => getStudents({ pageParam, courseId }),
     getNextPageParam: (lastPage) => {
       if (lastPage.next) {

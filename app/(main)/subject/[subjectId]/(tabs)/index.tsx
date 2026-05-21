@@ -1,5 +1,5 @@
 import Screen from "@/components/screen";
-import LessonList from "@/features/classroom/components/LessonList";
+import LessonList from "@/features/oversight/components/LessonList";
 
 export default function MaterialsTab() {
   return (

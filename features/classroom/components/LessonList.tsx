@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import { ActivityIndicator, FlatList, View } from "react-native";
 import { Lesson } from "@/features/oversight/oversight.type";
 import { formatDate } from "@/utils/formatDate";
-import { Link, useGlobalSearchParams, useLocalSearchParams } from "expo-router";
+import { Link, useGlobalSearchParams } from "expo-router";
 import { useLessons } from "@/features/oversight/oversight.hooks";
 import { Card, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
@@ -10,8 +10,6 @@ import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
-
-const CONTENT_CONTAINER_STYLE = { paddingTop: 16 } as const;
 
 const LESSON_ICON_MAP = {
   document: { label: "Material" },
@@ -24,7 +22,7 @@ const getLessonIcon = (lessonType: string) =>
   LESSON_ICON_MAP.document;
 
 const LessonList = () => {
-  const { classroomId } = useLocalSearchParams();
+  const { classroomId } = useGlobalSearchParams();
 
   const {
     data,
@@ -87,11 +85,12 @@ const LessonList = () => {
         onEndReachedThreshold={0.5}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
-        contentContainerStyle={CONTENT_CONTAINER_STYLE}
       />
     </View>
   );
 };
+
+const MATERIAL_ICON_COLOR = "#10b981";
 
 const MaterialItem = React.memo(
   ({ id, lessonName, lessonType, startDate }: Lesson) => {
@@ -99,33 +98,34 @@ const MaterialItem = React.memo(
     const formattedDate = formatDate(startDate);
 
     return (
-      <Link className="max-w-3xl mx-auto w-full mt-2.5" href={`/lesson/${id}`}>
-        <Card className="shadow-none rounded-xl flex-row items-center">
-          <View className="flex-row gap-2 flex-1">
-            <View className="p-2.5 bg-purple-50 dark:bg-purple-900/50 rounded-full">
-              <Icon
-                name="BookOpenTextIcon"
-                className="text-purple-600 dark:text-purple-400"
-              />
-            </View>
-
-            <View className="flex-1">
-              <AppText
-                weight="semibold"
-                className="text-neutral-900 dark:text-neutral-100 text-lg flex-1"
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {label}: {lessonName}
-              </AppText>
-              <AppText
-                className="text-neutral-500 dark:text-neutral-400 text-xs"
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                Posted {formattedDate}
-              </AppText>
-            </View>
+      <Link
+        className="w-full max-w-3xl mx-auto mb-2.5 px-2.5"
+        href={`/lesson/${id}`}
+      >
+        <Card className="rounded-xl flex-row items-center gap-3 shadow-none">
+          <View className="p-2 rounded-full bg-emerald-100 dark:bg-emerald-900/50">
+            <Icon
+              name="BookOpenTextIcon"
+              size={24}
+              color={MATERIAL_ICON_COLOR}
+            />
+          </View>
+          <View className="flex-1">
+            <AppText
+              weight="semibold"
+              className="text-lg"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {label}: {lessonName}
+            </AppText>
+            <AppText
+              className="text-xs text-muted"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              Posted {formattedDate}
+            </AppText>
           </View>
         </Card>
       </Link>
@@ -138,19 +138,17 @@ const MaterialsSkeleton = () => {
   return (
     <>
       {Array.from({ length: 5 }).map((_, index) => (
-        <Card
-          key={index}
-          className="shadow-none rounded-xl mt-2.5 flex-row max-w-3xl mx-auto w-full gap-2.5 items-center"
-        >
-          <View className="gap-2 flex-row flex-1">
-            <Skeleton className="rounded-md h-16 w-16" />
-
-            <View className="flex-1 gap-1">
-              <Skeleton className="h-5 rounded-full" />
-              <Skeleton className="h-3 w-24 rounded-full" />
+        <View key={index} className="w-full max-w-3xl mx-auto px-2.5 mb-2.5">
+          <Card className="shadow-none rounded-xl flex-row gap-2.5 items-center">
+            <View className="gap-2 flex-row flex-1">
+              <Skeleton className="rounded-md h-16 w-16" />
+              <View className="flex-1 gap-1">
+                <Skeleton className="h-5 rounded-full" />
+                <Skeleton className="h-3 w-24 rounded-full" />
+              </View>
             </View>
-          </View>
-        </Card>
+          </Card>
+        </View>
       ))}
     </>
   );

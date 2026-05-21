@@ -7,10 +7,11 @@ import {
 } from "./ classroom.service";
 import { snakeToCamel } from "@/lib/case-transform";
 import type { Assessment } from "@/powersync/schema";
-import { studentAssessment } from "@/powersync/schema";
+import { studentAssessment, coursesTable } from "@/powersync/schema";
 import type { InferSelectModel } from "drizzle-orm";
 
 type StudentAssessment = InferSelectModel<typeof studentAssessment>;
+type Course = InferSelectModel<typeof coursesTable>;
 
 const wrap = <T>(result: {
   data: T;
@@ -65,4 +66,13 @@ export const useStudentScoresForActivity = (activityLocalId: string) => {
     ...wrap(result),
     data: snakeToCamel<StudentAssessment[]>(result.data),
   };
+};
+
+export const useClassroom = (classroomId: string) => {
+  const result = useQuery(
+    "SELECT * FROM subject_subject WHERE id = ? LIMIT 1",
+    [parseInt(classroomId)],
+  );
+
+  return { ...wrap(result), data: snakeToCamel<Course[]>(result.data) };
 };

@@ -1,13 +1,10 @@
 import { View } from "react-native";
-import { AppText } from "@/components/AppText";
 import Screen from "@/components/screen";
-import {
-  useClassroomActivity,
-  useStudentScoresForActivity,
-} from "@/features/classroom/classroom.hooks";
-import StudentScoringList from "@/features/classroom/components/StudentScoringList";
-import ScoreDisplayList from "@/features/classroom/components/ScoreDisplayList";
-import { Card, Skeleton } from "heroui-native";
+import { AppText } from "@/components/AppText";
+import { useClassroomActivity } from "@/features/classroom/classroom.hooks";
+import StudentScoringList, {
+  StudentScoringSkeleton,
+} from "@/features/classroom/components/StudentScoringList";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -25,85 +22,74 @@ const InputGradeScreen = () => {
 
   const activity = data?.[0];
 
-  // const { data: existingScores, isLoading: scoresLoading } =
-  //   useStudentScoresForActivity(activity?.localId ?? "");
-
-  // const hasExistingScores = !scoresLoading && (existingScores?.length ?? 0) > 0;
-
   useEffect(() => {
-    if (activity?.activityName) {
-      parentNavigation.setOptions({ headerTitle: activity.activityName });
-    }
-  }, [activity?.activityName, parentNavigation]);
+    if (!activity?.activityName) return;
+    const subtitle = [
+      `Max ${activity.maxScore} pts`,
+      activity.passingScore != null
+        ? `Passing ${activity.passingScore}${
+            activity.passingScoreType === "percentage" ? "%" : ""
+          }`
+        : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
 
-  if (isLoading) return <InputGradeSkeleton />;
+    parentNavigation.setOptions({
+      headerTitle: () => (
+        <View>
+          <AppText
+            weight="bold"
+            numberOfLines={1}
+            className="text-base text-foreground"
+          >
+            {activity.activityName}
+          </AppText>
+          {!!subtitle && (
+            <AppText numberOfLines={1} className="text-xs text-foreground/70">
+              {subtitle}
+            </AppText>
+          )}
+        </View>
+      ),
+    });
+  }, [
+    activity?.activityName,
+    activity?.maxScore,
+    activity?.passingScore,
+    activity?.passingScoreType,
+    parentNavigation,
+  ]);
 
-  if (isError) return <ErrorFallback message={getApiErrorMessage(error)} />;
+  if (isLoading)
+    return (
+      <Screen>
+        <StudentScoringSkeleton />
+      </Screen>
+    );
+
+  if (isError)
+    return (
+      <View className="flex-1 px-2.5 pt-2.5">
+        <ErrorFallback message={getApiErrorMessage(error)} />
+      </View>
+    );
 
   if (!activity)
     return (
-      <NoDataFallback
-        title="Activity not found"
-        description="The activity you're looking for doesn't exist"
-      />
+      <View className="flex-1 px-2.5 pt-2.5">
+        <NoDataFallback
+          title="Activity not found"
+          description="The activity you're looking for doesn't exist"
+        />
+      </View>
     );
 
   return (
-    <Screen className="p-2.5">
-      {/* <Card className="rounded-xl p-3 mb-2 shadow-none w-full max-w-3xl mx-auto ">
-        <View className="flex-row justify-between items-center">
-          <View className="flex-row items-center gap-1">
-            <AppText className="text-xs text-muted-foreground">
-              Max Score:
-            </AppText>
-            <AppText weight="semibold" className="text-sm">
-              {activity.maxScore}
-            </AppText>
-          </View>
-          <View className="flex-row items-center gap-1">
-            <AppText className="text-xs text-muted-foreground">
-              Passing:
-            </AppText>
-            <AppText weight="semibold" className="text-sm">
-              {activity.passingScore}
-              {activity.passingScoreType === "percentage" ? "%" : ""}
-            </AppText>
-          </View>
-        </View>
-      </Card> */}
-      {/* {hasExistingScores ? (
-        <ScoreDisplayList activityDetail={activity} />
-      ) : (
-        <StudentScoringList activityDetail={activity} />
-      )} */}
+    <Screen>
       <StudentScoringList activityDetail={activity} />
     </Screen>
   );
 };
-
-const InputGradeSkeleton = () => (
-  <Screen>
-    <Card className="rounded-xl p-3 mb-2 shadow-none w-full max-w-3xl mx-auto mt-2.5">
-      <View className="flex-row justify-between items-center">
-        <Skeleton className="h-3 w-24 rounded-full" />
-        <Skeleton className="h-3 w-20 rounded-full" />
-      </View>
-    </Card>
-    <View className="max-w-3xl w-full mx-auto gap-2 px-2.5">
-      {Array(6)
-        .fill(0)
-        .map((_, i) => (
-          <Card
-            key={i}
-            className="rounded-xl items-center gap-2 shadow-none flex-row"
-          >
-            <Skeleton className="w-10 h-10 rounded-full" />
-            <Skeleton className="h-4 w-24 rounded-full flex-1" />
-            <Skeleton className="h-8 w-16 rounded-lg" />
-          </Card>
-        ))}
-    </View>
-  </Screen>
-);
 
 export default InputGradeScreen;

@@ -1,43 +1,49 @@
 import { useState, useCallback } from "react";
-import { Button, Spinner } from "heroui-native";
+import { Button, Spinner, useThemeColor, useToast } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import { powersync } from "@/powersync/system";
 import { Connector } from "@/powersync/Connector";
 import useStore from "@/lib/store";
-import { AppText } from "@/components/AppText";
-import { Alert, View } from "react-native";
 
 const ForceSyncButton = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const { isConnected, isInternetReachable } = useStore();
+  const { toast } = useToast();
+
+  const accentColor = useThemeColor("accent");
+  const mutedColor = useThemeColor("muted");
 
   const isOnline = isConnected && isInternetReachable;
 
   const handleForceSync = useCallback(async () => {
     if (!isOnline) {
-      Alert.alert(
-        "No Connection",
-        "You must be connected to the internet to force a sync.",
-      );
+      toast.show({
+        variant: "warning",
+        label: "No connection",
+        description:
+          "You must be connected to the internet to reconnect the sync.",
+      });
       return;
     }
 
     setIsSyncing(true);
     try {
-      // Disconnect, then reconnect to force a full re-sync cycle
       await powersync.disconnect();
       const connector = new Connector();
       await powersync.connect(connector);
     } catch (error) {
       console.error("Force sync failed:", error);
-      Alert.alert(
-        "Sync Failed",
-        "An error occurred while trying to sync. Please try again.",
-      );
+      const message =
+        error instanceof Error ? error.message : "Please try again.";
+      toast.show({
+        variant: "danger",
+        label: "Sync failed",
+        description: message,
+      });
     } finally {
       setIsSyncing(false);
     }
-  }, [isOnline]);
+  }, [isOnline, toast]);
 
   return (
     <Button
@@ -49,16 +55,16 @@ const ForceSyncButton = () => {
       {isSyncing ? (
         <>
           <Spinner size="sm" />
-          <Button.Label>Syncing...</Button.Label>
+          <Button.Label>Reconnecting...</Button.Label>
         </>
       ) : (
         <>
           <Icon
             name="ArrowsClockwiseIcon"
             size={18}
-            color={isOnline ? "#3B82F6" : "#9CA3AF"}
+            color={isOnline ? accentColor : mutedColor}
           />
-          <Button.Label>Resync</Button.Label>
+          <Button.Label>Reconnect</Button.Label>
         </>
       )}
     </Button>

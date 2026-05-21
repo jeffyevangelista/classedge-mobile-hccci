@@ -2,9 +2,11 @@ import { View } from "react-native";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import { Avatar, Skeleton } from "heroui-native";
 import { AppText } from "@/components/AppText";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 const HeaderComponent = () => {
   const { data, isLoading, error } = useUserDetails();
@@ -13,34 +15,27 @@ const HeaderComponent = () => {
   if (error) return <ErrorComponent message={getApiErrorMessage(error)} />;
 
   const userDetails = data?.[0];
+  const fullName = userDetails
+    ? toTitleCase(`${userDetails.firstName} ${userDetails.lastName}`)
+    : "User";
 
   return (
     <View className="items-center">
-      <View className="p-1 border-3 border-accent rounded-full">
-        <Avatar
-          className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40"
-          alt={
-            userDetails
-              ? `${userDetails.firstName} ${userDetails.lastName}`
-              : "User"
-          }
-        >
+      <View className="p-1 border-2 border-accent rounded-full">
+        <Avatar className="w-28 h-28" alt={fullName}>
           <AttachmentAvatarImage path={userDetails?.studentPhoto} />
-          <Avatar.Fallback>
-            {userDetails?.firstName?.[0] ?? ""}
-            {userDetails?.lastName?.[0] ?? ""}
-          </Avatar.Fallback>
+          <AvatarFallbackImage />
         </Avatar>
       </View>
 
       <View className="items-center mt-6">
-        <AppText weight="bold" className="text-2xl sm:text-3xl">
-          {userDetails?.firstName} {userDetails?.lastName}
+        <AppText weight="bold" className="text-2xl">
+          {fullName}
         </AppText>
-        <AppText className="text-sm sm:text-base text-muted">
+        <AppText className="text-sm text-muted">
           {userDetails?.userId?.email}
         </AppText>
-        <AppText weight="semibold" className="text-xs sm:text-sm">
+        <AppText weight="semibold" className="text-xs">
           {userDetails?.idNumber}
         </AppText>
       </View>
@@ -51,8 +46,8 @@ const HeaderComponent = () => {
 const ProfileHeaderSkeleton = () => {
   return (
     <View className="items-center">
-      <View className="p-1 border-3 border-border rounded-full">
-        <Skeleton className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full" />
+      <View className="p-1 border-2 border-border rounded-full">
+        <Skeleton className="w-28 h-28 rounded-full" />
       </View>
       <View className="items-center mt-6 gap-2">
         <Skeleton className="h-7 w-48 rounded" />

@@ -6,11 +6,11 @@ import { useCourseDetails, useCourseStudents } from "../courses.hooks";
 import { FlashList } from "@shopify/flash-list";
 import Image from "@/components/Image";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
-import { LinearGradient } from "expo-linear-gradient";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
 import { Skeleton, useThemeColor } from "heroui-native";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 type Schedule = {
   id: number;
@@ -23,6 +23,22 @@ type Schedule = {
 type Student = {
   name: string;
   studentPhoto?: string | null;
+};
+
+type CourseDetailsData = {
+  schedules?: Schedule[] | null;
+  subjectId?: {
+    id?: number;
+    subjectName?: string | null;
+    subjectCode?: string | null;
+    subjectPhoto?: string | null;
+    subjectType?: string | null;
+    roomNumber?: string | null;
+    assignTeacherId?: {
+      firstName?: string | null;
+      lastName?: string | null;
+    } | null;
+  } | null;
 };
 
 const CourseDetails = () => {
@@ -57,7 +73,7 @@ const CourseDetails = () => {
         <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />
       }
       ListHeaderComponent={
-        <View className="w-full max-w-3xl mx-auto">
+        <View className="w-full max-w-3xl mx-auto px-2.5">
           <CourseDetailsHeader courseDetails={courseDetails} />
           <CourseInfoCard courseDetails={courseDetails} />
           {!isLoadingStudents &&
@@ -69,13 +85,18 @@ const CourseDetails = () => {
         </View>
       }
       data={isLoadingStudents || isErrorStudents ? [] : students || []}
-      renderItem={({ item, index }) => (
-        <View className="w-full max-w-3xl mx-auto">
-          <StudentItem student={item as Student} index={index} />
+      ItemSeparatorComponent={() => (
+        <View className="w-full max-w-3xl mx-auto px-2.5">
+          <View className="h-px bg-border ml-[52px]" />
+        </View>
+      )}
+      renderItem={({ item }) => (
+        <View className="w-full max-w-3xl mx-auto px-2.5">
+          <StudentItem student={item as Student} />
         </View>
       )}
       ListEmptyComponent={
-        <View className="w-full max-w-3xl mx-auto">
+        <View className="w-full max-w-3xl mx-auto px-2.5">
           {isLoadingStudents ? (
             <StudentListSkeleton />
           ) : isErrorStudents ? (
@@ -99,18 +120,11 @@ const CourseDetails = () => {
 
 const StudentListHeader = ({ count }: { count: number }) => {
   return (
-    <View className="flex-row items-center mb-4 mx-1">
+    <View className="flex-row items-baseline mb-2 gap-2">
       <AppText weight="bold" className="text-lg">
         Enrolled Students
       </AppText>
-      <View className="ml-auto bg-orange-100 dark:bg-orange-900 px-3 py-1.5 rounded-full">
-        <AppText
-          weight="semibold"
-          className="text-[11px] text-orange-700 dark:text-orange-300"
-        >
-          {count}
-        </AppText>
-      </View>
+      <AppText className="text-sm text-muted">· {count}</AppText>
     </View>
   );
 };
@@ -124,7 +138,7 @@ const formatTime = (time: string) => {
 
 const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-interface InfoTileProps {
+interface InfoRowProps {
   icon: IconName;
   iconColor: string;
   iconBgClass: string;
@@ -132,35 +146,39 @@ interface InfoTileProps {
   value: string;
 }
 
-const InfoTile = ({
+const InfoRow = ({
   icon,
   iconColor,
   iconBgClass,
   label,
   value,
-}: InfoTileProps) => (
-  <View className="flex-1 bg-surface-secondary rounded-2xl p-4">
+}: InfoRowProps) => (
+  <View className="flex-row items-center gap-3 py-3">
     <View
-      className={`w-9 h-9 rounded-full items-center justify-center mb-3 ${iconBgClass}`}
+      className={`w-8 h-8 rounded-full items-center justify-center ${iconBgClass}`}
     >
-      <Icon name={icon} size={20} color={iconColor} />
+      <Icon name={icon} size={16} color={iconColor} />
     </View>
-    <AppText className="text-[11px] text-muted uppercase tracking-wider mb-1">
-      {label}
-    </AppText>
-    <AppText weight="semibold" className="text-sm">
-      {value}
-    </AppText>
+    <View className="flex-1">
+      <AppText weight="semibold" className="text-sm" numberOfLines={1}>
+        {value}
+      </AppText>
+      <AppText className="text-[11px] text-muted">{label}</AppText>
+    </View>
   </View>
 );
 
-const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
+const CourseInfoCard = ({
+  courseDetails,
+}: {
+  courseDetails: CourseDetailsData | null | undefined;
+}) => {
   const accentColor = useThemeColor("accent");
 
   const instructorName = useMemo(() => {
     const first = courseDetails?.subjectId?.assignTeacherId?.firstName;
     const last = courseDetails?.subjectId?.assignTeacherId?.lastName;
-    return [first, last].filter(Boolean).join(" ") || "Unassigned";
+    return toTitleCase([first, last].filter(Boolean).join(" ")) || "Unassigned";
   }, [courseDetails]);
 
   const activeSchedules: Schedule[] = useMemo(() => {
@@ -172,19 +190,20 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
   }, [courseDetails]);
 
   return (
-    <View className="mb-6 mx-1 gap-3">
-      <View className="flex-row gap-3">
-        <InfoTile
+    <View className="mb-6 gap-3">
+      <View className="bg-surface-secondary rounded-2xl px-4">
+        <InfoRow
           icon="UserCircleIcon"
           iconColor={accentColor}
           iconBgClass="bg-accent-soft"
           label="Instructor"
           value={instructorName}
         />
-        <InfoTile
+        <View className="h-px bg-border" />
+        <InfoRow
           icon="MapPinIcon"
-          iconColor="#22c55e"
-          iconBgClass="bg-green-100 dark:bg-green-900"
+          iconColor="#10b981"
+          iconBgClass="bg-emerald-100 dark:bg-emerald-900/50"
           label="Room"
           value={courseDetails?.subjectId?.roomNumber || "TBA"}
         />
@@ -193,8 +212,8 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
       {activeSchedules.length > 0 && (
         <View className="bg-surface-secondary rounded-2xl p-4">
           <View className="flex-row items-center mb-3">
-            <View className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-900 items-center justify-center mr-3">
-              <Icon name="ClockIcon" size={20} color="#f97316" />
+            <View className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/50 items-center justify-center mr-3">
+              <Icon name="ClockIcon" size={16} color="#f97316" />
             </View>
             <AppText weight="semibold" className="text-sm">
               Class Schedule
@@ -248,150 +267,149 @@ const CourseInfoCard = ({ courseDetails }: { courseDetails: any }) => {
   );
 };
 
-const CourseDetailsHeader = ({ courseDetails }: { courseDetails: any }) => {
+const CourseDetailsHeader = ({
+  courseDetails,
+}: {
+  courseDetails: CourseDetailsData | null | undefined;
+}) => {
   const subjectType = courseDetails?.subjectId?.subjectType;
+  const subjectName = courseDetails?.subjectId?.subjectName;
+  const subjectCode = courseDetails?.subjectId?.subjectCode;
+  const showCode = !!subjectCode && subjectCode !== subjectName;
 
   return (
-    <>
-      <View className="relative mt-2.5">
+    <View className="mt-2.5 mb-5">
+      <View className="rounded-2xl overflow-hidden bg-surface-secondary aspect-video">
         <AttachmentImage
           path={courseDetails?.subjectId?.subjectPhoto}
           fallback={
             <Image
               source={require("@/assets/placeholder/bg-placeholder.png")}
-              className="rounded-2xl w-full aspect-video"
+              className="w-full h-full"
               contentFit="cover"
             />
           }
-          className="rounded-2xl w-full aspect-video"
+          className="w-full h-full"
           contentFit="cover"
           cachePolicy="disk"
         />
-        <LinearGradient
-          colors={["transparent", "rgba(0,0,0,0.7)"]}
-          className="absolute bottom-0 left-0 right-0 h-28 rounded-b-2xl"
-        />
-        {subjectType && (
-          <View className="absolute top-3 right-3 bg-black/40 px-3 py-1.5 rounded-full">
-            <AppText
-              weight="semibold"
-              className="text-[11px] text-white uppercase tracking-wider"
-            >
-              {subjectType}
-            </AppText>
+      </View>
+
+      <View className="mt-4">
+        <AppText weight="bold" className="text-2xl" numberOfLines={2}>
+          {subjectName}
+        </AppText>
+        {(subjectType || showCode) && (
+          <View className="flex-row items-center gap-2 mt-1.5">
+            {subjectType && (
+              <View className="bg-accent-soft px-2.5 py-1 rounded-full">
+                <AppText
+                  weight="semibold"
+                  className="text-[11px] text-accent uppercase tracking-wider"
+                >
+                  {subjectType}
+                </AppText>
+              </View>
+            )}
+            {showCode && (
+              <AppText className="text-sm text-muted">{subjectCode}</AppText>
+            )}
           </View>
         )}
       </View>
-
-      <View className="mt-5 px-1 mb-5">
-        <AppText weight="bold" className="text-2xl mb-1">
-          {courseDetails?.subjectId?.subjectName}
-        </AppText>
-        <AppText className="text-base text-muted">
-          {courseDetails?.subjectId?.subjectCode}
-        </AppText>
-      </View>
-    </>
-  );
-};
-
-const StudentItem = ({ student }: { student: Student; index: number }) => {
-  return (
-    <View className="flex-row items-center bg-surface rounded-xl p-3 mb-2 border border-border mx-1">
-      <View className="relative">
-        <AttachmentImage
-          path={student?.studentPhoto}
-          fallback={
-            <Image
-              source={require("@/assets/placeholder/avatar-placeholder.png")}
-              className="w-12 h-12 rounded-full"
-              contentFit="cover"
-            />
-          }
-          className="w-12 h-12 rounded-full"
-          contentFit="cover"
-          cachePolicy="disk"
-        />
-      </View>
-      <View className="flex-1 ml-3">
-        <AppText weight="semibold" className="text-base">
-          {student.name}
-        </AppText>
-      </View>
     </View>
   );
 };
 
-const StudentListSkeleton = () => {
+const StudentItem = ({ student }: { student: Student }) => {
   return (
-    <View className="gap-2 mx-1">
-      <Skeleton className="h-5 w-40 rounded mb-2" />
-      {Array(3)
-        .fill(0)
-        .map((_, index) => (
-          <View
-            key={index}
-            className="flex-row items-center rounded-xl p-3 mb-2 gap-3"
-          >
-            <Skeleton className="w-12 h-12 rounded-full" />
-            <Skeleton className="h-4 w-32 rounded" />
-          </View>
-        ))}
+    <View className="flex-row items-center gap-3 py-2.5">
+      <AttachmentImage
+        path={student?.studentPhoto}
+        fallback={
+          <Image
+            source={require("@/assets/placeholder/avatar-placeholder.png")}
+            className="w-10 h-10 rounded-full"
+            contentFit="cover"
+          />
+        }
+        className="w-10 h-10 rounded-full"
+        contentFit="cover"
+        cachePolicy="disk"
+      />
+      <AppText weight="semibold" className="text-sm flex-1" numberOfLines={1}>
+        {toTitleCase(student.name)}
+      </AppText>
     </View>
   );
 };
 
-const CourseDetailsSkeleton = () => {
-  return (
-    <View className="w-full max-w-3xl mx-auto p-2.5">
-      <Skeleton className="rounded-2xl w-full aspect-video mt-2.5" />
-      <View className="mt-5 px-1 gap-1.5 mb-5">
-        <Skeleton className="h-7 w-3/4 rounded" />
-        <Skeleton className="h-5 w-1/3 rounded" />
-      </View>
-
-      <View className="flex-row gap-3 mx-1 mb-3">
-        <View className="flex-1 bg-surface-secondary rounded-2xl p-4 gap-3">
-          <Skeleton className="w-9 h-9 rounded-full" />
-          <View className="gap-1.5">
-            <Skeleton className="h-3 w-16 rounded" />
-            <Skeleton className="h-4 w-24 rounded" />
-          </View>
-        </View>
-        <View className="flex-1 bg-surface-secondary rounded-2xl p-4 gap-3">
-          <Skeleton className="w-9 h-9 rounded-full" />
-          <View className="gap-1.5">
-            <Skeleton className="h-3 w-12 rounded" />
-            <Skeleton className="h-4 w-20 rounded" />
-          </View>
-        </View>
-      </View>
-
-      <View className="bg-surface-secondary rounded-2xl p-4 mx-1 mb-6 gap-3">
-        <View className="flex-row items-center gap-3">
-          <Skeleton className="w-9 h-9 rounded-full" />
-          <Skeleton className="h-4 w-28 rounded" />
-        </View>
-        <Skeleton className="h-12 w-full rounded-xl" />
-        <Skeleton className="h-12 w-full rounded-xl" />
-      </View>
-
-      <View className="gap-2 mx-1">
-        <Skeleton className="h-5 w-40 rounded mb-2" />
-        {Array(3)
-          .fill(0)
-          .map((_, index) => (
-            <View
-              key={index}
-              className="flex-row items-center rounded-xl p-3 mb-2 gap-3"
-            >
-              <Skeleton className="w-12 h-12 rounded-full" />
-              <Skeleton className="h-4 w-32 rounded" />
-            </View>
-          ))}
+const CourseDetailsHeaderSkeleton = () => (
+  <View className="mt-2.5 mb-5">
+    <Skeleton className="rounded-2xl w-full aspect-video" />
+    <View className="mt-4 gap-2">
+      <Skeleton className="h-7 w-3/4 rounded" />
+      <View className="flex-row items-center gap-2">
+        <Skeleton className="h-5 w-14 rounded-full" />
+        <Skeleton className="h-4 w-20 rounded" />
       </View>
     </View>
-  );
-};
+  </View>
+);
+
+const InfoRowSkeleton = () => (
+  <View className="flex-row items-center gap-3 py-3">
+    <Skeleton className="w-8 h-8 rounded-full" />
+    <View className="flex-1 gap-1.5">
+      <Skeleton className="h-4 w-32 rounded" />
+      <Skeleton className="h-3 w-16 rounded" />
+    </View>
+  </View>
+);
+
+const InfoTilesSkeleton = () => (
+  <View className="bg-surface-secondary rounded-2xl px-4 mb-3">
+    <InfoRowSkeleton />
+    <View className="h-px bg-border" />
+    <InfoRowSkeleton />
+  </View>
+);
+
+const ScheduleSkeleton = () => (
+  <View className="bg-surface-secondary rounded-2xl p-4 mb-6 gap-3">
+    <View className="flex-row items-center gap-3">
+      <Skeleton className="w-9 h-9 rounded-full" />
+      <Skeleton className="h-4 w-28 rounded" />
+    </View>
+    <Skeleton className="h-12 w-full rounded-xl" />
+    <Skeleton className="h-12 w-full rounded-xl" />
+  </View>
+);
+
+const StudentListSkeleton = () => (
+  <View className="gap-2">
+    <Skeleton className="h-5 w-40 rounded mb-2" />
+    {Array(3)
+      .fill(0)
+      .map((_, index) => (
+        <View
+          key={index}
+          className="flex-row items-center rounded-xl p-3 mb-2 gap-3"
+        >
+          <Skeleton className="w-12 h-12 rounded-full" />
+          <Skeleton className="h-4 w-32 rounded" />
+        </View>
+      ))}
+  </View>
+);
+
+const CourseDetailsSkeleton = () => (
+  <View className="w-full max-w-3xl mx-auto p-2.5">
+    <CourseDetailsHeaderSkeleton />
+    <InfoTilesSkeleton />
+    <ScheduleSkeleton />
+    <StudentListSkeleton />
+  </View>
+);
 
 export default CourseDetails;

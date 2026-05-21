@@ -1,5 +1,5 @@
 import Screen from "@/components/screen";
-import CourseworkList from "@/features/classroom/components/CourseworkList";
+import CourseworkList from "@/features/oversight/components/CourseworkList";
 
 export default function CourseworksTab() {
   return (

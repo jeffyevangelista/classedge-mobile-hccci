@@ -2,6 +2,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { Avatar, Card, Separator, Skeleton, Surface } from "heroui-native";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { Icon } from "@/components/Icon";
@@ -15,9 +16,11 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import { Event } from "@/powersync/schema";
 import React, { useState } from "react";
 import EventDetailModal from "@/features/calendar/components/EventDetailModal";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 const AnnouncementList = () => {
   const { data, error, isLoading, refresh } = useAnnouncementsWithEvents();
+  const [activeEventId, setActiveEventId] = useState<number | null>(null);
 
   if (isLoading) return <AnnouncementSkeleton />;
   if (error)
@@ -26,130 +29,130 @@ const AnnouncementList = () => {
     );
 
   return (
-    <FlashList
-      scrollEnabled={false}
-      ListEmptyComponent={
-        <EmptyState
-          icon="MegaphoneIcon"
-          title="No announcements yet"
-          description="Check back later for updates"
-        />
-      }
-      data={data}
-      onRefresh={refresh}
-      refreshing={false}
-      renderItem={({ item }) => (
-        <View className="mb-2 max-w-3xl sm:mx-auto w-full px-2.5">
-          <Card className="shadow-none rounded-xl">
-            <Card.Header>
-              <View className="flex-row items-center gap-2">
-                <Avatar alt="" size="sm" className="border border-accent">
-                  <AttachmentAvatarImage path={item.createdById.studentPhoto} />
-                  <Avatar.Fallback>
-                    {item.createdById.firstName.charAt(0)}
-                  </Avatar.Fallback>
-                </Avatar>
+    <>
+      <FlashList
+        scrollEnabled={false}
+        ListEmptyComponent={
+          <EmptyState
+            icon="MegaphoneIcon"
+            title="No announcements yet"
+            description="Check back later for updates"
+          />
+        }
+        data={data}
+        renderItem={({ item }) => {
+          const authorName = toTitleCase(
+            `${item.createdById.firstName} ${item.createdById.lastName}`,
+          );
+          return (
+            <View className="mb-3 max-w-3xl mx-auto w-full px-2.5">
+              <Card className="shadow-none rounded-xl">
+                <Card.Header>
+                  <View className="flex-row items-center gap-2">
+                    <Avatar
+                      alt={authorName}
+                      size="sm"
+                      className="border border-border"
+                    >
+                      <AttachmentAvatarImage
+                        path={item.createdById.studentPhoto}
+                      />
+                      <AvatarFallbackImage />
+                    </Avatar>
 
-                <View>
-                  <AppText weight="semibold" className="text-md">
-                    {item.createdById.firstName +
-                      " " +
-                      item.createdById.lastName}
+                    <View>
+                      <AppText weight="semibold" className="text-base">
+                        {authorName}
+                      </AppText>
+                      <AppText className="text-xs text-muted">
+                        {formatDate(item.createdAt)}
+                      </AppText>
+                    </View>
+                  </View>
+                </Card.Header>
+                <Separator className="my-2" />
+
+                <Card.Body className="gap-2.5">
+                  <AppText weight="semibold" className="text-lg">
+                    {item.title}
                   </AppText>
-                  <AppText className="text-xs text-gray-500">
-                    {formatDate(item.createdAt)}
+                  <AppText className="text-xs leading-relaxed">
+                    {item.description}
                   </AppText>
-                </View>
-              </View>
-            </Card.Header>
-            <Separator className="my-2 bg-gray-300" />
-
-            <Card.Body className="gap-2.5">
-              <AppText weight="semibold" className="text-lg">
-                {item.title}
-              </AppText>
-              <AppText className="text-xs text-justify leading-relaxed">
-                {item.description}
-              </AppText>
-              {item.events.length > 0 && (
-                <AppText weight="semibold" className="text-md">
-                  Associated Events
-                </AppText>
-              )}
-
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {item.events.map((event) => (
-                  <EventCard key={event.id} event={event.event} />
-                ))}
-              </ScrollView>
-            </Card.Body>
-          </Card>
-        </View>
-      )}
-    />
+                  {item.events.length > 0 && (
+                    <>
+                      <AppText weight="semibold" className="text-base">
+                        Associated Events
+                      </AppText>
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                      >
+                        {item.events.map((event) => (
+                          <EventCard
+                            key={event.id}
+                            event={event.event}
+                            onPress={() => setActiveEventId(event.event.id)}
+                          />
+                        ))}
+                      </ScrollView>
+                    </>
+                  )}
+                </Card.Body>
+              </Card>
+            </View>
+          );
+        }}
+      />
+      <EventDetailModal
+        isOpen={activeEventId !== null}
+        setOpenChange={(open) => {
+          if (!open) setActiveEventId(null);
+        }}
+        eventId={activeEventId ?? 0}
+      />
+    </>
   );
 };
 
 const EventCard = ({
   event,
+  onPress,
 }: {
   event: Event & {
     createdById?: { firstName: string; lastName: string };
   };
+  onPress: () => void;
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
   return (
-    <>
-      <Pressable onPress={() => setIsOpen(true)}>
-        <Surface
-          variant="secondary"
-          key={event.id}
-          className="mr-2 max-w-sm rounded-xl"
-        >
-          <Card.Body className="gap-2.5">
-            <AppText weight="semibold" className="text-md">
-              {event.title}
-            </AppText>
-            <AppText
-              className="text-xs text-gray-500 overflow-hidden"
-              numberOfLines={2}
-            >
-              {event.description}
-            </AppText>
-            {event.createdById && (
-              <AppText className="text-xs text-gray-400">
-                By {event.createdById.firstName} {event.createdById.lastName}
-              </AppText>
+    <Pressable onPress={onPress} className="mr-2 active:opacity-80">
+      <Surface variant="secondary" className="max-w-sm rounded-xl p-3 gap-2.5">
+        <AppText weight="semibold" className="text-base">
+          {event.title}
+        </AppText>
+
+        {event.createdById && (
+          <AppText className="text-xs text-muted">
+            By{" "}
+            {toTitleCase(
+              `${event.createdById.firstName} ${event.createdById.lastName}`,
             )}
-            <View>
-              <View className="flex-row items-center gap-1">
-                <Icon
-                  name="MapPinIcon"
-                  size={16}
-                  className="text-accent"
-                />
-                <AppText>{event.location}</AppText>
-              </View>
-              <View className="flex-row items-center gap-1">
-                <Icon
-                  name="ClockIcon"
-                  size={16}
-                  className="text-accent"
-                />
-                <AppText className="text-xs text-gray-500 dark:text-gray-400">
-                  {formatDate(event.startDate)} -{formatTime(event.time)}
-                </AppText>
-              </View>
-            </View>
-          </Card.Body>
-        </Surface>
-      </Pressable>
-      <EventDetailModal
-        isOpen={isOpen}
-        setOpenChange={setIsOpen}
-        eventId={event.id}
-      />
-    </>
+          </AppText>
+        )}
+        <View className="gap-1">
+          <View className="flex-row items-center gap-1">
+            <Icon name="MapPinIcon" size={14} className="text-muted" />
+            <AppText className="text-xs text-muted">{event.location}</AppText>
+          </View>
+          <View className="flex-row items-center gap-1">
+            <Icon name="ClockIcon" size={14} className="text-muted" />
+            <AppText className="text-xs text-muted">
+              {formatDate(event.startDate)} - {formatTime(event.time)}
+            </AppText>
+          </View>
+        </View>
+      </Surface>
+    </Pressable>
   );
 };
 
@@ -159,7 +162,7 @@ const AnnouncementSkeleton = () => {
       scrollEnabled={false}
       data={[1, 2, 3]}
       renderItem={() => (
-        <View className="mb-2 max-w-3xl sm:mx-auto w-full px-2.5">
+        <View className="mb-3 max-w-3xl mx-auto w-full px-2.5">
           <Card className="shadow-none rounded-xl">
             <Card.Header>
               <View className="flex-row items-center gap-2">
@@ -170,7 +173,7 @@ const AnnouncementSkeleton = () => {
                 </View>
               </View>
             </Card.Header>
-            <Separator className="my-2 bg-gray-300" />
+            <Separator className="my-2" />
             <Card.Body className="gap-2.5">
               <Skeleton className="h-5 w-3/4 rounded" />
               <Skeleton className="h-4 w-full mb-1 rounded" />

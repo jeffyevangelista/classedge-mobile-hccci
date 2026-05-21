@@ -87,13 +87,18 @@ export const upsertStudentScore = async (data: {
   const existingRow = existing.rows?._array?.[0] ?? existing.rows?.item(0);
 
   if (existingRow) {
+    // Only set columns the caller actually provided. Re-writing `file` when the
+    // caller didn't touch it would re-queue a multipart upload of the existing
+    // local URI on every score change.
+    if (data.file !== undefined) {
+      return powersync.execute(
+        "UPDATE activity_studentactivity SET total_score = ?, file = ? WHERE local_id = ?",
+        [data.totalScore, data.file, existingRow.local_id],
+      );
+    }
     return powersync.execute(
-      "UPDATE activity_studentactivity SET total_score = ?, file = ? WHERE local_id = ?",
-      [
-        data.totalScore,
-        data.file ?? existingRow.file ?? null,
-        existingRow.local_id,
-      ],
+      "UPDATE activity_studentactivity SET total_score = ? WHERE local_id = ?",
+      [data.totalScore, existingRow.local_id],
     );
   }
 
@@ -106,7 +111,7 @@ export const upsertStudentScore = async (data: {
         localId,
         localId,
         data.studentId,
-        data.activityLocalId,
+        data.activityId,
         data.termId,
         data.subjectId,
         data.totalScore,
@@ -121,3 +126,4 @@ export const upsertStudentScore = async (data: {
     throw err;
   }
 };
+

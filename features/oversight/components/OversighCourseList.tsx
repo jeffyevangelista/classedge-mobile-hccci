@@ -1,8 +1,16 @@
 import { AppText } from "@/components/AppText";
 import Image from "@/components/Image";
+import { Icon } from "@/components/Icon";
 import { FlashList } from "@shopify/flash-list";
 import { Link } from "expo-router";
-import { Avatar, Card, Skeleton } from "heroui-native";
+import {
+  Avatar,
+  Card,
+  InputGroup,
+  Skeleton,
+  useThemeColor,
+} from "heroui-native";
+import { useMemo, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -10,6 +18,7 @@ import {
   View,
 } from "react-native";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { useGetSubjects } from "../oversight.hooks";
 import { SubjectType } from "../oversight.type";
 import EmptyState from "@/components/EmptyState";
@@ -24,16 +33,30 @@ const SubjectsList = () => {
   const { data, isLoading, isError, error, isRefetching, refetch } =
     useGetSubjects();
 
+  const [search, setSearch] = useState("");
+
+  const subjects = useMemo(
+    () => data?.pages.flatMap((page) => page.results) ?? [],
+    [data],
+  );
+
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return subjects;
+    return subjects.filter((s) =>
+      (s.subjectName ?? "").toLowerCase().includes(q),
+    );
+  }, [subjects, search]);
+
   if (isLoading) return <SubjectsListSkeleton numColumns={numColumns} />;
   if (isError)
     return (
       <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
     );
 
-  const subjects = data?.pages.flatMap((page) => page.results) ?? [];
-
   return (
     <View className="w-full max-w-6xl mx-auto flex-1">
+      <SubjectsToolbar search={search} onSearchChange={setSearch} />
       <FlashList
         refreshControl={
           <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
@@ -41,13 +64,17 @@ const SubjectsList = () => {
         ListEmptyComponent={
           <EmptyState
             icon="BookOpenIcon"
-            title="No courses found"
-            description="You are not enrolled in any courses yet"
+            title={search ? "No matching courses" : "No courses found"}
+            description={
+              search
+                ? "Try a different search term"
+                : "You are not enrolled in any courses yet"
+            }
           />
         }
         key={numColumns}
         numColumns={numColumns}
-        data={subjects}
+        data={visible}
         className="p-1"
         contentContainerStyle={{ paddingBottom: 15 }}
         renderItem={({ item }) => (
@@ -58,10 +85,39 @@ const SubjectsList = () => {
   );
 };
 
+const SubjectsToolbar = ({
+  search,
+  onSearchChange,
+}: {
+  search: string;
+  onSearchChange: (value: string) => void;
+}) => {
+  const mutedColor = useThemeColor("muted");
+  return (
+    <View className="flex-row items-center gap-2 px-2 pt-2 pb-1">
+      <InputGroup className="flex-1 shadow-none">
+        <InputGroup.Prefix>
+          <Icon name="MagnifyingGlassIcon" size={18} color={mutedColor} />
+        </InputGroup.Prefix>
+        <InputGroup.Input
+          placeholder="Search courses"
+          value={search}
+          onChangeText={onSearchChange}
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+      </InputGroup>
+    </View>
+  );
+};
+
 const SubjectsListSkeleton = ({ numColumns }: { numColumns: number }) => {
   return (
     <View className="w-full max-w-6xl mx-auto flex-1 px-1">
       <ScrollView contentContainerStyle={{ paddingBottom: 15 }}>
+        <View className="px-2 pt-2 pb-1">
+          <Skeleton className="h-10 w-full rounded-xl" />
+        </View>
         <View className="flex-row flex-wrap">
           {Array(6)
             .fill(0)
@@ -132,14 +188,12 @@ const Subject = ({
               </AppText>
               <View className="flex-row gap-2 items-center mt-2">
                 <Avatar alt={subject.assignTeacherName} size="sm">
-                  <Avatar.Fallback>
-                    {subject.assignTeacherName?.[0][0]}
-                  </Avatar.Fallback>
                   <Avatar.Image
                     source={{
                       uri: subject.teacherPhoto,
                     }}
                   />
+                  <AvatarFallbackImage />
                 </Avatar>
                 <AppText className="text-xs text-gray-500">
                   {subject.assignTeacherName}

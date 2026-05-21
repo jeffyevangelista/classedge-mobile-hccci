@@ -6,23 +6,15 @@ import { View } from "react-native";
 import { Icon } from "@/components/Icon";
 import { AppText } from "@/components/AppText";
 
+const ASSESSMENT_ICON_COLOR = "#f97316";
+
 const getActivityIcon = (activityType: string) => {
   const iconMap = {
-    Assignment: {
-      label: "Assignment",
-    },
-    Exam: {
-      label: "Exam",
-    },
-    SpecialActivity: {
-      label: "Special Activity",
-    },
-    Quiz: {
-      label: "Quiz",
-    },
-    Participation: {
-      label: "Participation",
-    },
+    Assignment: { label: "Assignment" },
+    Exam: { label: "Exam" },
+    SpecialActivity: { label: "Special Activity" },
+    Quiz: { label: "Quiz" },
+    Participation: { label: "Participation" },
   };
   return iconMap[activityType as keyof typeof iconMap] || iconMap.Assignment;
 };
@@ -31,66 +23,76 @@ const CourseworkItem = ({
   activityName,
   activityTypeName,
   endTime,
-  id,
+  classroomMode,
   attempts,
+  id,
 }: Assessment) => {
   const { label } = getActivityIcon(activityTypeName);
-
   const formattedDate = endTime ? formatDate(endTime, true) : null;
 
-  // Calculate urgency
-  const getUrgency = () => {
-    if (!endTime) return null;
-
-    // Don't show urgency badge if there are attempts
-    if (attempts?.length > 0) {
-      return null;
-    }
-
-    const now = new Date();
-    const dueDate = new Date(endTime);
-    const hoursUntilDue =
-      (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-    if (hoursUntilDue < 0) {
-      return { label: "Overdue", color: "text-red-600" };
-    }
-    if (hoursUntilDue < 24) {
-      return { label: "Due today", color: "text-orange-600" };
-    }
-    return null;
-  };
-
-  const urgency = getUrgency();
+  const isClassroomActivity = !!classroomMode;
+  const hasSubmission = (attempts?.length ?? 0) > 0;
+  const isOverdue =
+    !isClassroomActivity &&
+    !hasSubmission &&
+    endTime != null &&
+    new Date(endTime).getTime() < Date.now();
 
   return (
-    <Link href={`/activity/${id}`} className="mt-2.5 max-w-3xl mx-auto w-full">
-      <Card className="shadow-none rounded-xl flex-row items-center active:bg-orange-50/50 dark:active:bg-orange-900/20">
-        <View className="flex-row gap-2 flex-1">
-          <View className="rounded-full p-2.5 bg-orange-50 dark:bg-orange-900/50">
-            <Icon
-              className="h-6 w-6 text-orange-600 dark:text-orange-400"
-              name="ClipboardIcon"
-            />
-          </View>
-          <View className="flex-1">
-            <AppText
-              weight="semibold"
-              className="text-neutral-900 dark:text-neutral-100 text-lg flex-1"
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {label}: {activityName}
+    <Link
+      href={`/activity/${id}`}
+      className="w-full max-w-3xl mx-auto mb-2.5 px-2.5"
+    >
+      <Card className="rounded-xl flex-row items-center gap-3 shadow-none">
+        <View className="p-2 rounded-full bg-orange-100 dark:bg-orange-900/50">
+          <Icon
+            name="PencilLineIcon"
+            size={24}
+            color={ASSESSMENT_ICON_COLOR}
+          />
+        </View>
+        <View className="flex-1">
+          <AppText
+            weight="semibold"
+            className="text-lg"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {label}: {activityName}
+          </AppText>
+          <View className="flex-row items-center gap-1.5 mt-0.5 flex-wrap">
+            <AppText className="text-xs text-muted">
+              Due {formattedDate}
             </AppText>
-            <View className="flex-row gap-1 items-center">
-              <AppText
-                className="text-neutral-500 dark:text-neutral-400 text-xs"
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                Due {formattedDate}
-              </AppText>
-            </View>
+            {isClassroomActivity ? (
+              <View className="px-2 py-0.5 rounded-full bg-accent-soft">
+                <AppText
+                  weight="semibold"
+                  className="text-[10px] text-accent"
+                >
+                  In class
+                </AppText>
+              </View>
+            ) : hasSubmission ? (
+              <View className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50">
+                <AppText
+                  weight="semibold"
+                  className="text-[10px]"
+                  style={{ color: "#10b981" }}
+                >
+                  Submitted
+                </AppText>
+              </View>
+            ) : isOverdue ? (
+              <View className="px-2 py-0.5 rounded-full bg-danger-soft">
+                <AppText
+                  weight="semibold"
+                  className="text-[10px] text-danger"
+                >
+                  Overdue
+                </AppText>
+              </View>
+            ) : null}
           </View>
         </View>
       </Card>

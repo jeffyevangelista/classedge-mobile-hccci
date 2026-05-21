@@ -7,9 +7,17 @@ import type {
   ParamListBase,
   TabNavigationState,
 } from "@react-navigation/native";
-import { withLayoutContext } from "expo-router";
+import {
+  useLocalSearchParams,
+  useNavigation,
+  useRouter,
+  withLayoutContext,
+} from "expo-router";
 import { useThemeColor } from "heroui-native";
-import { StyleSheet } from "react-native";
+import { useEffect } from "react";
+import { Platform, Pressable, StyleSheet } from "react-native";
+import { Icon } from "@/components/Icon";
+import { useGetSubject } from "@/features/oversight/oversight.hooks";
 
 const { Navigator } = createMaterialTopTabNavigator();
 const MaterialTopTabs = withLayoutContext<
@@ -19,11 +27,36 @@ const MaterialTopTabs = withLayoutContext<
   MaterialTopTabNavigationEventMap
 >(Navigator);
 
-const ClassroomTabsLayout = () => {
+const SubjectTabsLayout = () => {
   const accent = useThemeColor("accent");
   const muted = useThemeColor("muted");
   const surface = useThemeColor("surface");
   const border = useThemeColor("border");
+
+  const { subjectId } = useLocalSearchParams<{ subjectId: string }>();
+  const { data } = useGetSubject(subjectId ?? "");
+  const subjectName = data?.subjectName ?? "";
+
+  const navigation = useNavigation();
+  const router = useRouter();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: subjectName,
+      headerRight: ({ tintColor }: { tintColor?: string }) => (
+        <Pressable
+          onPress={() => router.push(`/subject/${subjectId}/subject-details`)}
+          className="w-9 h-9 rounded-full flex justify-center items-center"
+        >
+          <Icon
+            name="InfoIcon"
+            color={tintColor}
+            style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
+          />
+        </Pressable>
+      ),
+    });
+  }, [navigation, subjectName, subjectId, router]);
 
   return (
     <MaterialTopTabs
@@ -50,12 +83,9 @@ const ClassroomTabsLayout = () => {
         name="courseworks"
         options={{ title: "Courseworks" }}
       />
-      <MaterialTopTabs.Screen
-        name="rapid-grader"
-        options={{ title: "RapidGrader" }}
-      />
+      <MaterialTopTabs.Screen name="students" options={{ title: "Students" }} />
     </MaterialTopTabs>
   );
 };
 
-export default ClassroomTabsLayout;
+export default SubjectTabsLayout;

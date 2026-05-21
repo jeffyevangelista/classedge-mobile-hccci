@@ -1,39 +1,30 @@
 import {
+  Keyboard,
+  TextInput,
   View,
-  Text,
   ActivityIndicator,
-  Modal,
   Pressable,
-  StyleSheet,
 } from "react-native";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalSearchParams, useNavigation } from "expo-router";
 import {
   useClassroomStudents,
   useStudentScoresForActivity,
 } from "@/features/classroom/classroom.hooks";
-import {
-  upsertStudentScore,
-  saveAttachment,
-} from "@/features/classroom/ classroom.service";
-import { FlashList } from "@shopify/flash-list";
+import { upsertStudentScore } from "@/features/classroom/ classroom.service";
+import { FlashList, type FlashListRef } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
-import {
-  Avatar,
-  Button,
-  Card,
-  Input,
-  InputGroup,
-  Skeleton,
-} from "heroui-native";
+import { Card, Skeleton } from "heroui-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { Icon } from "@/components/Icon";
 import ErrorFallback from "@/components/ErrorFallback";
-import { CameraView } from "expo-camera";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Image from "@/components/Image";
-import { useCamera } from "@/features/camera/useCamera";
-import type { CapturedPhoto } from "@/features/camera/useCamera";
-import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import { useImage } from "@/providers/ImageProvider";
+import { StudentScoreItem, type RowImage } from "./StudentScoreItem";
+import { ApplyScoreToAllSheet } from "./ApplyScoreToAllSheet";
+import { GradingProgressBar } from "./GradingProgressBar";
+import { StudentSearchBar } from "./StudentSearchBar";
+import { useDirtyScores } from "../useDirtyScores";
+import { useImageStaging } from "../useImageStaging";
 
 type ActivityDetail = {
   localId: string;
@@ -61,8 +52,6 @@ const StudentScoringList = ({
     activityDetail.localId,
   );
 
-  console.log("[existingScores]", existingScores);
-
   const scoresMap = useMemo(() => {
     const map: Record<number, number> = {};
     if (existingScores) {
@@ -74,28 +63,106 @@ const StudentScoringList = ({
   }, [existingScores]);
 
   const [localScores, setLocalScores] = useState<Record<number, string>>({});
+  const [imagesByStudent, setImagesByStudent] = useState<
+    Record<number, RowImage>
+  >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [defaultScore, setDefaultScore] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showApplySheet, setShowApplySheet] = useState(false);
+
+  const { showImage } = useImage();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const listRef = useRef<FlashListRef<any>>(null);
 
   useEffect(() => {
-    if (existingScores) {
-      setLocalScores((prev) => {
-        const next = { ...prev };
-        for (const score of existingScores) {
-          if (next[score.studentId] === undefined) {
-            next[score.studentId] =
-              score.totalScore != null ? score.totalScore.toString() : "";
-          }
+    if (!existingScores) return;
+    setLocalScores((prev) => {
+      const next = { ...prev };
+      for (const score of existingScores) {
+        if (next[score.studentId] === undefined) {
+          next[score.studentId] =
+            score.totalScore != null ? score.totalScore.toString() : "";
         }
-        return next;
-      });
-    }
+      }
+      return next;
+    });
+    setImagesByStudent((prev) => {
+      const next = { ...prev };
+      for (const score of existingScores) {
+        if (next[score.studentId] === undefined && score.file) {
+          next[score.studentId] = { uri: score.file, dirty: false };
+        }
+      }
+      return next;
+    });
   }, [existingScores]);
 
   const handleScoreChange = useCallback((studentId: number, value: string) => {
     setLocalScores((prev) => ({ ...prev, [studentId]: value }));
   }, []);
+
+  // When a row's score input gains focus, scroll the list so the active row
+  // sits ~30% from the top of the visible area — comfortably above the keyboard
+  // without ripping focus from the input.
+  const displayStudentsRef = useRef<{ studentId: number }[]>([]);
+  const handleScoreFocus = useCallback((studentId: number) => {
+    const index = displayStudentsRef.current.findIndex(
+      (s) => s.studentId === studentId,
+    );
+    if (index < 0) return;
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToIndex({
+        index,
+        animated: true,
+        viewPosition: 0.3,
+      });
+    });
+  }, []);
+
+  // Map of studentId → TextInput. Rows register their input on mount so the
+  // keyboard's submit key (or external "next" trigger) can advance focus.
+  const inputRefsMap = useRef<Map<number, TextInput>>(new Map());
+  const registerInputRef = useCallback(
+    (studentId: number, ref: TextInput | null) => {
+      if (ref) inputRefsMap.current.set(studentId, ref);
+      else inputRefsMap.current.delete(studentId);
+    },
+    [],
+  );
+
+  const handleScoreNext = useCallback((studentId: number) => {
+    const list = displayStudentsRef.current;
+    const idx = list.findIndex((s) => s.studentId === studentId);
+    if (idx < 0 || idx >= list.length - 1) {
+      // Last row (or row not found) — dismiss the keyboard.
+      Keyboard.dismiss();
+      return;
+    }
+    const nextId = list[idx + 1].studentId;
+    const nextInput = inputRefsMap.current.get(nextId);
+    nextInput?.focus();
+  }, []);
+
+  const handleAttach = useCallback(
+    (studentId: number, persistentUri: string) => {
+      setImagesByStudent((prev) => ({
+        ...prev,
+        [studentId]: { uri: persistentUri, dirty: true },
+      }));
+    },
+    [],
+  );
+
+  const handleDeleteImage = useCallback((studentId: number) => {
+    setImagesByStudent((prev) => ({
+      ...prev,
+      [studentId]: { uri: "", dirty: true },
+    }));
+  }, []);
+
+  const { requestAttach, portal: imageStagingPortal } = useImageStaging({
+    onAttach: handleAttach,
+  });
 
   const validStudents = useMemo(
     () =>
@@ -107,64 +174,98 @@ const StudentScoringList = ({
     [students],
   );
 
-  const handleApplyDefault = useCallback(() => {
-    if (defaultScore === "") return;
-    const num = parseInt(defaultScore, 10);
-    if (isNaN(num) || num < 0 || num > activityDetail.maxScore) return;
-    setLocalScores((prev) => {
-      const next = { ...prev };
-      for (const s of validStudents) {
-        next[s.studentId] = defaultScore;
-      }
-      return next;
+  const displayStudents = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return validStudents;
+    return validStudents.filter((s) => {
+      const name = s.profile
+        ? `${s.profile.lastName} ${s.profile.firstName}`.toLowerCase()
+        : "";
+      return name.includes(q);
     });
-  }, [defaultScore, validStudents, activityDetail.maxScore]);
+  }, [validStudents, searchQuery]);
 
-  const dirtyStudentIds = useMemo(() => {
-    if (!validStudents.length) return new Set<number>();
-    const dirty = new Set<number>();
+  // Keep a ref in sync with displayStudents so handleScoreFocus (a stable
+  // callback) can read the current ordering without resubscribing every render.
+  displayStudentsRef.current = displayStudents;
+
+  const handleApplyDefault = useCallback(
+    (score: string) => {
+      setLocalScores((prev) => {
+        const next = { ...prev };
+        for (const s of validStudents) {
+          next[s.studentId] = score;
+        }
+        return next;
+      });
+    },
+    [validStudents],
+  );
+
+  const { dirtyStudentIds, hasUnsavedChanges } = useDirtyScores({
+    students: validStudents,
+    localScores,
+    imagesByStudent,
+    scoresMap,
+    maxScore: activityDetail.maxScore,
+  });
+
+  const gradedCount = useMemo(() => {
+    let count = 0;
     for (const s of validStudents) {
-      const local = localScores[s.studentId];
-      if (local === undefined || local === "") continue;
-      const numericScore = parseInt(local, 10);
-      if (
-        isNaN(numericScore) ||
-        numericScore < 0 ||
-        numericScore > activityDetail.maxScore
-      )
-        continue;
-      const saved = scoresMap[s.studentId];
-      if (saved === undefined || saved !== numericScore) {
-        dirty.add(s.studentId);
-      }
+      if (scoresMap[s.studentId] !== undefined) count++;
     }
-    return dirty;
-  }, [validStudents, localScores, scoresMap, activityDetail.maxScore]);
-
-  const hasUnsavedChanges = dirtyStudentIds.size > 0;
+    return count;
+  }, [validStudents, scoresMap]);
 
   const handleSubmitAll = useCallback(async () => {
     if (dirtyStudentIds.size === 0) return;
     setIsSubmitting(true);
     try {
-      const entries = Array.from(dirtyStudentIds).map((studentId) => ({
-        studentId,
-        activityId: activityDetail.id,
-        termId: activityDetail.termId,
-        activityLocalId: activityDetail.localId,
-        subjectId: activityDetail.subjectId,
-        totalScore: parseInt(localScores[studentId], 10),
-      }));
-      console.log("[handleSubmitAll] saving:", JSON.stringify(entries));
-      const promises = entries.map((entry) => upsertStudentScore(entry));
-      await Promise.all(promises);
-      console.log("[handleSubmitAll] save complete");
+      const dirtyIds = Array.from(dirtyStudentIds);
+      const entries = dirtyIds.map((studentId) => {
+        const local = localScores[studentId];
+        const hasLocal = local !== undefined && local !== "";
+        const totalScore = hasLocal
+          ? parseInt(local, 10)
+          : scoresMap[studentId];
+        const imgState = imagesByStudent[studentId];
+        // Only include `file` when the image actually changed in this session.
+        // Otherwise omit so upsertStudentScore leaves the column untouched and
+        // we don't re-queue an upload of the same URI.
+        const file = imgState?.dirty ? imgState.uri || null : undefined;
+        return {
+          studentId,
+          activityId: activityDetail.id,
+          termId: activityDetail.termId,
+          activityLocalId: activityDetail.localId,
+          subjectId: activityDetail.subjectId,
+          totalScore,
+          file,
+        };
+      });
+      await Promise.all(entries.map((entry) => upsertStudentScore(entry)));
+
+      setImagesByStudent((prev) => {
+        const next = { ...prev };
+        for (const id of dirtyIds) {
+          const current = next[id];
+          if (current) next[id] = { ...current, dirty: false };
+        }
+        return next;
+      });
     } catch (err) {
       console.error("[StudentScoringList] Failed to save scores:", err);
     } finally {
       setIsSubmitting(false);
     }
-  }, [dirtyStudentIds, localScores, activityDetail]);
+  }, [
+    dirtyStudentIds,
+    localScores,
+    imagesByStudent,
+    activityDetail,
+    scoresMap,
+  ]);
 
   const parentNavigation = useNavigation("/(main)/classroom/[classroomId]");
 
@@ -175,11 +276,23 @@ const StudentScoringList = ({
           onPress={handleSubmitAll}
           disabled={isSubmitting || !hasUnsavedChanges}
           style={{ opacity: isSubmitting || !hasUnsavedChanges ? 0.4 : 1 }}
+          className={
+            hasUnsavedChanges
+              ? "px-3 py-1.5 rounded-full bg-accent"
+              : "px-3 py-1.5"
+          }
         >
           {isSubmitting ? (
             <ActivityIndicator size="small" />
           ) : (
-            <AppText weight="semibold" className="text-accent text-base">
+            <AppText
+              weight="semibold"
+              className={
+                hasUnsavedChanges
+                  ? "text-accent-foreground text-sm"
+                  : "text-foreground/70 text-sm"
+              }
+            >
               Save
             </AppText>
           )}
@@ -192,432 +305,119 @@ const StudentScoringList = ({
 
   if (isError)
     return (
-      <ErrorFallback message={error?.message ?? "Failed to load students"} />
+      <View className="flex-1 px-2.5 pt-2.5">
+        <ErrorFallback message={error?.message ?? "Failed to load students"} />
+      </View>
     );
 
-  const isDefaultOverMax =
-    defaultScore !== "" && parseInt(defaultScore, 10) > activityDetail.maxScore;
+  const isSearchEmpty =
+    searchQuery.trim().length > 0 && displayStudents.length === 0;
 
   return (
     <View className="flex-1">
-      <Card className="rounded-xl shadow-none mb-2 max-w-3xl w-full mx-auto">
-        <View className="flex-row items-center gap-2">
-          <AppText className="text-sm flex-1">Apply score to all</AppText>
-          <View className="flex-row items-center">
-            <Input
-              placeholder="0"
-              value={defaultScore}
-              onChangeText={(text: string) => {
-                if (text !== "" && !/^\d+$/.test(text)) return;
-                setDefaultScore(text);
-              }}
-              keyboardType="numeric"
-              className={`w-14 text-center bg-accent-foreground ${isDefaultOverMax ? "border-red-500" : "border-gray-300"}`}
-            />
-            <AppText className="text-xs text-muted-foreground ml-1">
-              /{activityDetail.maxScore}
-            </AppText>
-          </View>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="rounded-xl"
-            onPress={handleApplyDefault}
-            isDisabled={defaultScore === "" || isDefaultOverMax}
-          >
-            <AppText className="text-xs font-semibold">Apply</AppText>
-          </Button>
-        </View>
-      </Card>
-      <InputGroup className="mb-2 shadow-none">
-        <InputGroup.Prefix>
-          <Icon name="MagnifyingGlass" size={20} color="gray" />
-        </InputGroup.Prefix>
-        <InputGroup.Input
-          placeholder="Search student..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          className="max-w-3xl w-full mx-auto"
+      <View className="px-2.5 pt-2.5">
+        <GradingProgressBar
+          graded={gradedCount}
+          total={validStudents.length}
+          onPressApplyAll={() => setShowApplySheet(true)}
         />
-      </InputGroup>
-      <FlashList
-        className="max-w-3xl w-full mx-auto"
-        data={
-          searchQuery.trim()
-            ? validStudents.filter((s) => {
-                const name = s.profile
-                  ? `${s.profile.lastName} ${s.profile.firstName}`.toLowerCase()
-                  : "";
-                return name.includes(searchQuery.trim().toLowerCase());
-              })
-            : validStudents
-        }
-        renderItem={({ item }) => {
-          const profile = item.profile;
-          const fullName = profile
-            ? `${profile.lastName}, ${profile.firstName}`
-            : `Student ${item.studentId}`;
-          const score = localScores[item.studentId] ?? "";
-          const isOverMax =
-            score !== "" && parseInt(score, 10) > activityDetail.maxScore;
-          const isSaved =
-            scoresMap[item.studentId] !== undefined &&
-            !dirtyStudentIds.has(item.studentId);
+        {validStudents.length >= 10 && (
+          <StudentSearchBar value={searchQuery} onChange={setSearchQuery} />
+        )}
+      </View>
 
-          return (
-            <Card className="rounded-xl items-center gap-3 mb-1.5 shadow-none flex-row">
-              <Avatar alt={fullName} size="sm">
-                <AttachmentAvatarImage path={profile?.studentPhoto} />
-                <Avatar.Fallback>
-                  {profile?.firstName?.[0] ?? ""}
-                  {profile?.lastName?.[0] ?? ""}
-                </Avatar.Fallback>
-              </Avatar>
-              <AppText className="flex-1 text-sm" numberOfLines={1}>
-                {fullName}
-              </AppText>
-              <View className="flex-row items-center gap-1.5">
-                <View className="flex-row items-center">
-                  <Input
-                    placeholder="0"
-                    value={score}
-                    onChangeText={(text: string) => {
-                      if (text !== "" && !/^\d+$/.test(text)) return;
-                      handleScoreChange(item.studentId, text);
-                    }}
-                    keyboardType="numeric"
-                    className={`w-14 text-center bg-accent-foreground ${isOverMax ? "border-red-500" : "border-gray-300"}`}
-                  />
-                  <AppText className="text-xs text-muted-foreground ml-1">
-                    /{activityDetail.maxScore}
-                  </AppText>
-                </View>
-                {isSaved && (
-                  <Icon name="CheckCircle" size={16} color="#22c55e" />
-                )}
-              </View>
-            </Card>
-          );
-        }}
-        keyExtractor={(item) => item.studentId.toString()}
-        extraData={{ localScores }}
+      {isSearchEmpty ? (
+        <View className="flex-1 items-center justify-center px-6 -mt-12">
+          <Icon name="MagnifyingGlass" size={32} color="#9ca3af" />
+          <AppText className="text-sm text-muted-foreground mt-2 text-center">
+            No students match &ldquo;{searchQuery.trim()}&rdquo;
+          </AppText>
+          <Pressable onPress={() => setSearchQuery("")} className="mt-3">
+            <AppText weight="semibold" className="text-sm text-accent">
+              Clear search
+            </AppText>
+          </Pressable>
+        </View>
+      ) : (
+        // KeyboardAvoidingView shrinks the list's visible area when the
+        // keyboard appears, so scrollToIndex has somewhere to bring the
+        // end-of-list rows into view above the keyboard.
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+          <FlashList
+            ref={listRef}
+            className=" w-full"
+            data={displayStudents}
+            // Extra tail space so scrollToIndex can position the last rows
+            // ~30% from the top of the viewport instead of hitting the
+            // content's natural bottom edge.
+            contentContainerStyle={{
+              paddingBottom: 320,
+              paddingHorizontal: 10,
+            }}
+            renderItem={({ item }) => {
+              const score = localScores[item.studentId] ?? "";
+              const isSaved =
+                scoresMap[item.studentId] !== undefined &&
+                !dirtyStudentIds.has(item.studentId);
+              const image = imagesByStudent[item.studentId];
+
+              return (
+                <StudentScoreItem
+                  student={item}
+                  maxScore={activityDetail.maxScore}
+                  score={score}
+                  isSaved={isSaved}
+                  image={image?.uri ? image : undefined}
+                  onScoreChange={handleScoreChange}
+                  onScoreFocus={handleScoreFocus}
+                  onScoreNext={handleScoreNext}
+                  registerInputRef={registerInputRef}
+                  onRequestAttach={requestAttach}
+                  onDelete={handleDeleteImage}
+                  onThumbnailPress={showImage}
+                />
+              );
+            }}
+            keyExtractor={(item) => item.studentId.toString()}
+            extraData={{ localScores, imagesByStudent, dirtyStudentIds }}
+          />
+        </KeyboardAvoidingView>
+      )}
+
+      {imageStagingPortal}
+      <ApplyScoreToAllSheet
+        isOpen={showApplySheet}
+        onOpenChange={setShowApplySheet}
+        maxScore={activityDetail.maxScore}
+        onApply={handleApplyDefault}
       />
     </View>
   );
 };
 
-const StudentScoreItem = React.memo(
-  ({
-    studentId,
-    activityDetail,
-    score,
-    onScoreChange,
-    capturedImage,
-    onImageChange,
-    isSaved,
-  }: {
-    studentId: number;
-    activityDetail: ActivityDetail;
-    score: string;
-    onScoreChange: (studentId: number, value: string) => void;
-    capturedImage: CapturedPhoto | null;
-    onImageChange: (studentId: number, image: CapturedPhoto | null) => void;
-    isSaved: boolean;
-  }) => {
-    const [showCamera, setShowCamera] = useState(false);
-    const [showPreview, setShowPreview] = useState(false);
-
-    const {
-      cameraRef,
-      facing,
-      flash,
-      ensurePermission,
-      takePicture,
-      toggleFacing,
-      toggleFlash,
-      resetPhoto,
-    } = useCamera();
-
-    const handleOpenCamera = useCallback(async () => {
-      const granted = await ensurePermission();
-      if (granted) {
-        setShowCamera(true);
-      }
-    }, [ensurePermission]);
-
-    const handleCapture = useCallback(async () => {
-      const photo = await takePicture();
-      if (photo) {
-        onImageChange(studentId, photo);
-        resetPhoto();
-        setShowCamera(false);
-      }
-    }, [takePicture, resetPhoto, onImageChange, studentId]);
-
-    const handleDeleteImage = useCallback(() => {
-      onImageChange(studentId, null);
-    }, [onImageChange, studentId]);
-
-    const handleChangeText = (text: string) => {
-      if (text !== "" && !/^\d+$/.test(text)) return;
-      onScoreChange(studentId, text);
-    };
-
-    const isOverMax =
-      score !== "" && parseInt(score, 10) > activityDetail.maxScore;
-
-    return (
-      <Card className="rounded-xl items-center gap-2 mb-2 shadow-none flex-row">
-        <Avatar alt="user-avatar">
-          <Avatar.Image />
-          <Avatar.Fallback>{studentId}</Avatar.Fallback>
-        </Avatar>
-        <AppText className="flex-1">{studentId}</AppText>
-
-        <View className="flex-row gap-1 items-center">
-          <Input
-            placeholder="Score"
-            value={score}
-            onChangeText={handleChangeText}
-            keyboardType="numeric"
-            className={`bg-accent-foreground ${isOverMax ? "border-red-500" : "border-gray-300"}`}
-          />
-          {isSaved && <Icon name="CheckCircle" size={18} color="#22c55e" />}
-          {capturedImage ? (
-            <View style={styles.thumbnailWrapper}>
-              <Pressable onPress={() => setShowPreview(true)}>
-                <Image
-                  source={{ uri: capturedImage.uri }}
-                  style={styles.thumbnail}
-                  contentFit="cover"
-                />
-              </Pressable>
-              <Pressable
-                style={styles.deleteButton}
-                onPress={handleDeleteImage}
-              >
-                <Icon name="XIcon" size={10} color="#fff" />
-              </Pressable>
-            </View>
-          ) : (
-            <Button
-              isIconOnly
-              variant="secondary"
-              className="rounded-xl"
-              onPress={handleOpenCamera}
-            >
-              <Icon name="Camera" />
-            </Button>
-          )}
-        </View>
-
-        <Modal
-          visible={showPreview}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowPreview(false)}
-        >
-          <Pressable
-            style={styles.previewOverlay}
-            onPress={() => setShowPreview(false)}
-          >
-            <SafeAreaView style={styles.previewContainer}>
-              <Pressable
-                style={styles.previewCloseButton}
-                onPress={() => setShowPreview(false)}
-              >
-                <Icon name="XIcon" size={24} color="#fff" />
-              </Pressable>
-              {capturedImage && (
-                <Image
-                  source={{ uri: capturedImage.uri }}
-                  style={styles.previewImage}
-                  contentFit="contain"
-                />
-              )}
-            </SafeAreaView>
-          </Pressable>
-        </Modal>
-
-        <Modal
-          visible={showCamera}
-          animationType="slide"
-          onRequestClose={() => setShowCamera(false)}
-        >
-          <View style={styles.cameraContainer}>
-            <CameraView
-              ref={cameraRef}
-              style={StyleSheet.absoluteFill}
-              facing={facing}
-              flash={flash}
-            />
-            <SafeAreaView style={styles.cameraOverlay}>
-              <View style={styles.cameraTopBar}>
-                <Pressable
-                  style={styles.cameraIconButton}
-                  onPress={() => setShowCamera(false)}
-                >
-                  <Icon name="XIcon" size={24} color="#fff" />
-                </Pressable>
-                <Pressable
-                  style={styles.cameraIconButton}
-                  onPress={toggleFlash}
-                >
-                  <Icon
-                    name={
-                      flash === "on" ? "LightningIcon" : "LightningSlashIcon"
-                    }
-                    size={24}
-                    color="#fff"
-                  />
-                </Pressable>
-              </View>
-
-              <View style={styles.cameraBottomBar}>
-                <View style={styles.cameraSpacer} />
-                <Pressable style={styles.captureButton} onPress={handleCapture}>
-                  <View style={styles.captureInner} />
-                </Pressable>
-                <View style={styles.cameraSpacer}>
-                  <Pressable
-                    style={styles.cameraIconButton}
-                    onPress={toggleFacing}
-                  >
-                    <Icon name="CameraRotateIcon" size={28} color="#fff" />
-                  </Pressable>
-                </View>
-              </View>
-            </SafeAreaView>
-          </View>
-        </Modal>
-      </Card>
-    );
-  },
-);
-StudentScoreItem.displayName = "StudentScoreItem";
-
-const styles = StyleSheet.create({
-  thumbnailWrapper: {
-    position: "relative",
-    width: 40,
-    height: 40,
-  },
-  thumbnail: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-  },
-  deleteButton: {
-    position: "absolute",
-    top: -6,
-    right: -6,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  previewOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.9)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  previewContainer: {
-    flex: 1,
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  previewCloseButton: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    zIndex: 1,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  previewImage: {
-    width: "90%",
-    height: "80%",
-  },
-  cameraContainer: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
-  cameraOverlay: {
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  cameraTopBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-  },
-  cameraBottomBar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingBottom: 32,
-    paddingHorizontal: 24,
-  },
-  cameraSpacer: {
-    flex: 1,
-    alignItems: "center",
-  },
-  cameraIconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  captureButton: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    borderWidth: 4,
-    borderColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  captureInner: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: "#fff",
-  },
-});
-
-const StudentScoringSkeleton = () => (
-  <View className="flex-1">
+export const StudentScoringSkeleton = () => (
+  <View className="flex-1 px-2.5 pt-2.5">
     <View className="max-w-3xl w-full mx-auto gap-2">
+      <View className="flex-row items-center justify-between mb-1 px-1">
+        <Skeleton className="h-3 w-32 rounded-full" />
+        <Skeleton className="h-6 w-24 rounded-full" />
+      </View>
+      <Skeleton className="h-10 w-full rounded-xl mb-2" />
       {Array(6)
         .fill(0)
         .map((_, i) => (
-          <Card
-            key={i}
-            className="rounded-xl items-center gap-2 shadow-none flex-row"
-          >
-            <Skeleton className="w-10 h-10 rounded-full" />
-            <Skeleton className="h-4 w-24 rounded-full flex-1" />
-            <View className="flex-row gap-1 items-center">
-              <Skeleton className="h-8 w-16 rounded-lg" />
-              <Skeleton className="w-10 h-10 rounded-xl" />
+          <Card key={i} className="rounded-2xl shadow-none py-3 px-3">
+            <View className="flex-row items-center gap-3 mb-2.5">
+              <Skeleton className="w-8 h-8 rounded-full" />
+              <Skeleton className="h-4 w-40 rounded-full flex-1" />
+            </View>
+            <View className="flex-row items-center gap-3 pl-11">
+              <Skeleton className="h-10 w-16 rounded-lg" />
+              <View className="flex-1" />
+              <Skeleton className="h-11 w-11 rounded-lg" />
             </View>
           </Card>
         ))}
-    </View>
-    <View className="p-4 max-w-3xl w-full mx-auto">
-      <Skeleton className="h-10 w-full rounded-xl" />
     </View>
   </View>
 );

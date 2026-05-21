@@ -1,14 +1,25 @@
 import { useThemeColor } from "heroui-native";
 
-export const useThemedHeaderOptions = () => {
+type Options = {
+  /**
+   * When true, the header background matches the page background and the
+   * bottom border is removed — the header dissolves into the content. Use on
+   * screens with no title where the header is just hosting the back button.
+   */
+  transparent?: boolean;
+};
+
+export const useThemedHeaderOptions = ({ transparent = false }: Options = {}) => {
   const surfaceColor = useThemeColor("surface");
+  const backgroundColor = useThemeColor("background");
   const foregroundColor = useThemeColor("foreground");
   const borderColor = useThemeColor("border");
+
   return {
     headerStyle: {
-      backgroundColor: surfaceColor,
-      borderBottomColor: borderColor,
-      borderBottomWidth: 1,
+      backgroundColor: transparent ? backgroundColor : surfaceColor,
+      borderBottomColor: transparent ? "transparent" : borderColor,
+      borderBottomWidth: transparent ? 0 : 1,
     },
     headerTintColor: foregroundColor,
     headerTitleStyle: {

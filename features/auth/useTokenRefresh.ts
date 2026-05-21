@@ -1,8 +1,8 @@
-import useStore from "@/lib/store";
 import * as BackgroundTask from "expo-background-task";
 import * as TaskManager from "expo-task-manager";
 import { useEffect, useRef } from "react";
 import { AppState, type AppStateStatus } from "react-native";
+import useStore from "@/lib/store";
 import { refresh } from "./refreshToken";
 
 const BACKGROUND_TOKEN_REFRESH = "BACKGROUND_TOKEN_REFRESH";
@@ -12,20 +12,29 @@ const REFRESH_BUFFER_MS = 5 * 60 * 1000;
 // Foreground polling interval (60 seconds)
 const POLL_INTERVAL_MS = 60 * 1000;
 
+// Shared in-flight refresh promise. With rotating refresh tokens, two
+// concurrent callers using the same refresh token would race: the first
+// rotates it, the second sends the now-revoked one and gets 401 (and
+// some backends blacklist the new token on reuse). All callers
+// (foreground poll, AppState, background task, PowerSync
+// invalidateCredentials, axios interceptor) funnel through this so only
+// one network refresh is in flight at a time.
+let inflightRefresh: Promise<boolean> | null = null;
+
 /**
  * Silently refresh tokens when needed.
  * Returns true if tokens were refreshed, false otherwise.
+ *
+ * Pass `{ force: true }` to bypass the within-buffer check. Used by
+ * PowerSync's invalidateCredentials hook and the axios 401 interceptor,
+ * which fire when the server rejects the current token regardless of
+ * how much wall-clock time is left on it.
  */
-async function silentRefresh(): Promise<boolean> {
-  const {
-    refreshToken,
-    expiresAt,
-    isConnected,
-    isInternetReachable,
-    setAccessToken,
-    setPowersyncToken,
-    setRefreshToken,
-  } = useStore.getState();
+export async function silentRefresh(opts?: {
+  force?: boolean;
+}): Promise<boolean> {
+  const { refreshToken, expiresAt, isConnected, isInternetReachable } =
+    useStore.getState();
 
   // Skip when offline — session stays valid locally
   if (!isConnected || !isInternetReachable) return false;
@@ -34,31 +43,57 @@ async function silentRefresh(): Promise<boolean> {
 
   const timeUntilExpiry = expiresAt - Date.now();
 
-  // Only refresh if we're within the buffer window
-  if (timeUntilExpiry > REFRESH_BUFFER_MS) return false;
+  // Only refresh if we're within the buffer window, unless forced
+  if (!opts?.force && timeUntilExpiry > REFRESH_BUFFER_MS) return false;
 
-  // Capture local onboarding state before the refresh overwrites it
-  const wasOnboardingDone =
-    useStore.getState().authUser?.legalUpdateRequired === false;
+  // Dedup: a refresh is already in flight — await it instead of firing
+  // a second request with the same (about-to-be-rotated) refresh token.
+  if (inflightRefresh) return inflightRefresh;
 
-  try {
-    const data = await refresh(refreshToken);
-    setAccessToken(data.accessToken);
-    // Preserve local legalUpdateRequired: false if the server JWT is stale
-    if (
-      wasOnboardingDone &&
-      useStore.getState().authUser?.legalUpdateRequired
-    ) {
-      useStore.getState().setLegalUpdateRequired(false);
+  inflightRefresh = (async () => {
+    try {
+      // Re-read the refresh token inside the inflight wrapper in case
+      // another path rotated it between the outer check and now.
+      const currentRefreshToken = useStore.getState().refreshToken;
+      if (!currentRefreshToken) return false;
+
+      // Capture local onboarding state before the refresh overwrites it
+      const wasOnboardingDone =
+        useStore.getState().authUser?.legalUpdateRequired === false;
+
+      try {
+        const data = await refresh(currentRefreshToken);
+        const { setAccessToken, setPowersyncToken, setRefreshToken } =
+          useStore.getState();
+        setAccessToken(data.accessToken);
+        // Preserve local legalUpdateRequired: false if the server JWT is stale
+        if (
+          wasOnboardingDone &&
+          useStore.getState().authUser?.legalUpdateRequired
+        ) {
+          useStore.getState().setLegalUpdateRequired(false);
+        }
+        setPowersyncToken(data.powersyncToken);
+        await setRefreshToken(data.refreshToken);
+        console.log("[TokenRefresh] Tokens refreshed silently");
+        return true;
+      } catch (error: any) {
+        console.warn("[TokenRefresh] Silent refresh failed:", error);
+        // If the server rejected the refresh token itself, the session
+        // is unrecoverable — clear credentials so the user is bounced
+        // to login instead of looping forever on a dead token.
+        const status = error?.response?.status;
+        if (status === 401 || status === 403) {
+          await useStore.getState().clearCredentials();
+        }
+        return false;
+      }
+    } finally {
+      inflightRefresh = null;
     }
-    setPowersyncToken(data.powersyncToken);
-    await setRefreshToken(data.refreshToken);
-    console.log("[TokenRefresh] Tokens refreshed silently");
-    return true;
-  } catch (error) {
-    console.warn("[TokenRefresh] Silent refresh failed:", error);
-    return false;
-  }
+  })();
+
+  return inflightRefresh;
 }
 
 // Register the background task handler (must be at module level)
