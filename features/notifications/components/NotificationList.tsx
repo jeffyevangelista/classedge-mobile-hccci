@@ -5,6 +5,7 @@ import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
 import { Avatar, Skeleton } from "heroui-native";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Notification } from "@/powersync/schema";
@@ -13,6 +14,7 @@ import { readNotification } from "../notifications.service";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 dayjs.extend(relativeTime);
 
@@ -67,6 +69,9 @@ const NotificationItem = ({
 }: Notification) => {
   const formattedTime = dayjs(createdAt).fromNow();
   const isReadBool = isRead === 1;
+  const actorName = toTitleCase(
+    `${createdById.firstName} ${createdById.lastName}`,
+  );
 
   const handleReadNotification = async () => {
     try {
@@ -91,21 +96,27 @@ const NotificationItem = ({
       <Pressable
         onPress={handleReadNotification}
         accessibilityRole="button"
-        accessibilityLabel={`${createdById.firstName} ${createdById.lastName} added ${message}`}
+        accessibilityLabel={`${actorName}. ${message}`}
         className={`flex-row items-start p-4 ${isReadBool ? "bg-transparent" : "bg-accent-soft"}`}
       >
-        <Avatar alt="avatar" size="sm">
+        <Avatar alt={actorName} size="sm">
           <AttachmentAvatarImage path={createdById.studentPhoto} />
-          <Avatar.Fallback>{createdById.firstName.charAt(0)}</Avatar.Fallback>
+          <AvatarFallbackImage />
         </Avatar>
 
         <View className="flex-1 ml-3">
           <AppText
             weight={isReadBool ? "regular" : "semibold"}
-            className={`text-xs ${isReadBool ? "text-muted" : ""}`}
+            className={`text-sm ${isReadBool ? "text-muted" : "text-foreground"}`}
+            numberOfLines={1}
+          >
+            {actorName}
+          </AppText>
+          <AppText
+            className={`text-xs mt-0.5 ${isReadBool ? "text-muted" : "text-foreground"}`}
             numberOfLines={2}
           >
-            {createdById.firstName} {createdById.lastName} added {message}
+            {message}
           </AppText>
           <AppText
             className={`text-[10px] mt-1 uppercase font-medium ${

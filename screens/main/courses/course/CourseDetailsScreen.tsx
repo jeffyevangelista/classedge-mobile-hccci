@@ -3,7 +3,7 @@ import CourseDetails from "@/features/courses/components/CourseDetails";
 
 const CourseDetailsScreen = () => {
   return (
-    <Screen className="px-2.5">
+    <Screen className="">
       <CourseDetails />
     </Screen>
   );

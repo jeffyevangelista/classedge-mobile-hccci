@@ -1,16 +1,15 @@
 import { powersync, resetPowerSync } from "@/powersync/system";
-import { Button, Dialog, useThemeColor, useToast } from "heroui-native";
+import { Button, Dialog, useToast } from "heroui-native";
 import React, { useCallback, useEffect, useState } from "react";
-import { Pressable, View } from "react-native";
-import { Icon } from "@/components/Icon";
+import { View } from "react-native";
 import { AppText } from "@/components/AppText";
+import ProfileRow from "@/features/profile/components/ProfileRow";
 
 const ResyncButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [unsyncedCount, setUnsyncedCount] = useState(0);
   const [isPending, setIsPending] = useState(false);
   const { toast } = useToast();
-  const accentColor = useThemeColor("accent");
 
   const checkUnsyncedData = useCallback(async () => {
     const result = await powersync.getAll<{ count: number }>(
@@ -50,25 +49,10 @@ const ResyncButton = () => {
   return (
     <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Force Resync"
-          className="active:opacity-70"
-        >
-          <View className="flex-row items-center p-3 rounded-2xl border border-transparent">
-            <Icon
-              name="ArrowsClockwiseIcon"
-              size={28}
-              color={accentColor}
-            />
-            <AppText
-              weight="semibold"
-              className="text-base sm:text-lg ml-4 flex-1"
-            >
-              Force Resync
-            </AppText>
-          </View>
-        </Pressable>
+        <ProfileRow
+          icon="ArrowsClockwiseIcon"
+          label="Force Resync"
+        />
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay />

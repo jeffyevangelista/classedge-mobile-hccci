@@ -1,15 +1,16 @@
-import { View, Text, Pressable, Platform, Alert } from "react-native";
+import { ActivityIndicator, View, Pressable, Platform, Alert } from "react-native";
 import React, { useState } from "react";
 import {
   Button,
+  FieldError,
   Input,
   Label,
   Select,
   Separator,
   Skeleton,
   Surface,
-  TextArea,
   TextField,
+  useThemeColor,
 } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import DateTimePicker, {
@@ -36,6 +37,7 @@ const scoringTypes: SelectOption[] = [
 const CreateClassroomActivityForm = () => {
   const router = useRouter();
   const { classroomId } = useLocalSearchParams();
+  const mutedColor = useThemeColor("muted");
   const [title, setTitle] = useState("");
   const [term, setTerm] = useState<SelectOption | undefined>();
   const [instructions, setInstructions] = useState("");
@@ -43,6 +45,8 @@ const CreateClassroomActivityForm = () => {
   const [type, setType] = useState<SelectOption | undefined>();
   const [activityType, setActivityType] = useState<SelectOption | undefined>();
   const [maxScore, setMaxScore] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string | undefined>>({});
 
   const [startDate, setStartDate] = useState(new Date());
   const [startTime, setStartTime] = useState(new Date());
@@ -54,12 +58,19 @@ const CreateClassroomActivityForm = () => {
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
+  const clearError = (key: string) =>
+    setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
+
   const onStartDateChange = (
     event: DateTimePickerEvent,
     selectedDate?: Date,
   ) => {
     setShowStartDatePicker(Platform.OS === "ios");
-    if (selectedDate) setStartDate(selectedDate);
+    if (!selectedDate) return;
+    setStartDate(selectedDate);
+    // Bump end date forward if the new start passes it.
+    if (selectedDate > endDate) setEndDate(selectedDate);
+    clearError("schedule");
   };
 
   const onStartTimeChange = (
@@ -68,16 +79,19 @@ const CreateClassroomActivityForm = () => {
   ) => {
     setShowStartTimePicker(Platform.OS === "ios");
     if (selectedTime) setStartTime(selectedTime);
+    clearError("schedule");
   };
 
   const onEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     setShowEndDatePicker(Platform.OS === "ios");
     if (selectedDate) setEndDate(selectedDate);
+    clearError("schedule");
   };
 
   const onEndTimeChange = (event: DateTimePickerEvent, selectedTime?: Date) => {
     setShowEndTimePicker(Platform.OS === "ios");
     if (selectedTime) setEndTime(selectedTime);
+    clearError("schedule");
   };
 
   const formatDate = (date: Date) =>
@@ -107,23 +121,29 @@ const CreateClassroomActivityForm = () => {
       ? parseInt(activityType.value, 10)
       : NaN;
 
-    const missing: string[] = [];
-    if (!title.trim()) missing.push("Title");
-    if (!term?.value) missing.push("Term");
-    if (!activityType?.value) missing.push("Activity Type");
-    if (!type?.value) missing.push("Scoring Type");
-    if (Number.isNaN(maxScoreNum)) missing.push("Max Score");
-    if (Number.isNaN(passingScoreNum)) missing.push("Passing Score");
-    if (missing.length > 0) {
-      Alert.alert(
-        "Missing required fields",
-        `Please provide: ${missing.join(", ")}`,
-      );
-      return;
-    }
+    const nextErrors: Record<string, string | undefined> = {};
+    if (!title.trim()) nextErrors.title = "Title is required";
+    if (!term?.value) nextErrors.term = "Term is required";
+    if (!activityType?.value)
+      nextErrors.activityType = "Activity type is required";
+    if (!type?.value) nextErrors.type = "Scoring type is required";
+    if (Number.isNaN(maxScoreNum)) nextErrors.maxScore = "Max score is required";
+    if (Number.isNaN(passingScoreNum))
+      nextErrors.passingScore = "Passing score is required";
 
     const startDateTime = combineDateTime(startDate, startTime);
     const endDateTime = combineDateTime(endDate, endTime);
+    if (endDateTime <= startDateTime) {
+      nextErrors.schedule = "End must be after start";
+    }
+
+    if (Object.values(nextErrors).some(Boolean)) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    setErrors({});
+    setIsSubmitting(true);
 
     const data = {
       activityName: title,
@@ -147,7 +167,6 @@ const CreateClassroomActivityForm = () => {
     };
     try {
       const { localId } = await createActivity(data);
-
       router.replace(`/classroom/${classroomId}/input-grades/${localId}`);
     } catch (error) {
       console.error("Error creating activity:", error);
@@ -155,41 +174,77 @@ const CreateClassroomActivityForm = () => {
         "Could not create activity",
         error instanceof Error ? error.message : "Unknown error",
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <View className="w-full max-w-xl mx-auto px-2.5 gap-2.5">
-      <TextField isRequired>
+    <View className="w-full max-w-xl mx-auto px-2.5 gap-3">
+      <SectionHeader>Basic info</SectionHeader>
+
+      <TextField isRequired isInvalid={!!errors.title}>
         <Label>Title</Label>
-        <Input value={title} onChangeText={setTitle} />
+        <Input
+          value={title}
+          onChangeText={(text) => {
+            setTitle(text);
+            clearError("title");
+          }}
+        />
+        {!!errors.title && <FieldError>{errors.title}</FieldError>}
       </TextField>
 
-      <TextField>
+      <TextField isRequired isInvalid={!!errors.term}>
         <Label>Term</Label>
-        <GradingPeriodSelector value={term} onValueChange={setTerm} />
+        <GradingPeriodSelector
+          value={term}
+          onValueChange={(v) => {
+            setTerm(v);
+            clearError("term");
+          }}
+        />
+        {!!errors.term && <FieldError>{errors.term}</FieldError>}
       </TextField>
-      <TextField>
-        <Label>Activity Type</Label>
+
+      <TextField isRequired isInvalid={!!errors.activityType}>
+        <Label>Activity type</Label>
         <ActivityTypeSelector
           value={activityType}
-          onValueChange={setActivityType}
+          onValueChange={(v) => {
+            setActivityType(v);
+            clearError("activityType");
+          }}
         />
+        {!!errors.activityType && (
+          <FieldError>{errors.activityType}</FieldError>
+        )}
       </TextField>
 
       <TextField>
         <Label>Instructions</Label>
-        <TextArea
+        <Input
           placeholder="Enter your message here..."
           value={instructions}
           onChangeText={setInstructions}
+          multiline
+          numberOfLines={4}
+          textAlignVertical="top"
+          className="h-32"
         />
       </TextField>
 
-      <TextField>
-        <Label>Scoring Type</Label>
+      <SectionHeader>Scoring</SectionHeader>
 
-        <Select value={type} onValueChange={setType}>
+      <TextField isRequired isInvalid={!!errors.type}>
+        <Label>Scoring type</Label>
+        <Select
+          value={type}
+          onValueChange={(v) => {
+            setType(v);
+            clearError("type");
+          }}
+        >
           <Select.Trigger>
             <Select.Value placeholder="Select one" />
             <Select.TriggerIndicator />
@@ -209,118 +264,171 @@ const CreateClassroomActivityForm = () => {
             </Select.Content>
           </Select.Portal>
         </Select>
+        {!!errors.type && <FieldError>{errors.type}</FieldError>}
       </TextField>
 
-      <TextField isRequired>
-        <Label>Max Score</Label>
-        <Input
-          value={maxScore}
-          onChangeText={setMaxScore}
-          keyboardType="numeric"
-        />
-      </TextField>
+      <View className="flex-row gap-2">
+        <TextField
+          isRequired
+          isInvalid={!!errors.maxScore}
+          className="flex-1"
+        >
+          <Label>Max score</Label>
+          <Input
+            value={maxScore}
+            onChangeText={(text) => {
+              setMaxScore(text);
+              clearError("maxScore");
+            }}
+            keyboardType="numeric"
+          />
+          {!!errors.maxScore && <FieldError>{errors.maxScore}</FieldError>}
+        </TextField>
 
-      <TextField isRequired>
-        <Label>Passing Score</Label>
-        <Input
-          value={passingScore}
-          onChangeText={setPassingScore}
-          keyboardType="numeric"
-        />
-      </TextField>
-
-      <TextField isRequired>
-        <Label>From</Label>
-        <Surface className="gap-1 py-2 rounded-xl p-0 shadow-none">
-          <Pressable
-            onPress={() => setShowStartDatePicker(!showStartDatePicker)}
-            className="flex-row items-center justify-center py-4"
-          >
-            <Icon name="CalendarIcon" size={16} className="text-muted mr-2" />
-            <Text className="text-foreground">{formatDate(startDate)}</Text>
-          </Pressable>
-          {showStartDatePicker && (
-            <View className="items-center">
-              <DateTimePicker
-                value={startDate}
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={onStartDateChange}
-                minimumDate={new Date()}
-              />
-            </View>
+        <TextField
+          isRequired
+          isInvalid={!!errors.passingScore}
+          className="flex-1"
+        >
+          <Label>Passing score</Label>
+          <Input
+            value={passingScore}
+            onChangeText={(text) => {
+              setPassingScore(text);
+              clearError("passingScore");
+            }}
+            keyboardType="numeric"
+          />
+          {!!errors.passingScore && (
+            <FieldError>{errors.passingScore}</FieldError>
           )}
-        </Surface>
-        <Surface className="gap-1 rounded-xl p-0 shadow-none">
-          <Pressable
-            onPress={() => setShowStartTimePicker(!showStartTimePicker)}
-            className="flex-row items-center justify-center py-4"
-          >
-            <Icon name="ClockIcon" size={16} className="text-muted mr-2" />
-            <Text className="text-foreground">{formatTime(startTime)}</Text>
-          </Pressable>
-          {showStartTimePicker && (
-            <View className="items-center">
-              <DateTimePicker
-                value={startTime}
-                mode="time"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={onStartTimeChange}
-              />
-            </View>
-          )}
-        </Surface>
+        </TextField>
+      </View>
+
+      <SectionHeader>Schedule</SectionHeader>
+
+      <TextField isRequired isInvalid={!!errors.schedule}>
+        <Label>Starts at</Label>
+        <View className="flex-row gap-2">
+          <Surface className="flex-1 rounded-xl shadow-none">
+            <Pressable
+              onPress={() => setShowStartDatePicker(!showStartDatePicker)}
+              className="flex-row items-center justify-center py-4"
+            >
+              <Icon name="CalendarIcon" size={16} color={mutedColor} />
+              <AppText className="text-foreground ml-2">
+                {formatDate(startDate)}
+              </AppText>
+            </Pressable>
+          </Surface>
+          <Surface className="flex-1 rounded-xl shadow-none">
+            <Pressable
+              onPress={() => setShowStartTimePicker(!showStartTimePicker)}
+              className="flex-row items-center justify-center py-4"
+            >
+              <Icon name="ClockIcon" size={16} color={mutedColor} />
+              <AppText className="text-foreground ml-2">
+                {formatTime(startTime)}
+              </AppText>
+            </Pressable>
+          </Surface>
+        </View>
+        {showStartDatePicker && (
+          <View className="items-center">
+            <DateTimePicker
+              value={startDate}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={onStartDateChange}
+              minimumDate={new Date()}
+            />
+          </View>
+        )}
+        {showStartTimePicker && (
+          <View className="items-center">
+            <DateTimePicker
+              value={startTime}
+              mode="time"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={onStartTimeChange}
+            />
+          </View>
+        )}
       </TextField>
 
-      <TextField isRequired>
-        <Label>To</Label>
-        <Surface className="gap-1 py-2 rounded-xl p-0 shadow-none">
-          <Pressable
-            onPress={() => setShowEndDatePicker(!showEndDatePicker)}
-            className="flex-row items-center justify-center py-4"
-          >
-            <Icon name="CalendarIcon" size={16} className="text-muted mr-2" />
-            <Text className="text-foreground">{formatDate(endDate)}</Text>
-          </Pressable>
-          {showEndDatePicker && (
-            <View className="items-center">
-              <DateTimePicker
-                value={endDate}
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={onEndDateChange}
-                minimumDate={startDate}
-              />
-            </View>
-          )}
-        </Surface>
-        <Surface className="gap-1 py-2 rounded-xl p-0 shadow-none">
-          <Pressable
-            onPress={() => setShowEndTimePicker(!showEndTimePicker)}
-            className="flex-row items-center justify-center py-4"
-          >
-            <Icon name="ClockIcon" size={16} className="text-muted mr-2" />
-            <Text className="text-foreground">{formatTime(endTime)}</Text>
-          </Pressable>
-          {showEndTimePicker && (
-            <View className="items-center">
-              <DateTimePicker
-                value={endTime}
-                mode="time"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={onEndTimeChange}
-              />
-            </View>
-          )}
-        </Surface>
+      <TextField isRequired isInvalid={!!errors.schedule}>
+        <Label>Ends at</Label>
+        <View className="flex-row gap-2">
+          <Surface className="flex-1 rounded-xl shadow-none">
+            <Pressable
+              onPress={() => setShowEndDatePicker(!showEndDatePicker)}
+              className="flex-row items-center justify-center py-4"
+            >
+              <Icon name="CalendarIcon" size={16} color={mutedColor} />
+              <AppText className="text-foreground ml-2">
+                {formatDate(endDate)}
+              </AppText>
+            </Pressable>
+          </Surface>
+          <Surface className="flex-1 rounded-xl shadow-none">
+            <Pressable
+              onPress={() => setShowEndTimePicker(!showEndTimePicker)}
+              className="flex-row items-center justify-center py-4"
+            >
+              <Icon name="ClockIcon" size={16} color={mutedColor} />
+              <AppText className="text-foreground ml-2">
+                {formatTime(endTime)}
+              </AppText>
+            </Pressable>
+          </Surface>
+        </View>
+        {showEndDatePicker && (
+          <View className="items-center">
+            <DateTimePicker
+              value={endDate}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={onEndDateChange}
+              minimumDate={startDate}
+            />
+          </View>
+        )}
+        {showEndTimePicker && (
+          <View className="items-center">
+            <DateTimePicker
+              value={endTime}
+              mode="time"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={onEndTimeChange}
+            />
+          </View>
+        )}
+        {!!errors.schedule && <FieldError>{errors.schedule}</FieldError>}
       </TextField>
 
-      <Button onPress={handleSubmit}>
-        <Button.Label>Create Activity</Button.Label>
+      <Button
+        onPress={handleSubmit}
+        isDisabled={isSubmitting}
+        className="mt-2"
+      >
+        {isSubmitting ? (
+          <ActivityIndicator size="small" />
+        ) : (
+          <Button.Label>Create Activity</Button.Label>
+        )}
       </Button>
     </View>
   );
 };
+
+const SectionHeader = ({ children }: { children: React.ReactNode }) => (
+  <AppText
+    weight="semibold"
+    className="text-xs uppercase tracking-wide text-foreground/70 mt-2"
+  >
+    {children}
+  </AppText>
+);
 
 const GradingPeriodSelector = ({
   value,

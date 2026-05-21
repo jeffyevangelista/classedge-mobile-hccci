@@ -1,12 +1,14 @@
-import { env } from "@/utils/env";
-import useStore from "@/lib/store";
 import {
   type AbstractPowerSyncDatabase,
+  createBaseLogger,
+  LogLevel,
   type PowerSyncBackendConnector,
   UpdateType,
 } from "@powersync/react-native";
-import { createBaseLogger, LogLevel } from "@powersync/react-native";
 import * as FileSystem from "expo-file-system/legacy";
+import { silentRefresh } from "@/features/auth/useTokenRefresh";
+import useStore from "@/lib/store";
+import { env } from "@/utils/env";
 
 const MIME_MAP: Record<string, string> = {
   jpg: "image/jpeg",
@@ -48,6 +50,59 @@ async function hasLocalFile(record: Record<string, any>): Promise<boolean> {
   return false;
 }
 
+class UploadOpError extends Error {
+  status: number;
+  body: string;
+  constructor(label: string, status: number, body: string) {
+    super(`[Connector] ${label} failed with HTTP ${status}. Body: ${body}`);
+    this.name = "UploadOpError";
+    this.status = status;
+    this.body = body;
+  }
+}
+
+async function fetchAndLog(
+  label: string,
+  url: string,
+  init: RequestInit,
+): Promise<Response> {
+  const started = Date.now();
+  try {
+    const res = await fetch(url, init);
+    let body = "";
+    try {
+      body = (await res.clone().text()).slice(0, 500);
+    } catch {
+      body = "<could not read body>";
+    }
+    console.log("[Connector] response:", {
+      label,
+      url,
+      status: res.status,
+      ok: res.ok,
+      ms: Date.now() - started,
+      body,
+    });
+    // Throw on any non-2xx so the outer transaction.complete() is skipped
+    // and PowerSync keeps the op queued for retry. Previously the fetch
+    // succeeded and the op was silently marked done even on 4xx/5xx,
+    // which is how orphan rows landed in the local DB during the 403
+    // multipart period.
+    if (!res.ok) {
+      throw new UploadOpError(label, res.status, body);
+    }
+    return res;
+  } catch (err) {
+    console.log("[Connector] fetch threw:", {
+      label,
+      url,
+      ms: Date.now() - started,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    throw err;
+  }
+}
+
 // const logger = createBaseLogger();
 // logger.useDefaults(); // Console output
 // logger.setLevel(LogLevel.DEBUG);
@@ -60,6 +115,26 @@ export class Connector implements PowerSyncBackendConnector {
       endpoint: env.EXPO_PUBLIC_POWERSYNC_ENDPOINT,
       token: powersyncToken ?? "",
     };
+  }
+
+  // Called by the PowerSync SDK when it decides the current token is no
+  // longer valid (server returned did_expire, or the token is <30s from
+  // expiry). The SDK clears its cached creds, calls this hook, then
+  // re-invokes fetchCredentials — so we force a refresh here regardless
+  // of the usual 5-min buffer to make sure the next fetchCredentials
+  // returns a rotated powersyncToken.
+  //
+  // Method is optional on the SDK interface (called via `?.()`), so the
+  // SDK tolerates this being absent — we declare it without `override`.
+  async invalidateCredentials(): Promise<void> {
+    try {
+      await silentRefresh({ force: true });
+    } catch (err) {
+      console.warn(
+        "[Connector.invalidateCredentials] silentRefresh failed:",
+        err,
+      );
+    }
   }
 
   async uploadData(database: AbstractPowerSyncDatabase) {
@@ -110,50 +185,74 @@ export class Connector implements PowerSyncBackendConnector {
         switch (op.op) {
           case UpdateType.PUT:
             if (hasFile) {
+              // Accept: application/json forces DRF to render errors as JSON
+              // instead of the browsable-API HTML page. Without it, a 403/400
+              // on multipart comes back as an HTML body that's impossible to
+              // act on. Content-Type is intentionally NOT set so fetch can
+              // generate the multipart boundary itself.
               const multipartHeaders: Record<string, string> = {
+                Accept: "application/json",
                 "X-Platform": "mobile",
               };
               if (accessToken)
                 multipartHeaders.Authorization = `Bearer ${accessToken}`;
 
-              await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/`, {
-                method: "POST",
-                headers: multipartHeaders,
-                body: buildMultipartBody(record),
-              });
+              await fetchAndLog(
+                `PUT-multipart ${op.table} ${op.id}`,
+                `${env.EXPO_PUBLIC_API_URL}/${op.table}/`,
+                {
+                  method: "POST",
+                  headers: multipartHeaders,
+                  body: buildMultipartBody(record),
+                },
+              );
             } else {
-              await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/`, {
-                method: "POST",
-                headers,
-                body: JSON.stringify(record),
-              });
+              await fetchAndLog(
+                `PUT-json ${op.table} ${op.id}`,
+                `${env.EXPO_PUBLIC_API_URL}/${op.table}/`,
+                {
+                  method: "POST",
+                  headers,
+                  body: JSON.stringify(record),
+                },
+              );
             }
             break;
           case UpdateType.PATCH:
             if (hasFile) {
               const authHeaders: Record<string, string> = {
+                Accept: "application/json",
                 "X-Platform": "mobile",
               };
               if (accessToken)
                 authHeaders.Authorization = `Bearer ${accessToken}`;
-              await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`, {
-                method: "PATCH",
-                headers: authHeaders,
-                body: buildMultipartBody({ ...op.opData }),
-              });
+              await fetchAndLog(
+                `PATCH-multipart ${op.table} ${op.id}`,
+                `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
+                {
+                  method: "PATCH",
+                  headers: authHeaders,
+                  body: buildMultipartBody({ ...op.opData }),
+                },
+              );
             } else {
-              await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`, {
-                method: "PATCH",
-                headers,
-                body: JSON.stringify(op.opData),
-              });
+              await fetchAndLog(
+                `PATCH-json ${op.table} ${op.id}`,
+                `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
+                {
+                  method: "PATCH",
+                  headers,
+                  body: JSON.stringify(op.opData),
+                },
+              );
             }
             break;
           case UpdateType.DELETE:
-            await fetch(`${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`, {
-              method: "DELETE",
-              headers,
-            });
+            await fetchAndLog(
+              `DELETE ${op.table} ${op.id}`,
+              `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
+              { method: "DELETE", headers },
+            );
             break;
         }
       }

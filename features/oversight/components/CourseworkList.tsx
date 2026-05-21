@@ -9,8 +9,7 @@ import CourseworkItem from "./Coursework";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
-
-const CONTENT_CONTAINER_STYLE = { paddingTop: 16 } as const;
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 
 const CourseworkList = () => {
   const { subjectId } = useGlobalSearchParams();
@@ -67,13 +66,13 @@ const CourseworkList = () => {
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       ListFooterComponent={isFetchingNextPage ? <ActivityIndicator /> : null}
-      refreshing={isRefetching}
-      onRefresh={refetch}
+      refreshControl={
+        <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
+      }
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.5}
       showsVerticalScrollIndicator={false}
       scrollEventThrottle={16}
-      contentContainerStyle={CONTENT_CONTAINER_STYLE}
     />
   );
 };
@@ -82,18 +81,17 @@ const AssessmentSkeleton = () => {
   return (
     <>
       {Array.from({ length: 5 }).map((_, index) => (
-        <Card
-          key={index}
-          className="shadow-none rounded-xl mt-2.5 flex-row max-w-3xl mx-auto w-full gap-2.5 items-center"
-        >
-          <View className="flex-row gap-1">
-            <Skeleton className="rounded-md h-16 w-16" />
-            <View className="flex-1 gap-2">
-              <Skeleton className="h-5 rounded-full" />
-              <Skeleton className="h-3 w-24 rounded-full" />
+        <View key={index} className="w-full max-w-3xl mx-auto px-2.5 mb-2.5">
+          <Card className="shadow-none rounded-xl flex-row gap-2.5 items-center">
+            <View className="flex-row gap-1 flex-1">
+              <Skeleton className="rounded-md h-16 w-16" />
+              <View className="flex-1 gap-2">
+                <Skeleton className="h-5 rounded-full" />
+                <Skeleton className="h-3 w-24 rounded-full" />
+              </View>
             </View>
-          </View>
-        </Card>
+          </Card>
+        </View>
       ))}
     </>
   );

@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import { Card, Spinner } from "heroui-native";
+import { Spinner } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import { useSyncData } from "../useSyncData";
@@ -124,7 +124,7 @@ const StatusRow = ({
       paddingVertical: 6,
     }}
   >
-    <AppText className="text-sm text-gray-500">{label}</AppText>
+    <AppText className="text-sm text-muted">{label}</AppText>
     <View
       style={{
         flexDirection: "row",
@@ -139,8 +139,8 @@ const StatusRow = ({
         <Icon name={config.icon as any} size={16} color={config.color} />
       ) : null}
       <AppText
-        className="text-sm"
-        style={{ color: config?.color ?? "#374151" }}
+        className="text-sm text-foreground"
+        style={config?.color ? { color: config.color } : undefined}
         numberOfLines={1}
       >
         {config?.label ?? value ?? "—"}
@@ -174,11 +174,7 @@ const SyncStatusCard = () => {
   const attachmentStatus = getAttachmentStatus(attachments);
 
   return (
-    <Card className="p-4 rounded-xl shadow-none">
-      <AppText weight="semibold" className="text-base mb-3">
-        Sync Status
-      </AppText>
-
+    <View className="mt-3">
       <View style={{ gap: 2 }}>
         <StatusRow
           label="Connection"
@@ -203,25 +199,16 @@ const SyncStatusCard = () => {
       </View>
 
       {(downloadError || uploadError) && (
-        <View
-          style={{
-            marginTop: 12,
-            backgroundColor: "#FEF2F2",
-            borderRadius: 8,
-            padding: 10,
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Icon name="WarningIcon" size={16} color="#EF4444" />
-            <AppText className="text-xs text-red-600">
-              {downloadError
-                ? `Download error: ${downloadError.message}`
-                : `Upload error: ${uploadError?.message}`}
-            </AppText>
-          </View>
+        <View className="mt-3 p-3 rounded-lg bg-danger-soft flex-row items-center gap-1.5">
+          <Icon name="WarningIcon" size={16} color="#EF4444" />
+          <AppText className="text-xs text-danger flex-1">
+            {downloadError
+              ? `Download error: ${downloadError.message}`
+              : `Upload error: ${uploadError?.message}`}
+          </AppText>
         </View>
       )}
-    </Card>
+    </View>
   );
 };
 

@@ -9,6 +9,7 @@ export type SubjectType = {
   teacherEmail: string;
   teacherPhoto: string;
   roomNumber: string;
+  subjectType?: string | null;
 };
 
 export type Lesson = {

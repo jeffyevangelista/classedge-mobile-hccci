@@ -6,6 +6,7 @@ import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import NoDataFallback from "@/components/NoDataFallback";
 import { Card, Skeleton } from "heroui-native";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 // 1. Move static mapping outside to prevent re-creation on every render
 const INFO_FIELDS = [
@@ -27,8 +28,9 @@ const ProfileInformation = () => {
     return {
       ...data[0],
       fullName:
-        `${data[0]?.firstName ?? ""} ${data[0]?.lastName ?? ""}`.trim() ||
-        "N/A",
+        toTitleCase(
+          `${data[0]?.firstName ?? ""} ${data[0]?.lastName ?? ""}`.trim(),
+        ) || "N/A",
       dateOfBirth: data[0]?.dateOfBirth
         ? new Date(data[0].dateOfBirth).toLocaleDateString("en-US", {
             year: "numeric",

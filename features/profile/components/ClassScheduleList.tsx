@@ -6,6 +6,7 @@ import { AppText } from "@/components/AppText";
 import { Skeleton, Button, Card, Separator, Chip } from "heroui-native";
 import { useToast } from "heroui-native";
 import EmptyState from "@/components/EmptyState";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 const ClassScheduleList = () => {
   const { toast } = useToast();
@@ -73,7 +74,7 @@ const ClassScheduleList = () => {
                 </AppText>
                 <AppText className="text-sm text-gray-500 dark:text-gray-400">
                   {teacher
-                    ? `${teacher.firstName} ${teacher.lastName}`
+                    ? toTitleCase(`${teacher.firstName} ${teacher.lastName}`)
                     : "No teacher assigned"}
                 </AppText>
               </View>

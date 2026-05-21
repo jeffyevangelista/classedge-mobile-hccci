@@ -1,4 +1,4 @@
-import { refresh } from "@/features/auth/refreshToken";
+import { silentRefresh } from "@/features/auth/useTokenRefresh";
 import { env } from "@/utils/env";
 import axios from "axios";
 import useStore from "./store";
@@ -13,22 +13,6 @@ const api = axios.create({
   },
   withCredentials: true,
 });
-
-interface FailedRequest {
-  resolve: (token?: string | null) => void;
-  reject: (error: any) => void;
-}
-
-let isRefreshing = false;
-let failedQueue: FailedRequest[] = [];
-
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) prom.reject(error);
-    else prom.resolve(token);
-  });
-  failedQueue = [];
-};
 
 api.interceptors.response.use((response) => {
   if (response.data) {
@@ -56,14 +40,6 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const {
-      setAccessToken,
-      setPowersyncToken,
-      setRefreshToken,
-      refreshToken,
-      clearCredentials,
-    } = useStore.getState();
-
     const originalRequest = error.config;
 
     // Parse drf-standardized-errors early — except token-related 401/403s
@@ -89,42 +65,17 @@ api.interceptors.response.use(
       (error.response?.status === 403 || error.response?.status === 401) &&
       !originalRequest._retry
     ) {
-      if (isRefreshing) {
-        return new Promise(function (resolve, reject) {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return api(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
-      }
-
       originalRequest._retry = true;
-      isRefreshing = true;
 
-      try {
-        const data = await refresh(refreshToken);
-
-        setAccessToken(data.accessToken);
-        setPowersyncToken(data.powersyncToken);
-        await setRefreshToken(data.refreshToken);
-        processQueue(null, data.accessToken);
-        return api(originalRequest);
-      } catch (err: any) {
-        processQueue(err, null);
-        // Only clear credentials if the refresh failed due to an auth
-        // rejection (e.g. 401). Never clear on network failures or
-        // server errors (5xx) — the user should stay logged in.
-        const status = err?.response?.status;
-        const isAuthRejection = status === 401 || status === 403;
-        if (isAuthRejection) {
-          await clearCredentials();
-        }
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
+      // silentRefresh dedups concurrent callers and clears credentials
+      // itself on a 401/403 from the refresh endpoint.
+      const ok = await silentRefresh({ force: true });
+      if (!ok) {
+        return Promise.reject(error);
       }
+      const { accessToken } = useStore.getState();
+      originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+      return api(originalRequest);
     }
     // 1. Response Errors (Server replied with 4xx or 5xx)
     if (error.response) {

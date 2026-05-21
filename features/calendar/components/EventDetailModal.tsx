@@ -8,6 +8,7 @@ import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Icon } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 import {
   formatDate,
@@ -157,7 +158,9 @@ const BottomSheetContent = ({ eventId }: { eventId: number }) => {
             iconName="UserIcon"
             iconColor={accentColor}
             label="Created by"
-            value={`${event.createdById.firstName} ${event.createdById.lastName}`}
+            value={toTitleCase(
+              `${event.createdById.firstName} ${event.createdById.lastName}`,
+            )}
           />
         ) : null}
 

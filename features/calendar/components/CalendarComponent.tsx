@@ -19,6 +19,7 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import { Card, Skeleton, Surface, useThemeColor } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import EventDetailModal from "./EventDetailModal";
+import { toTitleCase } from "@/utils/toTitleCase";
 import { useUniwind } from "uniwind";
 
 type CustomMarkedDate = {
@@ -335,7 +336,7 @@ const CalendarComponent = () => {
                   subtitle={`${formatDate(ev.startDate)} - ${formatDate(ev.endDate)}`}
                   caption={
                     ev.createdById
-                      ? `By ${ev.createdById.firstName} ${ev.createdById.lastName}`
+                      ? `By ${toTitleCase(`${ev.createdById.firstName} ${ev.createdById.lastName}`)}`
                       : undefined
                   }
                   onPress={() => setSelectedEventId(ev.id)}

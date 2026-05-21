@@ -29,6 +29,7 @@ import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
 import useStore from "@/lib/store";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 const MIN_CARD_WIDTH = 280;
 
@@ -194,7 +195,9 @@ const Course = ({
   const teacher = item.subjectId.assignTeacherId;
   const teacherName =
     teacher?.firstName || teacher?.lastName
-      ? `${teacher?.firstName ?? ""} ${teacher?.lastName ?? ""}`.trim()
+      ? toTitleCase(
+          `${teacher?.firstName ?? ""} ${teacher?.lastName ?? ""}`.trim(),
+        )
       : "Unassigned";
 
   return (

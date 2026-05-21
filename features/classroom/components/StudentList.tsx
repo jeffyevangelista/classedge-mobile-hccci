@@ -9,6 +9,9 @@ import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 const CONTENT_CONTAINER_STYLE = { paddingTop: 16 } as const;
 
@@ -66,8 +69,9 @@ const StudentList = () => {
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       ListFooterComponent={isFetchingNextPage ? <ActivityIndicator /> : null}
-      refreshing={isRefetching}
-      onRefresh={refetch}
+      refreshControl={
+        <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
+      }
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.5}
       showsVerticalScrollIndicator={false}
@@ -78,15 +82,16 @@ const StudentList = () => {
 };
 
 const StudentItem = React.memo(({ name, studentPhoto }: Student) => {
+  const displayName = name ? toTitleCase(name) : "Unknown student";
   return (
     <Card className="shadow-none rounded-xl mt-2.5 w-full max-w-3xl mx-auto">
       <View className="flex-row gap-2 items-center">
-        <Avatar alt="student-photo" size="sm">
-          <Avatar.Fallback>{name.split(" ")[0][0]}</Avatar.Fallback>
+        <Avatar alt={displayName} size="sm">
           <AttachmentAvatarImage path={studentPhoto} />
+          <AvatarFallbackImage />
         </Avatar>
         <AppText className="text-neutral-900 dark:text-neutral-100 font-poppins-regular text-lg flex-1">
-          {name}
+          {displayName}
         </AppText>
       </View>
     </Card>

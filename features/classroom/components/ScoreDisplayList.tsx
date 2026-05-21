@@ -8,6 +8,7 @@ import {
 import { FlashList } from "@shopify/flash-list";
 import { AppText } from "@/components/AppText";
 import { Avatar, Card, Skeleton } from "heroui-native";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { Icon } from "@/components/Icon";
 import ErrorFallback from "@/components/ErrorFallback";
 
@@ -68,8 +69,7 @@ const ScoreDisplayList = ({
         return (
           <Card className="rounded-xl items-center gap-2 mb-2 shadow-none flex-row">
             <Avatar alt="user-avatar">
-              <Avatar.Image />
-              <Avatar.Fallback>{item.studentId}</Avatar.Fallback>
+              <AvatarFallbackImage />
             </Avatar>
             <AppText className="flex-1">{item.studentId}</AppText>
             <View className="flex-row items-center gap-2">

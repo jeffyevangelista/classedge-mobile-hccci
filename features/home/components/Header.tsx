@@ -6,8 +6,10 @@ import { ErrorComponent } from "@/components/ErrorComponent";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { useEffect, useState } from "react";
 import { getGreeting } from "@/utils/getGreeting";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 const Header = () => {
   const { data, isLoading, error } = useUserDetails();
@@ -34,16 +36,13 @@ const Header = () => {
         <View className="flex flex-row items-center gap-3">
           <Avatar size="sm" alt="user-profile">
             <AttachmentAvatarImage path={userDetails?.studentPhoto} />
-            <Avatar.Fallback>
-              {userDetails?.firstName?.[0] ?? ""}
-              {userDetails?.lastName?.[0] ?? ""}
-            </Avatar.Fallback>
+            <AvatarFallbackImage />
           </Avatar>
           <View>
             <AppText className="text-gray-500">{greeting},</AppText>
             <AppText weight="semibold" className="text-2xl leading-tight">
               {userDetails?.firstName
-                ? userDetails.firstName.split(" ")[0]
+                ? toTitleCase(userDetails.firstName.split(" ")[0])
                 : ""}
             </AppText>
           </View>
