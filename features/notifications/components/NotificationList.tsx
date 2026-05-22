@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Notification } from "@/powersync/schema";
 import { Link } from "expo-router";
-import { readNotification } from "../notifications.service";
+import { getNotificationHref, readNotification } from "../notifications.service";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -85,14 +85,7 @@ const NotificationItem = ({
   };
 
   return (
-    <Link
-      href={
-        entityType === "lesson"
-          ? `/material/${entityId}`
-          : `/assessment/${entityId}`
-      }
-      asChild
-    >
+    <Link href={getNotificationHref(entityType, entityId) as any} asChild>
       <Pressable
         onPress={handleReadNotification}
         accessibilityRole="button"
