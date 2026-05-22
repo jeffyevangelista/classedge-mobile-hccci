@@ -3,7 +3,10 @@ import { useEffect } from "react";
 import { OneSignal, LogLevel } from "react-native-onesignal";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
-import { readNotification } from "@/features/notifications/notifications.service";
+import {
+  getNotificationHref,
+  readNotification,
+} from "@/features/notifications/notifications.service";
 
 const OneSignalProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -33,14 +36,9 @@ const OneSignalProvider = ({ children }: { children: React.ReactNode }) => {
           );
         }
 
-        // Route based on entityType, matching NotificationList logic
-        if (entityType === "lesson" || entityType === "module") {
-          console.log("Redirecting to material:", entityId);
-          router.push(`/material/${entityId}`);
-        } else {
-          console.log("Redirecting to assessment:", entityId);
-          router.push(`/assessment/${entityId}`);
-        }
+        const href = getNotificationHref(entityType, entityId);
+        console.log("Redirecting to:", href);
+        router.push(href);
       }
     };
 
