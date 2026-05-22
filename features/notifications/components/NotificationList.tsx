@@ -85,7 +85,7 @@ const NotificationItem = ({
   };
 
   return (
-    <Link href={getNotificationHref(entityType, entityId) as any} asChild>
+    <Link href={getNotificationHref(entityType, entityId)} asChild>
       <Pressable
         onPress={handleReadNotification}
         accessibilityRole="button"

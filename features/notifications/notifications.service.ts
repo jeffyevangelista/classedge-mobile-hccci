@@ -1,6 +1,7 @@
 import { db } from "@/powersync/system";
 import { and, eq, sql } from "drizzle-orm";
 import { notificationsTable } from "@/powersync/schema";
+import type { Href } from "expo-router";
 
 export const getNotifications = (userId: string) => {
   return db.query.notificationsTable.findMany({
@@ -42,16 +43,19 @@ export const getNotificationCount = (userId: string) => {
 export const getNotificationHref = (
   entityType: string,
   entityId: string | number,
-): string => {
-  switch (entityType) {
-    case "lesson":
-    case "module":
-      return `/material/${entityId}`;
-    case "announcement":
-      return `/announcement/${entityId}`;
-    case "event":
-      return `/event/${entityId}`;
-    default:
-      return `/assessment/${entityId}`;
-  }
+): Href => {
+  const href = (() => {
+    switch (entityType) {
+      case "lesson":
+      case "module":
+        return `/material/${entityId}`;
+      case "announcement":
+        return `/announcement/${entityId}`;
+      case "event":
+        return `/event/${entityId}`;
+      default:
+        return `/assessment/${entityId}`;
+    }
+  })();
+  return href as Href;
 };
