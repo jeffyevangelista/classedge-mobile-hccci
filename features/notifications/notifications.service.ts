@@ -38,3 +38,20 @@ export const getNotificationCount = (userId: string) => {
 
   return result;
 };
+
+export const getNotificationHref = (
+  entityType: string,
+  entityId: string | number,
+): string => {
+  switch (entityType) {
+    case "lesson":
+    case "module":
+      return `/material/${entityId}`;
+    case "announcement":
+      return `/announcement/${entityId}`;
+    case "event":
+      return `/event/${entityId}`;
+    default:
+      return `/assessment/${entityId}`;
+  }
+};
