@@ -1,21 +1,49 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, type ReactNode } from "react";
+import { ActivityIndicator, View } from "react-native";
 import { Button, Dialog, useThemeColor, useToast } from "heroui-native";
-import { View } from "react-native";
 import { AppText } from "@/components/AppText";
-import { Icon } from "@/components/Icon";
+import { Icon, type IconName } from "@/components/Icon";
 import SyncStatusCard from "./SyncStatusCard";
 import ForceSyncButton from "./ForceSyncButton";
+import StreamList from "./StreamList";
 import { useSyncSheet } from "../SyncSheetContext";
-import { useFailedAttachments } from "@/features/attachments/hooks/useFailedAttachments";
 import { useAttachmentStatus } from "@/features/attachments/hooks/useAttachmentStatus";
 import { retryAllFailedAttachments } from "@/features/attachments/attachments.api";
 
+type SyncAlertProps = {
+  variant: "warning" | "danger";
+  icon: IconName;
+  message: string;
+  messageWeight?: "regular" | "semibold";
+  action?: ReactNode;
+};
+
+const SyncAlert = ({
+  variant,
+  icon,
+  message,
+  messageWeight = "regular",
+  action,
+}: SyncAlertProps) => {
+  const color = useThemeColor(variant);
+  const bgClass = variant === "warning" ? "bg-warning-soft" : "bg-danger-soft";
+  const textClass = variant === "warning" ? "text-warning" : "text-danger";
+  return (
+    <View className={`mt-3 p-3 rounded-lg gap-2 ${bgClass}`}>
+      <View className="flex-row items-start gap-2">
+        <Icon name={icon} size={16} color={color} />
+        <AppText weight={messageWeight} className={`flex-1 text-sm ${textClass}`}>
+          {message}
+        </AppText>
+      </View>
+      {action}
+    </View>
+  );
+};
+
 const SyncSheetContent = () => {
-  const failed = useFailedAttachments();
   const status = useAttachmentStatus();
   const { toast } = useToast();
-  const warningColor = useThemeColor("warning");
-  const dangerColor = useThemeColor("danger");
 
   const [isRetrying, setIsRetrying] = useState(false);
 
@@ -29,6 +57,7 @@ const SyncSheetContent = () => {
         description: "Failed attachments are being downloaded again.",
       });
     } catch (err) {
+      console.error("[SyncSheet] retryAllFailedAttachments failed", err);
       const message =
         err instanceof Error ? err.message : "Unable to retry attachments.";
       toast.show({
@@ -41,7 +70,7 @@ const SyncSheetContent = () => {
     }
   }, [toast]);
 
-  const failedCount = failed.data?.length ?? 0;
+  const failedCount = status.failed;
 
   return (
     <>
@@ -49,36 +78,36 @@ const SyncSheetContent = () => {
       <SyncStatusCard />
 
       {status.lowStorage && (
-        <View className="mt-3 p-3 rounded-lg bg-warning-soft flex-row items-start gap-2">
-          <Icon name="WarningIcon" size={16} color={warningColor} />
-          <AppText className="text-warning flex-1 text-sm">
-            Low device storage. New downloads are paused until you free up
-            space.
-          </AppText>
-        </View>
+        <SyncAlert
+          variant="warning"
+          icon="WarningIcon"
+          message="Low device storage. New downloads are paused until you free up space."
+        />
       )}
 
       {failedCount > 0 && (
-        <View className="mt-3 p-3 rounded-lg bg-danger-soft gap-2">
-          <View className="flex-row items-start gap-2">
-            <Icon name="WarningCircleIcon" size={16} color={dangerColor} />
-            <AppText weight="semibold" className="text-danger flex-1 text-sm">
-              {failedCount} attachment{failedCount === 1 ? "" : "s"} failed to
-              download
-            </AppText>
-          </View>
-          <Button
-            variant="danger"
-            size="sm"
-            onPress={handleRetryAll}
-            isDisabled={isRetrying}
-          >
-            <Button.Label>
-              {isRetrying ? "Retrying..." : "Retry all"}
-            </Button.Label>
-          </Button>
-        </View>
+        <SyncAlert
+          variant="danger"
+          icon="WarningCircleIcon"
+          messageWeight="semibold"
+          message={`${failedCount} attachment${failedCount === 1 ? "" : "s"} failed to download`}
+          action={
+            <Button
+              variant="danger"
+              size="sm"
+              onPress={handleRetryAll}
+              isDisabled={isRetrying}
+            >
+              {isRetrying && <ActivityIndicator size="small" color="white" />}
+              <Button.Label>
+                {isRetrying ? "Retrying..." : "Retry all"}
+              </Button.Label>
+            </Button>
+          }
+        />
       )}
+
+      <StreamList />
 
       <View className="flex-row justify-end mt-3">
         <ForceSyncButton />

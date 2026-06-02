@@ -7,7 +7,8 @@ import ThemeToggleButton from "@/features/profile/components/ThemeToggleButton";
 import useStore from "@/lib/store";
 import { Href, Link } from "expo-router";
 import { Card, useThemeColor } from "heroui-native";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { Icon, type IconName } from "@/components/Icon";
 
 type ProfileNavProps = {
@@ -39,6 +40,7 @@ const profileNav: ProfileNavProps[] = [
     title: "Class Schedule",
     href: "/(main)/profile/class-schedule",
     name: "CalendarDotsIcon",
+    studentOnly: true,
   },
 ];
 
@@ -51,10 +53,10 @@ const ProfileScreen = () => {
   );
 
   return (
-    <Screen className="px-2.5">
-      <ScrollView
+    <Screen className="px-2.5 ">
+      <ScreenScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerClassName="mx-auto max-w-2xl gap-8 w-full items-center pb-8 grow py-8"
+        contentContainerClassName="mx-auto max-w-2xl gap-8 w-full items-center pb-8 grow gap-8 pt-2.5"
       >
         <HeaderComponent />
 
@@ -66,7 +68,7 @@ const ProfileScreen = () => {
           {__DEV__ && <ResyncButton />}
           <LogoutButton />
         </Card>
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
 };

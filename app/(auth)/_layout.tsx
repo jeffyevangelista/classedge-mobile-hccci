@@ -30,6 +30,13 @@ const AuthLayout = () => {
         name="forgot-password/reset-success"
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="legal/[docType]"
+        options={{
+          headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
+          headerTitle: "",
+        }}
+      />
     </Stack>
   );
 };

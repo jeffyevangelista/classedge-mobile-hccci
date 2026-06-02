@@ -1,5 +1,6 @@
 import useStore from "@/lib/store";
 import { logDbPath, powersync, setupPowerSync } from "@/powersync/system";
+import { unsubscribeAllRoleStreams } from "@/powersync/streamSubscriptions";
 import { PowerSyncContext } from "@powersync/react-native";
 import { useEffect, useRef, useState } from "react";
 import { startAttachmentWatcher } from "@/features/attachments/attachments.watcher";
@@ -56,6 +57,7 @@ const PowerSyncProvider = ({ children }: { children: React.ReactNode }) => {
             console.warn("[attachments] failed-row inventory dump errored", e);
           }
         } else {
+          unsubscribeAllRoleStreams();
           await powersync.disconnect();
           wasConnectedRef.current = false;
           attachmentQueue.stop();

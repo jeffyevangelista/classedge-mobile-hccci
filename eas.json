@@ -7,22 +7,10 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "environment": "development"
-    },
-    "preview": {
-      "distribution": "internal",
-      "environment": "preview"
-    },
-    "preview-simulator": {
-      "distribution": "internal",
-      "ios": {
-        "simulator": true
-      },
-      "environment": "preview"
-    },
-    "production": {
-      "autoIncrement": true,
-      "environment": "production"
+      "environment": "development",
+      "env": {
+        "APP_VARIANT": "development"
+      }
     },
     "development-simulator": {
       "developmentClient": true,
@@ -30,7 +18,34 @@
       "ios": {
         "simulator": true
       },
-      "environment": "development"
+      "environment": "development",
+      "env": {
+        "APP_VARIANT": "development"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "env": {
+        "APP_VARIANT": "preview"
+      }
+    },
+    "preview-simulator": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "environment": "preview",
+      "env": {
+        "APP_VARIANT": "preview"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "environment": "production",
+      "env": {
+        "APP_VARIANT": "production"
+      }
     }
   },
   "submit": {

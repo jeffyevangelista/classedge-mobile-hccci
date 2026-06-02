@@ -1,7 +1,7 @@
-import { db } from "@/powersync/system";
 import { and, eq, sql } from "drizzle-orm";
-import { notificationsTable } from "@/powersync/schema";
 import type { Href } from "expo-router";
+import { notificationsTable } from "@/powersync/schema";
+import { db } from "@/powersync/system";
 
 export const getNotifications = (userId: string) => {
   return db.query.notificationsTable.findMany({

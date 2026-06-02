@@ -2,6 +2,8 @@ import { View, Pressable } from "react-native";
 import React, { useMemo } from "react";
 import { useClock } from "@/hooks/useClock";
 import { useClassSchedule } from "@/features/profile/profile.hooks";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
 import { Skeleton } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -115,12 +117,24 @@ const ScheduleComponent = () => {
       };
     }, [data, now, currentDay]);
 
+  const status = useSectionStatus({
+    data: data ?? [],
+    isEmpty: (d) => d.length === 0,
+    isLoading,
+  });
+
   if (isError)
     return (
       <AppText className="text-red-500 p-4">
         {getApiErrorMessage(error)}
       </AppText>
     );
+
+  if (status.phase === "offline-empty")
+    return <OfflineEmpty section="schedule" />;
+
+  // For phase "loading" we fall through to the existing <Skeleton isLoading> wrapper
+  // below, which renders shimmer over the cards.
   if (!data) return null;
 
   return (
@@ -132,7 +146,11 @@ const ScheduleComponent = () => {
             currentClass ? "bg-accent" : "bg-surface-secondary"
           }`}
           style={{ minHeight: 180 }}
-          onPress={() => router.push("/(main)/profile/class-schedule")}
+          onPress={() =>
+            currentClass
+              ? router.push(`/course/${currentClass.subject.id}`)
+              : router.push("/(main)/profile/class-schedule")
+          }
         >
           <View className="flex-row items-center gap-2 mb-3">
             <AppText
@@ -183,7 +201,11 @@ const ScheduleComponent = () => {
             nextClass ? "bg-accent-soft" : "bg-surface-secondary"
           }`}
           style={{ minHeight: 180 }}
-          onPress={() => router.push("/(main)/profile/class-schedule")}
+          onPress={() =>
+            nextClass
+              ? router.push(`/course/${nextClass.subject.id}`)
+              : router.push("/(main)/profile/class-schedule")
+          }
         >
           <View className="flex-row items-center gap-2 mb-3">
             <AppText

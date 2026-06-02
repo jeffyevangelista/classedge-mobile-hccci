@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from "react";
 import { useGlobalSearchParams } from "expo-router";
 import { ActivityIndicator, FlatList, View } from "react-native";
+import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 import { useAssessments } from "@/features/oversight/oversight.hooks";
 import { Card, Skeleton } from "heroui-native";
 import { Assessment } from "@/features/oversight/oversight.type";
@@ -11,6 +12,7 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 
 const CourseworkList = () => {
+  const safeBottom = useScrollBottomInset();
   const { classroomId } = useGlobalSearchParams();
 
   const {
@@ -73,6 +75,7 @@ const CourseworkList = () => {
         onEndReachedThreshold={0.5}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
+        style={{ marginBottom: safeBottom }}
       />
     </View>
   );

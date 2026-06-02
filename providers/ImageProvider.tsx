@@ -72,7 +72,11 @@ const ImageView = forwardRef<ImageViewRef>((props, ref) => {
         <TouchableOpacity style={styles.closeButton} onPress={hide}>
           <Icon size={24} color="#ffffff" name="XIcon" />
         </TouchableOpacity>
-        <Zoomable isDoubleTapEnabled>
+        <Zoomable
+          isDoubleTapEnabled
+          isSingleTapEnabled
+          onSingleTap={hide}
+        >
           <Image
             source={{ uri: imageUriRef.current }}
             contentFit="contain"

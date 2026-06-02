@@ -1,46 +1,63 @@
-import { useCallback, useMemo, useState } from "react";
-import { ScrollView, View } from "react-native";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCourseAssessment } from "@/features/courses/courses.hooks";
-import { AppText } from "@/components/AppText";
-import useStore from "@/lib/store";
-import Screen from "@/components/screen";
 import { Skeleton, useToast } from "heroui-native";
+import { useCallback, useMemo, useState } from "react";
+import { View } from "react-native";
+import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import Screen from "@/components/screen";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
+import {
+  useAssessmentDetails,
+  useAttemptRecords,
+  useQuestionCount,
+} from "@/features/assessment/assessment.hooks";
 import {
   buildQuestionOrder,
   countAttempts,
   createAttempt,
   findStudentActivity,
 } from "@/features/assessment/assessment.service";
-import {
-  useAssessmentDetails,
-  useAttemptRecords,
-  useQuestionCount,
-} from "@/features/assessment/assessment.hooks";
 import AssessmentAttempts from "@/features/assessment/components/AssessmentAttempts";
+import { useCourseAssessment } from "@/features/courses/courses.hooks";
+import HydrationDebugPill from "@/features/notifications/HydrationDebugPill";
+import { makeEntityKey } from "@/features/notifications/pushPayloadCache";
+import { useEntityFromPushOrSync } from "@/features/notifications/useEntityFromPushOrSync";
 import { useSafeBottomInset } from "@/hooks/useSafeBottomInset";
+import { getApiErrorMessage } from "@/lib/api-error";
+import useStore from "@/lib/store";
+import { AssessmentClassroomBanner } from "./details/AssessmentClassroomBanner";
+import { AssessmentCtaBar, type CtaState } from "./details/AssessmentCtaBar";
 import { AssessmentHeroCard } from "./details/AssessmentHeroCard";
 import { AssessmentInstructions } from "./details/AssessmentInstructions";
 import { AssessmentScoreCard } from "./details/AssessmentScoreCard";
-import { AssessmentClassroomBanner } from "./details/AssessmentClassroomBanner";
-import { AssessmentCtaBar, type CtaState } from "./details/AssessmentCtaBar";
 
 const AssessmentDetailsScreen = () => {
   const { toast } = useToast();
   const safeBottomInset = useSafeBottomInset();
   const { assessmentId } = useLocalSearchParams();
   const { authUser } = useStore();
+  const watch = useCourseAssessment(assessmentId as string);
+  const refetchAssessment = watch.refetch;
+
+  const assessmentEntityKey = makeEntityKey(
+    "assessment",
+    assessmentId as string,
+  );
   const {
     data,
-    isLoading,
-    isError,
+    source, // [push-hydrate verify]
+    isResolving,
+    isMissing,
     error,
-    refetch: refetchAssessment,
-  } = useCourseAssessment(assessmentId as string);
+  } = useEntityFromPushOrSync({
+    entityKey: assessmentEntityKey,
+    localData: watch.data ?? null,
+    localIsLoading: watch.isLoading,
+    // apiFetch intentionally omitted: no REST endpoint exists for a
+    // single assessment today. Payload + watch are sufficient.
+  });
   const { data: studentAssessment, refetch: refetchStudentAssessment } =
     useAssessmentDetails({
       userId: authUser?.id ?? 0,
@@ -109,15 +126,32 @@ const AssessmentDetailsScreen = () => {
     return { kind: "start" };
   }, [data, attempts]);
 
-  if (isLoading) return <AssessmentDetailsSkeleton />;
-  if (isError) return <ErrorFallback message={getApiErrorMessage(error)} />;
-  if (!data)
+  if (!data && isResolving) return <AssessmentDetailsSkeleton />;
+
+  // Show the error fallback only when we have no data to render. If
+  // payload or REST is already populating `data`, swallow a transient
+  // watch error rather than disrupting the user.
+  if (!data && (watch.error ?? error)) {
+    return (
+      <ErrorFallback
+        message={getApiErrorMessage(watch.error ?? error)}
+        onRefetch={() => refetchAssessment()}
+      />
+    );
+  }
+
+  if (!data && isMissing) {
     return (
       <NoDataFallback
         title="Assessment not found"
         description="The assessment you're looking for doesn't exist"
       />
     );
+  }
+
+  // Unreachable per the hook's isResolving / isMissing invariant when
+  // apiFetch is absent; kept as a type-narrowing guard for `data`.
+  if (!data) return null;
 
   const handleStart = async () => {
     if (starting) return;
@@ -203,13 +237,11 @@ const AssessmentDetailsScreen = () => {
   };
 
   const revealScores =
-    !!studentAssessment &&
-    data.showScore &&
-    studentAssessment.totalScore > 0;
+    !!studentAssessment && data.showScore && studentAssessment.totalScore > 0;
 
   return (
     <Screen className="max-w-3xl mx-auto w-full ">
-      <ScrollView
+      <ScreenScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -217,6 +249,13 @@ const AssessmentDetailsScreen = () => {
         }
       >
         <View className="gap-4 p-4">
+          {/* [push-hydrate verify] */}
+          <HydrationDebugPill
+            entityKey={assessmentEntityKey}
+            source={source}
+            isResolving={isResolving}
+            isMissing={isMissing}
+          />
           <AssessmentHeroCard
             activityName={data.activityName}
             endTime={data.endTime}
@@ -256,7 +295,7 @@ const AssessmentDetailsScreen = () => {
             </View>
           ) : null}
         </View>
-      </ScrollView>
+      </ScreenScrollView>
 
       {ongoingAttempt || data.classroomMode ? null : (
         <AssessmentCtaBar

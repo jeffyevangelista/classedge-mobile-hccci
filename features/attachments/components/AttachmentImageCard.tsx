@@ -19,7 +19,7 @@ export const AttachmentImageCard = ({ uri, fileName }: Props) => {
       onPress={() => showImage(uri)}
       accessibilityRole="button"
       accessibilityLabel={`View image ${fileName}`}
-      className="flex-row items-center gap-3 bg-default rounded-xl px-4 py-3"
+      className="flex-row items-center gap-3 bg-surface-secondary rounded-xl px-4 py-3"
     >
       <View className="w-10 h-10 rounded-lg bg-teal-100 dark:bg-teal-900/50 items-center justify-center shrink-0">
         <Icon name="ImageIcon" size={20} color="#0d9488" />

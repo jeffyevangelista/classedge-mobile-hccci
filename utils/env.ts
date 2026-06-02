@@ -25,6 +25,7 @@ const envSchema = z.object({
   EXPO_PUBLIC_ONESIGNAL_APP_ID: z
     .string()
     .min(1, "EXPO_PUBLIC_ONESIGNAL_APP_ID is required"),
+  EXPO_PUBLIC_SENTRY_DSN: z.string().url().optional().or(z.literal("")),
 });
 
 const result = envSchema.safeParse({
@@ -36,6 +37,7 @@ const result = envSchema.safeParse({
   EXPO_PUBLIC_MICROSOFT_CLIENT_ID: process.env.EXPO_PUBLIC_MICROSOFT_CLIENT_ID,
   EXPO_PUBLIC_MICROSOFT_TENANT_ID: process.env.EXPO_PUBLIC_MICROSOFT_TENANT_ID,
   EXPO_PUBLIC_ONESIGNAL_APP_ID: process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID,
+  EXPO_PUBLIC_SENTRY_DSN: process.env.EXPO_PUBLIC_SENTRY_DSN,
 });
 
 if (!result.success) {
@@ -61,4 +63,5 @@ export const env = {
   EXPO_PUBLIC_MICROSOFT_CLIENT_ID: validated.EXPO_PUBLIC_MICROSOFT_CLIENT_ID,
   EXPO_PUBLIC_MICROSOFT_TENANT_ID: validated.EXPO_PUBLIC_MICROSOFT_TENANT_ID,
   EXPO_PUBLIC_ONESIGNAL_APP_ID: validated.EXPO_PUBLIC_ONESIGNAL_APP_ID,
+  EXPO_PUBLIC_SENTRY_DSN: validated.EXPO_PUBLIC_SENTRY_DSN || undefined,
 };

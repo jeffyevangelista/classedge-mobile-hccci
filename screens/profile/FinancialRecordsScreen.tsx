@@ -19,7 +19,8 @@ import {
   SubjectFee,
 } from "@/features/profile/profile.types";
 import { Card, Select, Separator, Skeleton, useThemeColor } from "heroui-native";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { useEffect, useMemo, useState } from "react";
 import * as WebBrowser from "expo-web-browser";
@@ -95,7 +96,7 @@ const FinancialRecordsScreen = () => {
 
   return (
     <Screen>
-      <ScrollView
+      <ScreenScrollView
         className="flex-1"
         contentContainerClassName="p-3 pb-8 gap-3 mx-auto w-full max-w-3xl"
         refreshControl={
@@ -128,7 +129,7 @@ const FinancialRecordsScreen = () => {
             description="There are no financial records for the selected term yet."
           />
         )}
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
 };

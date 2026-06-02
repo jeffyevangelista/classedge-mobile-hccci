@@ -1,6 +1,5 @@
 import { powersync } from "@/powersync/system";
-import useStore from "@/lib/store";
-import { clearAllAttachments } from "@/features/attachments/attachments.api";
+import { signOut } from "@/features/auth/signOut";
 import { Button, Dialog, useThemeColor, useToast } from "heroui-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
@@ -31,9 +30,7 @@ const LogoutButton = () => {
     setIsPending(true);
     setIsOpen(false);
     try {
-      await clearAllAttachments();
-      await powersync.disconnectAndClear();
-      await useStore.getState().clearCredentials();
+      await signOut();
     } catch (err: unknown) {
       setIsPending(false);
       const message =

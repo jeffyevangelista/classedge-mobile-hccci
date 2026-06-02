@@ -3,13 +3,14 @@ import React from "react";
 import { useClassroomActivities } from "../classroom.hooks";
 import { Link, useGlobalSearchParams } from "expo-router";
 import { AppText } from "@/components/AppText";
-import { FlashList } from "@shopify/flash-list";
+import { ScreenList } from "@/components/ScreenList";
 import { Card, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { formatDate } from "@/utils/formatDate";
+import SyncingPill from "@/features/sync/components/SyncingPill";
 
 const ASSESSMENT_ICON_COLOR = "#f97316";
 
@@ -26,32 +27,50 @@ const ClassroomActivitiyList = () => {
   const { data, isLoading, isError, error, refetch, isRefetching } =
     useClassroomActivities(classroomId as string);
 
-  if (isLoading) return <ActivityListSkeleton />;
+  if (isLoading)
+    return (
+      <View className="flex-1">
+        <View className="px-2.5 pb-1.5">
+          <SyncingPill priority={2} />
+        </View>
+        <ActivityListSkeleton />
+      </View>
+    );
   if (isError)
     return (
       <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
     );
   if (data.length === 0)
     return (
-      <NoDataFallback
-        icon="SmileySad"
-        title="No activities found"
-        onRefetch={refetch}
-      />
+      <View className="flex-1">
+        <View className="px-2.5 pb-1.5">
+          <SyncingPill priority={2} />
+        </View>
+        <NoDataFallback
+          icon="SmileySad"
+          title="No activities found"
+          onRefetch={refetch}
+        />
+      </View>
     );
 
   return (
-    <FlashList
-      renderItem={({ item }) => (
-        <ActivityItem
-          activity={item}
-          href={`/classroom/${classroomId}/input-grades/${item.localId}`}
-        />
-      )}
-      data={data}
-      refreshing={isRefetching}
-      onRefresh={refetch}
-    />
+    <View className="flex-1">
+      <View className="px-2.5 pb-1.5">
+        <SyncingPill priority={2} />
+      </View>
+      <ScreenList
+        renderItem={({ item }) => (
+          <ActivityItem
+            activity={item}
+            href={`/classroom/${classroomId}/input-grades/${item.localId}`}
+          />
+        )}
+        data={data}
+        refreshing={isRefetching}
+        onRefresh={refetch}
+      />
+    </View>
   );
 };
 

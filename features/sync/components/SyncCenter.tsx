@@ -1,6 +1,7 @@
-import { useEffect } from "react";
-import { ActivityIndicator, Pressable, View } from "react-native";
+import { useEffect, useMemo } from "react";
+import { Pressable, View } from "react-native";
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -13,6 +14,18 @@ import { useSyncData } from "../useSyncData";
 import { useSyncSheet } from "../SyncSheetContext";
 import { useAttachmentSyncStatus } from "@/features/attachments/hooks/useAttachmentSyncStatus";
 
+const SyncBadge = ({ count }: { count: number }) => (
+  <View className="absolute -top-0.5 -right-0.5 min-w-4 h-4 bg-danger rounded-full items-center justify-center px-1 border-2 border-surface">
+    <AppText
+      weight="bold"
+      className="text-[9px] text-white"
+      style={{ lineHeight: 11 }}
+    >
+      {count > 9 ? "9+" : String(count)}
+    </AppText>
+  </View>
+);
+
 const SyncCenter = () => {
   const { openSyncSheet } = useSyncSheet();
   const { uploading, downloading, connected, connecting } = useSyncData();
@@ -22,24 +35,45 @@ const SyncCenter = () => {
   const dangerColor = useThemeColor("danger");
   const warningColor = useThemeColor("warning");
   const successColor = useThemeColor("success");
+  const mutedColor = useThemeColor("muted");
 
-  const getIconAndColor = (): { icon: IconName; color: string } => {
-    if (!connected) {
-      return { icon: "CloudSlashIcon", color: dangerColor };
-    }
+  const { icon, color } = useMemo<{ icon: IconName; color: string }>(() => {
+    if (!connected) return { icon: "CloudSlashIcon", color: dangerColor };
     if (attachmentsFailed > 0 && !attachmentsDownloading) {
       return { icon: "CloudWarningIcon", color: warningColor };
     }
     if (downloading || attachmentsDownloading) {
       return { icon: "CloudArrowDownIcon", color: warningColor };
     }
-    if (uploading) {
-      return { icon: "CloudArrowUpIcon", color: warningColor };
-    }
+    if (uploading) return { icon: "CloudArrowUpIcon", color: warningColor };
     return { icon: "CloudCheckIcon", color: successColor };
-  };
+  }, [
+    connected,
+    attachmentsFailed,
+    attachmentsDownloading,
+    downloading,
+    uploading,
+    dangerColor,
+    warningColor,
+    successColor,
+  ]);
 
-  const { icon, color } = getIconAndColor();
+  const accessibilityLabel = useMemo(() => {
+    if (!connected) return "Sync center, offline";
+    if (attachmentsFailed > 0 && !attachmentsDownloading) {
+      return `Sync center, ${attachmentsFailed} failed download${attachmentsFailed === 1 ? "" : "s"}`;
+    }
+    if (downloading || attachmentsDownloading) return "Sync center, downloading";
+    if (uploading) return "Sync center, uploading";
+    return "Sync center, synced";
+  }, [
+    connected,
+    attachmentsFailed,
+    attachmentsDownloading,
+    downloading,
+    uploading,
+  ]);
+
   const isActiveSync =
     !connecting && (!!uploading || !!downloading || attachmentsDownloading);
 
@@ -56,36 +90,44 @@ const SyncCenter = () => {
 
   const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
-  const badgeCount = attachmentsFailed > 9 ? "9+" : String(attachmentsFailed);
+  // Spin the ArrowsClockwise icon while establishing the connection.
+  const rotation = useSharedValue(0);
+  useEffect(() => {
+    if (connecting) {
+      rotation.value = 0;
+      rotation.value = withRepeat(
+        withTiming(360, { duration: 1000, easing: Easing.linear }),
+        -1,
+        false,
+      );
+    } else {
+      rotation.value = 0;
+    }
+  }, [connecting, rotation]);
+
+  const spinStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
 
   return (
     <Pressable
       onPress={openSyncSheet}
       accessibilityRole="button"
-      accessibilityLabel="Sync center"
+      accessibilityLabel={accessibilityLabel}
       className="w-9 h-9 rounded-full justify-center items-center"
     >
       {connecting ? (
-        <ActivityIndicator />
-      ) : (
-        <Animated.View style={animatedStyle}>
+        <Animated.View key="spin" style={spinStyle}>
+          <Icon name="ArrowsClockwiseIcon" color={mutedColor} size={24} />
+        </Animated.View>
+      ) : isActiveSync ? (
+        <Animated.View key="pulse" style={animatedStyle}>
           <Icon name={icon} color={color} size={24} />
         </Animated.View>
+      ) : (
+        <Icon name={icon} color={color} size={24} />
       )}
-      {attachmentsFailed > 0 && (
-        <View
-          className="absolute -top-0.5 -right-0.5 bg-danger rounded-full items-center justify-center px-1 border-2 border-surface"
-          style={{ minWidth: 16, height: 16 }}
-        >
-          <AppText
-            weight="bold"
-            className="text-[9px] text-white"
-            style={{ lineHeight: 11 }}
-          >
-            {badgeCount}
-          </AppText>
-        </View>
-      )}
+      {attachmentsFailed > 0 && <SyncBadge count={attachmentsFailed} />}
     </Pressable>
   );
 };

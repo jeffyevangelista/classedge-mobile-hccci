@@ -22,7 +22,7 @@ const bannerConfig: Record<
 > = {
   offline: {
     bg: "#1F1F1F",
-    text: "No internet connection",
+    text: "Offline",
     icon: "WifiSlashIcon",
     iconColor: "#FFFFFF",
   },
@@ -41,7 +41,7 @@ const bannerConfig: Record<
 };
 
 const NetworkBanner = () => {
-  const { bannerState, isVisible } = useNetworkBanner();
+  const { bannerState, isVisible, lastSyncedLabel } = useNetworkBanner();
   const { setBannerHeight } = useNetworkBannerHeight();
   const insets = useSafeAreaInsets();
 
@@ -92,6 +92,10 @@ const NetworkBanner = () => {
   }));
 
   const config = bannerState !== "hidden" ? bannerConfig[bannerState] : null;
+  const displayText =
+    config && bannerState === "offline" && lastSyncedLabel
+      ? `${config.text} · ${lastSyncedLabel}`
+      : config?.text;
 
   return (
     <Animated.View style={[styles.container, animatedContainerStyle]}>
@@ -110,7 +114,7 @@ const NetworkBanner = () => {
                 size={16}
                 color={config.iconColor}
               />
-              <AppText style={styles.text}>{config.text}</AppText>
+              <AppText style={styles.text}>{displayText}</AppText>
             </>
           )}
         </View>

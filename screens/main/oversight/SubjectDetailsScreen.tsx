@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { Skeleton, useThemeColor } from "heroui-native";
 import Screen from "@/components/screen";
@@ -40,7 +41,7 @@ const SubjectDetailsScreen = () => {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScreenScrollView>
         <View className="w-full max-w-3xl mx-auto px-2.5">
           <View className="mt-2.5 mb-5">
             <View className="rounded-2xl overflow-hidden bg-surface-secondary aspect-video">
@@ -116,7 +117,7 @@ const SubjectDetailsScreen = () => {
             </View>
           )}
         </View>
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
 };

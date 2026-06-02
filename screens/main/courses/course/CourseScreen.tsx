@@ -5,7 +5,6 @@ import Image from "@/components/Image";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import CourseTimeline from "@/features/courses/components/CourseTimeline";
 import { useCourseDetails } from "@/features/courses/courses.hooks";
-import { queryClient } from "@/providers/QueryProvider";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Skeleton, useThemeColor } from "heroui-native";
 import { ErrorComponent } from "@/components/ErrorComponent";
@@ -27,7 +26,7 @@ import Animated, {
   useScrollViewOffset,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useSafeBottomInset } from "@/hooks/useSafeBottomInset";
+import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 
 const NAV_HEIGHT = 44;
 
@@ -36,12 +35,12 @@ const CourseScreen = () => {
   const { courseId } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const safeBottom = useSafeBottomInset();
+  const safeBottom = useScrollBottomInset();
   const { height: screenHeight } = useWindowDimensions();
   const IMAGE_HEIGHT = Math.round(screenHeight * 0.28);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
-  const { data, isLoading, isError, error } = useCourseDetails(
+  const { data, isLoading, isError, error, refetch } = useCourseDetails(
     courseId as string,
   );
 
@@ -49,16 +48,18 @@ const CourseScreen = () => {
   const foregroundColor = useThemeColor("foreground");
   const borderColor = useThemeColor("border");
 
+  // Both useCourseDetails and useCourseTimeline are watch-backed, so
+  // they re-render automatically as PowerSync replicates new rows. Pull-
+  // to-refresh just re-executes the local details query for user-visible
+  // feedback; the timeline updates itself via its own watch.
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await queryClient.invalidateQueries({
-      queryKey: ["course-details", courseId as string],
-    });
-    await queryClient.invalidateQueries({
-      queryKey: ["course-timeline", courseId as string],
-    });
-    setRefreshing(false);
-  }, [courseId]);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
 
   const refreshControl = useMemo(
     () => <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />,
@@ -111,8 +112,11 @@ const CourseScreen = () => {
     ),
   }));
 
+  console.log("safeBottom", safeBottom);
+  console.log("insets.bottom", insets.bottom);
+
   return (
-    <View style={styles.container}>
+    <View style={styles.container} className="bg-background">
       {/* Animated Navigation Bar */}
       <View
         style={{
@@ -195,7 +199,7 @@ const CourseScreen = () => {
         ref={scrollRef}
         scrollEventThrottle={16}
         refreshControl={refreshControl}
-        contentContainerStyle={{ paddingBottom: safeBottom + 16 }}
+        style={{ marginBottom: safeBottom }}
       >
         <Animated.View
           style={[

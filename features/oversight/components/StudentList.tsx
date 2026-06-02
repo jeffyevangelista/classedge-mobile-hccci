@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useGlobalSearchParams } from "expo-router";
 import { useStudents } from "../oversight.hooks";
-import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
+import { ActivityIndicator, Pressable, View, FlatList } from "react-native";
+import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 import { AppText } from "@/components/AppText";
 import { Avatar, Card, Skeleton } from "heroui-native";
 import { Student } from "../oversight.type";
@@ -64,6 +65,8 @@ const StudentList = () => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  const safeBottom = useScrollBottomInset();
+
   if (!subjectId) return <StudentsSkeleton />;
   if (isLoading) return <StudentsSkeleton />;
   if (isError)
@@ -116,6 +119,7 @@ const StudentList = () => {
       onEndReachedThreshold={0.5}
       showsVerticalScrollIndicator={false}
       scrollEventThrottle={16}
+      style={{ marginBottom: safeBottom }}
     />
   );
 };

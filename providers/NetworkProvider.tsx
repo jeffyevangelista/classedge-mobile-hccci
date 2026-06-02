@@ -1,8 +1,9 @@
+import { scanAllColumns } from "@/features/attachments/attachments.watcher";
+import { silentRefresh } from "@/features/auth/useTokenRefresh";
+import useStore from "@/lib/store";
 import NetInfo from "@react-native-community/netinfo";
 import { onlineManager } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
-import { silentRefresh } from "@/features/auth/useTokenRefresh";
-import useStore from "@/lib/store";
 
 const NetworkProvider = ({ children }: { children: React.ReactNode }) => {
   const { setNetworkState } = useStore();
@@ -28,13 +29,18 @@ const NetworkProvider = ({ children }: { children: React.ReactNode }) => {
       // Offline→online edge: kick a silent refresh immediately instead of
       // waiting up to 60s for the next useTokenRefresh poll tick. Closes
       // the post-reconnect limbo window where the access token may already
-      // be expired but PowerSync/axios haven't tried to use it yet.
+      // be expired but PowerSync/axios haven't tried to use it yet. Also
+      // trigger an attachments scan — rows that failed during the offline
+      // window are stuck in FAILED and only the watcher's auto-heal flips
+      // them back to QUEUED. Without this, they'd wait for the next DB
+      // change to retry.
       if (
         wasOnlineRef.current === false &&
         isOnline &&
         useStore.getState().isAuthenticated
       ) {
         void silentRefresh();
+        void scanAllColumns();
       }
       wasOnlineRef.current = isOnline;
 

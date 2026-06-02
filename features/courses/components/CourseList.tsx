@@ -2,7 +2,7 @@ import { AppText } from "@/components/AppText";
 import Image from "@/components/Image";
 import { Icon } from "@/components/Icon";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
-import { FlashList } from "@shopify/flash-list";
+import { ScreenList } from "@/components/ScreenList";
 import { router } from "expo-router";
 import {
   Button,
@@ -14,10 +14,10 @@ import {
 import { useMemo, useState } from "react";
 import {
   Pressable,
-  ScrollView,
   useWindowDimensions,
   View,
 } from "react-native";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import {
   useCoursePendingCounts,
@@ -25,6 +25,9 @@ import {
   type CoursePendingCount,
 } from "../courses.hooks";
 import { StudentEnrolledCourses } from "../courses.types";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { SectionView } from "@/features/sync/components/SectionView";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -63,49 +66,77 @@ const CourseList = () => {
     );
   }, [data, search, sortMode]);
 
-  if (isLoading) return <CourseListSkeleton numColumns={numColumns} />;
+  const status = useSectionStatus({
+    data: data ?? [],
+    isEmpty: (d) => d.length === 0,
+    isLoading,
+  });
+
   if (isError)
     return (
       <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
     );
 
   return (
-    <View className="w-full max-w-6xl mx-auto flex-1">
-      <CourseListToolbar
-        search={search}
-        onSearchChange={setSearch}
-        sortMode={sortMode}
-        onSortChange={setSortMode}
-      />
-      <FlashList
-        refreshControl={
-          <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
-        }
-        ListEmptyComponent={
+    <SectionView status={status}>
+      <SectionView.Loading>
+        <CourseListSkeleton numColumns={numColumns} />
+      </SectionView.Loading>
+      <SectionView.Empty>
+        <View className="w-full max-w-6xl mx-auto flex-1">
+          <CourseListToolbar
+            search={search}
+            onSearchChange={setSearch}
+            sortMode={sortMode}
+            onSortChange={setSortMode}
+          />
           <EmptyState
             icon="BookOpenIcon"
-            title={search ? "No matching courses" : "No courses found"}
-            description={
-              search
-                ? "Try a different search term"
-                : "You are not enrolled in any courses yet"
+            title="No courses found"
+            description="You are not enrolled in any courses yet"
+          />
+        </View>
+      </SectionView.Empty>
+      <SectionView.OfflineEmpty>
+        <OfflineEmpty section="courses" />
+      </SectionView.OfflineEmpty>
+      <SectionView.Ready>
+        <View className="w-full max-w-6xl mx-auto flex-1">
+          <CourseListToolbar
+            search={search}
+            onSearchChange={setSearch}
+            sortMode={sortMode}
+            onSortChange={setSortMode}
+          />
+          <ScreenList
+            refreshControl={
+              <RefreshIndicator
+                refreshing={isRefetching}
+                onRefresh={refetch}
+              />
             }
-          />
-        }
-        key={numColumns}
-        numColumns={numColumns}
-        data={visible}
-        className="p-1"
-        contentContainerStyle={{ paddingBottom: 15 }}
-        renderItem={({ item }) => (
-          <Course
-            item={item}
+            ListEmptyComponent={
+              <EmptyState
+                icon="BookOpenIcon"
+                title="No matching courses"
+                description="Try a different search term"
+              />
+            }
+            key={numColumns}
             numColumns={numColumns}
-            counts={pendingCounts.get(item.subjectId.id)}
+            data={visible}
+            className="p-1"
+            renderItem={({ item }) => (
+              <Course
+                item={item}
+                numColumns={numColumns}
+                counts={pendingCounts.get(item.subjectId.id)}
+              />
+            )}
           />
-        )}
-      />
-    </View>
+        </View>
+      </SectionView.Ready>
+    </SectionView>
   );
 };
 
@@ -271,7 +302,7 @@ const Course = ({
 const CourseListSkeleton = ({ numColumns }: { numColumns: number }) => {
   return (
     <View className="w-full max-w-6xl mx-auto flex-1 px-1">
-      <ScrollView contentContainerStyle={{ paddingBottom: 15 }}>
+      <ScreenScrollView>
         <View className="px-2 pt-2 pb-1">
           <Skeleton className="h-10 w-full rounded-xl" />
         </View>
@@ -296,7 +327,7 @@ const CourseListSkeleton = ({ numColumns }: { numColumns: number }) => {
               </View>
             ))}
         </View>
-      </ScrollView>
+      </ScreenScrollView>
     </View>
   );
 };

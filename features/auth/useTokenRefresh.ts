@@ -3,7 +3,10 @@ import * as TaskManager from "expo-task-manager";
 import { useEffect, useRef } from "react";
 import { AppState, type AppStateStatus } from "react-native";
 import useStore from "@/lib/store";
+import { captureAuthError, captureAuthMessage } from "@/lib/telemetry";
 import { refresh } from "./refreshToken";
+import { recordForcedLogout } from "./forcedLogoutNotice";
+import { signOut } from "./signOut";
 
 const BACKGROUND_TOKEN_REFRESH = "BACKGROUND_TOKEN_REFRESH";
 
@@ -79,12 +82,21 @@ export async function silentRefresh(opts?: {
         return true;
       } catch (error: any) {
         console.warn("[TokenRefresh] Silent refresh failed:", error);
-        // If the server rejected the refresh token itself, the session
-        // is unrecoverable — clear credentials so the user is bounced
-        // to login instead of looping forever on a dead token.
+        // Only 401 unambiguously means the refresh token itself is dead.
+        // 403 can come from policy/WAF/proxy hiccups during deploys and
+        // shouldn't boot a healthy session — let it fall through to a
+        // normal retry. We also re-check connectivity to avoid signing
+        // out on a captive-portal-style 401 when the device is actually
+        // offline-ish.
         const status = error?.response?.status;
-        if (status === 401 || status === 403) {
-          await useStore.getState().clearCredentials();
+        captureAuthError("silent_refresh_failed", error, { status });
+        if (status === 401) {
+          const { isConnected, isInternetReachable } = useStore.getState();
+          if (isConnected && isInternetReachable) {
+            captureAuthMessage("forced_logout", { reason: "refresh_401" });
+            await recordForcedLogout();
+            await signOut();
+          }
         }
         return false;
       }

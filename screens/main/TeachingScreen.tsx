@@ -1,13 +1,16 @@
 import {
   Pressable,
-  ScrollView,
   useWindowDimensions,
   View,
 } from "react-native";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import React, { useMemo, useState } from "react";
 import Screen from "@/components/screen";
 import { useTeachingCourses } from "@/features/teaching/teaching.hooks";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { SectionView } from "@/features/sync/components/SectionView";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
 import { AppText } from "@/components/AppText";
 import { FlashList } from "@shopify/flash-list";
 import {
@@ -45,7 +48,12 @@ const TeachingScreen = () => {
     );
   }, [data, search]);
 
-  if (isLoading) return <TeachingListSkeleton numColumns={numColumns} />;
+  const status = useSectionStatus({
+    data: data ?? [],
+    isEmpty: (d) => d.length === 0,
+    isLoading,
+  });
+
   if (isError)
     return (
       <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
@@ -53,33 +61,52 @@ const TeachingScreen = () => {
 
   return (
     <Screen className="">
-      <View className="w-full max-w-6xl mx-auto flex-1">
-        <TeachingToolbar search={search} onSearchChange={setSearch} />
-        <FlashList
-          refreshControl={
-            <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
-          }
-          ListEmptyComponent={
+      <SectionView status={status}>
+        <SectionView.Loading>
+          <TeachingListSkeleton numColumns={numColumns} />
+        </SectionView.Loading>
+        <SectionView.Empty>
+          <View className="w-full max-w-6xl mx-auto flex-1">
+            <TeachingToolbar search={search} onSearchChange={setSearch} />
             <EmptyState
               icon="BookOpenIcon"
-              title={search ? "No matching courses" : "No courses found"}
-              description={
-                search
-                  ? "Try a different search term"
-                  : "You have no assigned courses yet"
-              }
+              title="No courses found"
+              description="You have no assigned courses yet"
             />
-          }
-          key={numColumns}
-          numColumns={numColumns}
-          data={visible}
-          className="p-1"
-          contentContainerStyle={{ paddingBottom: 15 }}
-          renderItem={({ item }) => (
-            <TeachingCourse item={item} numColumns={numColumns} />
-          )}
-        />
-      </View>
+          </View>
+        </SectionView.Empty>
+        <SectionView.OfflineEmpty>
+          <OfflineEmpty section="teaching" />
+        </SectionView.OfflineEmpty>
+        <SectionView.Ready>
+          <View className="w-full max-w-6xl mx-auto flex-1">
+            <TeachingToolbar search={search} onSearchChange={setSearch} />
+            <FlashList
+              refreshControl={
+                <RefreshIndicator
+                  refreshing={isRefetching}
+                  onRefresh={refetch}
+                />
+              }
+              ListEmptyComponent={
+                <EmptyState
+                  icon="BookOpenIcon"
+                  title="No matching courses"
+                  description="Try a different search term"
+                />
+              }
+              key={numColumns}
+              numColumns={numColumns}
+              data={visible}
+              className="p-1"
+              contentContainerStyle={{ paddingBottom: 15 }}
+              renderItem={({ item }) => (
+                <TeachingCourse item={item} numColumns={numColumns} />
+              )}
+            />
+          </View>
+        </SectionView.Ready>
+      </SectionView>
     </Screen>
   );
 };
@@ -163,7 +190,7 @@ const TeachingCourse = ({
 const TeachingListSkeleton = ({ numColumns }: { numColumns: number }) => {
   return (
     <View className="w-full max-w-6xl mx-auto flex-1 px-1">
-      <ScrollView contentContainerStyle={{ paddingBottom: 15 }}>
+      <ScreenScrollView>
         <View className="px-2 pt-2 pb-1">
           <Skeleton className="h-10 w-full rounded-xl" />
         </View>
@@ -187,7 +214,7 @@ const TeachingListSkeleton = ({ numColumns }: { numColumns: number }) => {
               </View>
             ))}
         </View>
-      </ScrollView>
+      </ScreenScrollView>
     </View>
   );
 };

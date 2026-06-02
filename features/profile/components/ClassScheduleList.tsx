@@ -1,7 +1,7 @@
 import { View, StyleSheet } from "react-native";
 import { useEffect } from "react";
 import { useClassSchedule } from "../profile.hooks";
-import { FlashList } from "@shopify/flash-list";
+import { ScreenList } from "@/components/ScreenList";
 import { AppText } from "@/components/AppText";
 import { Skeleton, Button, Card, Separator, Chip } from "heroui-native";
 import { useToast } from "heroui-native";
@@ -45,7 +45,7 @@ const ClassScheduleList = () => {
   console.log(JSON.stringify(classSchedules));
 
   return (
-    <FlashList
+    <ScreenList
       className="mx-auto w-full max-w-3xl"
       ListEmptyComponent={
         <EmptyState

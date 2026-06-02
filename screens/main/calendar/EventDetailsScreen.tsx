@@ -1,15 +1,19 @@
-import { ScrollView, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Skeleton, useThemeColor } from "heroui-native";
+import { View } from "react-native";
 import { AppText } from "@/components/AppText";
-import { Icon } from "@/components/Icon";
 import ErrorFallback from "@/components/ErrorFallback";
+import { Icon } from "@/components/Icon";
 import NoDataFallback from "@/components/NoDataFallback";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { useEvent } from "@/features/calendar/calendar.hooks";
 import {
   formatDate,
   formatTime,
 } from "@/features/calendar/components/date-formatter";
+import HydrationDebugPill from "@/features/notifications/HydrationDebugPill";
+import { makeEntityKey } from "@/features/notifications/pushPayloadCache";
+import { useEntityFromPushOrSync } from "@/features/notifications/useEntityFromPushOrSync";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { toTitleCase } from "@/utils/toTitleCase";
 
@@ -18,8 +22,24 @@ const EventDetailsScreen = () => {
   const numericId = Number(eventId);
   const accentColor = useThemeColor("accent");
 
-  const { data, isLoading, isError, error, refetch } = useEvent(numericId);
-  const event = data?.[0];
+  const watch = useEvent(numericId);
+  const localEvent = watch.data?.[0] ?? null;
+
+  const eventEntityKey = makeEntityKey("event", numericId);
+  const {
+    data: event,
+    source, // [push-hydrate verify]
+    isResolving,
+    isMissing,
+    error,
+    retry,
+  } = useEntityFromPushOrSync({
+    entityKey: eventEntityKey,
+    localData: localEvent,
+    localIsLoading: watch.isLoading,
+    // apiFetch intentionally omitted: no REST endpoint exists for a
+    // single event today. Payload + watch are sufficient.
+  });
 
   if (!Number.isFinite(numericId) || numericId <= 0) {
     return (
@@ -31,15 +51,24 @@ const EventDetailsScreen = () => {
     );
   }
 
-  if (isLoading) return <EventDetailsSkeleton />;
+  if (!event && isResolving) return <EventDetailsSkeleton />;
 
-  if (isError) {
+  // Show the error fallback only when we have no data to render. If
+  // payload or REST is already populating `event`, swallow a
+  // transient watch error rather than disrupting the user.
+  if (!event && (watch.error ?? error)) {
     return (
-      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+      <ErrorFallback
+        message={getApiErrorMessage(watch.error ?? error)}
+        onRefetch={() => {
+          watch.refetch?.();
+          retry();
+        }}
+      />
     );
   }
 
-  if (!event) {
+  if (!event && isMissing) {
     return (
       <NoDataFallback
         icon="CalendarIcon"
@@ -49,17 +78,30 @@ const EventDetailsScreen = () => {
     );
   }
 
+  // Unreachable per the hook's isResolving / isMissing invariant when
+  // apiFetch is absent; kept as a type-narrowing guard for `event`.
+  if (!event) return null;
+
   const startDate = formatDate(event.startDate);
   const endDate = formatDate(event.endDate);
   const dateText =
     startDate === endDate ? startDate : `${startDate} – ${endDate}`;
 
   return (
-    <ScrollView
-      contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
+    <ScreenScrollView
+      contentContainerStyle={{ flexGrow: 1 }}
       showsVerticalScrollIndicator={false}
     >
       <View className="w-full max-w-3xl mx-auto px-5 pt-2">
+        {/* [push-hydrate verify] */}
+        <View className="mb-2">
+          <HydrationDebugPill
+            entityKey={eventEntityKey}
+            source={source}
+            isResolving={isResolving}
+            isMissing={isMissing}
+          />
+        </View>
         <View className="mb-6">
           <AppText weight="bold" className="text-2xl text-foreground mb-2">
             {event.title}
@@ -114,7 +156,7 @@ const EventDetailsScreen = () => {
           />
         </View>
       </View>
-    </ScrollView>
+    </ScreenScrollView>
   );
 };
 

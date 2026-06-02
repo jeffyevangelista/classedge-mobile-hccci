@@ -1,7 +1,7 @@
 import { AppText } from "@/components/AppText";
 import Image from "@/components/Image";
 import { Icon } from "@/components/Icon";
-import { FlashList } from "@shopify/flash-list";
+import { ScreenList } from "@/components/ScreenList";
 import { Link } from "expo-router";
 import {
   Avatar,
@@ -13,10 +13,10 @@ import {
 import { useMemo, useState } from "react";
 import {
   Pressable,
-  ScrollView,
   useWindowDimensions,
   View,
 } from "react-native";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { useGetSubjects } from "../oversight.hooks";
@@ -24,6 +24,9 @@ import { SubjectType } from "../oversight.type";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { SectionView } from "@/features/sync/components/SectionView";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
 
 const MIN_CARD_WIDTH = 280;
 
@@ -48,40 +51,63 @@ const SubjectsList = () => {
     );
   }, [subjects, search]);
 
-  if (isLoading) return <SubjectsListSkeleton numColumns={numColumns} />;
+  const status = useSectionStatus({
+    data: subjects,
+    isEmpty: (d) => d.length === 0,
+    isLoading,
+  });
+
   if (isError)
     return (
       <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
     );
 
   return (
-    <View className="w-full max-w-6xl mx-auto flex-1">
-      <SubjectsToolbar search={search} onSearchChange={setSearch} />
-      <FlashList
-        refreshControl={
-          <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
-        }
-        ListEmptyComponent={
+    <SectionView status={status}>
+      <SectionView.Loading>
+        <SubjectsListSkeleton numColumns={numColumns} />
+      </SectionView.Loading>
+      <SectionView.Empty>
+        <View className="w-full max-w-6xl mx-auto flex-1">
+          <SubjectsToolbar search={search} onSearchChange={setSearch} />
           <EmptyState
             icon="BookOpenIcon"
-            title={search ? "No matching courses" : "No courses found"}
-            description={
-              search
-                ? "Try a different search term"
-                : "You are not enrolled in any courses yet"
-            }
+            title="No courses found"
+            description="You are not enrolled in any courses yet"
           />
-        }
-        key={numColumns}
-        numColumns={numColumns}
-        data={visible}
-        className="p-1"
-        contentContainerStyle={{ paddingBottom: 15 }}
-        renderItem={({ item }) => (
-          <Subject subject={item} numColumns={numColumns} />
-        )}
-      />
-    </View>
+        </View>
+      </SectionView.Empty>
+      <SectionView.OfflineEmpty>
+        <OfflineEmpty section="oversight" />
+      </SectionView.OfflineEmpty>
+      <SectionView.Ready>
+        <View className="w-full max-w-6xl mx-auto flex-1">
+          <SubjectsToolbar search={search} onSearchChange={setSearch} />
+          <ScreenList
+            refreshControl={
+              <RefreshIndicator
+                refreshing={isRefetching}
+                onRefresh={refetch}
+              />
+            }
+            ListEmptyComponent={
+              <EmptyState
+                icon="BookOpenIcon"
+                title="No matching courses"
+                description="Try a different search term"
+              />
+            }
+            key={numColumns}
+            numColumns={numColumns}
+            data={visible}
+            className="p-1"
+            renderItem={({ item }) => (
+              <Subject subject={item} numColumns={numColumns} />
+            )}
+          />
+        </View>
+      </SectionView.Ready>
+    </SectionView>
   );
 };
 
@@ -114,7 +140,7 @@ const SubjectsToolbar = ({
 const SubjectsListSkeleton = ({ numColumns }: { numColumns: number }) => {
   return (
     <View className="w-full max-w-6xl mx-auto flex-1 px-1">
-      <ScrollView contentContainerStyle={{ paddingBottom: 15 }}>
+      <ScreenScrollView>
         <View className="px-2 pt-2 pb-1">
           <Skeleton className="h-10 w-full rounded-xl" />
         </View>
@@ -142,7 +168,7 @@ const SubjectsListSkeleton = ({ numColumns }: { numColumns: number }) => {
               </View>
             ))}
         </View>
-      </ScrollView>
+      </ScreenScrollView>
     </View>
   );
 };

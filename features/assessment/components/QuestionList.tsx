@@ -16,7 +16,7 @@ import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
 import EmptyState from "@/components/EmptyState";
 import { Skeleton, Button, Dialog, useThemeColor } from "heroui-native";
-import { useSafeBottomInset } from "@/hooks/useSafeBottomInset";
+import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 import { Icon } from "@/components/Icon";
 import { QuestionRenderer } from "./questions";
 import { questionStyles } from "./questions/styles";
@@ -59,7 +59,7 @@ const QuestionList = ({
   const [uploads, setUploads] = useState<Record<number, string>>({});
   const [currentPage, setCurrentPage] = useState(initialIndex);
   const [submitOpen, setSubmitOpen] = useState(false);
-  const safeBottomInset = useSafeBottomInset();
+  const safeBottomInset = useScrollBottomInset();
   const surfaceColor = useThemeColor("surface");
   const borderColor = useThemeColor("border");
   const accentColor = useThemeColor("accent");

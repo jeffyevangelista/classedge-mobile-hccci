@@ -1,11 +1,19 @@
 // 1. Import the Drizzle wrapper and your schema
 import { wrapPowerSyncWithDrizzle } from "@powersync/drizzle-driver";
 import { OPSqliteOpenFactory } from "@powersync/op-sqlite";
-import { PowerSyncDatabase } from "@powersync/react-native";
+import {
+  PowerSyncDatabase,
+  SyncClientImplementation,
+} from "@powersync/react-native";
 import { open } from "@op-engineering/op-sqlite";
+import useStore from "@/lib/store";
 import { AppSchema } from "./AppSchema"; // Your PowerSync Schema
 import { Connector } from "./Connector";
 import * as drizzleSchema from "./schema"; // Your Drizzle Table definitions
+import {
+  syncRoleStreams,
+  unsubscribeAllRoleStreams,
+} from "./streamSubscriptions";
 
 // const logger = createBaseLogger();
 // logger.useDefaults();
@@ -55,7 +63,18 @@ export const setupPowerSync = async () => {
     `CREATE INDEX IF NOT EXISTS idx_attachments_state_priority ON attachments_local (state, priority);`,
   );
   const connector = new Connector();
-  powersync.connect(connector);
+  // Explicit opt-in to the Rust sync client. RUST is the default in
+  // @powersync/common 1.52.0, but pinning it here keeps the choice stable
+  // if the upstream default flips back.
+  powersync.connect(connector, {
+    clientImplementation: SyncClientImplementation.RUST,
+  });
+
+  // Phase C: subscribe only to streams matching the user's role.
+  // Safe before backend flips auto_subscribe:false — calling subscribe()
+  // on a stream that is already auto-subscribed is a no-op.
+  const { powersyncToken } = useStore.getState();
+  await syncRoleStreams(powersyncToken);
 };
 
 export const resetPowerSync = async () => {
@@ -63,6 +82,7 @@ export const resetPowerSync = async () => {
     "@/features/attachments/attachments.api"
   );
   await clearAllAttachments();
+  unsubscribeAllRoleStreams();
   await powersync.disconnectAndClear();
   await setupPowerSync();
 };

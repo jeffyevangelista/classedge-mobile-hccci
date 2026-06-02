@@ -4,7 +4,8 @@ import Screen from "@/components/screen";
 import { useLesson } from "@/features/oversight/oversight.hooks";
 import { formatDate } from "@/utils/formatDate";
 import { useLocalSearchParams } from "expo-router";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { Skeleton } from "heroui-native";
 import ErrorFallback from "@/components/ErrorFallback";
@@ -40,7 +41,7 @@ const LessonScreen = () => {
 
   return (
     <Screen>
-      <ScrollView
+      <ScreenScrollView
         refreshControl={
           <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
         }
@@ -83,7 +84,7 @@ const LessonScreen = () => {
             {(data.lessonFile || data.lessonUrl) && <FileRenderer url={data} />}
           </View>
         </View>
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
 };

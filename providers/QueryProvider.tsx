@@ -16,7 +16,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-const persister = createMmkvPersister();
+export const persister = createMmkvPersister();
 
 const QueryProvider = ({ children }: { children: React.ReactNode }) => {
   return (

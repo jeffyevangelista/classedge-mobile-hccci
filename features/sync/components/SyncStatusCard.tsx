@@ -86,7 +86,7 @@ const getAttachmentStatus = (status: {
   }
   if (inFlight > 0) {
     return {
-      label: `${synced} of ${total} downloaded · ${inFlight} pending`,
+      label: `${synced} of ${total} downloaded `,
       color: "#3B82F6",
       icon: "CloudArrowDownIcon",
     };

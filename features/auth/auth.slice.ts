@@ -14,6 +14,13 @@ import { jwtDecode } from "jwt-decode";
 import type { StateCreator } from "zustand";
 import type { AuthUser } from "./auth.types";
 
+export type OAuthPhase =
+  | "idle"
+  | "opening_browser"
+  | "awaiting_user"
+  | "exchanging_code"
+  | "exchanging_session";
+
 type AuthState = {
   accessToken: string | null;
   powersyncToken: string | null;
@@ -22,6 +29,8 @@ type AuthState = {
   isAuthenticated: boolean;
   expiresAt: number | null;
   email: string | null;
+  oauthPhase: OAuthPhase;
+  oauthStartedAt: number | null;
 };
 
 type AuthAction = {
@@ -32,6 +41,7 @@ type AuthAction = {
   restoreSession: () => Promise<void>;
   setEmail: (email: string) => void;
   setLegalUpdateRequired: (legalUpdateRequired: boolean) => void;
+  setOAuthPhase: (next: { phase: OAuthPhase; startedAt: number | null }) => void;
 };
 
 export type AuthSlice = AuthState & AuthAction;
@@ -44,6 +54,8 @@ const initialState: AuthState = {
   isAuthenticated: false,
   authUser: null,
   email: null,
+  oauthPhase: "idle",
+  oauthStartedAt: null,
 };
 
 const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
@@ -124,6 +136,8 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
         authUser,
         isAuthenticated,
         expiresAt,
+        oauthPhase: "idle",
+        oauthStartedAt: null,
       });
     } catch (error) {
       console.warn("Session restore failed:", error);
@@ -143,6 +157,9 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
       }
       return { authUser: updatedAuthUser };
     });
+  },
+  setOAuthPhase: ({ phase, startedAt }) => {
+    set({ oauthPhase: phase, oauthStartedAt: startedAt });
   },
 });
 

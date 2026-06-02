@@ -1,29 +1,38 @@
-import { View, Pressable } from "react-native";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
-import { useNotifications } from "../notifications.hooks";
-import { FlashList } from "@shopify/flash-list";
-import { AppText } from "@/components/AppText";
-import { Avatar, Skeleton } from "heroui-native";
-import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
-import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { Notification } from "@/powersync/schema";
 import { Link } from "expo-router";
-import { getNotificationHref, readNotification } from "../notifications.service";
+import { Avatar, Skeleton } from "heroui-native";
+import { Pressable, View } from "react-native";
+import { AppText } from "@/components/AppText";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { ScreenList } from "@/components/ScreenList";
+import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import { getApiErrorMessage } from "@/lib/api-error";
+import type { Notification } from "@/powersync/schema";
 import { toTitleCase } from "@/utils/toTitleCase";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { SectionView } from "@/features/sync/components/SectionView";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
+import { useNotifications } from "../notifications.hooks";
+import {
+  getNotificationHref,
+  readNotification,
+} from "../notifications.service";
 
 dayjs.extend(relativeTime);
 
 const NotificationList = () => {
   const { data, isLoading, isError, error, isRefetching, refetch } =
     useNotifications();
-  if (isLoading) {
-    return <NotificationListSkeleton />;
-  }
+
+  const status = useSectionStatus({
+    data: data ?? [],
+    isEmpty: (d) => d.length === 0,
+    isLoading,
+  });
 
   if (isError)
     return (
@@ -31,30 +40,40 @@ const NotificationList = () => {
     );
 
   return (
-    <FlashList
-      refreshControl={
-        <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
-      }
-      ListEmptyComponent={
+    <SectionView status={status}>
+      <SectionView.Loading>
+        <NotificationListSkeleton />
+      </SectionView.Loading>
+      <SectionView.Empty>
         <View className="max-w-3xl w-full mx-auto">
           <EmptyState
             icon="BellSlashIcon"
             title="You have no notifications yet"
           />
         </View>
-      }
-      ItemSeparatorComponent={() => (
-        <View className="max-w-3xl w-full mx-auto">
-          <View className="h-px bg-border" />
-        </View>
-      )}
-      renderItem={({ item }) => (
-        <View className="max-w-3xl w-full mx-auto">
-          <NotificationItem {...item} />
-        </View>
-      )}
-      data={data}
-    />
+      </SectionView.Empty>
+      <SectionView.OfflineEmpty>
+        <OfflineEmpty section="notifications" />
+      </SectionView.OfflineEmpty>
+      <SectionView.Ready>
+        <ScreenList
+          refreshControl={
+            <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
+          }
+          ItemSeparatorComponent={() => (
+            <View className="max-w-3xl w-full mx-auto">
+              <View className="h-px bg-border" />
+            </View>
+          )}
+          renderItem={({ item }) => (
+            <View className="max-w-3xl w-full mx-auto">
+              <NotificationItem {...item} />
+            </View>
+          )}
+          data={data ?? []}
+        />
+      </SectionView.Ready>
+    </SectionView>
   );
 };
 

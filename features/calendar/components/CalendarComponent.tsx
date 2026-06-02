@@ -5,20 +5,21 @@ import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   Pressable,
-  ScrollView,
   useWindowDimensions,
   View,
 } from "react-native";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { Calendar } from "react-native-calendars";
 import { useEvents } from "../calendar.hooks";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
 import { formatDate } from "./date-formatter";
 import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { Card, Skeleton, Surface, useThemeColor } from "heroui-native";
 import { Icon } from "@/components/Icon";
-import EventDetailModal from "./EventDetailModal";
 import { toTitleCase } from "@/utils/toTitleCase";
 import { useUniwind } from "uniwind";
 
@@ -125,7 +126,6 @@ const CalendarComponent = () => {
   const mutedColor = useThemeColor("muted");
 
   const [selectedDate, setSelectedDate] = useState<string>(today);
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
 
   const dayCellSize = useMemo(() => {
     const horizontalPadding = 20;
@@ -219,14 +219,22 @@ const CalendarComponent = () => {
     });
   }, [data, selectedDate]);
 
-  if (isLoading) return <CalendarSkeleton />;
+  const status = useSectionStatus({
+    data: data ?? [],
+    isEmpty: () => false, // calendar grid is meaningful even with zero events — never "empty"
+    isLoading,
+  });
+
   if (isError)
     return (
       <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
     );
 
+  if (status.phase === "loading") return <CalendarSkeleton />;
+  if (status.phase === "offline-empty") return <OfflineEmpty section="calendar" />;
+
   return (
-    <ScrollView
+    <ScreenScrollView
       refreshControl={
         <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
       }
@@ -339,7 +347,7 @@ const CalendarComponent = () => {
                       ? `By ${toTitleCase(`${ev.createdById.firstName} ${ev.createdById.lastName}`)}`
                       : undefined
                   }
-                  onPress={() => setSelectedEventId(ev.id)}
+                  onPress={() => router.push(`/event/${ev.id}`)}
                 />
               );
             }
@@ -348,19 +356,13 @@ const CalendarComponent = () => {
           })
         )}
       </View>
-
-      <EventDetailModal
-        isOpen={selectedEventId !== null}
-        setOpenChange={(open) => !open && setSelectedEventId(null)}
-        eventId={selectedEventId!}
-      />
-    </ScrollView>
+    </ScreenScrollView>
   );
 };
 
 const CalendarSkeleton = () => {
   return (
-    <ScrollView>
+    <ScreenScrollView>
       <View className="p-2.5 max-w-3xl mx-auto w-full">
         <Surface className="rounded-xl shadow-none p-4">
           <View className="flex-row justify-between items-center mb-4">
@@ -408,7 +410,7 @@ const CalendarSkeleton = () => {
             </Card>
           ))}
       </View>
-    </ScrollView>
+    </ScreenScrollView>
   );
 };
 

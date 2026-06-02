@@ -6,6 +6,11 @@ import {
   AttachmentFetchError,
 } from "./attachments.fetcher";
 import {
+  clearAttachmentProgress,
+  setAttachmentProgress,
+} from "./attachments.progress";
+import {
+  AUTO_RETRY_CAP,
   LOW_STORAGE_THRESHOLD_BYTES,
   MAX_CONCURRENT_DOWNLOADS,
 } from "./attachments.config";
@@ -138,6 +143,31 @@ class AttachmentQueue {
     );
   }
 
+  /**
+   * Park a row at the retry cap so the watcher's auto-heal can't flip it back
+   * to QUEUED. Used for non-retriable failures (404, no file URL) where
+   * banging on the server further is pointless. Manual retry still works —
+   * it resets retry_count to 0.
+   */
+  private async markPermanentlyFailed(
+    id: string,
+    error: string,
+  ): Promise<void> {
+    await powersync.execute(
+      `UPDATE attachments_local
+       SET state = ?, error = ?, retry_count = ?, updated_at = ?
+       WHERE id = ? AND state = ?`,
+      [
+        ATTACHMENT_STATES.FAILED,
+        error,
+        AUTO_RETRY_CAP,
+        new Date().toISOString(),
+        id,
+        ATTACHMENT_STATES.DOWNLOADING,
+      ],
+    );
+  }
+
   private async processOne(row: Row): Promise<void> {
     // Synchronous reservation to prevent concurrent picks of the same row.
     if (this.inFlight.has(row.id)) return;
@@ -153,8 +183,11 @@ class AttachmentQueue {
         row.resource,
         row.id,
         token,
+        (downloaded, total) =>
+          setAttachmentProgress(row.id, downloaded, total),
       );
       await this.markSynced(row.id, localUri, sizeBytes);
+      clearAttachmentProgress(row.id);
       this.retried.delete(row.id);
     } catch (e) {
       if (
@@ -173,8 +206,11 @@ class AttachmentQueue {
               row.resource,
               row.id,
               refreshedToken,
+              (downloaded, total) =>
+                setAttachmentProgress(row.id, downloaded, total),
             );
             await this.markSynced(row.id, localUri, sizeBytes);
+            clearAttachmentProgress(row.id);
             this.retried.delete(row.id);
             return;
           } catch (retryErr) {
@@ -183,7 +219,15 @@ class AttachmentQueue {
             console.warn(
               `[attachments] failed (after 401 retry) ${row.resource}/${row.id}: ${retryMsg}`,
             );
-            await this.markFailed(row.id, retryMsg);
+            if (
+              retryErr instanceof AttachmentFetchError &&
+              !retryErr.retriable
+            ) {
+              await this.markPermanentlyFailed(row.id, retryMsg);
+            } else {
+              await this.markFailed(row.id, retryMsg);
+            }
+            clearAttachmentProgress(row.id);
             this.retried.delete(row.id);
             return;
           }
@@ -196,7 +240,12 @@ class AttachmentQueue {
             ? e.message
             : String(e);
       console.warn(`[attachments] failed ${row.resource}/${row.id}: ${msg}`);
-      await this.markFailed(row.id, msg);
+      if (e instanceof AttachmentFetchError && !e.retriable) {
+        await this.markPermanentlyFailed(row.id, msg);
+      } else {
+        await this.markFailed(row.id, msg);
+      }
+      clearAttachmentProgress(row.id);
     } finally {
       this.inFlight.delete(row.id);
       this.notify();

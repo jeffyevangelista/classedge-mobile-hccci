@@ -32,10 +32,17 @@ function inferExt(url: string): string {
   return m ? m[1].toLowerCase() : "bin";
 }
 
+export type AttachmentProgressCallback = (
+  downloaded: number,
+  /** -1 if Content-Length is missing (chunked encoding). */
+  total: number,
+) => void;
+
 export async function fetchAttachment(
   _resource: string,
   id: string,
   accessToken: string,
+  onProgress?: AttachmentProgressCallback,
 ): Promise<FetchedAttachment> {
   await ensureDir();
 
@@ -75,7 +82,31 @@ export async function fetchAttachment(
 
   if (meta.file) {
     try {
-      const result = await FileSystem.downloadAsync(meta.file, localUri);
+      // Resumable download exposes per-chunk progress via the callback.
+      // We're not actually pausing/resuming, just using it as the only
+      // downloadAsync variant that streams progress events.
+      const downloader = FileSystem.createDownloadResumable(
+        meta.file,
+        localUri,
+        {},
+        onProgress
+          ? (data) => {
+              const total = data.totalBytesExpectedToWrite;
+              onProgress(
+                data.totalBytesWritten,
+                total > 0 ? total : -1,
+              );
+            }
+          : undefined,
+      );
+      const result = await downloader.downloadAsync();
+      if (!result) {
+        throw new AttachmentFetchError(
+          "Download returned no result",
+          null,
+          true,
+        );
+      }
       if (result.status >= 400) {
         await FileSystem.deleteAsync(localUri, { idempotent: true });
         if (!meta.binaryFile) {

@@ -1,6 +1,9 @@
+import { useLocalSearchParams } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import { Skeleton, useThemeColor } from "heroui-native";
+import React from "react";
 import {
   Modal,
-  ScrollView,
   StatusBar,
   TouchableOpacity,
   useColorScheme,
@@ -8,35 +11,60 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as WebBrowser from "expo-web-browser";
-import { useCourseMaterial } from "@/features/courses/courses.hooks";
-import { useLocalSearchParams } from "expo-router";
-import { AppText } from "@/components/AppText";
-import Screen from "@/components/screen";
-import { Skeleton, useThemeColor } from "heroui-native";
-import ErrorFallback from "@/components/ErrorFallback";
-import NoDataFallback from "@/components/NoDataFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { AttachmentFile } from "@/features/attachments/components/AttachmentFile";
-import React from "react";
 import WebView from "react-native-webview";
+import { AppText } from "@/components/AppText";
+import ErrorFallback from "@/components/ErrorFallback";
 import { Icon } from "@/components/Icon";
+import NoDataFallback from "@/components/NoDataFallback";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
+import Screen from "@/components/screen";
+import { AttachmentFile } from "@/features/attachments/components/AttachmentFile";
+import { useCourseMaterial } from "@/features/courses/courses.hooks";
+import HydrationDebugPill from "@/features/notifications/HydrationDebugPill";
+import { makeEntityKey } from "@/features/notifications/pushPayloadCache";
+import { useEntityFromPushOrSync } from "@/features/notifications/useEntityFromPushOrSync";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const MaterialDetailsScreen = () => {
   const { materialId } = useLocalSearchParams();
-  const { data, isLoading, isError, error } = useCourseMaterial(
-    materialId as string,
-  );
+  const watch = useCourseMaterial(materialId as string);
 
-  if (isLoading) return <MaterialDetailsSkeleton />;
-  if (isError) return <ErrorFallback message={getApiErrorMessage(error)} />;
-  if (!data)
+  const materialEntityKey = makeEntityKey("material", materialId as string);
+  const {
+    data,
+    source, // [push-hydrate verify]
+    isResolving,
+    isMissing,
+    error,
+  } = useEntityFromPushOrSync({
+    entityKey: materialEntityKey,
+    localData: watch.data ?? null,
+    localIsLoading: watch.isLoading,
+    // apiFetch intentionally omitted: no REST endpoint exists for a
+    // single material today. Payload + watch are sufficient.
+  });
+
+  if (!data && isResolving) return <MaterialDetailsSkeleton />;
+
+  // Show the error fallback only when we have no data to render. If
+  // payload or REST is already populating `data`, swallow a transient
+  // watch error rather than disrupting the user.
+  if (!data && (watch.error ?? error)) {
+    return <ErrorFallback message={getApiErrorMessage(watch.error ?? error)} />;
+  }
+
+  if (!data && isMissing) {
     return (
       <NoDataFallback
         title="Material not found"
         description="The material you're looking for doesn't exist"
       />
     );
+  }
+
+  // Unreachable per the hook's isResolving / isMissing invariant when
+  // apiFetch is absent; kept as a type-narrowing guard for `data`.
+  if (!data) return null;
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("en-US", {
@@ -47,11 +75,18 @@ const MaterialDetailsScreen = () => {
 
   return (
     <Screen>
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScreenScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="gap-6 w-full max-w-3xl mx-auto p-4">
+          {/* [push-hydrate verify] */}
+          <HydrationDebugPill
+            entityKey={materialEntityKey}
+            source={source}
+            isResolving={isResolving}
+            isMissing={isMissing}
+          />
           <View>
             <AppText className="text-sm text-neutral-500 dark:text-neutral-400">
-              {formatDate(data.startDate)} – {formatDate(data.endDate)}
+              Posted {formatDate(data.startDate)}
             </AppText>
             <AppText
               weight="semibold"
@@ -111,7 +146,7 @@ const MaterialDetailsScreen = () => {
             </View>
           )}
         </View>
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
 };
@@ -237,10 +272,7 @@ const LinkCard = ({ url }: { url: string }) => {
       <View className="w-10 h-10 rounded-lg bg-accent-soft items-center justify-center shrink-0">
         <Icon name="LinkIcon" size={20} color={themeColorAccent} />
       </View>
-      <AppText
-        numberOfLines={2}
-        className="flex-1 text-accent text-sm"
-      >
+      <AppText numberOfLines={2} className="flex-1 text-accent text-sm">
         {display}
       </AppText>
       <Icon name="ArrowSquareOutIcon" size={16} color="#94a3b8" />

@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from "react";
 import { ActivityIndicator, FlatList, View } from "react-native";
+import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 import { Lesson } from "../oversight.type";
 import { formatDate } from "@/utils/formatDate";
 import { Link, useGlobalSearchParams } from "expo-router";
@@ -23,6 +24,7 @@ const getLessonIcon = (lessonType: string) =>
   LESSON_ICON_MAP.document;
 
 const MaterialList = () => {
+  const safeBottom = useScrollBottomInset();
   const { subjectId } = useGlobalSearchParams();
 
   const {
@@ -82,6 +84,7 @@ const MaterialList = () => {
         onEndReachedThreshold={0.5}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
+        style={{ marginBottom: safeBottom }}
       />
     </View>
   );

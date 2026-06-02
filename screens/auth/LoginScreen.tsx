@@ -1,8 +1,9 @@
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import Image from "@/components/Image";
+import ForcedLogoutNoticeDialog from "@/features/auth/components/ForcedLogoutNoticeDialog";
 import MSAuthButton from "@/features/auth/components/MSAuthButton";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
 import { useWindowDimensions, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -25,6 +26,7 @@ const LoginScreen = () => {
       contentContainerStyle={{ flexGrow: 1 }}
       className="bg-background"
     >
+      <ForcedLogoutNoticeDialog />
       <View
         className="flex-1 justify-between"
         style={{
@@ -71,13 +73,21 @@ const LoginScreen = () => {
         <View className="items-center">
           <AppText className="text-xs text-muted text-center px-4">
             By Continuing, you agree to our{" "}
-            <Link style={{ color: accentColor }} href={"/"}>
+            <AppText
+              onPress={() => router.push("/(auth)/legal/eula")}
+              style={{ color: accentColor }}
+              className="text-xs"
+            >
               EULA
-            </Link>{" "}
+            </AppText>{" "}
             and acknowledge{" "}
-            <Link style={{ color: accentColor }} href={"/"}>
+            <AppText
+              onPress={() => router.push("/(auth)/legal/privacy")}
+              style={{ color: accentColor }}
+              className="text-xs"
+            >
               Privacy Policy
-            </Link>
+            </AppText>
           </AppText>
         </View>
       </View>

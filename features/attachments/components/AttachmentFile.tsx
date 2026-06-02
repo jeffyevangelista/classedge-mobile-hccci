@@ -13,23 +13,45 @@ interface Props {
 }
 
 export const AttachmentFile = ({ file, fileName }: Props) => {
-  const { uri, state, retry } = useAttachment(file);
+  const { uri, state, retry, progress } = useAttachment(file);
   const type = getFileType(file);
 
   if (state === "unknown" || state === "queued" || state === "downloading") {
+    const pct =
+      state === "downloading" && progress != null
+        ? Math.round(progress * 100)
+        : null;
     return (
-      <View className="w-full h-20 bg-default rounded-xl flex-row items-center gap-3 px-4">
-        <ActivityIndicator />
-        <AppText className="text-sm text-muted">
-          {state === "downloading" ? "Downloading..." : "Preparing file..."}
-        </AppText>
+      <View className="w-full h-20 bg-surface-secondary rounded-xl overflow-hidden">
+        <View className="flex-1 flex-row items-center gap-3 px-4">
+          <ActivityIndicator />
+          <View className="flex-1">
+            <AppText className="text-sm text-muted">
+              {state === "downloading" ? "Downloading…" : "Preparing file…"}
+            </AppText>
+            {pct != null ? (
+              <AppText className="text-xs text-muted">{pct}%</AppText>
+            ) : null}
+          </View>
+        </View>
+        {state === "downloading" ? (
+          <View className="h-1 bg-default-200 w-full">
+            <View
+              style={{
+                width: progress != null ? `${progress * 100}%` : "100%",
+                opacity: progress != null ? 1 : 0.3,
+              }}
+              className="h-full bg-accent"
+            />
+          </View>
+        ) : null}
       </View>
     );
   }
 
   if (state === "failed") {
     return (
-      <View className="w-full h-20 bg-default rounded-xl flex-row items-center gap-3 px-4">
+      <View className="w-full h-20 bg-surface-secondary rounded-xl flex-row items-center gap-3 px-4">
         <Icon name="WarningCircleIcon" size={24} color="#ef4444" />
         <AppText className="flex-1 text-sm text-muted">
           Failed to load file
@@ -60,7 +82,7 @@ export const AttachmentFile = ({ file, fileName }: Props) => {
   }
 
   return (
-    <View className="w-full h-20 bg-default rounded-xl items-center justify-center">
+    <View className="w-full h-20 bg-surface-secondary rounded-xl items-center justify-center">
       <AppText className="text-sm text-muted">
         Cannot preview this file type
       </AppText>

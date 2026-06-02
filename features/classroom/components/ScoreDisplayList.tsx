@@ -5,7 +5,7 @@ import {
   useClassroomStudents,
   useStudentScoresForActivity,
 } from "@/features/classroom/classroom.hooks";
-import { FlashList } from "@shopify/flash-list";
+import { ScreenList } from "@/components/ScreenList";
 import { AppText } from "@/components/AppText";
 import { Avatar, Card, Skeleton } from "heroui-native";
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
@@ -58,7 +58,7 @@ const ScoreDisplayList = ({
     );
 
   return (
-    <FlashList
+    <ScreenList
       className="max-w-3xl w-full mx-auto"
       data={validStudents}
       renderItem={({ item }) => {

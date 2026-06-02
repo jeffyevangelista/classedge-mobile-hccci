@@ -1,6 +1,7 @@
-import { type InferSelectModel, relations, sql } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createId } from "@paralleldrive/cuid2";
+import { type InferSelectModel, relations, sql } from "drizzle-orm";
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
 const utcNow = sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'NOW'))`;
 
 export const accountsTable = sqliteTable("accounts_customuser", {
@@ -102,6 +103,9 @@ export const studentEnrolledCoursesTable = sqliteTable(
     subjectId: integer("subject_id").notNull(),
     isActiveSemester: integer("is_active_semester").notNull(),
   },
+  (t) => [
+    index("idx_enrollment_student_active").on(t.studentId, t.isActiveSemester),
+  ],
 );
 
 export const courseScheduleTable = sqliteTable("subject_schedule", {
@@ -127,17 +131,21 @@ export const courseScheduleRelations = relations(
   }),
 );
 
-export const materialsTable = sqliteTable("module_module", {
-  id: integer("id").primaryKey(),
-  fileName: text("file_name").notNull(),
-  file: text("file").notNull(),
-  iframeCode: text("iframe_code").notNull(),
-  url: text("url").notNull(),
-  startDate: text("start_date").notNull(),
-  endDate: text("end_date").notNull(),
-  description: text("description").notNull(),
-  subjectId: integer("subject_id").notNull(),
-});
+export const materialsTable = sqliteTable(
+  "module_module",
+  {
+    id: integer("id").primaryKey(),
+    fileName: text("file_name").notNull(),
+    file: text("file").notNull(),
+    iframeCode: text("iframe_code").notNull(),
+    url: text("url").notNull(),
+    startDate: text("start_date").notNull(),
+    endDate: text("end_date").notNull(),
+    description: text("description").notNull(),
+    subjectId: integer("subject_id").notNull(),
+  },
+  (t) => [index("idx_module_subject").on(t.subjectId)],
+);
 
 export const studentEnrolledCoursesRelations = relations(
   studentEnrolledCoursesTable,
@@ -160,7 +168,11 @@ export const studentEnrolledCoursesRelations = relations(
 
 export const notificationsTable = sqliteTable("logs_notification", {
   id: integer("id").primaryKey(),
-  entityId: integer("entity_id").notNull(),
+  // Server stores entity_id as VARCHAR(36) so it can hold any identifier
+  // shape — stringified integer PK for announcement/event/lesson/module,
+  // CUID for activity. Must be declared as text here; declaring integer
+  // coerces CUIDs to NaN and breaks routing for activity notifications.
+  entityId: text("entity_id").notNull(),
   entityType: text("entity_type").notNull(),
   message: text("message").notNull(),
   isRead: integer("is_read").notNull(),
@@ -244,34 +256,46 @@ export const announcementEventRelations = relations(
   }),
 );
 
-export const assessmentTable = sqliteTable("activity_activity", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  activityName: text("activity_name").notNull(),
-  startTime: text("start_time").notNull(),
-  endTime: text("end_time").notNull(),
-  showScore: integer("show_score", { mode: "boolean" }).notNull(),
-  maxRetake: integer("max_retake").notNull(),
-  timeDuration: integer("time_duration").notNull(),
-  maxScore: integer("max_score").notNull(),
-  passingScore: integer("passing_score").notNull(),
-  passingScoreType: text("passing_score_type").notNull(),
-  retakeMethod: text("retake_method").notNull(),
-  activityInstruction: text("activity_instruction").notNull(),
-  isGraded: integer("is_graded", { mode: "boolean" }).notNull(),
-  shuffleQuestions: integer("shuffle_questions", { mode: "boolean" }).notNull(),
-  subjectId: integer("subject_id").notNull(),
-  activityTypeId: integer("activity_type_id").notNull(),
-  classroomMode: integer("classroom_mode", { mode: "boolean" }).notNull(),
-  localId: text("local_id")
-    .notNull()
-    .unique()
-    .$defaultFn(() => createId()),
-  termId: integer("term_id").notNull(),
-  activityFileInstruction: text("activity_file_instruction").notNull(),
-  allowLate: integer("allow_late", { mode: "boolean" }),
-});
+export const assessmentTable = sqliteTable(
+  "activity_activity",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    activityName: text("activity_name").notNull(),
+    startTime: text("start_time").notNull(),
+    endTime: text("end_time").notNull(),
+    showScore: integer("show_score", { mode: "boolean" }).notNull(),
+    maxRetake: integer("max_retake").notNull(),
+    timeDuration: integer("time_duration").notNull(),
+    maxScore: integer("max_score").notNull(),
+    passingScore: integer("passing_score").notNull(),
+    passingScoreType: text("passing_score_type").notNull(),
+    retakeMethod: text("retake_method").notNull(),
+    activityInstruction: text("activity_instruction").notNull(),
+    isGraded: integer("is_graded", { mode: "boolean" }).notNull(),
+    shuffleQuestions: integer("shuffle_questions", {
+      mode: "boolean",
+    }).notNull(),
+    subjectId: integer("subject_id").notNull(),
+    activityTypeId: integer("activity_type_id").notNull(),
+    classroomMode: integer("classroom_mode", { mode: "boolean" }).notNull(),
+    localId: text("local_id")
+      .notNull()
+      .unique()
+      .$defaultFn(() => createId()),
+    termId: integer("term_id").notNull(),
+    activityFileInstruction: text("activity_file_instruction").notNull(),
+    allowLate: integer("allow_late", { mode: "boolean" }),
+  },
+  (t) => [
+    index("idx_activity_subject_mode_start").on(
+      t.subjectId,
+      t.classroomMode,
+      t.startTime,
+    ),
+  ],
+);
 
 export const assessmentRelations = relations(assessmentTable, ({ one }) => ({
   subjectId: one(coursesTable, {
@@ -280,21 +304,28 @@ export const assessmentRelations = relations(assessmentTable, ({ one }) => ({
   }),
 }));
 
-export const studentAssessment = sqliteTable("activity_studentactivity", {
-  localId: text("local_id")
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  id: text("id").notNull(),
-  studentId: integer("student_id").notNull(),
-  activityId: text("activity_id").notNull(),
-  termId: integer("term_id").notNull(),
-  subjectId: integer("subject_id").notNull(),
-  retakeCount: integer("retake_count").notNull(),
-  totalScore: integer("total_score").notNull(),
-  isEditable: integer("is_editable").notNull(),
-  activityLocalId: text("activity_local_id").notNull(),
-  file: text("file"),
-});
+export const studentAssessment = sqliteTable(
+  "activity_studentactivity",
+  {
+    localId: text("local_id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    id: text("id").notNull(),
+    studentId: integer("student_id").notNull(),
+    activityId: text("activity_id").notNull(),
+    termId: integer("term_id").notNull(),
+    subjectId: integer("subject_id").notNull(),
+    retakeCount: integer("retake_count").notNull(),
+    totalScore: integer("total_score").notNull(),
+    isEditable: integer("is_editable").notNull(),
+    activityLocalId: text("activity_local_id").notNull(),
+    file: text("file"),
+  },
+  (t) => [
+    index("idx_studentactivity_student_activity").on(t.studentId, t.activityId),
+    index("idx_studentactivity_activity_local").on(t.activityLocalId),
+  ],
+);
 
 export const studentAssessmentRelations = relations(
   studentAssessment,
@@ -323,25 +354,34 @@ export const studentAssessmentRelations = relations(
   }),
 );
 
-export const attemptsTable = sqliteTable("activity_retakerecord", {
-  id: text("id").primaryKey(),
-  studentActivityId: text("student_activity_id").notNull(),
-  retakeNumber: integer("retake_number").notNull(),
-  score: integer("score").notNull(),
-  status: text("status").notNull(),
-  startedAt: text("started_at").notNull(),
-  willEndAt: text("will_end_at").notNull(),
-  studentId: integer("student_id").notNull(),
-  duration: integer("duration").notNull(),
-  localId: text("local_id")
-    .notNull()
-    .$defaultFn(() => createId()),
-  activityId: text("activity_id").notNull(),
-  questionOrder: text("question_order").notNull().default("[]"),
-  lastIndex: integer("last_index").notNull().default(0),
-  lastHeartbeatAt: text("last_heartbeat_at").notNull().default(utcNow),
-  totalElapsedSeconds: integer("total_elapsed_seconds").notNull().default(0),
-});
+export const attemptsTable = sqliteTable(
+  "activity_retakerecord",
+  {
+    id: text("id").primaryKey(),
+    studentActivityId: text("student_activity_id").notNull(),
+    retakeNumber: integer("retake_number").notNull(),
+    score: integer("score").notNull(),
+    status: text("status").notNull(),
+    startedAt: text("started_at").notNull(),
+    willEndAt: text("will_end_at").notNull(),
+    studentId: integer("student_id").notNull(),
+    duration: integer("duration").notNull(),
+    localId: text("local_id")
+      .notNull()
+      .$defaultFn(() => createId()),
+    activityId: text("activity_id").notNull(),
+    questionOrder: text("question_order").notNull().default("[]"),
+    lastIndex: integer("last_index").notNull().default(0),
+    lastHeartbeatAt: text("last_heartbeat_at").notNull().default(utcNow),
+    totalElapsedSeconds: integer("total_elapsed_seconds").notNull().default(0),
+  },
+  (t) => [
+    index("idx_retakerecord_studentactivity_status").on(
+      t.studentActivityId,
+      t.status,
+    ),
+  ],
+);
 
 export const attemptsRelations = relations(attemptsTable, ({ one }) => ({
   studentActivity: one(studentAssessment, {

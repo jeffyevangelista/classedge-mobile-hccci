@@ -1,5 +1,6 @@
 import { View, StyleSheet, ScrollView } from "react-native";
 import React, { memo } from "react";
+import { useStatus } from "@powersync/react-native";
 import { usePendingAssessments } from "../courses.hooks";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
@@ -7,6 +8,7 @@ import { Card, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import { Assessment } from "../courses.types";
 import { getApiErrorMessage } from "@/lib/api-error";
+import SyncingPill from "@/features/sync/components/SyncingPill";
 
 const PendingAssessmentList = ({
   subjectId,
@@ -16,24 +18,41 @@ const PendingAssessmentList = ({
   horizontal: boolean;
 }) => {
   const { data, isError, error, isLoading } = usePendingAssessments(subjectId);
+  const status = useStatus();
+  const priorityTwoSynced = status.statusForPriority(2).hasSynced === true;
 
   if (isLoading) {
     return (
-      <ScrollView
-        horizontal={horizontal}
-        showsHorizontalScrollIndicator={false}
-      >
-        {Array(5)
-          .fill(0)
-          .map((_, index) => (
-            <LoadingSkeleton key={index} />
-          ))}
-      </ScrollView>
+      <View>
+        <View className="px-5 pb-1">
+          <SyncingPill priority={2} />
+        </View>
+        <ScrollView
+          horizontal={horizontal}
+          showsHorizontalScrollIndicator={false}
+        >
+          {Array(5)
+            .fill(0)
+            .map((_, index) => (
+              <LoadingSkeleton key={index} />
+            ))}
+        </ScrollView>
+      </View>
     );
   }
   if (isError) return <ErrorComponent message={getApiErrorMessage(error)} />;
 
-  if (!data || data.length === 0)
+  if (!data || data.length === 0) {
+    // While priority-2 data is still streaming in, we can't confidently
+    // claim the user has nothing pending — show the pill alone, not the
+    // celebratory empty state.
+    if (!priorityTwoSynced) {
+      return (
+        <View className="w-full items-center justify-center max-w-2xl mx-auto py-4">
+          <SyncingPill priority={2} label="Loading assessments…" />
+        </View>
+      );
+    }
     return (
       <View className="w-full items-center justify-center max-w-2xl mx-auto">
         <View className="p-2 bg-emerald-100 rounded-full">
@@ -45,20 +64,26 @@ const PendingAssessmentList = ({
         </AppText>
       </View>
     );
+  }
 
   return (
-    <ScrollView
-      horizontal={horizontal}
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{
-        paddingHorizontal: 20,
-      }}
-    >
-      {Array.isArray(data) &&
-        data.map((assessment) => (
-          <AssessmentItem key={assessment.id} item={assessment} />
-        ))}
-    </ScrollView>
+    <View>
+      <View className="px-5 pb-1">
+        <SyncingPill priority={2} />
+      </View>
+      <ScrollView
+        horizontal={horizontal}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+        }}
+      >
+        {Array.isArray(data) &&
+          data.map((assessment) => (
+            <AssessmentItem key={assessment.id} item={assessment} />
+          ))}
+      </ScrollView>
+    </View>
   );
 };
 

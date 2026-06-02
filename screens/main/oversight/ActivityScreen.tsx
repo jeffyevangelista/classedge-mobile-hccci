@@ -8,7 +8,7 @@ import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { View } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 
 const ActivityScreen = () => {
@@ -43,7 +43,7 @@ const ActivityScreen = () => {
 
   return (
     <View className="flex-1 w-full max-w-3xl mx-auto bg-background">
-      <ScrollView
+      <ScreenScrollView
         className="pb-24"
         refreshControl={
           <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
@@ -96,7 +96,7 @@ const ActivityScreen = () => {
             )}
           </View>
         </View>
-      </ScrollView>
+      </ScreenScrollView>
     </View>
   );
 };
@@ -110,7 +110,7 @@ const LoadingComponent = ({
 }) => {
   return (
     <View className="flex-1 w-full max-w-3xl mx-auto p-2.5 bg-background">
-      <ScrollView
+      <ScreenScrollView
         refreshControl={
           <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
         }
@@ -131,7 +131,7 @@ const LoadingComponent = ({
             <Skeleton className="rounded-full h-16" />
           </View>
         </View>
-      </ScrollView>
+      </ScreenScrollView>
       <View className="bg-surface-secondary absolute bottom-0 left-0 right-0 z-10 p-4">
         <Skeleton className="h-12 w-full max-w-3xl mx-auto rounded-full" />
       </View>

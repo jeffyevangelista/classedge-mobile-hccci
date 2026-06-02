@@ -124,7 +124,7 @@ const AttemptCard = ({
 
   const card = (
     <Surface
-      variant={isOngoing ? "default" : "tertiary"}
+      variant="secondary"
       className={`rounded-xl shadow-none flex-row items-center justify-between px-3 py-3 ${
         isOngoing ? "border-l-4 border-l-accent" : ""
       }`}
@@ -158,7 +158,7 @@ const AssessmentAttemptsSkeleton = () => {
         .map((_, index) => (
           <Surface
             key={index}
-            variant="tertiary"
+            variant="secondary"
             className="rounded-xl shadow-none flex-row items-center justify-between px-3 py-3"
           >
             <Skeleton className="h-4 w-32 rounded" />

@@ -1,8 +1,15 @@
 import { useQuery } from "@powersync/react-native";
-import { useCallback } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { extractAttachmentId } from "../attachments.config";
-import { retryAttachment } from "../attachments.api";
-import { type AttachmentState } from "../attachments.schema";
+import { bumpAttachmentPriority, retryAttachment } from "../attachments.api";
+import {
+  ATTACHMENT_STATES,
+  type AttachmentState,
+} from "../attachments.schema";
+import {
+  getAttachmentProgress,
+  subscribeAttachmentProgress,
+} from "../attachments.progress";
 
 type Row = {
   state: AttachmentState;
@@ -15,6 +22,12 @@ export type UseAttachmentResult = {
   state: AttachmentState | "unknown";
   error: string | undefined;
   retry: () => void;
+  /**
+   * Fractional download progress in [0, 1] while DOWNLOADING. `undefined`
+   * when not downloading or when the server didn't send Content-Length
+   * (chunked encoding) — render an indeterminate indicator in that case.
+   */
+  progress: number | undefined;
 };
 
 export function useAttachment(
@@ -29,13 +42,49 @@ export function useAttachment(
 
   const row = id ? data[0] : undefined;
 
+  // Whenever this hook is mounted with a non-SYNCED attachment, bump it
+  // to priority 1 — the same tier the watcher gives profile/subject
+  // photos. Lighter than the push pre-enqueue (priority 0), so explicit
+  // push targets still win. Re-runs on state transitions so a row that
+  // arrives via PowerSync after mount also gets the bump. Idempotent at
+  // the SQL level (MIN priority, SYNCED-filter), so cheap to re-fire.
+  useEffect(() => {
+    if (!id) return;
+    if (row?.state === ATTACHMENT_STATES.SYNCED) return;
+    void bumpAttachmentPriority([id], 1);
+  }, [id, row?.state]);
+
   const retry = useCallback(() => {
     if (!id) return;
     void retryAttachment(id);
   }, [id]);
 
+  // Subscribe to the in-memory progress store. Stable subscribe/getSnapshot
+  // identities (memoized on id) keep React from churning subscriptions
+  // every render.
+  const subscribe = useCallback(
+    (cb: () => void) =>
+      id ? subscribeAttachmentProgress(id, cb) : () => {},
+    [id],
+  );
+  const getSnapshot = useCallback(
+    () => (id ? getAttachmentProgress(id) : undefined),
+    [id],
+  );
+  const progressEntry = useSyncExternalStore(subscribe, getSnapshot);
+  const progress =
+    progressEntry && progressEntry.fraction >= 0
+      ? progressEntry.fraction
+      : undefined;
+
   if (!id || !row) {
-    return { uri: undefined, state: "unknown", error: undefined, retry };
+    return {
+      uri: undefined,
+      state: "unknown",
+      error: undefined,
+      retry,
+      progress,
+    };
   }
 
   return {
@@ -43,5 +92,6 @@ export function useAttachment(
     state: row.state,
     error: row.error ?? undefined,
     retry,
+    progress,
   };
 }

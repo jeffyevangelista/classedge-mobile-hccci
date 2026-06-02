@@ -6,27 +6,22 @@ import {
   completeOnboarding,
   forgotPassword,
   getActiveLegalDocuments,
+  getPublicLegalDocuments,
   login,
-  msLogin,
   resetPassword,
   verifyOtp,
 } from "./auth.apis";
 import { refresh } from "./refreshToken";
+import { hydrateSession } from "./hydrateSession";
 import type { AuthResponse, LoginCredentials } from "./auth.types";
 import { useToast } from "heroui-native";
 import { useRouter } from "expo-router";
 
 export const useLogin = () => {
-  const { setAccessToken, setRefreshToken, setPowersyncToken } =
-    useStore.getState();
   return useMutation({
     mutationKey: ["login"],
     mutationFn: (payload: LoginCredentials) => login(payload),
-    onSuccess: async (data: AuthResponse) => {
-      setAccessToken(data.accessToken);
-      setPowersyncToken(data.powersyncToken);
-      await setRefreshToken(data.refreshToken);
-    },
+    onSuccess: (data: AuthResponse) => hydrateSession(data),
   });
 };
 
@@ -81,39 +76,19 @@ export const useResetPassword = () => {
   });
 };
 
-export const useMsLogin = () => {
-  const {
-    setAccessToken,
-    setRefreshToken,
-    setPowersyncToken,
-    clearCredentials,
-  } = useStore.getState();
-  const { toast } = useToast();
-
-  return useMutation({
-    mutationKey: ["ms-login"],
-    mutationFn: (token: string) => msLogin(token),
-    onSuccess: async (data: AuthResponse) => {
-      console.log(data);
-      setAccessToken(data.accessToken);
-      setPowersyncToken(data.powersyncToken);
-      await setRefreshToken(data.refreshToken);
-    },
-    onError: async (error) => {
-      await clearCredentials();
-      toast.show({
-        variant: "danger",
-        label: "Something went wrong",
-        description: getApiErrorMessage(error),
-      });
-    },
-  });
-};
-
 export const useActiveLegalDocuments = () => {
   return useQuery({
     queryKey: ["active-legal-documents"],
     queryFn: getActiveLegalDocuments,
+  });
+};
+
+export const usePublicLegalDocuments = (enabled = true) => {
+  return useQuery({
+    queryKey: ["public-legal-documents"],
+    queryFn: getPublicLegalDocuments,
+    enabled,
+    staleTime: 5 * 60 * 1000,
   });
 };
 

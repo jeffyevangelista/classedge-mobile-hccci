@@ -14,7 +14,8 @@ import {
 import { getApiErrorMessage } from "@/lib/api-error";
 import { Card, Select, Separator, Skeleton } from "heroui-native";
 import { useEffect, useMemo, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 
 const PASSING_GRADE = 75;
@@ -108,7 +109,7 @@ const AcademicRecordsScreen = () => {
 
   return (
     <Screen>
-      <ScrollView
+      <ScreenScrollView
         className="flex-1"
         contentContainerClassName="p-3 pb-8 gap-4 mx-auto w-full max-w-3xl"
         refreshControl={
@@ -130,7 +131,7 @@ const AcademicRecordsScreen = () => {
             description="There are no grades recorded for the selected term yet."
           />
         )}
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
 };

@@ -1,17 +1,21 @@
-import { Pressable, ScrollView, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Avatar, Separator, Skeleton, Surface } from "heroui-native";
+import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
-import { Icon } from "@/components/Icon";
-import ErrorFallback from "@/components/ErrorFallback";
-import NoDataFallback from "@/components/NoDataFallback";
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
-import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import ErrorFallback from "@/components/ErrorFallback";
+import { Icon } from "@/components/Icon";
+import NoDataFallback from "@/components/NoDataFallback";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { useAnnouncement } from "@/features/announcements/announcements.hooks";
+import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import {
   formatDate,
   formatTime,
 } from "@/features/calendar/components/date-formatter";
+import HydrationDebugPill from "@/features/notifications/HydrationDebugPill";
+import { makeEntityKey } from "@/features/notifications/pushPayloadCache";
+import { useEntityFromPushOrSync } from "@/features/notifications/useEntityFromPushOrSync";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { toTitleCase } from "@/utils/toTitleCase";
 
@@ -20,9 +24,24 @@ const AnnouncementDetailsScreen = () => {
   const numericId = Number(announcementId);
   const router = useRouter();
 
-  const { data, isLoading, error, refresh } =
-    useAnnouncement(numericId);
-  const announcement = data?.[0];
+  const watch = useAnnouncement(numericId);
+  const localAnnouncement = watch.data?.[0] ?? null;
+
+  const announcementEntityKey = makeEntityKey("announcement", numericId);
+  const {
+    data: announcement,
+    source, // [push-hydrate verify]
+    isResolving,
+    isMissing,
+    error,
+    retry,
+  } = useEntityFromPushOrSync({
+    entityKey: announcementEntityKey,
+    localData: localAnnouncement,
+    localIsLoading: watch.isLoading,
+    // apiFetch intentionally omitted: no REST endpoint exists for a
+    // single announcement today. Payload + watch are sufficient.
+  });
 
   if (!Number.isFinite(numericId) || numericId <= 0) {
     return (
@@ -34,15 +53,24 @@ const AnnouncementDetailsScreen = () => {
     );
   }
 
-  if (isLoading) return <AnnouncementDetailsSkeleton />;
+  if (!announcement && isResolving) return <AnnouncementDetailsSkeleton />;
 
-  if (error) {
+  // Show the error fallback only when we have no data to render. If
+  // payload or REST is already populating `announcement`, swallow a
+  // transient watch error rather than disrupting the user.
+  if (!announcement && (watch.error ?? error)) {
     return (
-      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refresh} />
+      <ErrorFallback
+        message={getApiErrorMessage(watch.error ?? error)}
+        onRefetch={() => {
+          watch.refresh?.();
+          retry();
+        }}
+      />
     );
   }
 
-  if (!announcement) {
+  if (!announcement && isMissing) {
     return (
       <NoDataFallback
         icon="MegaphoneIcon"
@@ -52,23 +80,30 @@ const AnnouncementDetailsScreen = () => {
     );
   }
 
+  if (!announcement) return null;
+
   const authorName = toTitleCase(
     `${announcement.createdById.firstName} ${announcement.createdById.lastName}`,
   );
 
   return (
-    <ScrollView
-      contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
+    <ScreenScrollView
+      contentContainerStyle={{ flexGrow: 1 }}
       showsVerticalScrollIndicator={false}
     >
       <View className="w-full max-w-3xl mx-auto px-5 pt-2 gap-4">
+        {/* [push-hydrate verify] */}
+        <HydrationDebugPill
+          entityKey={announcementEntityKey}
+          source={source}
+          isResolving={isResolving}
+          isMissing={isMissing}
+        />
         <View className="flex-row items-center gap-2">
-          <Avatar
-            alt={authorName}
-            size="sm"
-            className="border border-border"
-          >
-            <AttachmentAvatarImage path={announcement.createdById.studentPhoto} />
+          <Avatar alt={authorName} size="sm" className="border border-border">
+            <AttachmentAvatarImage
+              path={announcement.createdById.studentPhoto}
+            />
             <AvatarFallbackImage />
           </Avatar>
           <View>
@@ -108,7 +143,7 @@ const AnnouncementDetailsScreen = () => {
           </>
         )}
       </View>
-    </ScrollView>
+    </ScreenScrollView>
   );
 };
 

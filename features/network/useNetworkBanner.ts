@@ -1,5 +1,10 @@
 import useStore from "@/lib/store";
+import { useStatus } from "@powersync/react-native";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { useEffect, useRef, useState } from "react";
+
+dayjs.extend(relativeTime);
 
 export type NetworkBannerState = "hidden" | "offline" | "reconnecting" | "online";
 
@@ -8,6 +13,7 @@ const BACK_ONLINE_DISPLAY_MS = 2000;
 export const useNetworkBanner = () => {
   const { isConnected, isInternetReachable } = useStore();
   const isOnline = isConnected && isInternetReachable;
+  const { lastSyncedAt } = useStatus();
 
   const [bannerState, setBannerState] = useState<NetworkBannerState>("hidden");
   const wasOfflineRef = useRef(false);
@@ -48,9 +54,14 @@ export const useNetworkBanner = () => {
     }
   };
 
+  const lastSyncedLabel = lastSyncedAt
+    ? `synced ${dayjs(lastSyncedAt).fromNow()}`
+    : null;
+
   return {
     bannerState,
     isVisible: bannerState !== "hidden",
     setReconnecting,
+    lastSyncedLabel,
   };
 };

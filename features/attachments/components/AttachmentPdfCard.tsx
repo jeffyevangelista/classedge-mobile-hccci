@@ -8,7 +8,6 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import * as FileSystem from "expo-file-system/legacy";
 import * as IntentLauncher from "expo-intent-launcher";
 import WebView from "react-native-webview";
@@ -109,8 +108,6 @@ const FullscreenPdfView = ({
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const bg = isDark ? "#1a1a1a" : "#f5f5f5";
-  const closeBg = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)";
-  const closeColor = isDark ? "#e5e5e5" : "#333";
 
   return (
     <>
@@ -118,32 +115,33 @@ const FullscreenPdfView = ({
         hidden={false}
         barStyle={isDark ? "light-content" : "dark-content"}
       />
-      <SafeAreaView style={{ flex: 1, backgroundColor: bg }}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            backgroundColor: bg,
-          }}
-        >
-          <TouchableOpacity
-            onPress={onClose}
-            accessibilityRole="button"
-            accessibilityLabel="Close"
-            style={{ backgroundColor: closeBg, borderRadius: 8, padding: 6 }}
-          >
-            <Icon name="XIcon" size={20} color={closeColor} />
-          </TouchableOpacity>
-        </View>
+      <View style={{ flex: 1, backgroundColor: bg }}>
         <WebView
           source={{ uri }}
           style={{ flex: 1 }}
           originWhitelist={["*"]}
           javaScriptEnabled
         />
-      </SafeAreaView>
+        <TouchableOpacity
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+          style={{
+            position: "absolute",
+            top: 60,
+            right: 16,
+            width: 44,
+            height: 44,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.55)",
+            borderRadius: 22,
+            zIndex: 100001,
+          }}
+        >
+          <Icon name="XIcon" size={24} color="#ffffff" />
+        </TouchableOpacity>
+      </View>
     </>
   );
 };

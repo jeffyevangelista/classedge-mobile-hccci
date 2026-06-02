@@ -1,5 +1,6 @@
 import { AppText } from "@/components/AppText";
 import Image from "@/components/Image";
+import { LegalContent } from "@/features/auth/components/LegalContent";
 import {
   useActiveLegalDocuments,
   useCompleteOnboarding,
@@ -103,7 +104,7 @@ const OnboardingScreen = () => {
           <AppText weight="semibold" className="text-2xl mt-4 text-center">
             Almost there!
           </AppText>
-          <AppText className="text-sm text-gray-500 text-center mt-2 px-8">
+          <AppText className="text-sm text-muted text-center mt-2 px-8">
             Please review and accept our terms to continue using Classedge.
           </AppText>
         </View>
@@ -114,7 +115,7 @@ const OnboardingScreen = () => {
             Terms & Agreements
           </AppText>
 
-          <AppText className="text-sm text-gray-500 mt-1 mb-4">
+          <AppText className="text-sm text-muted mt-1 mb-4">
             Please review the following agreements before continuing.
           </AppText>
 
@@ -125,7 +126,7 @@ const OnboardingScreen = () => {
               <AppText weight="semibold" className="text-base text-center mb-2">
                 You're offline
               </AppText>
-              <AppText className="text-sm text-gray-500 text-center mb-4">
+              <AppText className="text-sm text-muted text-center mb-4">
                 An internet connection is required to load the legal agreements.
                 Please connect and try again.
               </AppText>
@@ -140,7 +141,7 @@ const OnboardingScreen = () => {
               <AppText weight="semibold" className="text-base text-center mb-2">
                 Failed to load agreements
               </AppText>
-              <AppText className="text-sm text-gray-500 text-center mb-4">
+              <AppText className="text-sm text-muted text-center mb-4">
                 {getApiErrorMessage(error)}
               </AppText>
               <Button variant="outline" onPress={() => refetch()}>
@@ -158,7 +159,7 @@ const OnboardingScreen = () => {
       </ScrollView>
 
       {/* Checkbox + buttons pinned to bottom */}
-      <View className="border-t border-gray-200 pt-4 px-6 pb-2 self-center w-full max-w-3xl">
+      <View className="border-t border-border pt-4 px-6 pb-2 self-center w-full max-w-3xl">
         <ControlField
           isDisabled={completeOnboardingMutation.isPending || !hasDocuments}
           isSelected={accepted}
@@ -209,7 +210,7 @@ const LegalSkeleton = () => (
       <View key={i} className="mb-6">
         <Skeleton className="h-5 w-48 rounded mb-2" />
         <Skeleton className="h-3 w-24 rounded mb-3" />
-        <View className="pl-3 border-l-2 border-primary-200 gap-2">
+        <View className="pl-3 border-l-2 border-border gap-2">
           <Skeleton className="h-3 w-full rounded" />
           <Skeleton className="h-3 w-full rounded" />
           <Skeleton className="h-3 w-3/4 rounded" />
@@ -219,41 +220,6 @@ const LegalSkeleton = () => (
   </View>
 );
 
-/**
- * Split raw legal-doc content into structured blocks.
- *
- * Rules:
- *  - Paragraphs are separated by blank-ish lines (`\r\n\r\n` or `\r\n \r\n`).
- *  - A paragraph whose first line matches `<number>. <Title>` is treated as a
- *    headed section; everything after the first line is the body.
- *  - All other paragraphs are plain body text.
- */
-type ContentBlock =
-  | { kind: "heading"; title: string; body: string }
-  | { kind: "text"; body: string };
-
-const HEADING_RE = /^(\d+)\.\s+(.+)/;
-
-function parseContent(raw: string): ContentBlock[] {
-  const paragraphs = raw
-    .split(/\r?\n\s*\r?\n/)
-    .map((p) => p.trim())
-    .filter(Boolean);
-
-  return paragraphs.map((p) => {
-    const lines = p.split(/\r?\n/).map((l) => l.trim());
-    const match = lines[0].match(HEADING_RE);
-
-    if (match) {
-      const title = match[2];
-      const body = lines.slice(1).join("\n").trim();
-      return { kind: "heading", title, body };
-    }
-
-    return { kind: "text", body: lines.join("\n") };
-  });
-}
-
 const LegalSection = ({
   index,
   document,
@@ -262,38 +228,19 @@ const LegalSection = ({
   document: LegalDocument;
 }) => {
   const label = DOC_LABELS[document.docType] ?? document.title;
-  const blocks = useMemo(
-    () => parseContent(document.content),
-    [document.content],
-  );
 
   return (
     <View className="mb-6">
       <AppText weight="bold" className="text-base mb-1">
         {index}. {label}
       </AppText>
-      <AppText className="text-xs text-gray-400 mb-3">
+      <AppText className="text-xs text-muted mb-3">
         Version {document.version}
       </AppText>
 
-      {blocks.map((block, i) =>
-        block.kind === "heading" ? (
-          <View key={i} className="mb-3 pl-3 border-l-2 border-primary-200">
-            <AppText weight="semibold" className="text-sm mb-1">
-              {block.title}
-            </AppText>
-            {block.body ? (
-              <AppText className="text-xs text-gray-600 leading-5">
-                {block.body}
-              </AppText>
-            ) : null}
-          </View>
-        ) : (
-          <AppText key={i} className="text-xs text-gray-600 leading-5 mb-3">
-            {block.body}
-          </AppText>
-        ),
-      )}
+      <View className="pl-3 border-l-2 border-border">
+        <LegalContent content={document.content} />
+      </View>
     </View>
   );
 };

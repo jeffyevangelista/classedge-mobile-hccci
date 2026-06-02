@@ -25,3 +25,12 @@ export const deleteMMKVItem = (key: string): void => {
     console.log(`Error deleting item with key ${key} from MMKV`, error);
   }
 };
+
+export const getAllMMKVKeys = (): string[] => {
+  try {
+    return storage.getAllKeys();
+  } catch (error) {
+    console.log("Error getting all MMKV keys", error);
+    return [];
+  }
+};

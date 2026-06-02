@@ -3,7 +3,7 @@ import { RefreshIndicator } from "@/components/RefreshIndicator";
 import React, { useCallback, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { useCourseDetails, useCourseStudents } from "../courses.hooks";
-import { FlashList } from "@shopify/flash-list";
+import { ScreenList } from "@/components/ScreenList";
 import Image from "@/components/Image";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import { AppText } from "@/components/AppText";
@@ -67,7 +67,7 @@ const CourseDetails = () => {
   if (isLoadingDetails) return <CourseDetailsSkeleton />;
 
   return (
-    <FlashList
+    <ScreenList
       className="w-full"
       refreshControl={
         <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />

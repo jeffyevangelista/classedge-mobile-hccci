@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
@@ -27,7 +26,7 @@ export const AttachmentVideoCard = ({ uri, fileName }: Props) => {
         onPress={() => setFullscreen(true)}
         accessibilityRole="button"
         accessibilityLabel={`Play video ${fileName}`}
-        className="flex-row items-center gap-3 bg-default rounded-xl px-4 py-3"
+        className="flex-row items-center gap-3 bg-surface-secondary rounded-xl px-4 py-3"
       >
         <View className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/50 items-center justify-center shrink-0">
           <Icon name="FilmSlateIcon" size={20} color="#9333ea" />
@@ -77,29 +76,7 @@ const FullscreenVideoView = ({
   return (
     <>
       <StatusBar hidden={false} barStyle="light-content" />
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            backgroundColor: "#000",
-          }}
-        >
-          <TouchableOpacity
-            onPress={onClose}
-            accessibilityRole="button"
-            accessibilityLabel="Close"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.12)",
-              borderRadius: 8,
-              padding: 6,
-            }}
-          >
-            <Icon name="XIcon" size={20} color="#e5e5e5" />
-          </TouchableOpacity>
-        </View>
+      <View style={{ flex: 1, backgroundColor: "#000" }}>
         <VideoView
           player={player}
           style={{ flex: 1, backgroundColor: "#000" }}
@@ -107,7 +84,26 @@ const FullscreenVideoView = ({
           allowsPictureInPicture
           contentFit="contain"
         />
-      </SafeAreaView>
+        <TouchableOpacity
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+          style={{
+            position: "absolute",
+            top: 60,
+            right: 16,
+            width: 44,
+            height: 44,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.55)",
+            borderRadius: 22,
+            zIndex: 100001,
+          }}
+        >
+          <Icon name="XIcon" size={24} color="#ffffff" />
+        </TouchableOpacity>
+      </View>
     </>
   );
 };

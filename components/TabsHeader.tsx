@@ -38,16 +38,12 @@ const TabsHeader = () => {
     >
       <Link href="/(main)/profile" asChild>
         <Pressable className="flex flex-row items-center gap-3 active:opacity-80">
-          <Avatar
-            size="md"
-            alt="user-profile"
-            className="border border-border"
-          >
+          <Avatar size="md" alt="user-profile" className="border border-border">
             <AttachmentAvatarImage path={userDetails?.studentPhoto} />
             <AvatarFallbackImage />
           </Avatar>
           <View>
-            <AppText className="text-[11px] text-muted uppercase tracking-wider">
+            <AppText className="text-[11px] text-muted tracking-wider">
               {greeting}
             </AppText>
             <AppText

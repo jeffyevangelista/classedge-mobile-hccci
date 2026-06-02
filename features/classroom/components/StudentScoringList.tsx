@@ -12,7 +12,8 @@ import {
   useStudentScoresForActivity,
 } from "@/features/classroom/classroom.hooks";
 import { upsertStudentScore } from "@/features/classroom/ classroom.service";
-import { FlashList, type FlashListRef } from "@shopify/flash-list";
+import type { FlashListRef } from "@shopify/flash-list";
+import { ScreenList } from "@/components/ScreenList";
 import { AppText } from "@/components/AppText";
 import { Card, Skeleton } from "heroui-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
@@ -343,7 +344,7 @@ const StudentScoringList = ({
         // keyboard appears, so scrollToIndex has somewhere to bring the
         // end-of-list rows into view above the keyboard.
         <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
-          <FlashList
+          <ScreenList
             ref={listRef}
             className=" w-full"
             data={displayStudents}

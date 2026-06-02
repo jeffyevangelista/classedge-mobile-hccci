@@ -1,18 +1,18 @@
+import { useCallback, useState } from "react";
+import { View } from "react-native";
 import { AppText } from "@/components/AppText";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import Screen from "@/components/screen";
 import AnnouncementList from "@/features/announcements/components/AnnouncementList";
 import ScheduleComponent from "@/features/announcements/components/ScheduleComponent";
-import { useCallback, useState } from "react";
-import { ScrollView, View } from "react-native";
+import CampusNewsSection from "@/features/campus-news/components/CampusNewsSection";
 import useStore from "@/lib/store";
 import { queryClient } from "@/providers/QueryProvider";
-import { useSafeBottomInset } from "@/hooks/useSafeBottomInset";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
 
 const HomeScreen = () => {
   const { authUser } = useStore();
   const [refreshing, setRefreshing] = useState(false);
-  const safeBottom = useSafeBottomInset();
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -24,10 +24,9 @@ const HomeScreen = () => {
 
   return (
     <Screen>
-      <ScrollView
+      <ScreenScrollView
         className="w-full"
         scrollIndicatorInsets={{ right: 1 }}
-        contentContainerStyle={{ paddingBottom: safeBottom + 20 }}
         refreshControl={
           <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -39,11 +38,13 @@ const HomeScreen = () => {
           </View>
         )}
 
+        <CampusNewsSection />
+
         <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
           <SectionHeader title="Announcements" />
         </View>
         <AnnouncementList />
-      </ScrollView>
+      </ScreenScrollView>
     </Screen>
   );
 };

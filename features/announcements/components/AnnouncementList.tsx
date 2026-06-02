@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, View } from "react-native";
-import { FlashList } from "@shopify/flash-list";
+import { ScreenList } from "@/components/ScreenList";
 import { Avatar, Card, Separator, Skeleton, Surface } from "heroui-native";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
@@ -12,106 +12,110 @@ import {
   formatTime,
 } from "@/features/calendar/components/date-formatter";
 import { useAnnouncementsWithEvents } from "../announcements.hooks";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { Event } from "@/powersync/schema";
-import React, { useState } from "react";
-import EventDetailModal from "@/features/calendar/components/EventDetailModal";
+import { router } from "expo-router";
+import React from "react";
 import { toTitleCase } from "@/utils/toTitleCase";
 
 const AnnouncementList = () => {
   const { data, error, isLoading, refresh } = useAnnouncementsWithEvents();
-  const [activeEventId, setActiveEventId] = useState<number | null>(null);
 
-  if (isLoading) return <AnnouncementSkeleton />;
+  const status = useSectionStatus({
+    data: data ?? [],
+    isEmpty: (d) => d.length === 0,
+    isLoading,
+  });
+
   if (error)
     return (
       <ErrorComponent message={getApiErrorMessage(error)} onRetry={refresh} />
     );
 
+  if (status.phase === "loading") return <AnnouncementSkeleton />;
+  if (status.phase === "offline-empty")
+    return <OfflineEmpty section="announcements" />;
+  if (status.phase === "empty")
+    return (
+      <EmptyState
+        icon="MegaphoneIcon"
+        title="No announcements yet"
+        description="Check back later for updates"
+      />
+    );
+
   return (
-    <>
-      <FlashList
-        scrollEnabled={false}
-        ListEmptyComponent={
-          <EmptyState
-            icon="MegaphoneIcon"
-            title="No announcements yet"
-            description="Check back later for updates"
-          />
-        }
-        data={data}
-        renderItem={({ item }) => {
-          const authorName = toTitleCase(
-            `${item.createdById.firstName} ${item.createdById.lastName}`,
-          );
-          return (
-            <View className="mb-3 max-w-3xl mx-auto w-full px-2.5">
-              <Card className="shadow-none rounded-xl">
-                <Card.Header>
-                  <View className="flex-row items-center gap-2">
-                    <Avatar
-                      alt={authorName}
-                      size="sm"
-                      className="border border-border"
-                    >
-                      <AttachmentAvatarImage
-                        path={item.createdById.studentPhoto}
-                      />
-                      <AvatarFallbackImage />
-                    </Avatar>
+    <ScreenList
+      scrollEnabled={false}
+      data={data}
+      renderItem={({ item }) => {
+        const authorName = toTitleCase(
+          `${item.createdById.firstName} ${item.createdById.lastName}`,
+        );
+        return (
+          <View className="mb-3 max-w-3xl mx-auto w-full px-2.5">
+            <Card className="shadow-none rounded-xl">
+              <Card.Header>
+                <View className="flex-row items-center gap-2">
+                  <Avatar
+                    alt={authorName}
+                    size="sm"
+                    className="border border-border"
+                  >
+                    <AttachmentAvatarImage
+                      path={item.createdById.studentPhoto}
+                    />
+                    <AvatarFallbackImage />
+                  </Avatar>
 
-                    <View>
-                      <AppText weight="semibold" className="text-base">
-                        {authorName}
-                      </AppText>
-                      <AppText className="text-xs text-muted">
-                        {formatDate(item.createdAt)}
-                      </AppText>
-                    </View>
+                  <View>
+                    <AppText weight="semibold" className="text-base">
+                      {authorName}
+                    </AppText>
+                    <AppText className="text-xs text-muted">
+                      {formatDate(item.createdAt)}
+                    </AppText>
                   </View>
-                </Card.Header>
-                <Separator className="my-2" />
+                </View>
+              </Card.Header>
+              <Separator className="my-2" />
 
-                <Card.Body className="gap-2.5">
-                  <AppText weight="semibold" className="text-lg">
-                    {item.title}
-                  </AppText>
-                  <AppText className="text-xs leading-relaxed">
-                    {item.description}
-                  </AppText>
-                  {item.events.length > 0 && (
-                    <>
-                      <AppText weight="semibold" className="text-base">
-                        Associated Events
-                      </AppText>
-                      <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                      >
-                        {item.events.map((event) => (
-                          <EventCard
-                            key={event.id}
-                            event={event.event}
-                            onPress={() => setActiveEventId(event.event.id)}
-                          />
-                        ))}
-                      </ScrollView>
-                    </>
-                  )}
-                </Card.Body>
-              </Card>
-            </View>
-          );
-        }}
-      />
-      <EventDetailModal
-        isOpen={activeEventId !== null}
-        setOpenChange={(open) => {
-          if (!open) setActiveEventId(null);
-        }}
-        eventId={activeEventId ?? 0}
-      />
-    </>
+              <Card.Body className="gap-2.5">
+                <AppText weight="semibold" className="text-lg">
+                  {item.title}
+                </AppText>
+                <AppText className="text-xs leading-relaxed">
+                  {item.description}
+                </AppText>
+                {item.events.length > 0 && (
+                  <>
+                    <AppText weight="semibold" className="text-base">
+                      Associated Events
+                    </AppText>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                    >
+                      {item.events.map((event) => (
+                        <EventCard
+                          key={event.id}
+                          event={event.event}
+                          onPress={() =>
+                            router.push(`/event/${event.event.id}`)
+                          }
+                        />
+                      ))}
+                    </ScrollView>
+                  </>
+                )}
+              </Card.Body>
+            </Card>
+          </View>
+        );
+      }}
+    />
   );
 };
 
@@ -158,7 +162,7 @@ const EventCard = ({
 
 const AnnouncementSkeleton = () => {
   return (
-    <FlashList
+    <ScreenList
       scrollEnabled={false}
       data={[1, 2, 3]}
       renderItem={() => (

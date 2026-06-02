@@ -1,3 +1,4 @@
+import * as FileSystem from "expo-file-system/legacy";
 import { powersync } from "@/powersync/system";
 import {
   ATTACHMENT_COLUMNS,
@@ -11,7 +12,10 @@ import { attachmentQueue } from "./attachments.queue";
 
 type Row = Record<string, unknown> & { [key: string]: unknown };
 
-async function scanColumn(cfg: AttachmentColumnConfig): Promise<void> {
+async function scanColumn(
+  cfg: AttachmentColumnConfig,
+  referenced: Set<string>,
+): Promise<void> {
   const rows = await powersync.getAll<Row>(
     `SELECT ${cfg.column} AS val FROM ${cfg.table} WHERE ${cfg.column} IS NOT NULL AND ${cfg.column} <> ''`,
   );
@@ -21,6 +25,7 @@ async function scanColumn(cfg: AttachmentColumnConfig): Promise<void> {
   for (const r of rows) {
     const id = extractAttachmentId(r.val as string | null | undefined);
     if (!id) continue;
+    referenced.add(id);
     await powersync.execute(
       `INSERT OR IGNORE INTO attachments_local
         (id, resource, source_table, source_col, priority, state, retry_count, updated_at)
@@ -53,13 +58,58 @@ async function scanColumn(cfg: AttachmentColumnConfig): Promise<void> {
   }
 }
 
+/**
+ * Drops attachments_local rows whose ids are no longer referenced by any
+ * source column, and deletes their on-disk files. Skips DOWNLOADING rows so
+ * an in-flight fetch isn't yanked out from under the queue. Bails when
+ * `referenced` is empty — that almost always means initial sync hasn't loaded
+ * the source tables yet, and we'd nuke the whole table otherwise.
+ */
+async function reconcileOrphans(referenced: Set<string>): Promise<void> {
+  if (referenced.size === 0) return;
+
+  const refArr = Array.from(referenced);
+  const placeholders = refArr.map(() => "?").join(",");
+  const where = `id NOT IN (${placeholders}) AND state <> ?`;
+  const params = [...refArr, ATTACHMENT_STATES.DOWNLOADING];
+
+  const orphans = await powersync.getAll<{ local_uri: string | null }>(
+    `SELECT local_uri FROM attachments_local
+     WHERE ${where} AND local_uri IS NOT NULL`,
+    params,
+  );
+
+  for (const o of orphans) {
+    if (!o.local_uri) continue;
+    try {
+      await FileSystem.deleteAsync(o.local_uri, { idempotent: true });
+    } catch (e) {
+      console.warn(
+        `[attachments] failed to delete orphan file ${o.local_uri}`,
+        e,
+      );
+    }
+  }
+
+  await powersync.execute(
+    `DELETE FROM attachments_local WHERE ${where}`,
+    params,
+  );
+}
+
 export async function scanAllColumns(): Promise<void> {
+  const referenced = new Set<string>();
   for (const cfg of ATTACHMENT_COLUMNS) {
     try {
-      await scanColumn(cfg);
+      await scanColumn(cfg, referenced);
     } catch (e) {
       console.warn(`[attachments] scan failed for ${cfg.table}.${cfg.column}`, e);
     }
+  }
+  try {
+    await reconcileOrphans(referenced);
+  } catch (e) {
+    console.warn("[attachments] reconcile failed", e);
   }
   attachmentQueue.poke();
 }

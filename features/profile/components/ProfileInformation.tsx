@@ -1,5 +1,6 @@
-import React, { useMemo } from "react";
-import { ScrollView, View } from "react-native";
+import React, { useCallback, useMemo, useState } from "react";
+import { View } from "react-native";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { useUserDetails } from "../profile.hooks";
 import { AppText } from "@/components/AppText";
@@ -21,6 +22,16 @@ const INFO_FIELDS = [
 
 const ProfileInformation = () => {
   const { data, isLoading, error, refresh } = useUserDetails();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refresh?.();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refresh]);
 
   // 2. Memoize formatted data to prevent unnecessary string logic on re-renders
   const formattedData = useMemo(() => {
@@ -59,10 +70,10 @@ const ProfileInformation = () => {
     );
 
   return (
-    <ScrollView
+    <ScreenScrollView
       className="p-2.5"
       refreshControl={
-        <RefreshIndicator refreshing={false} onRefresh={() => refresh?.()} />
+        <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
       {INFO_FIELDS.map((field) => (
@@ -76,7 +87,7 @@ const ProfileInformation = () => {
           }
         />
       ))}
-    </ScrollView>
+    </ScreenScrollView>
   );
 };
 

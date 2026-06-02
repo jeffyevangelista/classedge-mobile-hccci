@@ -33,6 +33,11 @@ export const getActiveLegalDocuments =
     return (await api.get("/legal-documents/active/")).data;
   };
 
+export const getPublicLegalDocuments =
+  async (): Promise<ActiveLegalDocuments> => {
+    return (await api.get("/public-legal-consents/")).data;
+  };
+
 export const msLogin = async (token: string): Promise<AuthResponse> => {
   const data = (
     await axios.get(`${env.EXPO_PUBLIC_API_URL}/auth/microsoft/`, {
