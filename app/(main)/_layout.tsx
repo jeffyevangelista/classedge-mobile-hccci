@@ -38,11 +38,19 @@ const MainLayout = () => {
         />
         <Stack.Screen
           options={emptyTitleHeader}
+          name="attempt/[attemptId]/review"
+        />
+        <Stack.Screen
+          options={emptyTitleHeader}
           name="lesson/[lessonId]/index"
         />
         <Stack.Screen
           options={emptyTitleHeader}
           name="activity/[activityId]/index"
+        />
+        <Stack.Screen
+          options={{ ...emptyTitleHeader, headerTitle: "Announcements" }}
+          name="announcement/index"
         />
         <Stack.Screen
           options={emptyTitleHeader}

@@ -20,10 +20,8 @@ export const AssessmentScoreCard = ({
       ? percent >= passingScore
       : score >= passingScore;
 
-  const chipBgClass = passed
-    ? "bg-emerald-100 dark:bg-emerald-900/50"
-    : "bg-orange-100 dark:bg-orange-900/50";
-  const chipColor = passed ? "#10b981" : "#f97316";
+  const chipBgClass = passed ? "bg-accent-soft" : "bg-danger-soft";
+  const chipTextClass = passed ? "text-accent" : "text-danger";
 
   return (
     <View className="rounded-xl border border-border bg-surface p-4">
@@ -32,11 +30,7 @@ export const AssessmentScoreCard = ({
           Your best score
         </AppText>
         <View className={`px-2 py-0.5 rounded-full ${chipBgClass}`}>
-          <AppText
-            weight="semibold"
-            className="text-[10px]"
-            style={{ color: chipColor }}
-          >
+          <AppText weight="semibold" className={`text-[10px] ${chipTextClass}`}>
             {passed ? "Passed" : "Did not pass"}
           </AppText>
         </View>

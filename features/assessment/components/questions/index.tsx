@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { View } from "react-native";
 import { AppText } from "@/components/AppText";
+import { AttachmentFile } from "@/features/attachments/components/AttachmentFile";
 import MultipleChoiceQuestion from "./MultipleChoiceQuestion";
 import EssayQuestion from "./EssayQuestion";
 import TrueFalseQuestion from "./TrueFalseQuestion";
@@ -23,6 +24,15 @@ const normalize = (s: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_|_$/g, "");
+
+// Derive a user-facing filename from the stored instruction path. Strips
+// query string and parent directories; falls back to "instruction" when
+// the path has no usable basename (e.g. trailing slash).
+const instructionFileName = (path: string): string => {
+  const clean = path.split("?")[0]?.split("#")[0] ?? path;
+  const segments = clean.split("/").filter(Boolean);
+  return segments[segments.length - 1] || "instruction";
+};
 
 const renderQuestion = (
   typeKey: string | null,
@@ -146,6 +156,15 @@ export const QuestionRenderer = ({
         </AppText>
       </View>
       <AppText style={styles.questionText}>{question.questionText}</AppText>
+      {typeof question.questionInstruction === "string" &&
+      question.questionInstruction.trim().length > 0 ? (
+        <View className="mt-2 mb-3">
+          <AttachmentFile
+            file={question.questionInstruction}
+            fileName={instructionFileName(question.questionInstruction)}
+          />
+        </View>
+      ) : null}
       {renderQuestion(typeKey, {
         question,
         currentAnswer,

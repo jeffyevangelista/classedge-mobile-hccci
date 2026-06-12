@@ -98,8 +98,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "expo-splash-screen",
       {
         image: "./assets/icons/splash/splash-icon-light.png",
-        imageWidth: 170,
-        imageHeight: 170,
+        imageWidth: 120,
+        imageHeight: 120,
         resizeMode: "contain",
         backgroundColor: "#f9f9f9",
         dark: {

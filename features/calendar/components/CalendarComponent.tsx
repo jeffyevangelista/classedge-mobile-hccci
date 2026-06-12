@@ -1,13 +1,10 @@
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
-import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
-import {
-  Pressable,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useMemo, useState } from "react";
+import { Pressable, useWindowDimensions, View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { Calendar } from "react-native-calendars";
@@ -44,7 +41,6 @@ type MarkedDates = Record<string, CustomMarkedDate>;
 
 type CalendarItem = {
   id: number;
-  type: "event" | "activity";
   title: string;
   startDate: string;
   endDate: string;
@@ -55,9 +51,42 @@ type CalendarItem = {
 };
 
 const EVENT_COLOR = "#0d9488";
-const ACTIVITY_COLOR = "#f97316";
 const EVENT_PERIOD_COLOR = "#50cebb";
-const ACTIVITY_DOT_COLOR = "#FF5A5F";
+const CROWDED_DOT_COLOR = "#6B21A8";
+
+const LegendChip = ({
+  color,
+  label,
+  variant = "fill",
+}: {
+  color: string;
+  label: string;
+  variant?: "fill" | "dot" | "ring";
+}) => {
+  const swatch =
+    variant === "dot" ? (
+      <View
+        className="w-2 h-2 rounded-full"
+        style={{ backgroundColor: color }}
+      />
+    ) : variant === "ring" ? (
+      <View
+        className="w-3 h-3 rounded-full border-2"
+        style={{ borderColor: color }}
+      />
+    ) : (
+      <View
+        className="w-3 h-3 rounded-full"
+        style={{ backgroundColor: color }}
+      />
+    );
+  return (
+    <View className="flex-row items-center gap-1.5">
+      {swatch}
+      <AppText className="text-[11px] text-muted">{label}</AppText>
+    </View>
+  );
+};
 
 const CalendarItemCard = ({
   iconName,
@@ -67,21 +96,26 @@ const CalendarItemCard = ({
   subtitle,
   caption,
   onPress,
+  accessibilityLabel,
 }: {
-  iconName: "CalendarDotsIcon" | "PencilLineIcon";
+  iconName: "CalendarDotsIcon";
   iconColor: string;
   iconBgClass: string;
   title: string;
   subtitle: string;
   caption?: string;
   onPress: () => void;
+  accessibilityLabel?: string;
 }) => {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? title}
+      android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
+      className="active:opacity-80 rounded-xl overflow-hidden mb-2"
     >
-      <Card className="mb-1 rounded-xl flex-row items-center gap-2 shadow-none border border-border">
+      <Card className="rounded-xl flex-row items-center gap-2 shadow-none border border-border">
         <View className={`rounded-full p-2.5 ${iconBgClass}`}>
           <Icon name={iconName} size={20} color={iconColor} />
         </View>
@@ -95,7 +129,7 @@ const CalendarItemCard = ({
             {title}
           </AppText>
           <AppText
-            className="text-xs text-muted"
+            className="text-sm text-muted"
             numberOfLines={1}
             ellipsizeMode="tail"
           >
@@ -126,6 +160,23 @@ const CalendarComponent = () => {
   const mutedColor = useThemeColor("muted");
 
   const [selectedDate, setSelectedDate] = useState<string>(today);
+  const todayYearMonth = dayjs().format("YYYY-MM");
+  const [viewedYearMonth, setViewedYearMonth] =
+    useState<string>(todayYearMonth);
+  const [calendarKey, setCalendarKey] = useState(0);
+  const isViewingCurrentMonth = viewedYearMonth === todayYearMonth;
+
+  const jumpToToday = () => {
+    setSelectedDate(today);
+    setViewedYearMonth(todayYearMonth);
+    setCalendarKey((k) => k + 1);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   const dayCellSize = useMemo(() => {
     const horizontalPadding = 20;
@@ -140,34 +191,38 @@ const CalendarComponent = () => {
     if (!data) return marks;
 
     data.forEach((item) => {
-      if (item.type === "event") {
-        const start = dayjs(item.startDate);
-        const end = dayjs(item.endDate);
+      const start = dayjs(item.startDate);
+      const end = dayjs(item.endDate);
 
-        const diff = end.diff(start, "day");
+      const diff = end.diff(start, "day");
 
-        for (let i = 0; i <= diff; i++) {
-          const date = start.add(i, "day").format("YYYY-MM-DD");
+      for (let i = 0; i <= diff; i++) {
+        const date = start.add(i, "day").format("YYYY-MM-DD");
 
-          if (!marks[date]) marks[date] = {};
+        if (!marks[date]) marks[date] = {};
 
-          if (i === 0) marks[date].startingDay = true;
-          if (i === diff) marks[date].endingDay = true;
+        if (i === 0) marks[date].startingDay = true;
+        if (i === diff) marks[date].endingDay = true;
 
-          marks[date].color = EVENT_PERIOD_COLOR;
-          marks[date].textColor = "white";
-        }
+        marks[date].color = EVENT_PERIOD_COLOR;
+        marks[date].textColor = "white";
       }
     });
 
+    const itemsPerDay: Record<string, number> = {};
     data.forEach((item) => {
-      if (item.type === "activity") {
-        const endDate = dayjs(item.endDate).format("YYYY-MM-DD");
-
-        if (!marks[endDate]) marks[endDate] = {};
-
-        marks[endDate].marked = true;
-        marks[endDate].dotColor = ACTIVITY_DOT_COLOR;
+      const start = dayjs(item.startDate);
+      const diff = dayjs(item.endDate).diff(start, "day");
+      for (let i = 0; i <= diff; i++) {
+        const d = start.add(i, "day").format("YYYY-MM-DD");
+        itemsPerDay[d] = (itemsPerDay[d] ?? 0) + 1;
+      }
+    });
+    Object.entries(itemsPerDay).forEach(([day, count]) => {
+      if (count > 1 && day !== selectedDate) {
+        if (!marks[day]) marks[day] = {};
+        marks[day].marked = true;
+        marks[day].dotColor = CROWDED_DOT_COLOR;
       }
     });
 
@@ -188,35 +243,19 @@ const CalendarComponent = () => {
     }
 
     return marks;
-  }, [
-    data,
-    selectedDate,
-    isDark,
-    today,
-    accentColor,
-    accentForegroundColor,
-  ]);
+  }, [data, selectedDate, isDark, today, accentColor, accentForegroundColor]);
 
   const itemsForSelected = useMemo(() => {
     if (!data) return [];
 
-    return data.filter((item) => {
-      if (item.type === "activity") {
-        const actDate = dayjs(item.endDate).format("YYYY-MM-DD");
-        return actDate === selectedDate;
-      }
-
-      if (item.type === "event") {
-        return dayjs(selectedDate).isBetween(
-          item.startDate,
-          item.endDate,
-          "day",
-          "[]",
-        );
-      }
-
-      return false;
-    });
+    return data.filter((item) =>
+      dayjs(selectedDate).isBetween(
+        item.startDate,
+        item.endDate,
+        "day",
+        "[]",
+      ),
+    );
   }, [data, selectedDate]);
 
   const status = useSectionStatus({
@@ -231,7 +270,8 @@ const CalendarComponent = () => {
     );
 
   if (status.phase === "loading") return <CalendarSkeleton />;
-  if (status.phase === "offline-empty") return <OfflineEmpty section="calendar" />;
+  if (status.phase === "offline-empty")
+    return <OfflineEmpty section="calendar" />;
 
   return (
     <ScreenScrollView
@@ -242,10 +282,16 @@ const CalendarComponent = () => {
       <View className="p-2.5 max-w-3xl mx-auto w-full">
         <Surface className="rounded-xl shadow-none">
           <Calendar
-            key={theme}
+            key={`${theme}-${calendarKey}`}
+            current={selectedDate}
             markingType="period"
             markedDates={markedDates}
             onDayPress={(day) => setSelectedDate(day.dateString)}
+            onMonthChange={(month) =>
+              setViewedYearMonth(
+                `${month.year}-${String(month.month).padStart(2, "0")}`,
+              )
+            }
             theme={
               {
                 calendarBackground: "transparent",
@@ -272,36 +318,15 @@ const CalendarComponent = () => {
                     color: foregroundColor,
                   },
                 },
-                "stylesheet.calendar.header": {
-                  dayTextAtIndex0: {
-                    color: accentColor,
-                    fontFamily: "Poppins-SemiBold",
-                  },
-                  dayTextAtIndex1: {
-                    color: accentColor,
-                    fontFamily: "Poppins-SemiBold",
-                  },
-                  dayTextAtIndex2: {
-                    color: accentColor,
-                    fontFamily: "Poppins-SemiBold",
-                  },
-                  dayTextAtIndex3: {
-                    color: accentColor,
-                    fontFamily: "Poppins-SemiBold",
-                  },
-                  dayTextAtIndex4: {
-                    color: accentColor,
-                    fontFamily: "Poppins-SemiBold",
-                  },
-                  dayTextAtIndex5: {
-                    color: accentColor,
-                    fontFamily: "Poppins-SemiBold",
-                  },
-                  dayTextAtIndex6: {
-                    color: accentColor,
-                    fontFamily: "Poppins-SemiBold",
-                  },
-                },
+                "stylesheet.calendar.header": Object.fromEntries(
+                  Array.from({ length: 7 }, (_, i) => [
+                    `dayTextAtIndex${i}`,
+                    {
+                      color: i === 0 || i === 6 ? accentColor : mutedColor,
+                      fontFamily: "Poppins-SemiBold",
+                    },
+                  ]),
+                ),
               } as any
             }
             style={{
@@ -311,51 +336,81 @@ const CalendarComponent = () => {
         </Surface>
       </View>
 
-      <View className="mt-5 px-5 max-w-3xl w-full mx-auto">
-        {itemsForSelected.length === 0 ? (
-          <AppText className="text-center text-muted">
-            No events or activities for this date.
-          </AppText>
-        ) : (
-          itemsForSelected.map((item) => {
-            if (item.type === "activity") {
-              return (
-                <CalendarItemCard
-                  key={item.id}
-                  iconName="PencilLineIcon"
-                  iconColor={ACTIVITY_COLOR}
-                  iconBgClass="bg-orange-50 dark:bg-orange-900"
-                  title={item.title}
-                  subtitle={`Due ${formatDate(item.endDate)}`}
-                  onPress={() => router.push(`/assessment/${item.id}`)}
-                />
-              );
-            }
-
-            if (item.type === "event") {
-              const ev = item as CalendarItem;
-              return (
-                <CalendarItemCard
-                  key={ev.id}
-                  iconName="CalendarDotsIcon"
-                  iconColor={EVENT_COLOR}
-                  iconBgClass="bg-teal-50 dark:bg-teal-900"
-                  title={ev.title}
-                  subtitle={`${formatDate(ev.startDate)} - ${formatDate(ev.endDate)}`}
-                  caption={
-                    ev.createdById
-                      ? `By ${toTitleCase(`${ev.createdById.firstName} ${ev.createdById.lastName}`)}`
-                      : undefined
-                  }
-                  onPress={() => router.push(`/event/${ev.id}`)}
-                />
-              );
-            }
-
-            return null;
-          })
+      <View className="px-5 max-w-3xl w-full mx-auto flex-row items-center justify-between flex-wrap gap-y-2">
+        <View className="flex-row items-center flex-wrap gap-x-3 gap-y-1.5">
+          <LegendChip color={accentColor} label="Selected" />
+          <LegendChip color={EVENT_PERIOD_COLOR} label="Event" />
+          <LegendChip color={CROWDED_DOT_COLOR} label="Multiple" variant="dot" />
+          <LegendChip color={accentColor} label="Today" variant="ring" />
+        </View>
+        {!isViewingCurrentMonth && (
+          <Pressable
+            onPress={jumpToToday}
+            accessibilityRole="button"
+            accessibilityLabel="Jump to today"
+            className="active:opacity-60"
+          >
+            <AppText weight="semibold" className="text-xs text-accent">
+              Today
+            </AppText>
+          </Pressable>
         )}
       </View>
+
+      <View className="mt-4 px-5 max-w-3xl w-full mx-auto flex-row items-center justify-between mb-2">
+        <AppText weight="semibold" className="text-base">
+          {selectedDate === today
+            ? "Today"
+            : dayjs(selectedDate).format("dddd, MMM D")}
+        </AppText>
+        {itemsForSelected.length > 0 && (
+          <AppText className="text-xs text-muted">
+            {itemsForSelected.length}{" "}
+            {itemsForSelected.length === 1 ? "item" : "items"}
+          </AppText>
+        )}
+      </View>
+
+      <Animated.View
+        key={selectedDate}
+        entering={FadeIn.duration(180)}
+        className="px-2.5 max-w-3xl w-full mx-auto"
+      >
+        {itemsForSelected.length === 0 ? (
+          <View className="items-center justify-center py-10 gap-3">
+            <View className="p-4 rounded-full bg-accent-soft">
+              <Icon name="CalendarBlankIcon" size={32} className="text-accent" />
+            </View>
+            <AppText className="text-center text-sm text-muted">
+              No events or activities for this date.
+            </AppText>
+          </View>
+        ) : (
+          itemsForSelected.map((item) => {
+            const ev = item as CalendarItem;
+            const sameDay = dayjs(ev.startDate).isSame(ev.endDate, "day");
+            const eventSubtitle = sameDay
+              ? formatDate(ev.startDate)
+              : `${formatDate(ev.startDate)} - ${formatDate(ev.endDate)}`;
+            return (
+              <CalendarItemCard
+                key={ev.id}
+                iconName="CalendarDotsIcon"
+                iconColor={EVENT_COLOR}
+                iconBgClass="bg-teal-100 dark:bg-teal-500/20"
+                title={ev.title}
+                subtitle={eventSubtitle}
+                caption={
+                  ev.createdById
+                    ? `By ${toTitleCase(`${ev.createdById.firstName} ${ev.createdById.lastName}`)}`
+                    : undefined
+                }
+                onPress={() => router.push(`/event/${ev.id}`)}
+              />
+            );
+          })
+        )}
+      </Animated.View>
     </ScreenScrollView>
   );
 };
@@ -392,7 +447,21 @@ const CalendarSkeleton = () => {
             ))}
         </Surface>
       </View>
-      <View className="mt-5 px-5 max-w-3xl w-full mx-auto gap-2">
+      <View className="px-5 max-w-3xl w-full mx-auto flex-row items-center gap-3">
+        {Array(3)
+          .fill(0)
+          .map((_, i) => (
+            <View key={i} className="flex-row items-center gap-1.5">
+              <Skeleton className="w-3 h-3 rounded-full" />
+              <Skeleton className="h-3 w-12 rounded" />
+            </View>
+          ))}
+      </View>
+      <View className="mt-4 px-5 max-w-3xl w-full mx-auto flex-row items-center justify-between mb-2">
+        <Skeleton className="h-4 w-32 rounded" />
+        <Skeleton className="h-3 w-12 rounded" />
+      </View>
+      <View className="px-2.5 max-w-3xl w-full mx-auto gap-2">
         {Array(3)
           .fill(0)
           .map((_, index) => (

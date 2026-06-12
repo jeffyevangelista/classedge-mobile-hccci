@@ -76,7 +76,7 @@ export const useAssessments = (courseId: string, classroomMode: boolean) => {
       return undefined;
     },
     initialPageParam: 1,
-    // placeholderData: keepPreviousData,
+    placeholderData: keepPreviousData,
     enabled: !!courseId,
   });
 };

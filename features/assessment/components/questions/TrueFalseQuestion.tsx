@@ -1,8 +1,7 @@
-import { View, TouchableOpacity } from "react-native";
+import { Pressable, View } from "react-native";
 import { useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
-import { questionStyles as styles } from "./styles";
 import type { QuestionComponentProps } from "./types";
 
 const TrueFalseQuestion = ({
@@ -17,19 +16,19 @@ const TrueFalseQuestion = ({
   };
 
   return (
-    <View accessibilityRole="radiogroup" style={styles.trueFalseContainer}>
+    <View accessibilityRole="radiogroup" className="flex-row gap-3">
       <TrueFalseOption
         label="True"
         icon="CheckIcon"
         selected={currentAnswer === "True"}
-        disabled={disabled}
+        disabled={!!disabled}
         onPress={() => handleSelect("True")}
       />
       <TrueFalseOption
         label="False"
         icon="XIcon"
         selected={currentAnswer === "False"}
-        disabled={disabled}
+        disabled={!!disabled}
         onPress={() => handleSelect("False")}
       />
     </View>
@@ -44,6 +43,10 @@ interface TrueFalseOptionProps {
   onPress: () => void;
 }
 
+// Keep both options neutral-tinted (accent on selected, no semantic green
+// for "True" / red for "False") — semantic colors before the student
+// answers would bias their choice toward whichever cue they read as
+// "correct."
 const TrueFalseOption = ({
   label,
   icon,
@@ -51,29 +54,41 @@ const TrueFalseOption = ({
   disabled,
   onPress,
 }: TrueFalseOptionProps) => {
-  const accentColor = useThemeColor("accent");
+  const accentForegroundColor = useThemeColor("accent-foreground");
   const foregroundColor = useThemeColor("foreground");
+
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
+    <Pressable
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="radio"
       accessibilityState={{ selected, disabled }}
       accessibilityLabel={label}
-      className={`flex-1 flex-row items-center justify-center gap-2 px-3 py-3 rounded-lg border ${
-        selected ? "border-accent bg-accent/10" : "border-border"
-      }`}
+      android_ripple={{ color: "rgba(37, 99, 235, 0.12)" }}
+      className={`relative flex-1 overflow-hidden px-3.5 py-4 rounded-xl items-center ${
+        selected
+          ? "border-2 border-accent bg-accent/10"
+          : "border border-border bg-surface"
+      } ${disabled ? "opacity-60" : "active:opacity-80"}`}
     >
-      <Icon
-        name={icon}
-        size={18}
-        color={selected ? accentColor : foregroundColor}
-      />
-      <AppText weight="semibold" className="text-sm">
+      <View
+        className={`w-9 h-9 rounded-xl items-center justify-center mb-1.5 ${
+          selected ? "bg-accent" : "bg-default border border-border"
+        }`}
+      >
+        <Icon
+          name={icon}
+          size={18}
+          color={selected ? accentForegroundColor : foregroundColor}
+        />
+      </View>
+      <AppText
+        weight={selected ? "bold" : "semibold"}
+        className="text-sm text-foreground"
+      >
         {label}
       </AppText>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 

@@ -29,6 +29,8 @@ type AuthState = {
   isAuthenticated: boolean;
   expiresAt: number | null;
   email: string | null;
+  resetToken: string | null;
+  otpExpiresAt: number | null;
   oauthPhase: OAuthPhase;
   oauthStartedAt: number | null;
 };
@@ -40,6 +42,8 @@ type AuthAction = {
   clearCredentials: () => Promise<void>;
   restoreSession: () => Promise<void>;
   setEmail: (email: string) => void;
+  setResetToken: (resetToken: string | null) => void;
+  setOtpExpiresAt: (otpExpiresAt: number | null) => void;
   setLegalUpdateRequired: (legalUpdateRequired: boolean) => void;
   setOAuthPhase: (next: { phase: OAuthPhase; startedAt: number | null }) => void;
 };
@@ -54,6 +58,8 @@ const initialState: AuthState = {
   isAuthenticated: false,
   authUser: null,
   email: null,
+  resetToken: null,
+  otpExpiresAt: null,
   oauthPhase: "idle",
   oauthStartedAt: null,
 };
@@ -146,6 +152,12 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
   },
   setEmail: (email: string) => {
     set({ email });
+  },
+  setResetToken: (resetToken: string | null) => {
+    set({ resetToken });
+  },
+  setOtpExpiresAt: (otpExpiresAt: number | null) => {
+    set({ otpExpiresAt });
   },
   setLegalUpdateRequired: (legalUpdateRequired: boolean) => {
     set((state) => {

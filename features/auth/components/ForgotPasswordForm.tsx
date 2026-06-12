@@ -3,12 +3,12 @@ import { useCallback, useRef } from "react";
 import {
   Button,
   FieldError,
-  Input,
   Spinner,
   TextField,
   useThemeColor,
   useToast,
 } from "heroui-native";
+import AppInput from "@/components/AppInput";
 import { useFocusEffect, useRouter } from "expo-router";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useForgotPassword } from "../auth.hooks";
@@ -21,6 +21,7 @@ import {
 
 const ForgotPasswordForm = () => {
   const { toast } = useToast();
+  const router = useRouter();
   const { height } = useWindowDimensions();
   const themeColorAccentForeground = useThemeColor("accent-foreground");
   const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null);
@@ -39,6 +40,7 @@ const ForgotPasswordForm = () => {
   const handleForgotPassword = async (data: ForgotPasswordFormvalues) => {
     try {
       await forgotPassword(data);
+      router.push("/forgot-password/otp-verification");
     } catch (error: any) {
       toast.show({
         variant: "danger",
@@ -65,11 +67,14 @@ const ForgotPasswordForm = () => {
           name="email"
           control={control}
           render={({ field: { onChange, value } }) => (
-            <Input
+            <AppInput
               placeholder="juandelacruz@hccci.edu.ph"
               ref={inputRef}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="go"
+              onSubmitEditing={handleSubmit(handleForgotPassword)}
               value={value}
               onChangeText={onChange}
             />

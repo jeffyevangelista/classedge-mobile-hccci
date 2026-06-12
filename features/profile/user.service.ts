@@ -13,8 +13,11 @@ export const getUserDetails = (userId: number) => {
   });
 };
 
-export const getStudentCourseSchedules = async (studentId: number) => {
-  const enrollments = await db.query.studentEnrolledCoursesTable.findMany({
+// Returns the drizzle query builder (not awaited) so it can be wrapped
+// with `toCompilableQuery` and fed to PowerSync's watch hook. Mirrors
+// the `getStudentCourses` pattern in features/courses/courses.service.ts.
+export const getStudentCourseSchedules = (studentId: number) => {
+  return db.query.studentEnrolledCoursesTable.findMany({
     with: {
       subjectId: {
         columns: {
@@ -33,24 +36,10 @@ export const getStudentCourseSchedules = async (studentId: number) => {
           },
         },
       },
+      schedules: true,
     },
     where: (enrollment, { eq }) => eq(enrollment.studentId, studentId),
   });
-
-  const enrollmentsWithSchedules = await Promise.all(
-    enrollments.map(async (enrollment) => {
-      const schedules = await db.query.courseScheduleTable.findMany({
-        where: (schedule, { eq }) =>
-          eq(schedule.subjectId, enrollment.subjectId.id),
-      });
-      return {
-        ...enrollment,
-        schedules,
-      };
-    }),
-  );
-
-  return enrollmentsWithSchedules;
 };
 
 export const getAllSchedules = () => {

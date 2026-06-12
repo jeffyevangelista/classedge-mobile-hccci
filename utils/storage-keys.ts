@@ -1,6 +1,7 @@
 export const ASYNC_STORAGE_KEYS = {
   HAS_SEEN_INTRO: "hasSeenIntro",
   ATTEMPT: "attempt",
+  THEME_PREFERENCE: "themePreference",
 } as const;
 
 export type AsyncStorageKey =

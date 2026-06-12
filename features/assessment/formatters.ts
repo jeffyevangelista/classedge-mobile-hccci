@@ -11,7 +11,17 @@ export const formatDuration = (minutes: number): string => {
 export const formatDueDate = (iso: string): string => {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  // "Oct 15, 2:30 PM" — concise enough for the hero eyebrow while still
+  // surfacing the cutoff time. Year omitted since due dates are
+  // current-term-bound; matches the rest of the app's 12-hour AM/PM
+  // convention (see `formatDate(..., true)` and `formatDateTime`).
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 };
 
 export const formatShortDate = (iso: string): string => {

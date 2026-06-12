@@ -26,6 +26,7 @@ const CourseworkList = () => {
     fetchNextPage,
     refetch,
     isRefetching,
+    isFetching,
   } = useAssessments(subjectId as string, true);
 
   const assessments = useMemo(
@@ -47,7 +48,14 @@ const CourseworkList = () => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  if (isLoading) return <AssessmentSkeleton />;
+  // Render the skeleton any time a fetch is in flight and we have
+  // nothing to show — see features/classroom/components/LessonList for
+  // the full rationale.
+  if (
+    assessments.length === 0 &&
+    (isLoading || (isFetching && !isFetchingNextPage))
+  )
+    return <AssessmentSkeleton />;
   if (isError)
     return (
       <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />

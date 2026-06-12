@@ -1,6 +1,5 @@
-import { useWindowDimensions, View } from "react-native";
-import { AppText } from "./AppText";
-import { Icon, IconName } from "./Icon";
+import Fallback from "./Fallback";
+import type { IconName } from "./Icon";
 
 interface NoDataFallbackProps {
   icon?: IconName;
@@ -9,52 +8,24 @@ interface NoDataFallbackProps {
   onRefetch?: () => void;
 }
 
+// Thin shim — delegates to the unified `<Fallback>` so every legacy
+// call site picks up the new visual language without changes. New code
+// should use `<Fallback variant="empty" …>` directly.
 const NoDataFallback = ({
-  icon = "SmileySad",
-  title = "No data found",
+  icon,
+  title,
   description,
   onRefetch,
-}: NoDataFallbackProps) => {
-  const { width } = useWindowDimensions();
-  const iconSize = width < 640 ? 56 : width < 768 ? 72 : 88;
-
-  return (
-    <View className="flex-1 items-center justify-center px-6 py-12 sm:py-16 md:py-20 gap-4 sm:gap-5 md:gap-6">
-      <View className="p-4 sm:p-5 md:p-6 rounded-full bg-accent-soft">
-        <Icon
-          name={icon}
-          size={iconSize}
-          className="text-accent"
-        />
-      </View>
-      <View className="items-center gap-1.5 sm:gap-2 max-w-xs sm:max-w-sm md:max-w-md">
-        <AppText
-          weight="semibold"
-          className="text-center text-lg sm:text-xl md:text-2xl text-slate-800 dark:text-white"
-        >
-          {title}
-        </AppText>
-        {description && (
-          <AppText className="text-center text-sm sm:text-base md:text-lg text-slate-400 dark:text-slate-500">
-            {description}
-          </AppText>
-        )}
-      </View>
-      {onRefetch && (
-        <View
-          className="bg-accent rounded-lg px-6 sm:px-8 py-2.5 sm:py-3 items-center"
-          onTouchEnd={onRefetch}
-        >
-          <AppText
-            weight="semibold"
-            className="text-white text-sm sm:text-base"
-          >
-            Refresh
-          </AppText>
-        </View>
-      )}
-    </View>
-  );
-};
+}: NoDataFallbackProps) => (
+  <Fallback
+    variant="empty"
+    icon={icon}
+    title={title}
+    description={description}
+    action={
+      onRefetch ? { label: "Refresh", onPress: onRefetch } : undefined
+    }
+  />
+);
 
 export default NoDataFallback;

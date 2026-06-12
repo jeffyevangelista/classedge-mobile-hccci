@@ -28,7 +28,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 
-const NAV_HEIGHT = 44;
+const NAV_HEIGHT = 56;
 
 const CourseScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
@@ -112,9 +112,6 @@ const CourseScreen = () => {
     ),
   }));
 
-  console.log("safeBottom", safeBottom);
-  console.log("insets.bottom", insets.bottom);
-
   return (
     <View style={styles.container} className="bg-background">
       {/* Animated Navigation Bar */}
@@ -157,7 +154,7 @@ const CourseScreen = () => {
               style={[styles.floatingBtn, floatingBtnStyle]}
               className="bg-white/70 dark:bg-black/50"
             />
-            <View className="w-11 h-11 rounded-full flex justify-center items-center">
+            <View className="w-10 h-10 rounded-full flex justify-center items-center">
               <BackButton tintColor={foregroundColor} />
             </View>
           </View>
@@ -181,11 +178,18 @@ const CourseScreen = () => {
               onPress={() =>
                 router.push(`/(main)/course/${courseId}/course-details`)
               }
-              className="w-11 h-11 rounded-full flex justify-center items-center"
+              accessibilityRole="button"
+              accessibilityLabel="Open course details"
+              android_ripple={{
+                color: "rgba(0,0,0,0.1)",
+                borderless: true,
+              }}
+              hitSlop={4}
+              className="w-10 h-10 rounded-full flex justify-center items-center active:opacity-70"
             >
               <Icon
                 name="InfoIcon"
-                size={24}
+                size={22}
                 color={foregroundColor}
                 style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
               />
@@ -209,7 +213,9 @@ const CourseScreen = () => {
           ]}
           className="bg-default"
         >
-          {!isLoading && (
+          {isLoading ? (
+            <Skeleton style={StyleSheet.absoluteFill} />
+          ) : (
             <AttachmentImage
               path={data?.subjectId.subjectPhoto}
               fallback={
@@ -228,9 +234,28 @@ const CourseScreen = () => {
 
         <View style={styles.content} className="bg-background">
           {isLoading ? (
-            <View className="gap-2">
-              <Skeleton className="h-6 w-3/4 rounded-full" />
-              <Skeleton className="h-3 w-1/3 rounded-full" />
+            <View className="gap-4">
+              <View className="gap-2">
+                <Skeleton className="h-6 w-3/4 rounded-full" />
+                <Skeleton className="h-3 w-1/3 rounded-full" />
+              </View>
+              <View className="gap-3 mt-2">
+                <Skeleton className="h-4 w-24 rounded" />
+                {Array(3)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <View
+                      key={idx}
+                      className="flex-row items-center gap-3 p-3 rounded-xl border border-border"
+                    >
+                      <Skeleton className="w-10 h-10 rounded-full" />
+                      <View className="flex-1 gap-1.5">
+                        <Skeleton className="h-4 w-3/4 rounded" />
+                        <Skeleton className="h-3 w-1/2 rounded" />
+                      </View>
+                    </View>
+                  ))}
+              </View>
             </View>
           ) : isError ? (
             <ErrorComponent message={getApiErrorMessage(error)} />

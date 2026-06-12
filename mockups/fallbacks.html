@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Fallback Components — Proposal</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/phosphor-icons"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+          sans-serif;
+        background: #0f172a;
+      }
+      h1, h2, h3 {
+        font-family: inherit;
+      }
+      .phone {
+        width: 360px;
+        height: 600px;
+        border-radius: 36px;
+        box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .phone.light { background: #f8fafc; }
+      .phone.dark  { background: #0b1220; }
+      .top-pad     { height: 28px; }
+      .light .top-pad { background: #ffffff; }
+      .dark  .top-pad { background: #0f172a; }
+      .navbar {
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .light .navbar { background: #ffffff; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
+      .dark  .navbar { background: #0f172a; border-bottom: 1px solid #1e293b; color: #e2e8f0; }
+      .scroll       { flex: 1; overflow-y: auto; }
+      .scroll::-webkit-scrollbar { display: none; }
+
+      /* Tokens — match the Royal Azure theme */
+      .tk-fg-light    { color: #1e293b; }
+      .tk-fg-dark     { color: #f1f5f9; }
+      .tk-muted-light { color: #64748b; }
+      .tk-muted-dark  { color: #94a3b8; }
+
+      .chip-accent-light { background: #dbeafe; }
+      .chip-accent-dark  { background: rgba(37, 99, 235, 0.18); }
+      .icon-accent-light { color: #2563eb; }
+      .icon-accent-dark  { color: #60a5fa; }
+
+      .chip-danger-light { background: #fee2e2; }
+      .chip-danger-dark  { background: rgba(239, 68, 68, 0.18); }
+      .icon-danger-light { color: #dc2626; }
+      .icon-danger-dark  { color: #f87171; }
+
+      .chip-default-light { background: #f1f5f9; }
+      .chip-default-dark  { background: #1e293b; }
+      .icon-muted-light   { color: #64748b; }
+      .icon-muted-dark    { color: #94a3b8; }
+
+      /* Buttons (tertiary in the proposal) */
+      .btn-tertiary-light {
+        background: #f1f5f9;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
+      }
+      .btn-tertiary-dark {
+        background: #1e293b;
+        color: #f1f5f9;
+        border: 1px solid #334155;
+      }
+
+      /* Legacy "ugly" balloons (just for the BEFORE column) */
+      .balloon-red-light { background: #fef2f2; }
+      .balloon-red-dark  { background: rgba(127, 29, 29, 0.4); }
+      .balloon-blue-light { background: #dbeafe; }
+      .balloon-blue-dark { background: rgba(30, 64, 175, 0.4); }
+
+      .label {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .label-before { background: #fee2e2; color: #b91c1c; }
+      .label-after  { background: #dcfce7; color: #166534; }
+    </style>
+  </head>
+  <body class="text-slate-100">
+    <div class="max-w-7xl mx-auto py-12 px-6">
+      <header class="mb-10">
+        <h1 class="text-3xl font-bold">Fallback components — proposal</h1>
+        <p class="text-slate-300 mt-2 max-w-2xl text-sm leading-relaxed">
+          Collapse the five existing fallback components
+          (<code class="text-amber-300">ErrorFallback</code>,
+          <code class="text-amber-300">NoDataFallback</code>,
+          <code class="text-amber-300">EmptyState</code>,
+          <code class="text-amber-300">ErrorComponent</code>,
+          <code class="text-amber-300">OfflineEmpty</code>) into a single
+          <code class="text-emerald-300">&lt;Fallback&gt;</code> with three
+          variants and two densities. Phone shells below show side-by-side
+          BEFORE (today) and AFTER (proposal) in both light and dark modes.
+        </p>
+      </header>
+
+      <!-- ============ ERROR VARIANT ============ -->
+      <section class="mb-14">
+        <h2 class="text-xl font-bold mb-1">Error state</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          Used when a watch/query fails. Today's
+          <code class="text-amber-300">ErrorFallback</code> +
+          <code class="text-amber-300">ErrorComponent</code>.
+        </p>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <!-- BEFORE — light -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="label label-before">Before · Light</span>
+            </div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="navbar">
+                <span>←</span>
+                <span>Course timeline</span>
+              </div>
+              <div class="scroll flex-1 flex flex-col items-center justify-center px-6 py-12 gap-4">
+                <div class="balloon-red-light rounded-full p-6">
+                  <i class="ph-warning-bold" style="font-size:56px;color:#ef4444"></i>
+                </div>
+                <div class="text-center max-w-[260px]">
+                  <p class="font-semibold text-xl text-slate-800">Oops!</p>
+                  <p class="text-sm text-slate-400 mt-1.5">Network request failed</p>
+                </div>
+                <div class="rounded-lg px-6 py-2.5 bg-red-600 text-white text-sm font-semibold">Try Again</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BEFORE — dark -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="label label-before">Before · Dark</span>
+            </div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="navbar">
+                <span>←</span>
+                <span>Course timeline</span>
+              </div>
+              <div class="scroll flex-1 flex flex-col items-center justify-center px-6 py-12 gap-4">
+                <div class="balloon-red-dark rounded-full p-6">
+                  <i class="ph-warning-bold" style="font-size:56px;color:#f87171"></i>
+                </div>
+                <div class="text-center max-w-[260px]">
+                  <p class="font-semibold text-xl text-white">Oops!</p>
+                  <p class="text-sm text-slate-500 mt-1.5">Network request failed</p>
+                </div>
+                <div class="rounded-lg px-6 py-2.5 bg-red-500 text-white text-sm font-semibold">Try Again</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AFTER — light -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="label label-after">After · Light</span>
+            </div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="navbar">
+                <span>←</span>
+                <span>Course timeline</span>
+              </div>
+              <div class="scroll flex-1 flex flex-col items-center justify-center px-6 py-12 gap-4">
+                <div class="chip-danger-light w-16 h-16 rounded-2xl flex items-center justify-center">
+                  <i class="ph-warning-circle-bold icon-danger-light" style="font-size:28px"></i>
+                </div>
+                <div class="text-center max-w-[280px]">
+                  <p class="font-semibold text-lg tk-fg-light">Couldn't load this</p>
+                  <p class="text-sm tk-muted-light mt-1">Network request failed. Check your connection and try again.</p>
+                </div>
+                <div class="btn-tertiary-light rounded-full px-5 py-2 text-sm font-semibold mt-1">Try again</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AFTER — dark -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="label label-after">After · Dark</span>
+            </div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="navbar">
+                <span>←</span>
+                <span>Course timeline</span>
+              </div>
+              <div class="scroll flex-1 flex flex-col items-center justify-center px-6 py-12 gap-4">
+                <div class="chip-danger-dark w-16 h-16 rounded-2xl flex items-center justify-center">
+                  <i class="ph-warning-circle-bold icon-danger-dark" style="font-size:28px"></i>
+                </div>
+                <div class="text-center max-w-[280px]">
+                  <p class="font-semibold text-lg tk-fg-dark">Couldn't load this</p>
+                  <p class="text-sm tk-muted-dark mt-1">Network request failed. Check your connection and try again.</p>
+                </div>
+                <div class="btn-tertiary-dark rounded-full px-5 py-2 text-sm font-semibold mt-1">Try again</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ EMPTY VARIANT ============ -->
+      <section class="mb-14">
+        <h2 class="text-xl font-bold mb-1">Empty state</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          Used when a list/section has no rows. Today's
+          <code class="text-amber-300">NoDataFallback</code> +
+          <code class="text-amber-300">EmptyState</code>.
+        </p>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- BEFORE — light -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="label label-before">Before · Light</span>
+            </div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="navbar"><span>←</span><span>Notifications</span></div>
+              <div class="scroll flex-1 flex flex-col items-center justify-center px-6 py-12 gap-4">
+                <div class="balloon-blue-light rounded-full p-6">
+                  <i class="ph-smiley-sad-bold" style="font-size:56px;color:#2563eb"></i>
+                </div>
+                <div class="text-center max-w-[260px]">
+                  <p class="font-semibold text-xl text-slate-800">No data found</p>
+                </div>
+                <div class="rounded-lg px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold">Refresh</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BEFORE — dark -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="label label-before">Before · Dark</span>
+            </div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="navbar"><span>←</span><span>Notifications</span></div>
+              <div class="scroll flex-1 flex flex-col items-center justify-center px-6 py-12 gap-4">
+                <div class="balloon-blue-dark rounded-full p-6">
+                  <i class="ph-smiley-sad-bold" style="font-size:56px;color:#60a5fa"></i>
+                </div>
+                <div class="text-center max-w-[260px]">
+                  <p class="font-semibold text-xl text-white">No data found</p>
+                </div>
+                <div class="rounded-lg px-6 py-2.5 bg-blue-500 text-white text-sm font-semibold">Refresh</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AFTER — light -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="label label-after">After · Light</span>
+            </div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="navbar"><span>←</span><span>Notifications</span></div>
+              <div class="scroll flex-1 flex flex-col items-center justify-center px-6 py-12 gap-4">
+                <div class="chip-accent-light w-16 h-16 rounded-2xl flex items-center justify-center">
+                  <i class="ph-bell-bold icon-accent-light" style="font-size:28px"></i>
+                </div>
+                <div class="text-center max-w-[280px]">
+                  <p class="font-semibold text-lg tk-fg-light">You're all caught up</p>
+                  <p class="text-sm tk-muted-light mt-1">No notifications right now. We'll let you know when something needs attention.</p>
+                </div>
+                <div class="btn-tertiary-light rounded-full px-5 py-2 text-sm font-semibold mt-1">Refresh</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AFTER — dark -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="label label-after">After · Dark</span>
+            </div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="navbar"><span>←</span><span>Notifications</span></div>
+              <div class="scroll flex-1 flex flex-col items-center justify-center px-6 py-12 gap-4">
+                <div class="chip-accent-dark w-16 h-16 rounded-2xl flex items-center justify-center">
+                  <i class="ph-bell-bold icon-accent-dark" style="font-size:28px"></i>
+                </div>
+                <div class="text-center max-w-[280px]">
+                  <p class="font-semibold text-lg tk-fg-dark">You're all caught up</p>
+                  <p class="text-sm tk-muted-dark mt-1">No notifications right now. We'll let you know when something needs attention.</p>
+                </div>
+                <div class="btn-tertiary-dark rounded-full px-5 py-2 text-sm font-semibold mt-1">Refresh</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ OFFLINE VARIANT ============ -->
+      <section class="mb-14">
+        <h2 class="text-xl font-bold mb-1">Offline state</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          Used when nothing has synced yet. Today's
+          <code class="text-amber-300">OfflineEmpty</code>.
+        </p>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- BEFORE light -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-before">Before · Light</span></div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="navbar"><span>←</span><span>Announcements</span></div>
+              <div class="scroll flex-1 flex flex-col items-center justify-center px-6 py-12 gap-3">
+                <i class="ph-cloud-slash icon-muted-light" style="font-size:40px"></i>
+                <p class="font-semibold text-base tk-fg-light text-center">No announcements yet</p>
+                <p class="text-xs tk-muted-light text-center">We'll sync this automatically when you're back online.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- BEFORE dark -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-before">Before · Dark</span></div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="navbar"><span>←</span><span>Announcements</span></div>
+              <div class="scroll flex-1 flex flex-col items-center justify-center px-6 py-12 gap-3">
+                <i class="ph-cloud-slash icon-muted-dark" style="font-size:40px"></i>
+                <p class="font-semibold text-base tk-fg-dark text-center">No announcements yet</p>
+                <p class="text-xs tk-muted-dark text-center">We'll sync this automatically when you're back online.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- AFTER light -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-after">After · Light</span></div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="navbar"><span>←</span><span>Announcements</span></div>
+              <div class="scroll flex-1 flex flex-col items-center justify-center px-6 py-12 gap-4">
+                <div class="chip-default-light w-16 h-16 rounded-2xl flex items-center justify-center">
+                  <i class="ph-cloud-slash icon-muted-light" style="font-size:28px"></i>
+                </div>
+                <div class="text-center max-w-[280px]">
+                  <p class="font-semibold text-lg tk-fg-light">You're offline</p>
+                  <p class="text-sm tk-muted-light mt-1">Announcements will appear once you're back online. Anything you submit now is saved.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AFTER dark -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-after">After · Dark</span></div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="navbar"><span>←</span><span>Announcements</span></div>
+              <div class="scroll flex-1 flex flex-col items-center justify-center px-6 py-12 gap-4">
+                <div class="chip-default-dark w-16 h-16 rounded-2xl flex items-center justify-center">
+                  <i class="ph-cloud-slash icon-muted-dark" style="font-size:28px"></i>
+                </div>
+                <div class="text-center max-w-[280px]">
+                  <p class="font-semibold text-lg tk-fg-dark">You're offline</p>
+                  <p class="text-sm tk-muted-dark mt-1">Announcements will appear once you're back online. Anything you submit now is saved.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ INLINE DENSITY ============ -->
+      <section class="mb-10">
+        <h2 class="text-xl font-bold mb-1">New: inline density</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          For empty / error states <em>inside</em> cards or sections
+          (e.g. the Results tab's "No attempts yet"). Today this either
+          gets the full-screen treatment in a cramped card, or a raw
+          muted line with no icon. The new variant fits in one row.
+        </p>
+        <div class="grid grid-cols-2 gap-6">
+          <!-- Inline empty -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-after">Inline · Empty</span></div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="navbar"><span>←</span><span>Assessment</span></div>
+              <div class="scroll p-4 gap-3 flex flex-col">
+                <div class="bg-white border border-slate-200 rounded-2xl p-4">
+                  <p class="font-semibold text-sm tk-fg-light mb-3">Results</p>
+                  <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
+                    <div class="chip-accent-light w-9 h-9 rounded-xl flex items-center justify-center">
+                      <i class="ph-clipboard-text-bold icon-accent-light" style="font-size:18px"></i>
+                    </div>
+                    <div class="flex-1">
+                      <p class="font-semibold text-sm tk-fg-light">No attempts yet</p>
+                      <p class="text-xs tk-muted-light">Tap Start to take this assessment.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inline error with action -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-after">Inline · Error w/ action</span></div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="navbar"><span>←</span><span>Assessment</span></div>
+              <div class="scroll p-4 gap-3 flex flex-col">
+                <div class="bg-white border border-slate-200 rounded-2xl p-4">
+                  <p class="font-semibold text-sm tk-fg-light mb-3">Materials</p>
+                  <div class="flex items-center gap-3 p-3 rounded-xl bg-red-50/40">
+                    <div class="chip-danger-light w-9 h-9 rounded-xl flex items-center justify-center">
+                      <i class="ph-warning-circle-bold icon-danger-light" style="font-size:18px"></i>
+                    </div>
+                    <div class="flex-1">
+                      <p class="font-semibold text-sm tk-fg-light">Couldn't load materials</p>
+                      <p class="text-xs tk-muted-light">Tap retry to try again.</p>
+                    </div>
+                    <button class="btn-tertiary-light rounded-full px-3 py-1 text-xs font-semibold">Retry</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ API SUMMARY ============ -->
+      <section class="mb-10 bg-slate-800/60 rounded-2xl p-6 border border-slate-700">
+        <h2 class="text-xl font-bold mb-3">API</h2>
+        <pre class="bg-slate-900 rounded-lg p-4 text-sm text-slate-200 overflow-x-auto"><code>&lt;Fallback
+  variant=<span class="text-emerald-300">"empty" | "error" | "offline"</span>  <span class="text-slate-500">// default: "empty"</span>
+  density=<span class="text-emerald-300">"screen" | "inline"</span>            <span class="text-slate-500">// default: "screen"</span>
+  icon?=<span class="text-amber-300">IconName</span>                          <span class="text-slate-500">// optional override</span>
+  title?=<span class="text-amber-300">string</span>                           <span class="text-slate-500">// sensible default per variant</span>
+  description?=<span class="text-amber-300">string</span>
+  action?={{ label: <span class="text-amber-300">string</span>, onPress: <span class="text-amber-300">() => void</span> }}
+/&gt;</code></pre>
+        <div class="grid grid-cols-3 gap-4 mt-6 text-sm">
+          <div>
+            <p class="font-semibold text-emerald-300">empty</p>
+            <p class="text-slate-400 mt-1">Accent icon chip. For "no rows" surfaces.</p>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300">error</p>
+            <p class="text-slate-400 mt-1">Danger icon chip. For watch / query failures. Pair with <code class="text-amber-300">action</code>.</p>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300">offline</p>
+            <p class="text-slate-400 mt-1">Muted icon chip. For pre-sync surfaces. No action by design.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ MIGRATION ============ -->
+      <section>
+        <h2 class="text-xl font-bold mb-3">Migration plan</h2>
+        <ol class="list-decimal list-inside space-y-2 text-sm text-slate-300">
+          <li>Add <code class="text-emerald-300">components/Fallback.tsx</code>.</li>
+          <li>Rewrite the four legacy components as <em>thin shims</em> delegating to <code class="text-emerald-300">&lt;Fallback&gt;</code>. Every existing call site picks up the new look automatically — no consumer touched.</li>
+          <li>Optional follow-up PR: walk the ~40 call sites to use <code class="text-emerald-300">&lt;Fallback&gt;</code> directly and delete the shims.</li>
+        </ol>
+      </section>
+    </div>
+  </body>
+</html>

@@ -1,5 +1,4 @@
 import useStore from "@/lib/store";
-import { useQuery as usePowersyncQuery } from "@powersync/tanstack-react-query";
 import { getStudentCourseSchedules, getUserDetails } from "./user.service";
 import { toCompilableQuery } from "@powersync/drizzle-driver";
 import {
@@ -9,6 +8,7 @@ import {
 } from "./profile.apis";
 import { useQuery } from "@tanstack/react-query";
 import { useQuery as usePowersyncReactQuery } from "@powersync/react";
+import { useQuery as usePowerSyncQuery } from "@powersync/react-native";
 
 export const useUserDetails = () => {
   const authUser = useStore((state) => state.authUser);
@@ -19,13 +19,29 @@ export const useUserDetails = () => {
   );
 };
 
+// Watch-backed enrolled-course schedules. Mirrors `useStudentCourses`:
+// the query builder is wrapped with `toCompilableQuery` so PowerSync
+// watches `course_subjectenrollment`, `subject_subject`, and
+// `subject_schedule`, re-emitting on every sync update. studentId = 0
+// when unauthenticated returns an empty result, gating naturally without
+// `enabled`.
 export const useClassSchedule = () => {
   const authUser = useStore((state) => state.authUser);
-  return usePowersyncQuery({
-    queryKey: ["class-schedule", authUser?.id],
-    enabled: !!authUser?.id,
-    queryFn: () => getStudentCourseSchedules(authUser?.id!),
-  });
+  const studentId = authUser?.id ?? 0;
+
+  const { data, isLoading, isFetching, error, refresh } = usePowerSyncQuery(
+    toCompilableQuery(getStudentCourseSchedules(studentId)),
+  );
+
+  return {
+    data,
+    isLoading,
+    isFetching,
+    isError: !!error,
+    error,
+    refetch: refresh ?? (async () => {}),
+    isRefetching: isFetching && !isLoading,
+  };
 };
 
 export const useFinancialInformation = () => {

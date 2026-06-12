@@ -1,4 +1,5 @@
-import { ActivityIndicator, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
+import { useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import { useAttachment } from "@/features/attachments/hooks/useAttachment";
@@ -15,6 +16,7 @@ interface Props {
 export const AttachmentFile = ({ file, fileName }: Props) => {
   const { uri, state, retry, progress } = useAttachment(file);
   const type = getFileType(file);
+  const dangerColor = useThemeColor("danger");
 
   if (state === "unknown" || state === "queued" || state === "downloading") {
     const pct =
@@ -52,19 +54,20 @@ export const AttachmentFile = ({ file, fileName }: Props) => {
   if (state === "failed") {
     return (
       <View className="w-full h-20 bg-surface-secondary rounded-xl flex-row items-center gap-3 px-4">
-        <Icon name="WarningCircleIcon" size={24} color="#ef4444" />
+        <Icon name="WarningCircleIcon" size={24} color={dangerColor} />
         <AppText className="flex-1 text-sm text-muted">
           Failed to load file
         </AppText>
-        <TouchableOpacity
+        <Pressable
           onPress={retry}
           accessibilityRole="button"
           accessibilityLabel="Retry"
-          className="flex-row items-center gap-1 bg-red-500 px-3 py-1.5 rounded-lg"
+          android_ripple={{ color: "rgba(255,255,255,0.15)", borderless: false }}
+          className="flex-row items-center gap-1 bg-danger px-3 py-1.5 rounded-lg active:opacity-80"
         >
           <Icon name="ArrowsClockwiseIcon" size={13} color="#fff" />
           <AppText className="text-white text-xs">Retry</AppText>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     );
   }

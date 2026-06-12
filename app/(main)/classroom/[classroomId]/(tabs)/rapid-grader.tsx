@@ -3,7 +3,7 @@ import ClassroomActivitiyList from "@/features/classroom/components/ClassroomAct
 
 export default function RapidGraderTab() {
   return (
-    <Screen className="py-2.5">
+    <Screen>
       <ClassroomActivitiyList />
     </Screen>
   );

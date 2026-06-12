@@ -1,33 +1,47 @@
 import {
   Button,
   FieldError,
-  Input,
   Label,
   Spinner,
   TextField,
   useThemeColor,
   useToast,
 } from "heroui-native";
-import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { useRef, useState } from "react";
+import { Pressable, TextInput, View } from "react-native";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useLogin } from "../auth.hooks";
+import AppInput from "@/components/AppInput";
 import { Icon } from "@/components/Icon";
 import { useRouter } from "expo-router";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { LoginFormValues, loginSchema } from "../auth.schemas";
 
 const LoginForm = () => {
   const router = useRouter();
   const { toast } = useToast();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { mutateAsync: login, isPending, isError, error } = useLogin();
+  const { mutateAsync: login, isPending } = useLogin();
   const themeColorAccentForeground = useThemeColor("accent-foreground");
   const mutedColor = useThemeColor("muted");
+  const passwordRef = useRef<TextInput>(null);
 
-  const handleLogin = async () => {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const handleLogin = async (data: LoginFormValues) => {
     try {
-      await login({ username, password });
+      await login({ username: data.email, password: data.password });
     } catch (error: any) {
       toast.show({
         variant: "danger",
@@ -38,34 +52,58 @@ const LoginForm = () => {
   };
 
   return (
-    <View className="p-2.5 md:p-5 gap-3 w-full max-w-md">
-      {/* Changed gap-4 to gap-3 */}
-      <TextField>
+    <View className="p-2.5 gap-3 w-full max-w-md">
+      <TextField isInvalid={!!errors.email}>
         <Label>Email</Label>
-        <Input
-          keyboardType="email-address"
-          autoCapitalize="none"
-          placeholder="juandelacruz@hccci.edu.ph"
-          value={username}
-          onChangeText={setUsername}
+        <Controller
+          name="email"
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <AppInput
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
+              submitBehavior="submit"
+              placeholder="juandelacruz@hccci.edu.ph"
+              value={value}
+              onChangeText={onChange}
+            />
+          )}
         />
-
-        {isError && <FieldError>{getApiErrorMessage(error)}</FieldError>}
+        {errors.email && <FieldError>{errors.email.message}</FieldError>}
       </TextField>
       <View className="gap-2">
-        <TextField>
+        <TextField isInvalid={!!errors.password}>
           <Label>Password</Label>
           <View className="w-full flex-row items-center">
-            <Input
-              value={password}
-              onChangeText={setPassword}
-              className="flex-1 pr-10"
-              placeholder="Enter your password"
-              secureTextEntry={!showPassword}
+            <Controller
+              name="password"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <AppInput
+                  ref={passwordRef}
+                  value={value}
+                  onChangeText={onChange}
+                  className="flex-1 pr-10"
+                  placeholder="Enter your password"
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="go"
+                  onSubmitEditing={handleSubmit(handleLogin)}
+                />
+              )}
             />
             <Pressable
               className="absolute right-4"
+              hitSlop={10}
               onPress={() => setShowPassword(!showPassword)}
+              accessibilityRole="button"
+              accessibilityLabel={
+                showPassword ? "Hide password" : "Show password"
+              }
             >
               <Icon
                 name={showPassword ? "EyeIcon" : "EyeSlashIcon"}
@@ -74,6 +112,9 @@ const LoginForm = () => {
               />
             </Pressable>
           </View>
+          {errors.password && (
+            <FieldError>{errors.password.message}</FieldError>
+          )}
         </TextField>
         <Button
           onPress={() => router.push("/forgot-password")}
@@ -88,7 +129,7 @@ const LoginForm = () => {
         isDisabled={isPending}
         size="lg"
         className="mt-2"
-        onPress={handleLogin}
+        onPress={handleSubmit(handleLogin)}
       >
         {isPending ? (
           <Spinner color={themeColorAccentForeground} />

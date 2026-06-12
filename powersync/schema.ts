@@ -297,12 +297,45 @@ export const assessmentTable = sqliteTable(
   ],
 );
 
-export const assessmentRelations = relations(assessmentTable, ({ one }) => ({
-  subjectId: one(coursesTable, {
-    fields: [assessmentTable.subjectId],
-    references: [coursesTable.id],
+export const assessmentRelations = relations(
+  assessmentTable,
+  ({ one, many }) => ({
+    subjectId: one(coursesTable, {
+      fields: [assessmentTable.subjectId],
+      references: [coursesTable.id],
+    }),
+    additionalModules: many(assessmentAdditionalModulesJoin),
   }),
-}));
+);
+
+// M2M join: Activity.additional_modules. Backend table:
+//   activity_activity_additional_modules(id bigint pk, activity_id varchar(36)
+//   fk → activity_activity.local_id, module_id bigint fk → module_module.id,
+//   unique(activity_id, module_id)). `id` stays as the PK per PowerSync's
+//   uploads-need-bigint-PK rule; navigation breaks silently otherwise.
+export const assessmentAdditionalModulesJoin = sqliteTable(
+  "activity_activity_additional_modules",
+  {
+    id: integer("id").primaryKey(),
+    activityId: text("activity_id").notNull(),
+    moduleId: integer("module_id").notNull(),
+  },
+  (t) => [index("idx_aam_activity").on(t.activityId)],
+);
+
+export const assessmentAdditionalModulesRelations = relations(
+  assessmentAdditionalModulesJoin,
+  ({ one }) => ({
+    activity: one(assessmentTable, {
+      fields: [assessmentAdditionalModulesJoin.activityId],
+      references: [assessmentTable.id],
+    }),
+    module: one(materialsTable, {
+      fields: [assessmentAdditionalModulesJoin.moduleId],
+      references: [materialsTable.id],
+    }),
+  }),
+);
 
 export const studentAssessment = sqliteTable(
   "activity_studentactivity",
@@ -374,6 +407,10 @@ export const attemptsTable = sqliteTable(
     lastIndex: integer("last_index").notNull().default(0),
     lastHeartbeatAt: text("last_heartbeat_at").notNull().default(utcNow),
     totalElapsedSeconds: integer("total_elapsed_seconds").notNull().default(0),
+    // Server stamps this the first time the auto-grader scores a
+    // submitted attempt. Mobile uses it to render "pending grading"
+    // vs the actual score.
+    gradedAt: text("graded_at"),
   },
   (t) => [
     index("idx_retakerecord_studentactivity_status").on(
@@ -517,6 +554,8 @@ export const drizzleSchema = {
   materialsTable,
   assessmentTable,
   assessmentRelations,
+  assessmentAdditionalModulesJoin,
+  assessmentAdditionalModulesRelations,
   studentAssessment,
   studentAssessmentRelations,
   attemptsTable,

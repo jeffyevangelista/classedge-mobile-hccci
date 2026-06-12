@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Screen — Redesign</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f4f6f8;
+        --surface: #ffffff;
+        --foreground: #0f172a;
+        --muted: #94a3b8;
+        --muted-strong: #64748b;
+        --border: #e2e8f0;
+        --border-strong: #cbd5e1;
+        --accent: #2563eb;
+        --accent-foreground: #ffffff;
+        --ms-blue: #2f6df4;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #1a1a1a;
+        min-height: 100vh;
+        color: var(--foreground);
+      }
+      body { padding: 40px 24px; }
+
+      .page-header {
+        max-width: 1400px;
+        margin: 0 auto 32px;
+        color: #e2e8f0;
+      }
+      .page-header h1 {
+        font-size: 26px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        letter-spacing: -0.01em;
+      }
+      .page-header p {
+        font-size: 14px;
+        color: #cbd5e1;
+        line-height: 1.6;
+        max-width: 820px;
+      }
+      .page-header .change-list {
+        margin-top: 16px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .change-list .pill {
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+      }
+
+      .row {
+        display: flex;
+        gap: 32px;
+        justify-content: center;
+        flex-wrap: wrap;
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+
+      .phone-wrap { display: flex; flex-direction: column; gap: 12px; }
+      .phone-wrap .caption {
+        color: #fbbf24;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        text-align: center;
+      }
+      .phone-wrap .caption.muted { color: #64748b; }
+      .phone-wrap .caption .sub {
+        display: block;
+        color: #94a3b8;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: 0;
+        font-size: 12px;
+        margin-top: 4px;
+      }
+
+      .phone {
+        width: 393px;
+        height: 852px;
+        background: var(--bg);
+        border-radius: 48px;
+        overflow: hidden;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.4),
+          0 0 0 8px #0f172a,
+          0 0 0 11px #1a1a1a;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+      .status-bar {
+        height: 47px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 28px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #0f172a;
+        background: var(--bg);
+        flex-shrink: 0;
+        position: relative;
+      }
+      .status-bar .island {
+        width: 120px; height: 36px; background: #0f172a; border-radius: 18px;
+        position: absolute; left: 50%; top: 11px; transform: translateX(-50%);
+      }
+      .status-bar .right { display: flex; gap: 6px; align-items: center; font-size: 14px; }
+
+      .home-indicator {
+        position: absolute;
+        bottom: 8px; left: 50%;
+        transform: translateX(-50%);
+        width: 134px; height: 5px;
+        background: #0f172a;
+        border-radius: 3px;
+      }
+
+      .content {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 20px;
+      }
+
+      /* ─────────── Shared atoms ─────────── */
+      .logo {
+        width: 96px;
+        height: 96px;
+        border-radius: 22px;
+        background: linear-gradient(180deg, #d8c89a 0%, #c5b07a 100%);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 36px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        position: relative;
+      }
+      .logo svg { width: 60px; height: 60px; }
+
+      .title {
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--foreground);
+        letter-spacing: -0.02em;
+        margin-top: 14px;
+      }
+      .subtitle {
+        font-size: 13px;
+        color: var(--muted-strong);
+        margin-top: 6px;
+      }
+
+      .btn {
+        width: 100%;
+        height: 54px;
+        border-radius: 27px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        border: none;
+        font-family: inherit;
+      }
+      .btn-ms {
+        background: var(--ms-blue);
+        color: white;
+      }
+      .btn-outline {
+        background: transparent;
+        color: var(--foreground);
+        border: 1.5px solid var(--border);
+      }
+      .btn-outline.strong {
+        border-color: var(--border-strong);
+        background: white;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--foreground);
+      }
+
+      .ms-tile {
+        width: 18px; height: 18px;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+      }
+      .ms-tile span { display: block; }
+      .ms-tile span:nth-child(1) { background: #f25022; }
+      .ms-tile span:nth-child(2) { background: #7fba00; }
+      .ms-tile span:nth-child(3) { background: #00a4ef; }
+      .ms-tile span:nth-child(4) { background: #ffb900; }
+
+      .legal {
+        text-align: center;
+        font-size: 11px;
+        color: var(--muted-strong);
+        line-height: 1.6;
+        padding: 0 16px;
+      }
+      .legal a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      /* ─────────── CURRENT (left phone) ─────────── */
+      .current .hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 192px; /* mb-48 */
+        margin-top: 80px;
+      }
+      .current .auth-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .current .spacer { flex: 1; }
+      .current .legal { margin-top: 24px; margin-bottom: 32px; }
+      .current .floating-debug {
+        position: absolute;
+        bottom: 90px; right: 16px;
+        width: 56px; height: 56px;
+        border-radius: 28px;
+        background: linear-gradient(135deg, #fde68a, #34d399);
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        font-size: 22px;
+      }
+
+      /* ─────────── PROPOSED (right phone) ─────────── */
+      .proposed .content {
+        padding: 24px 20px 32px;
+      }
+      .proposed .center-block {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 36px;
+      }
+      .proposed .hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .proposed .auth-stack {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .proposed .divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 4px 0;
+      }
+      .proposed .divider .line {
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+      .proposed .divider .label {
+        font-size: 11px;
+        color: var(--muted-strong);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .proposed .legal { margin-top: 0; }
+
+      /* annotation markers */
+      .marker {
+        position: absolute;
+        background: #fbbf24;
+        color: #0f172a;
+        font-size: 11px;
+        font-weight: 700;
+        width: 22px; height: 22px;
+        border-radius: 11px;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        z-index: 10;
+      }
+      .marker.red { background: #ef4444; color: white; }
+
+      .legend {
+        max-width: 1400px;
+        margin: 32px auto 0;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        padding: 20px 24px;
+        color: #cbd5e1;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+      .legend h3 {
+        color: #fbbf24;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 12px;
+      }
+      .legend ul { list-style: none; }
+      .legend li { display: flex; gap: 10px; margin-bottom: 6px; }
+      .legend li .num {
+        flex-shrink: 0;
+        width: 20px; height: 20px;
+        background: #fbbf24; color: #0f172a;
+        border-radius: 10px;
+        font-size: 11px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .legend li.red .num { background: #ef4444; color: white; }
+    </style>
+  </head>
+  <body>
+    <div class="page-header">
+      <h1>Login Screen — Proposed Redesign</h1>
+      <p>
+        Current implementation splits the screen into a top logo cluster and a
+        bottom button stack with a 192px hard margin between them, leaving a
+        large dead zone. The proposed version centers the form as a single block
+        and tightens the relationship between the two auth options.
+      </p>
+      <div class="change-list">
+        <span class="pill">Remove mb-48 dead space</span>
+        <span class="pill">Center as single block</span>
+        <span class="pill">Stronger email border</span>
+        <span class="pill">"Or" divider</span>
+        <span class="pill">Subtitle breathing room</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- ─────────── CURRENT ─────────── -->
+      <div class="phone-wrap">
+        <div class="caption muted">Current<span class="sub">screens/auth/LoginScreen.tsx</span></div>
+        <div class="phone current">
+          <div class="status-bar">
+            <span>4:48</span>
+            <div class="island"></div>
+            <div class="right">
+              <span>••••</span>
+              <span>📶</span>
+              <span>🔋</span>
+            </div>
+          </div>
+          <div class="content">
+            <div class="hero">
+              <div class="logo">
+                <svg viewBox="0 0 60 60" fill="none">
+                  <path d="M30 8 L48 16 L48 32 Q48 44 30 52 Q12 44 12 32 L12 16 Z" fill="#1e3a8a" opacity="0.85"/>
+                  <circle cx="30" cy="26" r="8" fill="#3b82f6"/>
+                  <rect x="22" y="36" width="16" height="6" rx="1" fill="#fff"/>
+                </svg>
+              </div>
+              <div class="title">Welcome to Classedge</div>
+              <div class="subtitle" style="margin-top: 4px;">
+                Login to manage your classes and learning
+              </div>
+              <div class="marker red" style="top: -10px; right: -10px;">!</div>
+            </div>
+
+            <div style="position: relative;">
+              <div class="marker red" style="top: -110px; left: 50%; transform: translateX(-50%);">2</div>
+            </div>
+
+            <div class="auth-stack">
+              <button class="btn btn-ms">
+                <div class="ms-tile"><span></span><span></span><span></span><span></span></div>
+                Continue with Microsoft
+              </button>
+              <button class="btn btn-outline" style="position: relative;">
+                <span>✉</span>
+                Continue with Email
+                <div class="marker red" style="top: -8px; right: -8px;">3</div>
+              </button>
+            </div>
+
+            <div class="spacer"></div>
+            <div class="legal">
+              By Continuing, you agree to our <a href="#">EULA</a> and acknowledge<br />
+              <a href="#">Privacy Policy</a>
+            </div>
+          </div>
+          <div class="floating-debug" title="dev overlay">🏝️<div class="marker red" style="top: -8px; right: -8px;">4</div></div>
+          <div class="home-indicator"></div>
+        </div>
+      </div>
+
+      <!-- ─────────── PROPOSED ─────────── -->
+      <div class="phone-wrap">
+        <div class="caption">Proposed<span class="sub">unified, centered block + divider</span></div>
+        <div class="phone proposed">
+          <div class="status-bar">
+            <span>4:48</span>
+            <div class="island"></div>
+            <div class="right">
+              <span>••••</span>
+              <span>📶</span>
+              <span>🔋</span>
+            </div>
+          </div>
+          <div class="content">
+            <div class="center-block">
+              <div class="hero">
+                <div class="logo">
+                  <svg viewBox="0 0 60 60" fill="none">
+                    <path d="M30 8 L48 16 L48 32 Q48 44 30 52 Q12 44 12 32 L12 16 Z" fill="#1e3a8a" opacity="0.85"/>
+                    <circle cx="30" cy="26" r="8" fill="#3b82f6"/>
+                    <rect x="22" y="36" width="16" height="6" rx="1" fill="#fff"/>
+                  </svg>
+                </div>
+                <div class="title">Welcome to Classedge</div>
+                <div class="subtitle">
+                  Login to manage your classes and learning
+                </div>
+                <div class="marker" style="top: -10px; right: -10px;">A</div>
+              </div>
+
+              <div class="auth-stack">
+                <button class="btn btn-ms" style="position: relative;">
+                  <div class="ms-tile"><span></span><span></span><span></span><span></span></div>
+                  Continue with Microsoft
+                </button>
+
+                <div class="divider">
+                  <div class="line"></div>
+                  <div class="label">Or</div>
+                  <div class="line"></div>
+                </div>
+
+                <button class="btn btn-outline strong" style="position: relative;">
+                  <span>✉</span>
+                  Continue with Email
+                  <div class="marker" style="top: -8px; right: -8px;">B</div>
+                </button>
+                <div class="marker" style="position: relative; align-self: center; margin-top: -8px;">C</div>
+              </div>
+            </div>
+
+            <div class="legal">
+              By continuing, you agree to our <a href="#">EULA</a> and acknowledge our
+              <a href="#">Privacy Policy</a>
+            </div>
+          </div>
+          <div class="home-indicator"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <h3>What changed</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div>
+          <h3 style="color: #ef4444;">Current issues</h3>
+          <ul>
+            <li class="red"><span class="num">1</span><span><strong>Subtitle crammed against title</strong> — only 4px gap; reads as one block.</span></li>
+            <li class="red"><span class="num">2</span><span><strong>192px dead zone (mb-48)</strong> — splits the screen into two visual halves with nothing in between.</span></li>
+            <li class="red"><span class="num">3</span><span><strong>Email button border is too faint</strong> — outline variant barely visible against the background.</span></li>
+            <li class="red"><span class="num">4</span><span><strong>Floating debug overlay</strong> — confirm this is dev-only and not shipped.</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Proposed improvements</h3>
+          <ul>
+            <li><span class="num">A</span><span><strong>Subtitle gets <code>mt-2</code></strong> (6px) — clearer hierarchy between title and tagline.</span></li>
+            <li><span class="num">B</span><span><strong>Stronger email button border</strong> — bumped to <code>border-strong</code> with a subtle elevation; still secondary but visible.</span></li>
+            <li><span class="num">C</span><span><strong>"Or" divider</strong> — gives the email option a job and clarifies it's an alternative, not a redundant CTA.</span></li>
+            <li><span class="num">•</span><span><strong>Single centered block</strong> — logo + auth stack live together via <code>justify-center</code>, no fixed margin. Scales well from small phones to tablets.</span></li>
+            <li><span class="num">•</span><span><strong>Legal text pinned to bottom</strong> — unchanged, but breathes naturally without the dead zone pushing it.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

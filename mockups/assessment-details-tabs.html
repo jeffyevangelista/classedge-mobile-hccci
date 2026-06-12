@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Assessment Details — Small-screen Tabs</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+          sans-serif;
+        background: #0f172a;
+      }
+      .phone {
+        width: 380px;
+        height: 760px;
+        background: #f8fafc;
+        border-radius: 40px;
+        box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .top-pad {
+        padding-top: 36px;
+      }
+      .scroll {
+        flex: 1;
+        overflow-y: auto;
+      }
+      .scroll::-webkit-scrollbar {
+        display: none;
+      }
+      .hero-glow-tr {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 60% 60% at 100% 0%,
+          rgba(255, 255, 255, 0.18) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        pointer-events: none;
+      }
+      .hero-glow-bl {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 55% 55% at 0% 100%,
+          rgba(255, 255, 255, 0.08) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        pointer-events: none;
+      }
+      .dots {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 60px;
+        background-image: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.18) 1.5px,
+          transparent 1.5px
+        );
+        background-size: 14px 12px;
+        pointer-events: none;
+      }
+      .uppercase-label {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: 600;
+        color: #64748b;
+      }
+      .cta {
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        padding: 12px 16px 20px 16px;
+      }
+      .cta-btn {
+        background: #2563eb;
+        color: white;
+        border-radius: 9999px;
+        padding: 12px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 15px;
+      }
+      .tab {
+        flex: 1;
+        padding: 8px 0;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+      }
+      .tab.active {
+        color: #2563eb;
+        border-bottom-color: #2563eb;
+      }
+      .tab .badge {
+        display: inline-block;
+        font-size: 10px;
+        background: #e2e8f0;
+        color: #475569;
+        padding: 1px 6px;
+        border-radius: 999px;
+        margin-left: 4px;
+        vertical-align: middle;
+        font-weight: 600;
+      }
+      .tab.active .badge {
+        background: #dbeafe;
+        color: #2563eb;
+      }
+    </style>
+  </head>
+  <body class="p-10">
+    <div class="text-white text-sm mb-4 max-w-3xl">
+      <span class="font-semibold">Proposal:</span> on phone-size screens
+      (≤480px wide), split the three body sections into segmented tabs.
+      Hero stays pinned above; CTA stays pinned below. Each tab is now a
+      focused, fully-readable view instead of competing for the same scroll.
+      Tablet keeps the existing inline layout.
+    </div>
+
+    <div class="flex flex-wrap gap-8 items-start">
+      <!-- BEFORE (current state, small phone) -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          Before — current, iPhone SE
+        </div>
+        <div class="phone">
+          <div class="top-pad px-4 pb-2 flex items-center">
+            <div class="w-9 h-9 flex items-center justify-center text-lg">←</div>
+          </div>
+          <div class="scroll px-4 pb-4 space-y-4">
+            <!-- Hero -->
+            <div
+              class="relative rounded-2xl p-4 overflow-hidden"
+              style="
+                background: linear-gradient(135deg, #2563eb, #1e40af, #1e3a8a);
+              "
+            >
+              <div class="hero-glow-tr"></div>
+              <div class="hero-glow-bl"></div>
+              <div class="dots"></div>
+              <div class="flex items-center justify-between mb-2 relative">
+                <div
+                  class="text-[10px] tracking-widest uppercase font-semibold text-white/85"
+                >
+                  Quiz
+                </div>
+                <div
+                  class="px-2 py-0.5 rounded-full bg-white/20 border border-white/25 text-[10px] font-semibold text-white"
+                >
+                  Completed
+                </div>
+              </div>
+              <div class="text-lg font-bold text-white leading-tight relative">
+                Test Data $20
+              </div>
+              <div class="text-[11px] text-white/75 mt-0.5 mb-3 relative">
+                Due Jun 5
+              </div>
+              <div class="flex gap-1.5 relative">
+                <div class="flex-1 rounded-lg bg-white/15 border border-white/20 p-2">
+                  <div class="text-lg font-bold text-white">2</div>
+                  <div class="text-[9px] tracking-widest uppercase text-white/75">
+                    Questions
+                  </div>
+                </div>
+                <div class="flex-1 rounded-lg bg-white/15 border border-white/20 p-2">
+                  <div class="text-lg font-bold text-white">1h</div>
+                  <div class="text-[9px] tracking-widest uppercase text-white/75">
+                    Time
+                  </div>
+                </div>
+                <div class="flex-1 rounded-lg bg-white/15 border border-white/20 p-2">
+                  <div class="text-lg font-bold text-white">0</div>
+                  <div class="text-[9px] tracking-widest uppercase text-white/75">
+                    Left
+                  </div>
+                </div>
+              </div>
+              <div
+                class="mt-3 pt-2 border-t border-white/15 text-[10px] text-white/85"
+              >
+                🎯 Passing 60 · Highest of 2 attempts
+              </div>
+            </div>
+
+            <!-- Instructions -->
+            <div>
+              <div class="uppercase-label mb-1">Instructions</div>
+              <div class="text-sm text-slate-700 leading-relaxed">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis
+                fermentum ullamcorper lorem sed tempus. Proin eu pellentesque
+                mi. Aenean sit amet neque sodales, vehicula turpis sed, tempor
+                neque.
+              </div>
+              <div class="text-sm font-semibold text-blue-600 mt-1">
+                Show more
+              </div>
+              <div class="mt-2 bg-white border border-slate-200 rounded-xl p-2.5 flex items-center gap-2">
+                <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">📷</div>
+                <div class="flex-1 text-xs text-slate-700">
+                  86baaefc-f5b9-4859-8522-b311…
+                </div>
+              </div>
+            </div>
+
+            <!-- Materials -->
+            <div>
+              <div class="uppercase-label mb-1">Materials</div>
+              <div class="space-y-1.5">
+                <div class="bg-white border border-slate-200 rounded-xl p-2.5 flex items-center gap-2">
+                  <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">📖</div>
+                  <div class="flex-1 text-sm font-semibold">ITest</div>
+                  <div class="text-slate-400">›</div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl p-2.5 flex items-center gap-2">
+                  <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">📖</div>
+                  <div class="flex-1 text-sm font-semibold">Lesson 0</div>
+                  <div class="text-slate-400">›</div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl p-2.5 flex items-center gap-2">
+                  <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">📖</div>
+                  <div class="flex-1 text-sm font-semibold">Lesson 000001</div>
+                  <div class="text-slate-400">›</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Results -->
+            <div>
+              <div class="uppercase-label mb-1">Results</div>
+              <div class="space-y-1.5">
+                <div class="bg-white border border-slate-200 border-l-4 border-l-emerald-500 rounded-xl p-2.5 flex items-center gap-2">
+                  <div class="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center">✓</div>
+                  <div class="flex-1">
+                    <div class="text-sm font-bold">Attempt 2</div>
+                    <div class="text-[11px] text-slate-500">Completed · Jun 3</div>
+                  </div>
+                  <div class="text-sm font-bold text-emerald-600">10/10</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-white/60 text-xs mt-2 max-w-[380px]">
+          ↑ Everything fights for the same scroll. Results barely visible
+          without scrolling. Each section feels cramped.
+        </div>
+      </div>
+
+      <!-- AFTER: Tabs (Instructions tab active) -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          After — Tabs (Instructions)
+        </div>
+        <div class="phone">
+          <div class="top-pad px-4 pb-2 flex items-center">
+            <div class="w-9 h-9 flex items-center justify-center text-lg">←</div>
+          </div>
+          <!-- Hero (compact) -->
+          <div class="px-4">
+            <div
+              class="relative rounded-2xl p-4 overflow-hidden"
+              style="
+                background: linear-gradient(135deg, #2563eb, #1e40af, #1e3a8a);
+              "
+            >
+              <div class="hero-glow-tr"></div>
+              <div class="hero-glow-bl"></div>
+              <div class="dots"></div>
+              <div class="flex items-center justify-between mb-2 relative">
+                <div
+                  class="text-[10px] tracking-widest uppercase font-semibold text-white/85"
+                >
+                  Quiz
+                </div>
+                <div
+                  class="px-2 py-0.5 rounded-full bg-white/20 border border-white/25 text-[10px] font-semibold text-white"
+                >
+                  Completed
+                </div>
+              </div>
+              <div class="text-lg font-bold text-white leading-tight relative">
+                Test Data $20
+              </div>
+              <div class="text-[11px] text-white/75 mt-0.5 mb-3 relative">
+                Due Jun 5 · 60 to pass · Highest of 2
+              </div>
+              <div class="flex gap-1.5 relative">
+                <div class="flex-1 rounded-lg bg-white/15 border border-white/20 p-2">
+                  <div class="text-lg font-bold text-white">2</div>
+                  <div class="text-[9px] tracking-widest uppercase text-white/75">
+                    Questions
+                  </div>
+                </div>
+                <div class="flex-1 rounded-lg bg-white/15 border border-white/20 p-2">
+                  <div class="text-lg font-bold text-white">1h</div>
+                  <div class="text-[9px] tracking-widest uppercase text-white/75">
+                    Time
+                  </div>
+                </div>
+                <div class="flex-1 rounded-lg bg-white/15 border border-white/20 p-2">
+                  <div class="text-lg font-bold text-white">0</div>
+                  <div class="text-[9px] tracking-widest uppercase text-white/75">
+                    Left
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="px-4 mt-3 flex border-b border-slate-200">
+            <div class="tab active">Instructions</div>
+            <div class="tab">
+              Materials<span class="badge">3</span>
+            </div>
+            <div class="tab">
+              Results<span class="badge">2</span>
+            </div>
+          </div>
+
+          <!-- Tab content: Instructions -->
+          <div class="scroll px-4 py-3 space-y-3">
+            <div class="text-sm text-slate-700 leading-relaxed">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis
+              fermentum ullamcorper lorem sed tempus. Proin eu pellentesque
+              mi. Aenean sit amet neque sodales, vehicula turpis sed, tempor
+              neque. Aenean iaculis mi metus, auctor blandit lectus elementum
+              consectetur. Vestibulum ante ipsum primis in faucibus orci
+              luctus et ultrices posuere cubilia curae.
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-2.5 flex items-center gap-2">
+              <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">📷</div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium truncate">
+                  86baaefc-f5b9-4859-8522-b311…
+                </div>
+                <div class="text-xs text-slate-500">Tap to view</div>
+              </div>
+              <div class="text-slate-400">↗</div>
+            </div>
+          </div>
+
+          <div class="cta">
+            <button class="cta-btn w-full">▶ Start Assessment</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AFTER: Tabs (Materials tab active) -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          After — Tabs (Materials)
+        </div>
+        <div class="phone">
+          <div class="top-pad px-4 pb-2 flex items-center">
+            <div class="w-9 h-9 flex items-center justify-center text-lg">←</div>
+          </div>
+          <div class="px-4">
+            <div
+              class="relative rounded-2xl p-4 overflow-hidden"
+              style="
+                background: linear-gradient(135deg, #2563eb, #1e40af, #1e3a8a);
+              "
+            >
+              <div class="hero-glow-tr"></div>
+              <div class="hero-glow-bl"></div>
+              <div class="dots"></div>
+              <div class="flex items-center justify-between mb-2 relative">
+                <div
+                  class="text-[10px] tracking-widest uppercase font-semibold text-white/85"
+                >
+                  Quiz
+                </div>
+                <div
+                  class="px-2 py-0.5 rounded-full bg-white/20 border border-white/25 text-[10px] font-semibold text-white"
+                >
+                  Completed
+                </div>
+              </div>
+              <div class="text-lg font-bold text-white leading-tight relative">
+                Test Data $20
+              </div>
+              <div class="text-[11px] text-white/75 mt-0.5 mb-3 relative">
+                Due Jun 5 · 60 to pass · Highest of 2
+              </div>
+              <div class="flex gap-1.5 relative">
+                <div class="flex-1 rounded-lg bg-white/15 border border-white/20 p-2">
+                  <div class="text-lg font-bold text-white">2</div>
+                  <div class="text-[9px] tracking-widest uppercase text-white/75">
+                    Questions
+                  </div>
+                </div>
+                <div class="flex-1 rounded-lg bg-white/15 border border-white/20 p-2">
+                  <div class="text-lg font-bold text-white">1h</div>
+                  <div class="text-[9px] tracking-widest uppercase text-white/75">
+                    Time
+                  </div>
+                </div>
+                <div class="flex-1 rounded-lg bg-white/15 border border-white/20 p-2">
+                  <div class="text-lg font-bold text-white">0</div>
+                  <div class="text-[9px] tracking-widest uppercase text-white/75">
+                    Left
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-4 mt-3 flex border-b border-slate-200">
+            <div class="tab">Instructions</div>
+            <div class="tab active">
+              Materials<span class="badge">3</span>
+            </div>
+            <div class="tab">
+              Results<span class="badge">2</span>
+            </div>
+          </div>
+
+          <div class="scroll px-4 py-3 space-y-2">
+            <div class="bg-white border border-slate-200 rounded-xl p-3 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">📖</div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold truncate">ITest</div>
+                <div class="text-xs text-slate-500 truncate">ITest</div>
+              </div>
+              <div class="text-slate-400">›</div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-3 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">📖</div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold truncate">Lesson 0</div>
+                <div class="text-xs text-slate-500 truncate">Lesson 0</div>
+              </div>
+              <div class="text-slate-400">›</div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-3 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">📖</div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold truncate">Lesson 000001</div>
+                <div class="text-xs text-slate-500 truncate">Lesson 000001</div>
+              </div>
+              <div class="text-slate-400">›</div>
+            </div>
+          </div>
+
+          <div class="cta">
+            <button class="cta-btn w-full">▶ Start Assessment</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AFTER: Tabs (Results tab active) -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          After — Tabs (Results)
+        </div>
+        <div class="phone">
+          <div class="top-pad px-4 pb-2 flex items-center">
+            <div class="w-9 h-9 flex items-center justify-center text-lg">←</div>
+          </div>
+          <div class="px-4">
+            <div
+              class="relative rounded-2xl p-4 overflow-hidden"
+              style="
+                background: linear-gradient(135deg, #2563eb, #1e40af, #1e3a8a);
+              "
+            >
+              <div class="hero-glow-tr"></div>
+              <div class="hero-glow-bl"></div>
+              <div class="dots"></div>
+              <div class="flex items-center justify-between mb-2 relative">
+                <div
+                  class="text-[10px] tracking-widest uppercase font-semibold text-white/85"
+                >
+                  Quiz
+                </div>
+                <div
+                  class="px-2 py-0.5 rounded-full bg-white/20 border border-white/25 text-[10px] font-semibold text-white"
+                >
+                  Completed
+                </div>
+              </div>
+              <div class="text-lg font-bold text-white leading-tight relative">
+                Test Data $20
+              </div>
+              <div class="text-[11px] text-white/75 mt-0.5 mb-3 relative">
+                Due Jun 5 · 60 to pass · Highest of 2
+              </div>
+              <div class="flex gap-1.5 relative">
+                <div class="flex-1 rounded-lg bg-white/15 border border-white/20 p-2">
+                  <div class="text-lg font-bold text-white">2</div>
+                  <div class="text-[9px] tracking-widest uppercase text-white/75">
+                    Questions
+                  </div>
+                </div>
+                <div class="flex-1 rounded-lg bg-white/15 border border-white/20 p-2">
+                  <div class="text-lg font-bold text-white">1h</div>
+                  <div class="text-[9px] tracking-widest uppercase text-white/75">
+                    Time
+                  </div>
+                </div>
+                <div class="flex-1 rounded-lg bg-white/15 border border-white/20 p-2">
+                  <div class="text-lg font-bold text-white">0</div>
+                  <div class="text-[9px] tracking-widest uppercase text-white/75">
+                    Left
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-4 mt-3 flex border-b border-slate-200">
+            <div class="tab">Instructions</div>
+            <div class="tab">
+              Materials<span class="badge">3</span>
+            </div>
+            <div class="tab active">
+              Results<span class="badge">2</span>
+            </div>
+          </div>
+
+          <div class="scroll px-4 py-3 space-y-2">
+            <div class="bg-white border border-slate-200 rounded-xl p-3 mb-2">
+              <div class="flex items-center justify-between mb-1">
+                <div class="text-sm font-semibold text-slate-700">
+                  Your best score
+                </div>
+                <div
+                  class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700"
+                >
+                  Passed
+                </div>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <div>
+                  <span class="text-3xl font-bold text-slate-900">10</span>
+                  <span class="text-slate-400"> / 10</span>
+                </div>
+                <div class="text-sm text-slate-500">100%</div>
+              </div>
+            </div>
+            <div class="bg-white border border-slate-200 border-l-4 border-l-emerald-500 rounded-xl p-3 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">✓</div>
+              <div class="flex-1">
+                <div class="text-sm font-bold">Attempt 2</div>
+                <div class="text-xs text-slate-500">Completed · Jun 3</div>
+              </div>
+              <div>
+                <div class="text-sm font-bold text-emerald-600">10/10</div>
+                <div class="text-[11px] text-slate-500 text-right">100%</div>
+              </div>
+            </div>
+            <div class="bg-white border border-slate-200 border-l-4 border-l-amber-500 rounded-xl p-3 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">!</div>
+              <div class="flex-1">
+                <div class="text-sm font-bold">Attempt 1</div>
+                <div class="text-xs text-slate-500">Completed · Jun 3</div>
+              </div>
+              <div>
+                <div class="text-sm font-bold text-amber-600">0/10</div>
+                <div class="text-[11px] text-slate-500 text-right">0%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-white/70 text-xs mt-6 max-w-3xl space-y-2">
+      <div class="font-semibold text-white">Why tabs on phone:</div>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>
+          <span class="text-white">Each section is fully readable</span> —
+          Instructions doesn't have to share its scroll viewport with
+          Materials and Results.
+        </li>
+        <li>
+          <span class="text-white">Hero stays anchored</span> — title, status,
+          stats, and rules are always visible regardless of which tab is
+          active.
+        </li>
+        <li>
+          <span class="text-white">CTA stays pinned</span> — Start Assessment
+          is always reachable without scrolling.
+        </li>
+        <li>
+          <span class="text-white">Counts in tab badges</span> tell the
+          student what's there before tapping (e.g. "Materials 3", "Results 2").
+        </li>
+        <li>
+          <span class="text-white">Rules merged into hero subtitle</span> on
+          phone (the separate meta line goes away) — saves a row.
+        </li>
+        <li>
+          <span class="text-white">Tablet keeps current inline layout</span> —
+          tabs would feel like artificial chrome when the screen has the
+          space to show everything.
+        </li>
+      </ul>
+      <div class="font-semibold text-white pt-3">Trade-off:</div>
+      <p>
+        Students need to tap to see Materials or Results. Mitigation: tab
+        badges show counts (so they know there's content), and the default
+        landing tab can be smart — Instructions for "fresh" assessments,
+        Results for "completed" ones.
+      </p>
+    </div>
+  </body>
+</html>

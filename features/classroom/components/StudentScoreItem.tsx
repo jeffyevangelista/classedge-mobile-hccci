@@ -1,6 +1,7 @@
-import { memo, useCallback, useEffect, useRef } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, type TextInput, View } from "react-native";
-import { Avatar, Card, Input, useThemeColor } from "heroui-native";
+import { Avatar, useThemeColor } from "heroui-native";
+import AppInput from "@/components/AppInput";
 import { AppText } from "@/components/AppText";
 import Image from "@/components/Image";
 import { Icon } from "@/components/Icon";
@@ -9,6 +10,7 @@ import { AttachmentThumbnailImage } from "@/features/attachments/components/Atta
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { useAttachment } from "@/features/attachments/hooks/useAttachment";
 import { toTitleCase } from "@/utils/toTitleCase";
+import { ImageActionSheet } from "./ImageActionSheet";
 
 export type RowImage = { uri: string; dirty: boolean };
 
@@ -106,51 +108,81 @@ const StudentScoreItemBase = ({
     onThumbnailPress(fullscreenUri);
   }, [fullscreenUri, onThumbnailPress]);
 
+  // Long-press opens the action sheet (View / Replace / Delete). The
+  // tiny X badge stays around as a quick-delete affordance for power
+  // users, but the menu is the discoverable path for replacing without
+  // a two-step delete-then-attach dance.
+  const [actionSheetOpen, setActionSheetOpen] = useState(false);
+  const handleThumbnailLongPress = useCallback(() => {
+    if (!hasImage) return;
+    setActionSheetOpen(true);
+  }, [hasImage]);
+  const handleReplace = useCallback(() => {
+    onRequestAttach(student.studentId);
+  }, [onRequestAttach, student.studentId]);
+
   const isOverMax = score !== "" && parseInt(score, 10) > maxScore;
   const hasImage = !!image?.uri;
   const mutedColor = useThemeColor("muted");
 
   return (
-    <Card className=" max-w-3xl w-full  mx-auto rounded-2xl shadow-none mb-2 py-3 px-3">
-      <View className="flex-row items-center gap-3 mb-2.5">
-        <Avatar alt={fullName} size="sm">
+    <View className="max-w-3xl w-full mx-auto mb-2">
+      <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
+        {/* Left accent strip only on un-saved (dirty / ungraded) rows so
+            the eye lands on the rows that still need attention. We
+            don't dim saved rows because that also dims the score
+            value itself — the strip alone is enough differentiation. */}
+        {!isSaved ? (
+          <View className="w-1 h-10 rounded-full bg-accent shrink-0" />
+        ) : null}
+        <Avatar alt={fullName} size="sm" className="shrink-0">
           <AttachmentAvatarImage path={student.profile?.studentPhoto} />
           <AvatarFallbackImage />
         </Avatar>
-        <AppText weight="semibold" className="flex-1 text-sm" numberOfLines={1}>
+        {/* `flex-1 min-w-0` lets the name shrink; `numberOfLines={2}` +
+            `leading-tight` lets long compound names wrap to a second
+            line so sibling rows (shared prefix) stay distinguishable.
+            Most rows still render as a single line. */}
+        <AppText
+          weight="semibold"
+          className="flex-1 min-w-0 text-sm leading-tight"
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
           {fullName}
         </AppText>
-        {isSaved && (
-          <View className="flex-row items-center gap-1">
-            <Icon name="CheckCircle" size={14} color="#22c55e" />
-            <AppText className="text-xs text-foreground/70">Saved</AppText>
-          </View>
-        )}
-      </View>
-
-      <View className="flex-row items-center gap-3 pl-11">
-        <View className="flex-row items-center flex-1">
-          <Input
-            ref={inputRef}
-            placeholder="0"
-            value={score}
-            onChangeText={handleChangeText}
-            onFocus={handleFocus}
-            onSubmitEditing={handleSubmitEditing}
-            submitBehavior="submit"
-            returnKeyType="next"
-            keyboardType="numeric"
-            maxLength={String(maxScore).length}
-            className={`w-20 text-center ${isOverMax ? "border-red-500" : ""}`}
-          />
-          <AppText className="text-sm text-foreground/70 ml-2">
-            / {maxScore}
-          </AppText>
-        </View>
-
+        {/* Explicit border + tinted background so the input reads as a
+            field rather than blending into the card surface. Bolder
+            text + tabular-nums so the entered score is unambiguous. */}
+        <AppInput
+          ref={inputRef}
+          placeholder="0"
+          value={score}
+          onChangeText={handleChangeText}
+          onFocus={handleFocus}
+          onSubmitEditing={handleSubmitEditing}
+          submitBehavior="submit"
+          returnKeyType="next"
+          keyboardType="numeric"
+          maxLength={String(maxScore).length}
+          className={`w-20 text-center text-base font-semibold shrink-0 bg-default border ${
+            isOverMax ? "border-danger" : "border-border"
+          }`}
+          style={{ fontVariant: ["tabular-nums"] }}
+        />
+        <AppText className="text-xs text-muted shrink-0">
+          / {maxScore}
+        </AppText>
         {hasImage ? (
           <View style={styles.thumbnailWrapper}>
-            <Pressable onPress={handleThumbnailTap} style={styles.thumbnail}>
+            <Pressable
+              onPress={handleThumbnailTap}
+              onLongPress={handleThumbnailLongPress}
+              delayLongPress={300}
+              style={styles.thumbnail}
+              accessibilityRole="button"
+              accessibilityLabel="Attached image, tap to view, long-press for options"
+            >
               {isLocal ? (
                 <Image
                   source={{ uri: image!.uri }}
@@ -165,21 +197,34 @@ const StudentScoreItemBase = ({
               style={styles.deleteButton}
               onPress={handleDeletePress}
               hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Remove image"
             >
               <Icon name="XIcon" size={14} color="#fff" />
             </Pressable>
           </View>
         ) : (
+          // Stronger fill + border so the camera button reads as an
+          // affordance instead of disappearing into the card surface.
           <Pressable
             onPress={handleAttachPress}
-            className="w-11 h-11 rounded-xl bg-default-100 border border-border justify-center items-center"
+            className="w-11 h-11 rounded-xl bg-default border border-border justify-center items-center shrink-0 active:opacity-70"
             hitSlop={6}
+            accessibilityRole="button"
+            accessibilityLabel="Attach image"
           >
             <Icon name="Camera" size={20} color={mutedColor} />
           </Pressable>
         )}
       </View>
-    </Card>
+      <ImageActionSheet
+        isOpen={actionSheetOpen}
+        onOpenChange={setActionSheetOpen}
+        onView={handleThumbnailTap}
+        onReplace={handleReplace}
+        onDelete={handleDeletePress}
+      />
+    </View>
   );
 };
 

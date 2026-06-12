@@ -165,7 +165,21 @@ const CourseListToolbar = ({
           onChangeText={onSearchChange}
           autoCorrect={false}
           autoCapitalize="none"
+          accessibilityLabel="Search courses"
         />
+        {search.length > 0 ? (
+          <InputGroup.Suffix>
+            <Pressable
+              onPress={() => onSearchChange("")}
+              accessibilityRole="button"
+              accessibilityLabel="Clear search"
+              hitSlop={8}
+              className="active:opacity-60"
+            >
+              <Icon name="XCircleIcon" size={18} color={mutedColor} />
+            </Pressable>
+          </InputGroup.Suffix>
+        ) : null}
       </InputGroup>
       <Button
         isIconOnly
@@ -232,70 +246,71 @@ const Course = ({
       : "Unassigned";
 
   return (
-    <Pressable
-      onPress={() => router.push(`/course/${item.id}`)}
-      style={({ pressed }) => ({
-        flex: 1 / numColumns,
-        padding: 5,
-        opacity: pressed ? 0.7 : 1,
-      })}
-    >
-      <Card className="p-0 shadow-none rounded-xl">
-        <Card.Body className="gap-2.5">
-          <View>
-            <AttachmentImage
-              path={item.subjectId.subjectPhoto}
-              fallback={
-                <Image
-                  source={require("@/assets/placeholder/bg-placeholder.png")}
-                  className="rounded-t-xl w-full aspect-video"
-                  contentFit="cover"
-                />
-              }
-              className="rounded-t-xl w-full aspect-video"
-              contentFit="cover"
-              cachePolicy="disk"
-            />
-            <PendingBadge counts={counts} />
-          </View>
-          <View className="px-4 pb-4 gap-2">
-            <View className="md:h-14">
-              <AppText
-                numberOfLines={2}
-                weight="semibold"
-                className="text-lg md:text-md leading-6"
-              >
-                {item.subjectId.subjectName}
-              </AppText>
+    <View style={{ flex: 1 / numColumns, padding: 5 }}>
+      <Pressable
+        onPress={() => router.push(`/course/${item.id}`)}
+        accessibilityRole="button"
+        accessibilityLabel={`Open course ${item.subjectId.subjectName}, taught by ${teacherName}`}
+        android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
+        className="active:opacity-80 rounded-xl overflow-hidden"
+      >
+        <Card className="p-0 shadow-none rounded-xl border border-border">
+          <Card.Body className="gap-2.5">
+            <View>
+              <AttachmentImage
+                path={item.subjectId.subjectPhoto}
+                fallback={
+                  <Image
+                    source={require("@/assets/placeholder/bg-placeholder.png")}
+                    className="rounded-t-xl w-full aspect-video"
+                    contentFit="cover"
+                  />
+                }
+                className="rounded-t-xl w-full aspect-video"
+                contentFit="cover"
+                cachePolicy="disk"
+              />
+              <PendingBadge counts={counts} />
             </View>
-            <View className="gap-1">
-              <View className="flex-row items-center gap-1.5">
-                <Icon name="MapPinIcon" size={14} color={mutedColor} />
+            <View className="px-4 pb-4 gap-2">
+              <View className="h-14">
                 <AppText
-                  numberOfLines={1}
-                  className="text-xs text-muted flex-1"
+                  numberOfLines={2}
+                  weight="semibold"
+                  className="text-base leading-6"
                 >
-                  {item.subjectId.roomNumber || "TBA"}
+                  {item.subjectId.subjectName}
                 </AppText>
               </View>
-              <View className="flex-row items-center gap-1.5">
-                <Icon
-                  name="ChalkboardTeacherIcon"
-                  size={14}
-                  color={mutedColor}
-                />
-                <AppText
-                  numberOfLines={1}
-                  className="text-xs text-muted flex-1"
-                >
-                  {teacherName}
-                </AppText>
+              <View className="gap-1">
+                <View className="flex-row items-center gap-1.5">
+                  <Icon name="MapPinIcon" size={14} color={mutedColor} />
+                  <AppText
+                    numberOfLines={1}
+                    className="text-xs text-muted flex-1"
+                  >
+                    {item.subjectId.roomNumber || "TBA"}
+                  </AppText>
+                </View>
+                <View className="flex-row items-center gap-1.5">
+                  <Icon
+                    name="ChalkboardTeacherIcon"
+                    size={14}
+                    color={mutedColor}
+                  />
+                  <AppText
+                    numberOfLines={1}
+                    className="text-xs text-muted flex-1"
+                  >
+                    {teacherName}
+                  </AppText>
+                </View>
               </View>
             </View>
-          </View>
-        </Card.Body>
-      </Card>
-    </Pressable>
+          </Card.Body>
+        </Card>
+      </Pressable>
+    </View>
   );
 };
 
@@ -314,11 +329,14 @@ const CourseListSkeleton = ({ numColumns }: { numColumns: number }) => {
                 key={index}
                 style={{ width: `${100 / numColumns}%`, padding: 10 / 2 }}
               >
-                <Card className="p-0 shadow-none rounded-xl">
+                <Card className="p-0 shadow-none rounded-xl border border-border">
                   <Card.Body className="gap-2.5">
                     <Skeleton className="rounded-t-xl w-full aspect-video" />
                     <View className="px-4 pb-4 gap-2">
-                      <Skeleton className="h-5 w-3/4 rounded" />
+                      <View className="h-14 justify-start gap-1">
+                        <Skeleton className="h-5 w-3/4 rounded" />
+                        <Skeleton className="h-5 w-1/2 rounded" />
+                      </View>
                       <Skeleton className="h-3 w-1/2 rounded" />
                       <Skeleton className="h-3 w-2/3 rounded" />
                     </View>

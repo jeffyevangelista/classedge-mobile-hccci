@@ -163,9 +163,11 @@ export class Connector implements PowerSyncBackendConnector {
 
     try {
       for (const op of transaction.crud) {
-        // op.opData contains the columns (name, etc.)
-        // op.id is the automatically managed 'id' column
-        const record = { ...op.opData, id: Number(op.id) };
+        // op.id is the PowerSync row id (the client cuid). The server uses
+        // it as the local_id PK. Carry it in the URL, NOT the body — that's
+        // what makes PUT replays idempotent.
+        const record = { ...op.opData };
+        const instanceUrl = `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`;
         const hasFile = await hasLocalFile(record);
         const fileFields = Object.entries(record)
           .filter(([, v]) => isLocalFileUri(v))
@@ -176,20 +178,12 @@ export class Connector implements PowerSyncBackendConnector {
           id: op.id,
           hasFile,
           fileFields,
-          url:
-            op.op === UpdateType.PUT
-              ? `${env.EXPO_PUBLIC_API_URL}/${op.table}/`
-              : `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
+          url: instanceUrl,
         });
 
         switch (op.op) {
           case UpdateType.PUT:
             if (hasFile) {
-              // Accept: application/json forces DRF to render errors as JSON
-              // instead of the browsable-API HTML page. Without it, a 403/400
-              // on multipart comes back as an HTML body that's impossible to
-              // act on. Content-Type is intentionally NOT set so fetch can
-              // generate the multipart boundary itself.
               const multipartHeaders: Record<string, string> = {
                 Accept: "application/json",
                 "X-Platform": "mobile",
@@ -199,9 +193,9 @@ export class Connector implements PowerSyncBackendConnector {
 
               await fetchAndLog(
                 `PUT-multipart ${op.table} ${op.id}`,
-                `${env.EXPO_PUBLIC_API_URL}/${op.table}/`,
+                instanceUrl,
                 {
-                  method: "POST",
+                  method: "PUT",
                   headers: multipartHeaders,
                   body: buildMultipartBody(record),
                 },
@@ -209,9 +203,9 @@ export class Connector implements PowerSyncBackendConnector {
             } else {
               await fetchAndLog(
                 `PUT-json ${op.table} ${op.id}`,
-                `${env.EXPO_PUBLIC_API_URL}/${op.table}/`,
+                instanceUrl,
                 {
-                  method: "POST",
+                  method: "PUT",
                   headers,
                   body: JSON.stringify(record),
                 },

@@ -16,9 +16,8 @@ const InputGradeScreen = () => {
 
   const parentNavigation = useNavigation("/(main)/classroom/[classroomId]");
 
-  const { data, isLoading, isError, error } = useClassroomActivity(
-    activityId ?? "",
-  );
+  const { data, isLoading, isError, error, refetch, isFetching } =
+    useClassroomActivity(activityId ?? "");
 
   const activity = data?.[0];
 
@@ -36,6 +35,11 @@ const InputGradeScreen = () => {
       .join(" · ");
 
     parentNavigation.setOptions({
+      // Force left-alignment for this custom title too — the stack's
+      // screenOptions already set this globally, but a `headerTitle`
+      // function override can re-introduce iOS centering depending on
+      // navigator internals, so it's pinned here as belt-and-suspenders.
+      headerTitleAlign: "left",
       headerTitle: () => (
         <View>
           <AppText
@@ -61,7 +65,10 @@ const InputGradeScreen = () => {
     parentNavigation,
   ]);
 
-  if (isLoading)
+  // Skeleton during the initial fetch AND during a retry from the
+  // error state — see features/classroom/components/LessonList for the
+  // full rationale.
+  if (isLoading || (isFetching && !activity))
     return (
       <Screen>
         <StudentScoringSkeleton />
@@ -71,7 +78,10 @@ const InputGradeScreen = () => {
   if (isError)
     return (
       <View className="flex-1 px-2.5 pt-2.5">
-        <ErrorFallback message={getApiErrorMessage(error)} />
+        <ErrorFallback
+          message={getApiErrorMessage(error)}
+          onRefetch={refetch}
+        />
       </View>
     );
 
@@ -81,6 +91,7 @@ const InputGradeScreen = () => {
         <NoDataFallback
           title="Activity not found"
           description="The activity you're looking for doesn't exist"
+          onRefetch={refetch}
         />
       </View>
     );

@@ -1,8 +1,12 @@
-import { TouchableOpacity, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import { useImage } from "@/providers/ImageProvider";
+
+// Image attachments use a teal identity, distinct from video (purple) and
+// PDF (red) so file types are recognizable at a glance.
+const IMAGE_ICON_COLOR = "#0d9488";
 
 interface Props {
   uri: string;
@@ -14,15 +18,15 @@ export const AttachmentImageCard = ({ uri, fileName }: Props) => {
   const mutedColor = useThemeColor("muted");
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
+    <Pressable
       onPress={() => showImage(uri)}
       accessibilityRole="button"
       accessibilityLabel={`View image ${fileName}`}
-      className="flex-row items-center gap-3 bg-surface-secondary rounded-xl px-4 py-3"
+      android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
+      className="flex-row items-center gap-3 bg-surface-secondary rounded-xl px-4 py-3 active:opacity-70"
     >
       <View className="w-10 h-10 rounded-lg bg-teal-100 dark:bg-teal-900/50 items-center justify-center shrink-0">
-        <Icon name="ImageIcon" size={20} color="#0d9488" />
+        <Icon name="ImageIcon" size={20} color={IMAGE_ICON_COLOR} />
       </View>
       <View className="flex-1">
         <AppText
@@ -35,6 +39,6 @@ export const AttachmentImageCard = ({ uri, fileName }: Props) => {
         <AppText className="text-xs text-muted mt-0.5">Tap to view</AppText>
       </View>
       <Icon name="ArrowsOutIcon" size={16} color={mutedColor} />
-    </TouchableOpacity>
+    </Pressable>
   );
 };

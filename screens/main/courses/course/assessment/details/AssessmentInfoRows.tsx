@@ -1,4 +1,4 @@
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
@@ -22,19 +22,13 @@ interface Row {
   icon: IconName;
   label: string;
   value: string;
-  onPress?: () => void;
 }
 
-const RowItem = ({
-  row,
-  isLast,
-}: {
-  row: Row;
-  isLast: boolean;
-}) => {
+const RowItem = ({ row, isLast }: { row: Row; isLast: boolean }) => {
   const mutedColor = useThemeColor("muted");
-  const content = (
+  return (
     <View
+      accessibilityLabel={`${row.label}: ${row.value}`}
       className={`flex-row items-center justify-between py-3 ${
         isLast ? "" : "border-b border-border"
       }`}
@@ -48,20 +42,6 @@ const RowItem = ({
       </AppText>
     </View>
   );
-
-  if (row.onPress) {
-    return (
-      <Pressable
-        onPress={row.onPress}
-        accessibilityRole="button"
-        accessibilityLabel={`${row.label}: ${row.value}`}
-        style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-      >
-        {content}
-      </Pressable>
-    );
-  }
-  return content;
 };
 
 export const AssessmentInfoRows = ({

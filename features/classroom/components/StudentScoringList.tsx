@@ -15,10 +15,10 @@ import { upsertStudentScore } from "@/features/classroom/ classroom.service";
 import type { FlashListRef } from "@shopify/flash-list";
 import { ScreenList } from "@/components/ScreenList";
 import { AppText } from "@/components/AppText";
-import { Card, Skeleton } from "heroui-native";
+import { Skeleton } from "heroui-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import { Icon } from "@/components/Icon";
 import ErrorFallback from "@/components/ErrorFallback";
+import Fallback from "@/components/Fallback";
 import { useImage } from "@/providers/ImageProvider";
 import { StudentScoreItem, type RowImage } from "./StudentScoreItem";
 import { ApplyScoreToAllSheet } from "./ApplyScoreToAllSheet";
@@ -47,6 +47,8 @@ const StudentScoringList = ({
     isLoading,
     isError,
     error,
+    refetch,
+    isFetching,
   } = useClassroomStudents(classroomId as string);
 
   const { data: existingScores } = useStudentScoresForActivity(
@@ -70,6 +72,7 @@ const StudentScoringList = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showApplySheet, setShowApplySheet] = useState(false);
+  const [filter, setFilter] = useState<"all" | "ungraded">("all");
 
   const { showImage } = useImage();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -177,30 +180,44 @@ const StudentScoringList = ({
 
   const displayStudents = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return validStudents;
-    return validStudents.filter((s) => {
+    const byFilter =
+      filter === "ungraded"
+        ? validStudents.filter((s) => scoresMap[s.studentId] === undefined)
+        : validStudents;
+    if (!q) return byFilter;
+    return byFilter.filter((s) => {
       const name = s.profile
         ? `${s.profile.lastName} ${s.profile.firstName}`.toLowerCase()
         : "";
       return name.includes(q);
     });
-  }, [validStudents, searchQuery]);
+  }, [validStudents, searchQuery, filter, scoresMap]);
+
+  const ungradedCount = useMemo(
+    () =>
+      validStudents.filter((s) => scoresMap[s.studentId] === undefined).length,
+    [validStudents, scoresMap],
+  );
 
   // Keep a ref in sync with displayStudents so handleScoreFocus (a stable
   // callback) can read the current ordering without resubscribing every render.
   displayStudentsRef.current = displayStudents;
 
   const handleApplyDefault = useCallback(
-    (score: string) => {
+    (score: string, { skipGraded }: { skipGraded: boolean }) => {
       setLocalScores((prev) => {
         const next = { ...prev };
         for (const s of validStudents) {
+          // Honor the "skip already-graded" toggle so the sheet's
+          // default behavior doesn't accidentally wipe scores the
+          // teacher has already entered manually.
+          if (skipGraded && scoresMap[s.studentId] !== undefined) continue;
           next[s.studentId] = score;
         }
         return next;
       });
     },
-    [validStudents],
+    [validStudents, scoresMap],
   );
 
   const { dirtyStudentIds, hasUnsavedChanges } = useDirtyScores({
@@ -270,44 +287,67 @@ const StudentScoringList = ({
 
   const parentNavigation = useNavigation("/(main)/classroom/[classroomId]");
 
+  // Both action buttons live in the header (Apply all + Save). The
+  // Apply-all button used to sit next to the progress bar mid-screen,
+  // but it was easy to scroll past while grading; keeping both
+  // ungraded-friendly actions at the top means they're reachable at
+  // any scroll position.
   useEffect(() => {
     parentNavigation.setOptions({
       headerRight: () => (
-        <Pressable
-          onPress={handleSubmitAll}
-          disabled={isSubmitting || !hasUnsavedChanges}
-          style={{ opacity: isSubmitting || !hasUnsavedChanges ? 0.4 : 1 }}
-          className={
-            hasUnsavedChanges
-              ? "px-3 py-1.5 rounded-full bg-accent"
-              : "px-3 py-1.5"
-          }
-        >
-          {isSubmitting ? (
-            <ActivityIndicator size="small" />
-          ) : (
-            <AppText
-              weight="semibold"
-              className={
-                hasUnsavedChanges
-                  ? "text-accent-foreground text-sm"
-                  : "text-foreground/70 text-sm"
-              }
-            >
-              Save
+        <View className="flex-row items-center gap-2">
+          <Pressable
+            onPress={() => setShowApplySheet(true)}
+            hitSlop={6}
+            className="px-3 py-1.5 rounded-full bg-default border border-border active:opacity-70"
+          >
+            <AppText weight="semibold" className="text-foreground text-sm">
+              Apply all
             </AppText>
-          )}
-        </Pressable>
+          </Pressable>
+          <Pressable
+            onPress={handleSubmitAll}
+            disabled={isSubmitting || !hasUnsavedChanges}
+            style={{ opacity: isSubmitting || !hasUnsavedChanges ? 0.4 : 1 }}
+            className={
+              hasUnsavedChanges
+                ? "px-3 py-1.5 rounded-full bg-accent"
+                : "px-3 py-1.5"
+            }
+          >
+            {isSubmitting ? (
+              <ActivityIndicator size="small" />
+            ) : (
+              <AppText
+                weight="semibold"
+                className={
+                  hasUnsavedChanges
+                    ? "text-accent-foreground text-sm"
+                    : "text-foreground/70 text-sm"
+                }
+              >
+                Save
+              </AppText>
+            )}
+          </Pressable>
+        </View>
       ),
     });
   }, [parentNavigation, handleSubmitAll, isSubmitting, hasUnsavedChanges]);
 
-  if (isLoading) return <StudentScoringSkeleton />;
+  // Skeleton during the initial fetch AND during a retry from the
+  // error state — see features/classroom/components/LessonList for the
+  // full rationale.
+  if (isLoading || (isFetching && !students?.length))
+    return <StudentScoringSkeleton />;
 
   if (isError)
     return (
       <View className="flex-1 px-2.5 pt-2.5">
-        <ErrorFallback message={error?.message ?? "Failed to load students"} />
+        <ErrorFallback
+          message={error?.message ?? "Failed to load students"}
+          onRefetch={refetch}
+        />
       </View>
     );
 
@@ -320,24 +360,41 @@ const StudentScoringList = ({
         <GradingProgressBar
           graded={gradedCount}
           total={validStudents.length}
-          onPressApplyAll={() => setShowApplySheet(true)}
         />
+        {/* Filter chips — quick toggle between the full roster and the
+            ungraded subset so a teacher can blast through the
+            remaining rows without scrolling past already-graded ones. */}
+        <View className="flex-row gap-2 mb-2 px-1">
+          <FilterChip
+            label="All"
+            count={validStudents.length}
+            active={filter === "all"}
+            onPress={() => setFilter("all")}
+          />
+          <FilterChip
+            label="Ungraded"
+            count={ungradedCount}
+            active={filter === "ungraded"}
+            onPress={() => setFilter("ungraded")}
+          />
+        </View>
         {validStudents.length >= 10 && (
           <StudentSearchBar value={searchQuery} onChange={setSearchQuery} />
         )}
       </View>
 
       {isSearchEmpty ? (
-        <View className="flex-1 items-center justify-center px-6 -mt-12">
-          <Icon name="MagnifyingGlass" size={32} color="#9ca3af" />
-          <AppText className="text-sm text-muted-foreground mt-2 text-center">
-            No students match &ldquo;{searchQuery.trim()}&rdquo;
-          </AppText>
-          <Pressable onPress={() => setSearchQuery("")} className="mt-3">
-            <AppText weight="semibold" className="text-sm text-accent">
-              Clear search
-            </AppText>
-          </Pressable>
+        <View className="flex-1 -mt-8">
+          <Fallback
+            variant="empty"
+            icon="MagnifyingGlassIcon"
+            title={`No students match “${searchQuery.trim()}”`}
+            description="Try a different search term."
+            action={{
+              label: "Clear search",
+              onPress: () => setSearchQuery(""),
+            }}
+          />
         </View>
       ) : (
         // KeyboardAvoidingView shrinks the list's visible area when the
@@ -390,34 +447,73 @@ const StudentScoringList = ({
         isOpen={showApplySheet}
         onOpenChange={setShowApplySheet}
         maxScore={activityDetail.maxScore}
+        totalStudents={validStudents.length}
+        ungradedCount={ungradedCount}
         onApply={handleApplyDefault}
       />
     </View>
   );
 };
 
+const FilterChip = ({
+  label,
+  count,
+  active,
+  onPress,
+}: {
+  label: string;
+  count: number;
+  active: boolean;
+  onPress: () => void;
+}) => (
+  <Pressable
+    onPress={onPress}
+    accessibilityRole="button"
+    accessibilityLabel={`${label}, ${count} students`}
+    accessibilityState={{ selected: active }}
+    android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
+    className={`px-3 py-1 rounded-full active:opacity-80 ${
+      active ? "bg-accent" : "bg-default border border-border"
+    }`}
+  >
+    <AppText
+      weight="semibold"
+      className={`text-xs ${active ? "text-accent-foreground" : "text-foreground"}`}
+    >
+      {label} · {count}
+    </AppText>
+  </Pressable>
+);
+
 export const StudentScoringSkeleton = () => (
   <View className="flex-1 px-2.5 pt-2.5">
     <View className="max-w-3xl w-full mx-auto gap-2">
-      <View className="flex-row items-center justify-between mb-1 px-1">
-        <Skeleton className="h-3 w-32 rounded-full" />
+      {/* Progress block */}
+      <View className="mb-1 px-1">
+        <Skeleton className="h-3 w-32 rounded-full mb-1.5" />
+        <Skeleton className="h-1.5 w-full rounded-full" />
+      </View>
+      {/* Filter chips */}
+      <View className="flex-row gap-2 mb-1 px-1">
+        <Skeleton className="h-6 w-16 rounded-full" />
         <Skeleton className="h-6 w-24 rounded-full" />
       </View>
+      {/* Search bar */}
       <Skeleton className="h-10 w-full rounded-xl mb-2" />
+      {/* Single-row student cards — matches the new live row chrome */}
       {Array(6)
         .fill(0)
         .map((_, i) => (
-          <Card key={i} className="rounded-2xl shadow-none py-3 px-3">
-            <View className="flex-row items-center gap-3 mb-2.5">
-              <Skeleton className="w-8 h-8 rounded-full" />
-              <Skeleton className="h-4 w-40 rounded-full flex-1" />
-            </View>
-            <View className="flex-row items-center gap-3 pl-11">
-              <Skeleton className="h-10 w-16 rounded-lg" />
-              <View className="flex-1" />
-              <Skeleton className="h-11 w-11 rounded-lg" />
-            </View>
-          </Card>
+          <View
+            key={i}
+            className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3"
+          >
+            <Skeleton className="w-8 h-8 rounded-full" />
+            <Skeleton className="h-4 flex-1 rounded-full" />
+            <Skeleton className="h-11 w-20 rounded-lg" />
+            <Skeleton className="h-3 w-8 rounded" />
+            <Skeleton className="h-11 w-11 rounded-lg" />
+          </View>
         ))}
     </View>
   </View>

@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { Animated, Pressable, TextInput, View } from "react-native";
 import { useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
+import { Icon } from "@/components/Icon";
 import { questionStyles as styles } from "./styles";
 import type { MatchingProps } from "./types";
 
@@ -13,18 +14,20 @@ const serialize = (pairings: Record<number, number>): string =>
     .map(([l, r]) => `${l}->${r}`)
     .join(",");
 
+// Single-pair rule: only the first valid mapping is kept. The question
+// only ever holds one pair at a time, so even legacy answers with multiple
+// `A->1,B->2` segments load as just the first pair.
 const parsePairings = (raw: string): Record<number, number> => {
   if (!raw || raw.trim().length === 0) return {};
-  const result: Record<number, number> = {};
   for (const part of raw.split(",")) {
     const [l, r] = part.split("->").map((s) => s.trim());
     const lid = Number(l);
     const rid = Number(r);
     if (Number.isFinite(lid) && Number.isFinite(rid)) {
-      result[lid] = rid;
+      return { [lid]: rid };
     }
   }
-  return result;
+  return {};
 };
 
 const MatchingQuestion = ({
@@ -34,8 +37,16 @@ const MatchingQuestion = ({
   disabled,
   choices,
 }: MatchingProps) => {
+  // Skip placeholder/empty choice rows — teachers occasionally leave a
+  // blank choice in the DB and we don't want a labelless card on screen.
   const questionChoices = useMemo(
-    () => choices.filter((c) => Number(c.questionId) === Number(question.id)),
+    () =>
+      choices.filter(
+        (c) =>
+          Number(c.questionId) === Number(question.id) &&
+          typeof c.choiceText === "string" &&
+          c.choiceText.trim().length > 0,
+      ),
     [choices, question.id],
   );
 
@@ -52,6 +63,9 @@ const MatchingQuestion = ({
     parsePairings(currentAnswer),
   );
   const [selectedLeftId, setSelectedLeftId] = useState<number | null>(null);
+
+  const accentColor = useThemeColor("accent");
+  const successColor = useThemeColor("success");
   const borderColor = useThemeColor("border");
   const foregroundColor = useThemeColor("foreground");
   const mutedColor = useThemeColor("muted");
@@ -59,6 +73,33 @@ const MatchingQuestion = ({
   useEffect(() => {
     setPairings(parsePairings(currentAnswer));
   }, [currentAnswer]);
+
+  // Gentle opacity pulse on the selected-but-unpaired left card to draw
+  // the eye toward the right column where the next tap should land. Only
+  // runs when something is selected; loop is torn down on deselect.
+  const pulse = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    if (selectedLeftId == null) {
+      pulse.setValue(1);
+      return;
+    }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, {
+          toValue: 0.7,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [selectedLeftId, pulse]);
 
   if (
     questionChoices.length === 0 ||
@@ -110,12 +151,22 @@ const MatchingQuestion = ({
     onAnswer(question.id, serialize(next));
   };
 
+  // Once a pair is set the question is "locked" — the only legal action
+  // is tapping the paired left or right to unpair. Every other tap is a
+  // no-op so the student can't sneak in a second pair or switch lefts
+  // mid-flight.
+  const hasPair = Object.keys(pairings).length > 0;
+
   const handleLeftPress = (leftId: number) => {
     if (disabled) return;
     if (pairings[leftId] != null) {
-      const next = { ...pairings };
-      delete next[leftId];
-      commit(next);
+      // Tapping the paired left unpairs.
+      commit({});
+      setSelectedLeftId(null);
+      return;
+    }
+    if (hasPair) {
+      // Locked — must unpair first.
       return;
     }
     setSelectedLeftId((curr) => (curr === leftId ? null : leftId));
@@ -123,26 +174,57 @@ const MatchingQuestion = ({
 
   const handleRightPress = (rightId: number) => {
     if (disabled) return;
-    const existing = Object.entries(pairings).find(
-      ([, r]) => Number(r) === rightId,
+    const isPairedRight = Object.values(pairings).some(
+      (r) => Number(r) === rightId,
     );
-    if (existing) {
-      const next = { ...pairings };
-      delete next[Number(existing[0])];
-      commit(next);
+    if (isPairedRight) {
+      // Tapping the paired right unpairs.
+      commit({});
+      setSelectedLeftId(null);
+      return;
+    }
+    if (hasPair) {
+      // Locked — must unpair first.
       return;
     }
     if (selectedLeftId == null) return;
-    commit({ ...pairings, [selectedLeftId]: rightId });
+    commit({ [selectedLeftId]: rightId });
     setSelectedLeftId(null);
   };
 
+  const pairedCount = Object.keys(pairings).length;
+  // Single-pair semantics: the question is "done" once any pair is set.
+  const allPaired = pairedCount > 0;
+  const isSelecting = selectedLeftId != null;
+
   return (
     <View>
-      <AppText className="text-xs text-muted mb-3">
-        Tap a left item, then tap its match on the right. Tap a paired item to
-        unpair.
-      </AppText>
+      {/* Header band — swaps between three states:
+            - selecting → accent hint "Tap a match on the right"
+            - paired    → success banner "Match set"
+            - otherwise → static instruction
+          Single-pair rule: only one left + one right at a time. */}
+      {isSelecting ? (
+        <View className="flex-row items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-accent-soft border border-accent/30">
+          <Icon name="CaretRightIcon" size={14} color={accentColor} />
+          <AppText weight="semibold" className="text-xs text-accent">
+            Tap a match on the right
+          </AppText>
+        </View>
+      ) : allPaired ? (
+        <View className="flex-row items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-success-soft border border-success/30">
+          <Icon name="CheckIcon" size={14} color={successColor} />
+          <AppText weight="semibold" className="text-xs text-success">
+            Match set
+          </AppText>
+        </View>
+      ) : (
+        <AppText className="text-xs text-muted mb-3">
+          Pick one item on the left and match it to one on the right. Tap a
+          paired item to unpair.
+        </AppText>
+      )}
+
       <View className="flex-row gap-3">
         <View className="flex-1 gap-2">
           {leftItems.map((item) => {
@@ -151,43 +233,94 @@ const MatchingQuestion = ({
             const partner = partnerOfLeft(item.id);
             const isPaired = partner != null;
             const isActive = isSelected || isPaired;
-            return (
-              <Pressable
-                key={item.id}
-                onPress={() => handleLeftPress(item.id)}
-                disabled={disabled}
-                accessibilityRole="button"
-                accessibilityLabel={`Item ${label}: ${item.choiceText}`}
-                accessibilityState={{ selected: isSelected, disabled }}
-                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-                className={`flex-row items-center gap-2 px-2 py-2 rounded-lg border ${
-                  isActive ? "border-accent bg-accent/10" : "border-border"
+
+            const card = (
+              <View
+                className={`relative overflow-hidden flex-row items-center gap-2 px-3 py-3 rounded-xl ${
+                  isActive
+                    ? "border-2 border-accent bg-accent/10"
+                    : "border border-border bg-surface"
                 }`}
               >
+                {isActive ? (
+                  <View
+                    className="bg-accent"
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 4,
+                    }}
+                  />
+                ) : null}
                 <View
-                  className={`w-6 h-6 rounded-full items-center justify-center ${
-                    isActive
-                      ? "bg-accent"
-                      : "border border-border bg-default"
+                  className={`w-7 h-7 rounded-xl items-center justify-center ${
+                    isActive ? "bg-accent" : "bg-default border border-border"
                   }`}
                 >
                   <AppText
-                    weight="semibold"
-                    className={`text-[10px] ${
-                      isActive ? "text-accent-foreground" : ""
+                    weight="bold"
+                    className={`text-[11px] ${
+                      isActive ? "text-accent-foreground" : "text-foreground"
                     }`}
                   >
                     {label}
                   </AppText>
                 </View>
-                <AppText className="flex-1 text-sm" numberOfLines={2}>
+                <AppText
+                  className="flex-1 text-sm text-foreground"
+                  weight={isActive ? "semibold" : "regular"}
+                  numberOfLines={2}
+                >
                   {item.choiceText}
                 </AppText>
                 {isPaired ? (
-                  <AppText weight="semibold" className="text-xs text-accent">
-                    → {partner}
+                  <View className="w-6 h-6 rounded-lg bg-accent items-center justify-center">
+                    <AppText
+                      weight="bold"
+                      className="text-[11px] text-accent-foreground"
+                    >
+                      {partner}
+                    </AppText>
+                  </View>
+                ) : isSelected ? (
+                  <AppText
+                    weight="bold"
+                    className="text-[10px] uppercase tracking-widest text-accent"
+                  >
+                    Pick →
                   </AppText>
                 ) : null}
+              </View>
+            );
+
+            // Lock non-paired lefts once a pair is set — visually faded
+            // and non-interactive until the student unpairs.
+            const isLocked = hasPair && !isPaired;
+            return (
+              <Pressable
+                key={item.id}
+                onPress={() => handleLeftPress(item.id)}
+                disabled={disabled || isLocked}
+                accessibilityRole="button"
+                accessibilityLabel={`Item ${label}: ${item.choiceText}`}
+                accessibilityState={{
+                  selected: isSelected,
+                  disabled: disabled || isLocked,
+                }}
+                android_ripple={{ color: "rgba(37, 99, 235, 0.12)" }}
+                className={`rounded-xl ${
+                  disabled || isLocked
+                    ? "opacity-40"
+                    : "active:opacity-80"
+                }`}
+              >
+                {isSelected ? (
+                  <Animated.View style={{ opacity: pulse }}>{card}</Animated.View>
+                ) : (
+                  card
+                )}
               </Pressable>
             );
           })}
@@ -197,43 +330,83 @@ const MatchingQuestion = ({
             const label = rightLabelById[item.id];
             const partner = partnerOfRight(item.id);
             const isPaired = partner != null;
+            // While selecting, every unpaired right card is a candidate
+            // target — give them a soft accent ring so the eye lands on
+            // the right column instead of bouncing around.
+            const isAvailableTarget = isSelecting && !isPaired;
+
+            // Lock non-paired rights once a pair is set.
+            const isLocked = hasPair && !isPaired;
             return (
               <Pressable
                 key={item.id}
                 onPress={() => handleRightPress(item.id)}
-                disabled={disabled}
+                disabled={disabled || isLocked}
                 accessibilityRole="button"
                 accessibilityLabel={`Item ${label}: ${item.choiceText}`}
-                accessibilityState={{ disabled }}
-                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-                className={`flex-row items-center gap-2 px-2 py-2 rounded-lg border ${
-                  isPaired ? "border-accent bg-accent/10" : "border-border"
+                accessibilityState={{ disabled: disabled || isLocked }}
+                android_ripple={{ color: "rgba(37, 99, 235, 0.12)" }}
+                className={`rounded-xl ${
+                  disabled || isLocked
+                    ? "opacity-40"
+                    : "active:opacity-80"
                 }`}
               >
                 <View
-                  className={`w-6 h-6 rounded-full items-center justify-center ${
+                  className={`relative overflow-hidden flex-row items-center gap-2 px-3 py-3 rounded-xl ${
                     isPaired
-                      ? "bg-accent"
-                      : "border border-border bg-default"
+                      ? "border-2 border-accent bg-accent/10"
+                      : isAvailableTarget
+                        ? "border-2 border-accent/40 bg-surface"
+                        : "border border-border bg-surface"
                   }`}
                 >
-                  <AppText
-                    weight="semibold"
-                    className={`text-[10px] ${
-                      isPaired ? "text-accent-foreground" : ""
+                  {isPaired ? (
+                    <View
+                      className="bg-accent"
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: 4,
+                      }}
+                    />
+                  ) : null}
+                  <View
+                    className={`w-7 h-7 rounded-xl items-center justify-center ${
+                      isPaired
+                        ? "bg-accent"
+                        : "bg-default border border-border"
                     }`}
                   >
-                    {label}
+                    <AppText
+                      weight="bold"
+                      className={`text-[11px] ${
+                        isPaired ? "text-accent-foreground" : "text-foreground"
+                      }`}
+                    >
+                      {label}
+                    </AppText>
+                  </View>
+                  <AppText
+                    className="flex-1 text-sm text-foreground"
+                    weight={isPaired ? "semibold" : "regular"}
+                    numberOfLines={2}
+                  >
+                    {item.choiceText}
                   </AppText>
+                  {isPaired ? (
+                    <View className="w-6 h-6 rounded-lg bg-accent items-center justify-center">
+                      <AppText
+                        weight="bold"
+                        className="text-[11px] text-accent-foreground"
+                      >
+                        {partner}
+                      </AppText>
+                    </View>
+                  ) : null}
                 </View>
-                <AppText className="flex-1 text-sm" numberOfLines={2}>
-                  {item.choiceText}
-                </AppText>
-                {isPaired ? (
-                  <AppText weight="semibold" className="text-xs text-accent">
-                    → {partner}
-                  </AppText>
-                ) : null}
               </Pressable>
             );
           })}

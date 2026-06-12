@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Attempt — Matching Question</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+          sans-serif;
+        background: #0f172a;
+      }
+      .panel {
+        width: 380px;
+        background: white;
+        border-radius: 20px;
+        padding: 16px;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.45);
+      }
+      .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        color: #94a3b8;
+        margin-bottom: 12px;
+      }
+      .pulse {
+        animation: pulse 1.6s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+        50% { box-shadow: 0 0 0 4px rgba(37, 99, 235, 0); }
+      }
+    </style>
+  </head>
+  <body class="p-10">
+    <div class="text-white text-sm mb-6 max-w-3xl">
+      <span class="font-semibold">Matching polish.</span> Same card language
+      as MC + T/F (rounded-xl, accent strip, square letter chip), plus a
+      filled "partner badge" on paired items and a pulsing ring on the
+      selected-but-unpaired left item so the student knows where to look
+      next.
+    </div>
+
+    <div class="flex flex-wrap gap-8 items-start">
+      <!-- BEFORE -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          Before — partial pairing
+        </div>
+        <div class="panel">
+          <div class="label">Matching type</div>
+          <div class="font-semibold text-slate-900 mb-3">
+            Match each scientist with their discovery.
+          </div>
+          <div class="text-xs text-slate-500 mb-3">
+            Tap a left item, then tap its match on the right. Tap a paired item to
+            unpair.
+          </div>
+          <div class="flex gap-3">
+            <div class="flex-1 space-y-2">
+              <div class="flex items-center gap-2 px-2 py-2 rounded-lg border" style="border-color: #2563eb; background: rgba(37, 99, 235, 0.1)">
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white" style="background: #2563eb">A</div>
+                <div class="flex-1 text-sm text-slate-900">Newton</div>
+                <div class="text-xs font-semibold" style="color: #2563eb">→ 2</div>
+              </div>
+              <div class="flex items-center gap-2 px-2 py-2 rounded-lg border border-slate-200">
+                <div class="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-semibold text-slate-900">B</div>
+                <div class="flex-1 text-sm text-slate-700">Einstein</div>
+              </div>
+              <div class="flex items-center gap-2 px-2 py-2 rounded-lg border border-slate-200">
+                <div class="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-semibold text-slate-900">C</div>
+                <div class="flex-1 text-sm text-slate-700">Curie</div>
+              </div>
+            </div>
+            <div class="flex-1 space-y-2">
+              <div class="flex items-center gap-2 px-2 py-2 rounded-lg border border-slate-200">
+                <div class="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-semibold text-slate-900">1</div>
+                <div class="flex-1 text-sm text-slate-700">Relativity</div>
+              </div>
+              <div class="flex items-center gap-2 px-2 py-2 rounded-lg border" style="border-color: #2563eb; background: rgba(37, 99, 235, 0.1)">
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white" style="background: #2563eb">2</div>
+                <div class="flex-1 text-sm text-slate-900">Gravity</div>
+                <div class="text-xs font-semibold" style="color: #2563eb">→ A</div>
+              </div>
+              <div class="flex items-center gap-2 px-2 py-2 rounded-lg border border-slate-200">
+                <div class="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-semibold text-slate-900">3</div>
+                <div class="flex-1 text-sm text-slate-700">Radioactivity</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-white/60 text-xs mt-2 max-w-[380px] space-y-1">
+          <div>• Selected ≠ paired — both look identical</div>
+          <div>• Pairing partner is a bare arrow text</div>
+          <div>• No cue about "what to do next" while selecting</div>
+        </div>
+      </div>
+
+      <!-- AFTER -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          After — partial pairing
+        </div>
+        <div class="panel">
+          <div class="label">Matching type</div>
+          <div class="font-semibold text-slate-900 mb-3">
+            Match each scientist with their discovery.
+          </div>
+          <div class="text-xs text-slate-500 mb-3">
+            Tap a left item, then tap its match on the right. Tap a paired item to
+            unpair.
+          </div>
+          <div class="flex gap-3">
+            <div class="flex-1 space-y-2">
+              <!-- Paired -->
+              <div class="relative flex items-center gap-2 px-3 py-3 rounded-xl border-2 overflow-hidden" style="border-color: #2563eb; background: #eff6ff">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #2563eb"></div>
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">A</div>
+                <div class="flex-1 text-sm font-medium" style="color: #1e3a8a">Newton</div>
+                <div class="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">2</div>
+              </div>
+              <!-- Default -->
+              <div class="flex items-center gap-2 px-3 py-3 rounded-xl border border-slate-200">
+                <div class="w-7 h-7 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-700">B</div>
+                <div class="flex-1 text-sm text-slate-700">Einstein</div>
+              </div>
+              <div class="flex items-center gap-2 px-3 py-3 rounded-xl border border-slate-200">
+                <div class="w-7 h-7 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-700">C</div>
+                <div class="flex-1 text-sm text-slate-700">Curie</div>
+              </div>
+            </div>
+            <div class="flex-1 space-y-2">
+              <div class="flex items-center gap-2 px-3 py-3 rounded-xl border border-slate-200">
+                <div class="w-7 h-7 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-700">1</div>
+                <div class="flex-1 text-sm text-slate-700">Relativity</div>
+              </div>
+              <!-- Paired -->
+              <div class="relative flex items-center gap-2 px-3 py-3 rounded-xl border-2 overflow-hidden" style="border-color: #2563eb; background: #eff6ff">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #2563eb"></div>
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">2</div>
+                <div class="flex-1 text-sm font-medium" style="color: #1e3a8a">Gravity</div>
+                <div class="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">A</div>
+              </div>
+              <div class="flex items-center gap-2 px-3 py-3 rounded-xl border border-slate-200">
+                <div class="w-7 h-7 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-700">3</div>
+                <div class="flex-1 text-sm text-slate-700">Radioactivity</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-white/60 text-xs mt-2 max-w-[380px] space-y-1">
+          <div>• Paired: accent strip + filled partner badge on right</div>
+          <div>• Selected uses a different visual (next mock)</div>
+          <div>• Letter chip is rounded-xl square; consistent with MC/T-F</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selected (mid-pairing) state -->
+    <div class="mt-10 flex flex-wrap gap-8 items-start">
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          Selecting — left tapped, awaiting right
+        </div>
+        <div class="panel">
+          <div class="label">Matching type</div>
+          <div class="font-semibold text-slate-900 mb-3">
+            Match each scientist with their discovery.
+          </div>
+          <!-- Hint that changes when something is selected -->
+          <div class="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg" style="background: #eff6ff; border: 1px solid #bfdbfe">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+            <div class="text-xs font-semibold" style="color: #1e3a8a">
+              Tap a match on the right
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="flex-1 space-y-2">
+              <!-- Selected — pulsing ring -->
+              <div class="relative flex items-center gap-2 px-3 py-3 rounded-xl border-2 overflow-hidden pulse" style="border-color: #2563eb; background: #eff6ff">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #2563eb"></div>
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">A</div>
+                <div class="flex-1 text-sm font-medium" style="color: #1e3a8a">Newton</div>
+                <div class="text-[10px] uppercase tracking-widest font-bold" style="color: #2563eb">Pick →</div>
+              </div>
+              <div class="flex items-center gap-2 px-3 py-3 rounded-xl border border-slate-200">
+                <div class="w-7 h-7 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-700">B</div>
+                <div class="flex-1 text-sm text-slate-700">Einstein</div>
+              </div>
+              <div class="flex items-center gap-2 px-3 py-3 rounded-xl border border-slate-200">
+                <div class="w-7 h-7 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-700">C</div>
+                <div class="flex-1 text-sm text-slate-700">Curie</div>
+              </div>
+            </div>
+            <div class="flex-1 space-y-2">
+              <!-- Available targets get a subtle ring -->
+              <div class="flex items-center gap-2 px-3 py-3 rounded-xl border-2" style="border-color: #bfdbfe">
+                <div class="w-7 h-7 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-700">1</div>
+                <div class="flex-1 text-sm text-slate-700">Relativity</div>
+              </div>
+              <div class="flex items-center gap-2 px-3 py-3 rounded-xl border-2" style="border-color: #bfdbfe">
+                <div class="w-7 h-7 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-700">2</div>
+                <div class="flex-1 text-sm text-slate-700">Gravity</div>
+              </div>
+              <div class="flex items-center gap-2 px-3 py-3 rounded-xl border-2" style="border-color: #bfdbfe">
+                <div class="w-7 h-7 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-700">3</div>
+                <div class="flex-1 text-sm text-slate-700">Radioactivity</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-white/60 text-xs mt-2 max-w-[380px] space-y-1">
+          <div>• Selected left item: accent strip + pulsing ring + "Pick →" hint</div>
+          <div>• Right side: empty targets get a soft accent border to draw the eye</div>
+          <div>• Top-of-card hint: "Tap a match on the right" — appears only while selecting</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          Fully paired
+        </div>
+        <div class="panel">
+          <div class="label">Matching type</div>
+          <div class="font-semibold text-slate-900 mb-3">
+            Match each scientist with their discovery.
+          </div>
+          <div class="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg" style="background: #ecfdf5; border: 1px solid #bbf7d0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <div class="text-xs font-semibold" style="color: #047857">
+              All 3 pairs matched
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="flex-1 space-y-2">
+              <div class="relative flex items-center gap-2 px-3 py-3 rounded-xl border-2 overflow-hidden" style="border-color: #2563eb; background: #eff6ff">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #2563eb"></div>
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">A</div>
+                <div class="flex-1 text-sm font-medium" style="color: #1e3a8a">Newton</div>
+                <div class="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">2</div>
+              </div>
+              <div class="relative flex items-center gap-2 px-3 py-3 rounded-xl border-2 overflow-hidden" style="border-color: #2563eb; background: #eff6ff">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #2563eb"></div>
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">B</div>
+                <div class="flex-1 text-sm font-medium" style="color: #1e3a8a">Einstein</div>
+                <div class="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">1</div>
+              </div>
+              <div class="relative flex items-center gap-2 px-3 py-3 rounded-xl border-2 overflow-hidden" style="border-color: #2563eb; background: #eff6ff">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #2563eb"></div>
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">C</div>
+                <div class="flex-1 text-sm font-medium" style="color: #1e3a8a">Curie</div>
+                <div class="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">3</div>
+              </div>
+            </div>
+            <div class="flex-1 space-y-2">
+              <div class="relative flex items-center gap-2 px-3 py-3 rounded-xl border-2 overflow-hidden" style="border-color: #2563eb; background: #eff6ff">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #2563eb"></div>
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">1</div>
+                <div class="flex-1 text-sm font-medium" style="color: #1e3a8a">Relativity</div>
+                <div class="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">B</div>
+              </div>
+              <div class="relative flex items-center gap-2 px-3 py-3 rounded-xl border-2 overflow-hidden" style="border-color: #2563eb; background: #eff6ff">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #2563eb"></div>
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">2</div>
+                <div class="flex-1 text-sm font-medium" style="color: #1e3a8a">Gravity</div>
+                <div class="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">A</div>
+              </div>
+              <div class="relative flex items-center gap-2 px-3 py-3 rounded-xl border-2 overflow-hidden" style="border-color: #2563eb; background: #eff6ff">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #2563eb"></div>
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">3</div>
+                <div class="flex-1 text-sm font-medium" style="color: #1e3a8a">Radioactivity</div>
+                <div class="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold text-white" style="background: #2563eb">C</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-white/60 text-xs mt-2 max-w-[380px] space-y-1">
+          <div>• Completion banner: "All 3 pairs matched" (success-soft)</div>
+          <div>• Tap any item to unpair</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-white/70 text-xs mt-10 max-w-3xl space-y-2">
+      <div class="font-semibold text-white">Specifics:</div>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>
+          <span class="text-white">Cards</span>: <code>rounded-xl</code>,
+          <code>px-3 py-3</code>, matching MC and T/F.
+        </li>
+        <li>
+          <span class="text-white">Letter/number chip</span>:
+          <code>w-7 h-7 rounded-xl</code> square, bold (was small circle).
+        </li>
+        <li>
+          <span class="text-white">Paired state</span>: 2pt accent border +
+          4-pt left strip + a small <code>rounded-lg</code> filled accent
+          badge on the right showing the partner's chip label. The badge
+          replaces today's "→ 2" text.
+        </li>
+        <li>
+          <span class="text-white">Selecting state</span> (left tapped, no
+          partner yet): same accent treatment + a pulsing ring (radial
+          shadow) + an "PICK →" mini-label inline. The other column's
+          available targets get a soft accent border so the student knows
+          where to tap next.
+        </li>
+        <li>
+          <span class="text-white">Selection hint</span>: small chip
+          at the top of the matching block ("Tap a match on the right")
+          — only renders while a left item is selected and unpaired.
+        </li>
+        <li>
+          <span class="text-white">Completion banner</span> when every
+          item is paired (success-soft, check icon, "All N pairs matched").
+        </li>
+        <li>
+          All colors via theme tokens (<code>accent</code>,
+          <code>accent-foreground</code>, <code>success</code>,
+          <code>warning</code>, <code>default</code>,
+          <code>border</code>) — adapts to dark mode.
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>

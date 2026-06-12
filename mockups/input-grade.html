@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Input Grade Screen — proposal</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/phosphor-icons"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+          sans-serif;
+        background: #0f172a;
+      }
+      .phone {
+        width: 390px;
+        height: 820px;
+        border-radius: 36px;
+        box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .phone.light { background: #f8fafc; }
+      .phone.dark  { background: #0b1220; }
+      .top-pad { height: 28px; }
+      .light .top-pad { background: #ffffff; }
+      .dark  .top-pad { background: #0f172a; }
+
+      /* Header */
+      .nav {
+        padding: 10px 14px 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .light .nav { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+      .dark  .nav { background: #0f172a; border-bottom: 1px solid #1e293b; }
+
+      .nav-back {
+        width: 36px; height: 36px;
+        display: flex; align-items: center; justify-content: center;
+      }
+
+      .scroll { flex: 1; overflow-y: auto; }
+      .scroll::-webkit-scrollbar { display: none; }
+
+      /* Tokens */
+      .fg-light { color: #0f172a; }
+      .fg-dark  { color: #f8fafc; }
+      .muted-light { color: #64748b; }
+      .muted-dark  { color: #94a3b8; }
+
+      /* Card chrome */
+      .card-shadow-light {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 6px 18px -8px rgba(2, 6, 23, 0.12);
+        border: 1px solid transparent;
+      }
+      .card-shadow-dark {
+        background: #0f172a;
+        border-radius: 16px;
+        box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.6);
+        border: 1px solid transparent;
+      }
+      .card-flat-light {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+      }
+      .card-flat-dark {
+        background: #0f172a;
+        border-radius: 16px;
+        border: 1px solid #1e293b;
+      }
+
+      .saved-row-light { opacity: 0.55; }
+      .saved-row-dark  { opacity: 0.55; }
+
+      .accent-strip { width: 3px; background: #16a34a; border-radius: 999px; }
+
+      .score-input-light {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        color: #0f172a;
+      }
+      .score-input-dark {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        color: #f1f5f9;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 7px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .p-success-light { background: #dcfce7; color: #166534; }
+      .p-success-dark  { background: rgba(22,163,74,0.18); color: #86efac; }
+
+      .label {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .label-before { background: #fee2e2; color: #b91c1c; }
+      .label-after  { background: #dcfce7; color: #166534; }
+
+      .progress-track-light { background: #e2e8f0; }
+      .progress-track-dark  { background: #1e293b; }
+      .progress-fill-accent { background: #2563eb; }
+      .progress-fill-success { background: #16a34a; }
+
+      .btn-accent {
+        background: #2563eb;
+        color: #ffffff;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+      }
+      .btn-tertiary-light {
+        background: #f1f5f9;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+      }
+      .btn-tertiary-dark {
+        background: #1e293b;
+        color: #f1f5f9;
+        border: 1px solid #334155;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+      }
+
+      .filter-chip {
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .fc-active-light { background: #2563eb; color: #ffffff; }
+      .fc-idle-light   { background: #f1f5f9; color: #475569; }
+      .fc-active-dark  { background: #2563eb; color: #ffffff; }
+      .fc-idle-dark    { background: #1e293b; color: #94a3b8; }
+    </style>
+  </head>
+  <body class="text-slate-100">
+    <div class="max-w-7xl mx-auto py-12 px-6">
+      <header class="mb-10">
+        <h1 class="text-3xl font-bold">Input Grade Screen — UI/UX opportunities</h1>
+        <p class="text-slate-300 mt-2 max-w-3xl text-sm leading-relaxed">
+          Side-by-side comparison of the current screen and the proposed
+          changes: tighter single-row card, unified hairline-border chrome,
+          dimmed "saved" rows (drop inline badge), simplified progress
+          line, optional filter chips, larger score input, and
+          repositioned "Apply to all".
+        </p>
+      </header>
+
+      <!-- ============ FULL SCREEN COMPARISON ============ -->
+      <section class="mb-14">
+        <h2 class="text-xl font-bold mb-1">Full screen — before vs after</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          Same data, same student count. The "after" fits ~7 rows in the
+          viewport (vs ~5 in the current) just from card-density changes.
+        </p>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <!-- BEFORE LIGHT -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-before">Before · Light</span></div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-back"><i class="ph-arrow-left" style="color:#0f172a;font-size:20px"></i></div>
+                <div class="flex-1">
+                  <p class="font-bold fg-light" style="font-size:15px">test 23231</p>
+                  <p class="text-[11px] muted-light">Max 10 pts · Passing 50%</p>
+                </div>
+                <span class="text-sm font-semibold" style="color:#94a3b8">Save</span>
+              </div>
+
+              <!-- Progress + apply all -->
+              <div class="px-3 pt-3">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-xs muted-light">10 of 10 graded</p>
+                  <p class="text-xs font-semibold fg-light">100%</p>
+                </div>
+                <div class="h-2 progress-track-light rounded-full mb-2 overflow-hidden">
+                  <div class="h-2 progress-fill-accent" style="width:100%"></div>
+                </div>
+                <div class="flex items-center justify-end mb-2">
+                  <div class="flex items-center gap-1 text-xs font-semibold" style="color:#2563eb">
+                    <i class="ph-stack-bold" style="font-size:14px"></i>
+                    <span>Apply to all</span>
+                  </div>
+                </div>
+                <!-- Search -->
+                <div class="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white mb-3">
+                  <i class="ph-magnifying-glass" style="color:#64748b;font-size:14px"></i>
+                  <span class="text-sm muted-light">Search student…</span>
+                </div>
+              </div>
+
+              <div class="scroll px-3 pb-4 gap-3 flex flex-col">
+                <!-- Row before -->
+                <div class="card-shadow-light p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                        <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                      </div>
+                      <span class="font-semibold fg-light text-sm">1, Acct</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <i class="ph-check-circle-fill" style="color:#16a34a;font-size:14px"></i>
+                      <span class="text-xs font-semibold" style="color:#16a34a">Saved</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 pl-11">
+                    <div class="score-input-light h-10 w-16 flex items-center justify-center font-semibold text-sm">10</div>
+                    <span class="text-sm muted-light">/ 10</span>
+                    <div class="flex-1"></div>
+                    <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+                      <i class="ph-camera" style="color:#475569;font-size:18px"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-shadow-light p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                        <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                      </div>
+                      <span class="font-semibold fg-light text-sm">2, Acct</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <i class="ph-check-circle-fill" style="color:#16a34a;font-size:14px"></i>
+                      <span class="text-xs font-semibold" style="color:#16a34a">Saved</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 pl-11">
+                    <div class="score-input-light h-10 w-16 flex items-center justify-center font-semibold text-sm">7</div>
+                    <span class="text-sm muted-light">/ 10</span>
+                    <div class="flex-1"></div>
+                    <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+                      <i class="ph-camera" style="color:#475569;font-size:18px"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-shadow-light p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                        <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                      </div>
+                      <span class="font-semibold fg-light text-sm">3, Acct</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <i class="ph-check-circle-fill" style="color:#16a34a;font-size:14px"></i>
+                      <span class="text-xs font-semibold" style="color:#16a34a">Saved</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 pl-11">
+                    <div class="score-input-light h-10 w-16 flex items-center justify-center font-semibold text-sm">6</div>
+                    <span class="text-sm muted-light">/ 10</span>
+                    <div class="flex-1"></div>
+                    <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+                      <i class="ph-camera" style="color:#475569;font-size:18px"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-shadow-light p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                        <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                      </div>
+                      <span class="font-semibold fg-light text-sm">4, Acct</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <i class="ph-check-circle-fill" style="color:#16a34a;font-size:14px"></i>
+                      <span class="text-xs font-semibold" style="color:#16a34a">Saved</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 pl-11">
+                    <div class="score-input-light h-10 w-16 flex items-center justify-center font-semibold text-sm">8</div>
+                    <span class="text-sm muted-light">/ 10</span>
+                    <div class="flex-1"></div>
+                    <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+                      <i class="ph-camera" style="color:#475569;font-size:18px"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BEFORE DARK -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-before">Before · Dark</span></div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-back"><i class="ph-arrow-left" style="color:#f8fafc;font-size:20px"></i></div>
+                <div class="flex-1">
+                  <p class="font-bold fg-dark" style="font-size:15px">test 23231</p>
+                  <p class="text-[11px] muted-dark">Max 10 pts · Passing 50%</p>
+                </div>
+                <span class="text-sm font-semibold" style="color:#64748b">Save</span>
+              </div>
+
+              <div class="px-3 pt-3">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-xs muted-dark">10 of 10 graded</p>
+                  <p class="text-xs font-semibold fg-dark">100%</p>
+                </div>
+                <div class="h-2 progress-track-dark rounded-full mb-2 overflow-hidden">
+                  <div class="h-2 progress-fill-accent" style="width:100%"></div>
+                </div>
+                <div class="flex items-center justify-end mb-2">
+                  <div class="flex items-center gap-1 text-xs font-semibold" style="color:#60a5fa">
+                    <i class="ph-stack-bold" style="font-size:14px"></i><span>Apply to all</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-700 bg-slate-800/40 mb-3">
+                  <i class="ph-magnifying-glass" style="color:#94a3b8;font-size:14px"></i>
+                  <span class="text-sm muted-dark">Search student…</span>
+                </div>
+              </div>
+
+              <div class="scroll px-3 pb-4 gap-3 flex flex-col">
+                <div class="card-shadow-dark p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                        <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                      </div>
+                      <span class="font-semibold fg-dark text-sm">1, Acct</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <i class="ph-check-circle-fill" style="color:#4ade80;font-size:14px"></i>
+                      <span class="text-xs font-semibold" style="color:#4ade80">Saved</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 pl-11">
+                    <div class="score-input-dark h-10 w-16 flex items-center justify-center font-semibold text-sm">10</div>
+                    <span class="text-sm muted-dark">/ 10</span>
+                    <div class="flex-1"></div>
+                    <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center">
+                      <i class="ph-camera" style="color:#94a3b8;font-size:18px"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-shadow-dark p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                        <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                      </div>
+                      <span class="font-semibold fg-dark text-sm">2, Acct</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <i class="ph-check-circle-fill" style="color:#4ade80;font-size:14px"></i>
+                      <span class="text-xs font-semibold" style="color:#4ade80">Saved</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 pl-11">
+                    <div class="score-input-dark h-10 w-16 flex items-center justify-center font-semibold text-sm">7</div>
+                    <span class="text-sm muted-dark">/ 10</span>
+                    <div class="flex-1"></div>
+                    <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center">
+                      <i class="ph-camera" style="color:#94a3b8;font-size:18px"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-shadow-dark p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                        <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                      </div>
+                      <span class="font-semibold fg-dark text-sm">3, Acct</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <i class="ph-check-circle-fill" style="color:#4ade80;font-size:14px"></i>
+                      <span class="text-xs font-semibold" style="color:#4ade80">Saved</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 pl-11">
+                    <div class="score-input-dark h-10 w-16 flex items-center justify-center font-semibold text-sm">6</div>
+                    <span class="text-sm muted-dark">/ 10</span>
+                    <div class="flex-1"></div>
+                    <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center">
+                      <i class="ph-camera" style="color:#94a3b8;font-size:18px"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-shadow-dark p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                        <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                      </div>
+                      <span class="font-semibold fg-dark text-sm">4, Acct</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <i class="ph-check-circle-fill" style="color:#4ade80;font-size:14px"></i>
+                      <span class="text-xs font-semibold" style="color:#4ade80">Saved</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 pl-11">
+                    <div class="score-input-dark h-10 w-16 flex items-center justify-center font-semibold text-sm">8</div>
+                    <span class="text-sm muted-dark">/ 10</span>
+                    <div class="flex-1"></div>
+                    <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center">
+                      <i class="ph-camera" style="color:#94a3b8;font-size:18px"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AFTER LIGHT -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-after">After · Light</span></div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-back"><i class="ph-arrow-left" style="color:#0f172a;font-size:20px"></i></div>
+                <div class="flex-1">
+                  <p class="font-bold fg-light" style="font-size:15px">test 23231</p>
+                  <p class="text-[11px] muted-light">Max 10 pts · Passing 50%</p>
+                </div>
+                <!-- Apply-to-all promoted to header -->
+                <button class="btn-tertiary-light">Apply all</button>
+                <span class="text-sm font-semibold" style="color:#94a3b8">Save</span>
+              </div>
+
+              <div class="px-3 pt-3">
+                <!-- Combined progress line — drop "100%", keep count + check -->
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <p class="text-xs font-semibold fg-light">10 of 10 graded</p>
+                    <i class="ph-check-circle-fill" style="color:#16a34a;font-size:14px"></i>
+                  </div>
+                  <div class="flex flex-row gap-1.5">
+                    <span class="filter-chip fc-active-light">All · 10</span>
+                    <span class="filter-chip fc-idle-light">Ungraded · 0</span>
+                  </div>
+                </div>
+                <div class="h-1.5 progress-track-light rounded-full mb-3 overflow-hidden">
+                  <div class="h-1.5 progress-fill-success" style="width:100%"></div>
+                </div>
+                <!-- Search bar (shown when roster ≥ threshold) -->
+                <div class="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white mb-3">
+                  <i class="ph-magnifying-glass" style="color:#64748b;font-size:14px"></i>
+                  <span class="text-sm muted-light flex-1">Search student…</span>
+                </div>
+              </div>
+
+              <div class="scroll px-3 pb-4 gap-2 flex flex-col">
+                <!-- Single-row dimmed saved cards -->
+                <div class="card-flat-light flex items-center gap-3 p-3 saved-row-light">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-light text-sm">1, Acct</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base">10</div>
+                  <span class="text-xs muted-light">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+                    <i class="ph-camera-fill" style="color:#16a34a;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-light flex items-center gap-3 p-3 saved-row-light">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-light text-sm">2, Acct</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base">7</div>
+                  <span class="text-xs muted-light">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#475569;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-light flex items-center gap-3 p-3 saved-row-light">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-light text-sm">3, Acct</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base">6</div>
+                  <span class="text-xs muted-light">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#475569;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-light flex items-center gap-3 p-3 saved-row-light">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-light text-sm">4, Acct</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base">8</div>
+                  <span class="text-xs muted-light">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#475569;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-light flex items-center gap-3 p-3 saved-row-light">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-light text-sm">5, Acct</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base">10</div>
+                  <span class="text-xs muted-light">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#475569;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-light flex items-center gap-3 p-3 saved-row-light">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-light text-sm">6, Acct</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base">9</div>
+                  <span class="text-xs muted-light">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#475569;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-light flex items-center gap-3 p-3 saved-row-light">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-light text-sm">7, Acct</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base">5</div>
+                  <span class="text-xs muted-light">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#475569;font-size:16px"></i>
+                  </div>
+                </div>
+                <!-- Dirty (un-dimmed) row to show contrast -->
+                <div class="card-flat-light flex items-center gap-3 p-3">
+                  <div class="accent-strip h-10"></div>
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-light text-sm">8, Acct</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base">9</div>
+                  <span class="text-xs muted-light">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#475569;font-size:16px"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AFTER DARK -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-after">After · Dark</span></div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-back"><i class="ph-arrow-left" style="color:#f8fafc;font-size:20px"></i></div>
+                <div class="flex-1">
+                  <p class="font-bold fg-dark" style="font-size:15px">test 23231</p>
+                  <p class="text-[11px] muted-dark">Max 10 pts · Passing 50%</p>
+                </div>
+                <button class="btn-tertiary-dark">Apply all</button>
+                <span class="text-sm font-semibold" style="color:#64748b">Save</span>
+              </div>
+
+              <div class="px-3 pt-3">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <p class="text-xs font-semibold fg-dark">10 of 10 graded</p>
+                    <i class="ph-check-circle-fill" style="color:#4ade80;font-size:14px"></i>
+                  </div>
+                  <div class="flex flex-row gap-1.5">
+                    <span class="filter-chip fc-active-dark">All · 10</span>
+                    <span class="filter-chip fc-idle-dark">Ungraded · 0</span>
+                  </div>
+                </div>
+                <div class="h-1.5 progress-track-dark rounded-full mb-3 overflow-hidden">
+                  <div class="h-1.5 progress-fill-success" style="width:100%"></div>
+                </div>
+                <!-- Search bar (shown when roster ≥ threshold) -->
+                <div class="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-700 bg-slate-800/40 mb-3">
+                  <i class="ph-magnifying-glass" style="color:#94a3b8;font-size:14px"></i>
+                  <span class="text-sm muted-dark flex-1">Search student…</span>
+                </div>
+              </div>
+
+              <div class="scroll px-3 pb-4 gap-2 flex flex-col">
+                <div class="card-flat-dark flex items-center gap-3 p-3 saved-row-dark">
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-dark text-sm">1, Acct</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base">10</div>
+                  <span class="text-xs muted-dark">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center">
+                    <i class="ph-camera-fill" style="color:#4ade80;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3 saved-row-dark">
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-dark text-sm">2, Acct</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base">7</div>
+                  <span class="text-xs muted-dark">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3 saved-row-dark">
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-dark text-sm">3, Acct</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base">6</div>
+                  <span class="text-xs muted-dark">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3 saved-row-dark">
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-dark text-sm">4, Acct</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base">8</div>
+                  <span class="text-xs muted-dark">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3 saved-row-dark">
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-dark text-sm">5, Acct</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base">10</div>
+                  <span class="text-xs muted-dark">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3 saved-row-dark">
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-dark text-sm">6, Acct</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base">9</div>
+                  <span class="text-xs muted-dark">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3 saved-row-dark">
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-dark text-sm">7, Acct</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base">5</div>
+                  <span class="text-xs muted-dark">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3">
+                  <div class="accent-strip h-10"></div>
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 font-semibold fg-dark text-sm">8, Acct</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base">9</div>
+                  <span class="text-xs muted-dark">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center">
+                    <i class="ph-camera" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ ROW DETAIL ============ -->
+      <section class="mb-14">
+        <h2 class="text-xl font-bold mb-1">Row detail — close-up</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          Single row at 2× to show the difference in chrome, density, and
+          the "saved" state.
+        </p>
+        <div class="grid grid-cols-2 gap-6 max-w-4xl">
+          <div class="bg-white rounded-2xl p-5 shadow-md">
+            <div class="text-xs font-bold uppercase tracking-wider text-red-600 mb-3">Before — saved row</div>
+            <div class="card-shadow-light p-3">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center">
+                    <i class="ph-user" style="color:#475569;font-size:18px"></i>
+                  </div>
+                  <span class="font-semibold fg-light">1, Acct</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <i class="ph-check-circle-fill" style="color:#16a34a;font-size:16px"></i>
+                  <span class="text-sm font-semibold" style="color:#16a34a">Saved</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 pl-12">
+                <div class="score-input-light h-11 w-16 flex items-center justify-center font-semibold">10</div>
+                <span class="text-sm muted-light">/ 10</span>
+                <div class="flex-1"></div>
+                <div class="h-11 w-11 rounded-lg border border-slate-200 flex items-center justify-center">
+                  <i class="ph-camera" style="color:#475569;font-size:18px"></i>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 mt-3">~140pt tall, two stacked rows, "Saved" badge repeated on every row.</p>
+          </div>
+          <div class="bg-white rounded-2xl p-5 shadow-md">
+            <div class="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-3">After — saved row (dimmed)</div>
+            <div class="card-flat-light flex items-center gap-3 p-3 saved-row-light">
+              <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center">
+                <i class="ph-user" style="color:#475569;font-size:18px"></i>
+              </div>
+              <span class="flex-1 font-semibold fg-light">1, Acct</span>
+              <div class="score-input-light h-12 w-20 flex items-center justify-center font-bold text-lg">10</div>
+              <span class="text-sm muted-light">/ 10</span>
+              <div class="h-11 w-11 rounded-lg border border-slate-200 flex items-center justify-center">
+                <i class="ph-camera-fill" style="color:#16a34a;font-size:18px"></i>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 mt-3">~76pt tall, single row, opacity 55% signals "saved", camera glyph fills to indicate attached file.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ NAME OVERFLOW ============ -->
+      <section class="mb-14">
+        <h2 class="text-xl font-bold mb-1">Long-name handling — 2-line wrap</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          Single-line truncation breaks down when several students share
+          a long prefix (siblings, compound last names) — they all
+          truncate to the same characters and become indistinguishable.
+          Using <code class="text-amber-300">numberOfLines={2}</code> +
+          <code class="text-amber-300">leading-tight</code> lets the
+          name wrap to a second line so the differentiating part of the
+          name (the first name) is always visible. Row height becomes
+          slightly variable but capped — most rows stay one line; only
+          long-name rows expand to two.
+        </p>
+
+        <div class="grid grid-cols-2 gap-6 max-w-4xl mb-8">
+          <div class="bg-white rounded-2xl p-5 shadow-md">
+            <div class="text-xs font-bold uppercase tracking-wider text-red-600 mb-3">Tail-truncated — sibling collision</div>
+            <div class="card-flat-light flex items-center gap-3 p-3 mb-2">
+              <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                <i class="ph-user" style="color:#475569;font-size:18px"></i>
+              </div>
+              <span class="flex-1 min-w-0 font-semibold fg-light truncate">
+                Sandoval-Bermudez Reyes, Anna Marie
+              </span>
+              <div class="score-input-light h-12 w-20 flex items-center justify-center font-bold text-lg shrink-0">10</div>
+              <span class="text-sm muted-light shrink-0">/ 10</span>
+              <div class="h-11 w-11 rounded-lg border border-slate-200 flex items-center justify-center shrink-0">
+                <i class="ph-camera" style="color:#475569;font-size:18px"></i>
+              </div>
+            </div>
+            <div class="card-flat-light flex items-center gap-3 p-3 mb-2">
+              <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                <i class="ph-user" style="color:#475569;font-size:18px"></i>
+              </div>
+              <span class="flex-1 min-w-0 font-semibold fg-light truncate">
+                Sandoval-Bermudez Reyes, Jose Carlos
+              </span>
+              <div class="score-input-light h-12 w-20 flex items-center justify-center font-bold text-lg shrink-0">8</div>
+              <span class="text-sm muted-light shrink-0">/ 10</span>
+              <div class="h-11 w-11 rounded-lg border border-slate-200 flex items-center justify-center shrink-0">
+                <i class="ph-camera" style="color:#475569;font-size:18px"></i>
+              </div>
+            </div>
+            <div class="card-flat-light flex items-center gap-3 p-3">
+              <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                <i class="ph-user" style="color:#475569;font-size:18px"></i>
+              </div>
+              <span class="flex-1 min-w-0 font-semibold fg-light truncate">
+                Sandoval-Bermudez Reyes, Christopher James
+              </span>
+              <div class="score-input-light h-12 w-20 flex items-center justify-center font-bold text-lg shrink-0">9</div>
+              <span class="text-sm muted-light shrink-0">/ 10</span>
+              <div class="h-11 w-11 rounded-lg border border-slate-200 flex items-center justify-center shrink-0">
+                <i class="ph-camera" style="color:#475569;font-size:18px"></i>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 mt-3">All three siblings truncate to the same prefix. The grader can't tell who's who without expanding each row.</p>
+          </div>
+
+          <div class="bg-white rounded-2xl p-5 shadow-md">
+            <div class="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-3">2-line wrap — distinguishable</div>
+            <div class="card-flat-light flex items-center gap-3 p-3 mb-2">
+              <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                <i class="ph-user" style="color:#475569;font-size:18px"></i>
+              </div>
+              <span class="flex-1 min-w-0 font-semibold fg-light text-sm leading-tight line-clamp-2">
+                Sandoval-Bermudez Reyes, Anna Marie
+              </span>
+              <div class="score-input-light h-12 w-20 flex items-center justify-center font-bold text-lg shrink-0">10</div>
+              <span class="text-sm muted-light shrink-0">/ 10</span>
+              <div class="h-11 w-11 rounded-lg border border-slate-200 flex items-center justify-center shrink-0">
+                <i class="ph-camera" style="color:#475569;font-size:18px"></i>
+              </div>
+            </div>
+            <div class="card-flat-light flex items-center gap-3 p-3 mb-2">
+              <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                <i class="ph-user" style="color:#475569;font-size:18px"></i>
+              </div>
+              <span class="flex-1 min-w-0 font-semibold fg-light text-sm leading-tight line-clamp-2">
+                Sandoval-Bermudez Reyes, Jose Carlos
+              </span>
+              <div class="score-input-light h-12 w-20 flex items-center justify-center font-bold text-lg shrink-0">8</div>
+              <span class="text-sm muted-light shrink-0">/ 10</span>
+              <div class="h-11 w-11 rounded-lg border border-slate-200 flex items-center justify-center shrink-0">
+                <i class="ph-camera" style="color:#475569;font-size:18px"></i>
+              </div>
+            </div>
+            <div class="card-flat-light flex items-center gap-3 p-3">
+              <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                <i class="ph-user" style="color:#475569;font-size:18px"></i>
+              </div>
+              <span class="flex-1 min-w-0 font-semibold fg-light text-sm leading-tight line-clamp-2">
+                Sandoval-Bermudez Reyes, Christopher James
+              </span>
+              <div class="score-input-light h-12 w-20 flex items-center justify-center font-bold text-lg shrink-0">9</div>
+              <span class="text-sm muted-light shrink-0">/ 10</span>
+              <div class="h-11 w-11 rounded-lg border border-slate-200 flex items-center justify-center shrink-0">
+                <i class="ph-camera" style="color:#475569;font-size:18px"></i>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 mt-3">Last name wraps to line 1, first name on line 2 — each sibling is uniquely identifiable. Row height grows by ~16pt only when the name actually needs the extra line.</p>
+          </div>
+        </div>
+
+        <!-- Full phone with mixed-length names to show in context -->
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-after">In context · Light</span></div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-back"><i class="ph-arrow-left" style="color:#0f172a;font-size:20px"></i></div>
+                <div class="flex-1">
+                  <p class="font-bold fg-light" style="font-size:15px">test 23231</p>
+                  <p class="text-[11px] muted-light">Max 10 pts · Passing 50%</p>
+                </div>
+                <button class="btn-tertiary-light">Apply all</button>
+                <span class="text-sm font-semibold" style="color:#94a3b8">Save</span>
+              </div>
+
+              <div class="px-3 pt-3">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <p class="text-xs font-semibold fg-light">4 of 6 graded</p>
+                  </div>
+                  <p class="text-xs muted-light">2 left</p>
+                </div>
+                <div class="h-1.5 progress-track-light rounded-full mb-3 overflow-hidden">
+                  <div class="h-1.5 progress-fill-accent" style="width:66%"></div>
+                </div>
+              </div>
+
+              <div class="scroll px-3 pb-4 gap-2 flex flex-col">
+                <!-- Short name -->
+                <div class="card-flat-light flex items-center gap-3 p-3 saved-row-light">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 min-w-0 font-semibold fg-light text-sm truncate">Lim, Ana</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base shrink-0">10</div>
+                  <span class="text-xs muted-light shrink-0">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center shrink-0">
+                    <i class="ph-camera-fill" style="color:#16a34a;font-size:16px"></i>
+                  </div>
+                </div>
+                <!-- Medium name -->
+                <div class="card-flat-light flex items-center gap-3 p-3 saved-row-light">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 min-w-0 font-semibold fg-light text-sm truncate">Reyes, Maria Clara</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base shrink-0">8</div>
+                  <span class="text-xs muted-light shrink-0">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center shrink-0">
+                    <i class="ph-camera" style="color:#475569;font-size:16px"></i>
+                  </div>
+                </div>
+                <!-- Long name — wraps to 2 lines -->
+                <div class="card-flat-light flex items-center gap-3 p-3 saved-row-light">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 min-w-0 font-semibold fg-light text-sm leading-tight line-clamp-2">Williams-Smith, Jonathan Christopher Maxwell</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base shrink-0">9</div>
+                  <span class="text-xs muted-light shrink-0">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center shrink-0">
+                    <i class="ph-camera-fill" style="color:#16a34a;font-size:16px"></i>
+                  </div>
+                </div>
+                <!-- Very long name — wraps to 2 lines -->
+                <div class="card-flat-light flex items-center gap-3 p-3 saved-row-light">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 min-w-0 font-semibold fg-light text-sm leading-tight line-clamp-2">Tantangco-Bartolomé del Rosario, Alessandra</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base shrink-0">7</div>
+                  <span class="text-xs muted-light shrink-0">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center shrink-0">
+                    <i class="ph-camera" style="color:#475569;font-size:16px"></i>
+                  </div>
+                </div>
+                <!-- Ungraded long name — wraps -->
+                <div class="card-flat-light flex items-center gap-3 p-3">
+                  <div class="accent-strip h-10 shrink-0"></div>
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 min-w-0 font-semibold fg-light text-sm leading-tight line-clamp-2">Goldberg-Hashimoto, Christopher</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base shrink-0" style="color:#94a3b8">—</div>
+                  <span class="text-xs muted-light shrink-0">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center shrink-0">
+                    <i class="ph-camera" style="color:#475569;font-size:16px"></i>
+                  </div>
+                </div>
+                <!-- Ungraded medium name -->
+                <div class="card-flat-light flex items-center gap-3 p-3">
+                  <div class="accent-strip h-10 shrink-0"></div>
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                    <i class="ph-user" style="color:#475569;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 min-w-0 font-semibold fg-light text-sm truncate">Yu, Bryan</span>
+                  <div class="score-input-light h-11 w-20 flex items-center justify-center font-semibold text-base shrink-0" style="color:#94a3b8">—</div>
+                  <span class="text-xs muted-light shrink-0">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center shrink-0">
+                    <i class="ph-camera" style="color:#475569;font-size:16px"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-after">In context · Dark</span></div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-back"><i class="ph-arrow-left" style="color:#f8fafc;font-size:20px"></i></div>
+                <div class="flex-1">
+                  <p class="font-bold fg-dark" style="font-size:15px">test 23231</p>
+                  <p class="text-[11px] muted-dark">Max 10 pts · Passing 50%</p>
+                </div>
+                <button class="btn-tertiary-dark">Apply all</button>
+                <span class="text-sm font-semibold" style="color:#64748b">Save</span>
+              </div>
+
+              <div class="px-3 pt-3">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <p class="text-xs font-semibold fg-dark">4 of 6 graded</p>
+                  </div>
+                  <p class="text-xs muted-dark">2 left</p>
+                </div>
+                <div class="h-1.5 progress-track-dark rounded-full mb-3 overflow-hidden">
+                  <div class="h-1.5 progress-fill-accent" style="width:66%"></div>
+                </div>
+              </div>
+
+              <div class="scroll px-3 pb-4 gap-2 flex flex-col">
+                <div class="card-flat-dark flex items-center gap-3 p-3 saved-row-dark">
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 min-w-0 font-semibold fg-dark text-sm truncate">Lim, Ana</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base shrink-0">10</div>
+                  <span class="text-xs muted-dark shrink-0">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center shrink-0">
+                    <i class="ph-camera-fill" style="color:#4ade80;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3 saved-row-dark">
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 min-w-0 font-semibold fg-dark text-sm truncate">Reyes, Maria Clara</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base shrink-0">8</div>
+                  <span class="text-xs muted-dark shrink-0">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center shrink-0">
+                    <i class="ph-camera" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3 saved-row-dark">
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 min-w-0 font-semibold fg-dark text-sm leading-tight line-clamp-2">Williams-Smith, Jonathan Christopher Maxwell</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base shrink-0">9</div>
+                  <span class="text-xs muted-dark shrink-0">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center shrink-0">
+                    <i class="ph-camera-fill" style="color:#4ade80;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3 saved-row-dark">
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 min-w-0 font-semibold fg-dark text-sm leading-tight line-clamp-2">Tantangco-Bartolomé del Rosario, Alessandra</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base shrink-0">7</div>
+                  <span class="text-xs muted-dark shrink-0">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center shrink-0">
+                    <i class="ph-camera" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3">
+                  <div class="accent-strip h-10 shrink-0"></div>
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 min-w-0 font-semibold fg-dark text-sm leading-tight line-clamp-2">Goldberg-Hashimoto, Christopher</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base shrink-0" style="color:#64748b">—</div>
+                  <span class="text-xs muted-dark shrink-0">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center shrink-0">
+                    <i class="ph-camera" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3">
+                  <div class="accent-strip h-10 shrink-0"></div>
+                  <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
+                    <i class="ph-user" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                  <span class="flex-1 min-w-0 font-semibold fg-dark text-sm truncate">Yu, Bryan</span>
+                  <div class="score-input-dark h-11 w-20 flex items-center justify-center font-semibold text-base shrink-0" style="color:#64748b">—</div>
+                  <span class="text-xs muted-dark shrink-0">/ 10</span>
+                  <div class="h-10 w-10 rounded-lg border border-slate-700 flex items-center justify-center shrink-0">
+                    <i class="ph-camera" style="color:#94a3b8;font-size:16px"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CHANGE LIST ============ -->
+      <section class="bg-slate-800/60 rounded-2xl p-6 border border-slate-700">
+        <h2 class="text-xl font-bold mb-4">Change summary</h2>
+        <div class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">Card chrome</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>Soft shadow → hairline border (matches the rest of the app).</li>
+              <li>`bg-surface border border-border rounded-2xl`.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">Row layout</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>Two stacked rows → one horizontal row.</li>
+              <li>Avatar · name · score input · max · camera, all left-to-right.</li>
+              <li>~76pt vs ~140pt → ~7 visible rows per viewport (was ~5).</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">"Saved" state</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>Drop the inline "Saved" badge on every row.</li>
+              <li>Dim saved rows to <code class="text-amber-300">opacity 0.55</code>.</li>
+              <li>Filled camera glyph (instead of outline) indicates an attached file.</li>
+              <li>Dirty rows stay full opacity + add an accent left strip.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">Progress</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>Drop redundant "100%" — count + bar already say it.</li>
+              <li>Bar turns green at 100%.</li>
+              <li>Optional filter chips on the same row (`All · N` / `Ungraded · N`).</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">Apply to all</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>Moved from a small text link to a tertiary button in the header.</li>
+              <li>Always reachable regardless of scroll position.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">Score input</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>h-10 w-16 → h-11 w-20 — bigger touch target.</li>
+              <li>Font bumped to base/bold for fast scanning while grading.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">Search threshold</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>Show search bar when roster has 15+ students (was 10+).</li>
+              <li>Avoids overeager search on small classes.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

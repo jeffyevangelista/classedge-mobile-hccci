@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Classroom Screen — Proposal</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/phosphor-icons"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+          sans-serif;
+        background: #0f172a;
+      }
+      .phone {
+        width: 360px;
+        height: 740px;
+        border-radius: 36px;
+        box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .phone.light { background: #f8fafc; }
+      .phone.dark  { background: #0b1220; }
+      .top-pad     { height: 28px; }
+      .light .top-pad { background: #ffffff; }
+      .dark  .top-pad { background: #0f172a; }
+
+      /* Header */
+      .nav {
+        padding: 10px 14px 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .light .nav { background: #ffffff; }
+      .dark  .nav { background: #0f172a; }
+      .nav-icon {
+        width: 36px; height: 36px;
+        border-radius: 18px;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .light .nav-icon { background: #f1f5f9; }
+      .dark  .nav-icon { background: #1e293b; }
+
+      .title-light { color: #0f172a; }
+      .title-dark  { color: #f8fafc; }
+      .meta-light  { color: #64748b; }
+      .meta-dark   { color: #94a3b8; }
+      .border-light { border-bottom: 1px solid #e2e8f0; }
+      .border-dark  { border-bottom: 1px solid #1e293b; }
+
+      /* Tabs */
+      .tabs-old {
+        display: flex;
+        padding: 0 16px;
+      }
+      .tabs-old .tab {
+        flex: 1;
+        text-align: center;
+        padding: 10px 0;
+        font-size: 14px;
+        font-weight: 500;
+        position: relative;
+      }
+      .tabs-old .tab.active { color: #2563eb; }
+      .tabs-old .tab:not(.active) { color: #94a3b8; }
+      .tabs-old .tab.active::after {
+        content: '';
+        position: absolute;
+        left: 25%; right: 25%;
+        bottom: 0;
+        height: 2px;
+        background: #2563eb;
+        border-radius: 2px;
+      }
+
+      .tabs-new {
+        margin: 4px 12px 6px;
+        padding: 4px;
+        display: flex;
+        gap: 4px;
+        border-radius: 12px;
+      }
+      .light .tabs-new { background: #f1f5f9; }
+      .dark  .tabs-new { background: #1e293b; }
+      .tabs-new .tab {
+        flex: 1;
+        padding: 7px 6px;
+        border-radius: 9px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        display: flex; align-items: center; justify-content: center;
+        gap: 4px;
+      }
+      .tabs-new .tab.active.light { background: #ffffff; color: #1e293b; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+      .tabs-new .tab.active.dark  { background: #0b1220; color: #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+      .tabs-new .tab:not(.active).light { color: #64748b; }
+      .tabs-new .tab:not(.active).dark  { color: #94a3b8; }
+      .tab-count-light { background: rgba(37,99,235,0.12); color: #2563eb; padding: 1px 6px; border-radius: 999px; font-size: 10px; }
+      .tab-count-dark  { background: rgba(96,165,250,0.18); color: #60a5fa; padding: 1px 6px; border-radius: 999px; font-size: 10px; }
+
+      /* Scroll area */
+      .scroll { flex: 1; overflow-y: auto; }
+      .scroll::-webkit-scrollbar { display: none; }
+
+      /* Cards */
+      .card-old-light {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 10px 12px;
+        margin: 6px 12px;
+        display: flex; align-items: center; gap: 12px;
+      }
+      .card-old-dark {
+        background: #0f172a;
+        border-radius: 12px;
+        border: 1px solid #1e293b;
+        padding: 10px 12px;
+        margin: 6px 12px;
+        display: flex; align-items: center; gap: 12px;
+      }
+      .card-new-light {
+        background: #ffffff;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        padding: 12px;
+        margin: 5px 12px;
+        display: flex; align-items: center; gap: 12px;
+      }
+      .card-new-dark {
+        background: #0f172a;
+        border-radius: 14px;
+        border: 1px solid #1e293b;
+        padding: 12px;
+        margin: 5px 12px;
+        display: flex; align-items: center; gap: 12px;
+      }
+
+      .chip {
+        width: 40px; height: 40px;
+        border-radius: 10px;
+        flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .chip-old { width: 36px; height: 36px; border-radius: 999px; }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 7px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .section-head {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 18px 4px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .section-head.light { color: #64748b; }
+      .section-head.dark  { color: #94a3b8; }
+
+      .filter-row { display: flex; gap: 6px; padding: 6px 12px 8px; overflow-x: auto; }
+      .filter-row::-webkit-scrollbar { display: none; }
+      .filter-chip {
+        flex-shrink: 0;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-flex; align-items: center; gap: 4px;
+      }
+      .filter-chip.active.light { background: #2563eb; color: #ffffff; }
+      .filter-chip.active.dark  { background: #2563eb; color: #ffffff; }
+      .filter-chip.idle.light   { background: #f1f5f9; color: #475569; }
+      .filter-chip.idle.dark    { background: #1e293b; color: #94a3b8; }
+
+      /* Color palettes for typed icons */
+      .ic-quiz-l    { background: #ede9fe; color: #7c3aed; }
+      .ic-quiz-d    { background: rgba(124,58,237,0.18); color: #a78bfa; }
+      .ic-exam-l    { background: #fee2e2; color: #dc2626; }
+      .ic-exam-d    { background: rgba(220,38,38,0.18); color: #f87171; }
+      .ic-assign-l  { background: #ffedd5; color: #ea580c; }
+      .ic-assign-d  { background: rgba(234,88,12,0.2); color: #fb923c; }
+      .ic-special-l { background: #fce7f3; color: #db2777; }
+      .ic-special-d { background: rgba(219,39,119,0.18); color: #f472b6; }
+      .ic-part-l    { background: #ccfbf1; color: #0d9488; }
+      .ic-part-d    { background: rgba(13,148,136,0.18); color: #2dd4bf; }
+
+      .ic-doc-l   { background: #dcfce7; color: #16a34a; }
+      .ic-doc-d   { background: rgba(22,163,74,0.18); color: #4ade80; }
+      .ic-pdf-l   { background: #fee2e2; color: #dc2626; }
+      .ic-pdf-d   { background: rgba(220,38,38,0.18); color: #f87171; }
+      .ic-video-l { background: #ede9fe; color: #7c3aed; }
+      .ic-video-d { background: rgba(124,58,237,0.18); color: #a78bfa; }
+      .ic-link-l  { background: #dbeafe; color: #2563eb; }
+      .ic-link-d  { background: rgba(37,99,235,0.22); color: #60a5fa; }
+      .ic-embed-l { background: #fef3c7; color: #d97706; }
+      .ic-embed-d { background: rgba(217,119,6,0.2); color: #f59e0b; }
+
+      /* Pill palettes */
+      .p-danger-l   { background: #fee2e2; color: #b91c1c; }
+      .p-danger-d   { background: rgba(220,38,38,0.18); color: #fca5a5; }
+      .p-accent-l   { background: #dbeafe; color: #1d4ed8; }
+      .p-accent-d   { background: rgba(37,99,235,0.22); color: #93c5fd; }
+      .p-success-l  { background: #dcfce7; color: #166534; }
+      .p-success-d  { background: rgba(22,163,74,0.18); color: #86efac; }
+      .p-muted-l    { background: #f1f5f9; color: #475569; }
+      .p-muted-d    { background: #1e293b; color: #94a3b8; }
+      .p-warn-l     { background: #fef3c7; color: #b45309; }
+      .p-warn-d     { background: rgba(217,119,6,0.2); color: #fbbf24; }
+
+      .label {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .label-before { background: #fee2e2; color: #b91c1c; }
+      .label-after  { background: #dcfce7; color: #166534; }
+
+      .fab {
+        position: absolute;
+        right: 14px;
+        bottom: 16px;
+        width: 50px; height: 50px;
+        border-radius: 25px;
+        background: #2563eb;
+        color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 10px 24px -8px rgba(37,99,235,0.6);
+      }
+    </style>
+  </head>
+  <body class="text-slate-100">
+    <div class="max-w-7xl mx-auto py-12 px-6">
+      <header class="mb-10">
+        <h1 class="text-3xl font-bold">Classroom screen — proposal</h1>
+        <p class="text-slate-300 mt-2 max-w-3xl text-sm leading-relaxed">
+          Rework the classroom screen to make Materials, Courseworks, and
+          RapidGrader scannable and teacher-actionable. Side-by-side
+          comparison below.
+        </p>
+      </header>
+
+      <!-- ============ COURSEWORKS ============ -->
+      <section class="mb-14">
+        <h2 class="text-xl font-bold mb-1">Courseworks tab</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          From the screenshot: redundant "Assignment:" prefix, every row gets the same orange pencil, "Overdue" repeats 8x.
+        </p>
+        <div class="grid grid-cols-3 gap-6">
+
+          <!-- BEFORE -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-before">Before · Light</span></div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="nav border-light">
+                <div class="nav-icon"><i class="ph-arrow-left" style="color:#1e293b;font-size:18px"></i></div>
+                <div class="flex-1 text-center font-semibold title-light">Demo Subject</div>
+                <div class="nav-icon"><i class="ph-plus" style="color:#1e293b;font-size:18px"></i></div>
+                <div class="nav-icon"><i class="ph-info" style="color:#1e293b;font-size:18px"></i></div>
+              </div>
+              <div class="tabs-old border-light">
+                <div class="tab">Materials</div>
+                <div class="tab active">Courseworks</div>
+                <div class="tab">RapidGrader</div>
+              </div>
+              <div class="scroll pt-2">
+                <!-- 6 identical rows -->
+                <div class="card-old-light">
+                  <div class="chip chip-old ic-assign-l"><i class="ph-pencil-line-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Assignment: Pagac Joy</p>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <span class="text-xs meta-light">Due May 29, 2026 11:00 AM</span>
+                      <span class="pill p-danger-l">Overdue</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-old-light">
+                  <div class="chip chip-old ic-assign-l"><i class="ph-pencil-line-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Assignment: Panu mang bugbug n…</p>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <span class="text-xs meta-light">Due May 25, 2026 12:44 PM</span>
+                      <span class="pill p-danger-l">Overdue</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-old-light">
+                  <div class="chip chip-old ic-assign-l"><i class="ph-pencil-line-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Assignment: Test # 23</p>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <span class="text-xs meta-light">Due May 26, 2026 2:15 PM</span>
+                      <span class="pill p-danger-l">Overdue</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-old-light">
+                  <div class="chip chip-old ic-assign-l"><i class="ph-pencil-line-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Assignment: Test All Activity</p>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <span class="text-xs meta-light">Due May 20, 2026 10:00 AM</span>
+                      <span class="pill p-danger-l">Overdue</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-old-light">
+                  <div class="chip chip-old ic-assign-l"><i class="ph-pencil-line-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Assignment: Test 123456</p>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <span class="text-xs meta-light">Due May 26, 2026 2:25 PM</span>
+                      <span class="pill p-danger-l">Overdue</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-old-light">
+                  <div class="chip chip-old ic-assign-l"><i class="ph-pencil-line-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Assignment: Test $12</p>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <span class="text-xs meta-light">Due Jun 6, 2026 10:00 AM</span>
+                      <span class="pill p-danger-l">Overdue</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AFTER — LIGHT -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-after">After · Light</span></div>
+            <div class="phone light" style="position:relative">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-icon"><i class="ph-arrow-left" style="color:#1e293b;font-size:18px"></i></div>
+                <div class="flex-1 text-center min-w-0">
+                  <p class="font-bold title-light truncate" style="font-size:15px">Demo Subject</p>
+                  <p class="text-[11px] meta-light truncate">Section A · MWF 10:00 AM · 32 students</p>
+                </div>
+                <div class="nav-icon"><i class="ph-plus" style="color:#1e293b;font-size:18px"></i></div>
+                <div class="nav-icon"><i class="ph-info" style="color:#1e293b;font-size:18px"></i></div>
+              </div>
+              <div class="tabs-new">
+                <div class="tab light"><span>Materials</span><span class="tab-count-light">12</span></div>
+                <div class="tab active light"><span>Courseworks</span><span class="tab-count-light">18</span></div>
+                <div class="tab light"><span>RapidGrader</span></div>
+              </div>
+              <div class="filter-row">
+                <span class="filter-chip active light">All <span class="opacity-70">· 18</span></span>
+                <span class="filter-chip idle light">Ungraded <span class="opacity-70">· 5</span></span>
+                <span class="filter-chip idle light">Draft <span class="opacity-70">· 2</span></span>
+                <span class="filter-chip idle light">Overdue <span class="opacity-70">· 8</span></span>
+              </div>
+
+              <div class="scroll" style="padding-bottom:80px">
+                <div class="section-head light">
+                  <span>Overdue · 5</span>
+                  <span style="font-weight:500;color:#94a3b8;text-transform:none">Tap to grade</span>
+                </div>
+                <div class="card-new-light">
+                  <div class="chip ic-assign-l"><i class="ph-pencil-line-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Pagac Joy</p>
+                    <p class="text-[11px] meta-light truncate">Assignment · Due May 29, 11:00 AM · 20 pts</p>
+                  </div>
+                  <span class="pill p-warn-l">12 ungraded</span>
+                </div>
+                <div class="card-new-light">
+                  <div class="chip ic-quiz-l"><i class="ph-exam-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Test # 23</p>
+                    <p class="text-[11px] meta-light truncate">Quiz · Due May 26, 2:15 PM · 10 pts</p>
+                  </div>
+                  <span class="pill p-success-l">30/30</span>
+                </div>
+                <div class="card-new-light">
+                  <div class="chip ic-exam-l"><i class="ph-graduation-cap-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Test All Activity</p>
+                    <p class="text-[11px] meta-light truncate">Exam · Due May 20, 10:00 AM · 50 pts</p>
+                  </div>
+                  <span class="pill p-warn-l">5 ungraded</span>
+                </div>
+
+                <div class="section-head light"><span>Due this week · 3</span><span></span></div>
+                <div class="card-new-light">
+                  <div class="chip ic-assign-l"><i class="ph-pencil-line-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Test $12</p>
+                    <p class="text-[11px] meta-light truncate">Assignment · Due Jun 6, 10:00 AM · 20 pts</p>
+                  </div>
+                  <span class="pill p-accent-l">Released</span>
+                </div>
+                <div class="card-new-light">
+                  <div class="chip ic-special-l"><i class="ph-star-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Field Day Reflection</p>
+                    <p class="text-[11px] meta-light truncate">Special activity · Due Jun 8, 3:00 PM · 15 pts</p>
+                  </div>
+                  <span class="pill p-muted-l">Draft</span>
+                </div>
+
+                <div class="section-head light"><span>Upcoming · 4</span><span></span></div>
+                <div class="card-new-light">
+                  <div class="chip ic-part-l"><i class="ph-users-three-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Class participation</p>
+                    <p class="text-[11px] meta-light truncate">Participation · Due Jun 15 · 10 pts</p>
+                  </div>
+                  <span class="pill p-accent-l">Released</span>
+                </div>
+              </div>
+
+              <div class="fab"><i class="ph-plus-bold" style="font-size:22px"></i></div>
+            </div>
+          </div>
+
+          <!-- AFTER — DARK -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-after">After · Dark</span></div>
+            <div class="phone dark" style="position:relative">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-icon"><i class="ph-arrow-left" style="color:#f1f5f9;font-size:18px"></i></div>
+                <div class="flex-1 text-center min-w-0">
+                  <p class="font-bold title-dark truncate" style="font-size:15px">Demo Subject</p>
+                  <p class="text-[11px] meta-dark truncate">Section A · MWF 10:00 AM · 32 students</p>
+                </div>
+                <div class="nav-icon"><i class="ph-plus" style="color:#f1f5f9;font-size:18px"></i></div>
+                <div class="nav-icon"><i class="ph-info" style="color:#f1f5f9;font-size:18px"></i></div>
+              </div>
+              <div class="tabs-new">
+                <div class="tab dark"><span>Materials</span><span class="tab-count-dark">12</span></div>
+                <div class="tab active dark"><span>Courseworks</span><span class="tab-count-dark">18</span></div>
+                <div class="tab dark"><span>RapidGrader</span></div>
+              </div>
+              <div class="filter-row">
+                <span class="filter-chip active dark">All <span class="opacity-70">· 18</span></span>
+                <span class="filter-chip idle dark">Ungraded <span class="opacity-70">· 5</span></span>
+                <span class="filter-chip idle dark">Draft <span class="opacity-70">· 2</span></span>
+                <span class="filter-chip idle dark">Overdue <span class="opacity-70">· 8</span></span>
+              </div>
+
+              <div class="scroll" style="padding-bottom:80px">
+                <div class="section-head dark">
+                  <span>Overdue · 5</span>
+                  <span style="font-weight:500;color:#64748b;text-transform:none">Tap to grade</span>
+                </div>
+                <div class="card-new-dark">
+                  <div class="chip ic-assign-d"><i class="ph-pencil-line-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Pagac Joy</p>
+                    <p class="text-[11px] meta-dark truncate">Assignment · Due May 29, 11:00 AM · 20 pts</p>
+                  </div>
+                  <span class="pill p-warn-d">12 ungraded</span>
+                </div>
+                <div class="card-new-dark">
+                  <div class="chip ic-quiz-d"><i class="ph-exam-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Test # 23</p>
+                    <p class="text-[11px] meta-dark truncate">Quiz · Due May 26, 2:15 PM · 10 pts</p>
+                  </div>
+                  <span class="pill p-success-d">30/30</span>
+                </div>
+                <div class="card-new-dark">
+                  <div class="chip ic-exam-d"><i class="ph-graduation-cap-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Test All Activity</p>
+                    <p class="text-[11px] meta-dark truncate">Exam · Due May 20, 10:00 AM · 50 pts</p>
+                  </div>
+                  <span class="pill p-warn-d">5 ungraded</span>
+                </div>
+
+                <div class="section-head dark"><span>Due this week · 3</span><span></span></div>
+                <div class="card-new-dark">
+                  <div class="chip ic-assign-d"><i class="ph-pencil-line-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Test $12</p>
+                    <p class="text-[11px] meta-dark truncate">Assignment · Due Jun 6, 10:00 AM · 20 pts</p>
+                  </div>
+                  <span class="pill p-accent-d">Released</span>
+                </div>
+                <div class="card-new-dark">
+                  <div class="chip ic-special-d"><i class="ph-star-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Field Day Reflection</p>
+                    <p class="text-[11px] meta-dark truncate">Special activity · Due Jun 8, 3:00 PM · 15 pts</p>
+                  </div>
+                  <span class="pill p-muted-d">Draft</span>
+                </div>
+              </div>
+
+              <div class="fab"><i class="ph-plus-bold" style="font-size:22px"></i></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ MATERIALS ============ -->
+      <section class="mb-14">
+        <h2 class="text-xl font-bold mb-1">Materials tab</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          From the screenshot: "Material:" prefix, identical green books, posted-date is the only meta.
+        </p>
+        <div class="grid grid-cols-3 gap-6">
+          <!-- BEFORE DARK -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-before">Before · Dark</span></div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="nav border-dark">
+                <div class="nav-icon"><i class="ph-arrow-left" style="color:#f1f5f9;font-size:18px"></i></div>
+                <div class="flex-1 text-center font-semibold title-dark">Demo Subject</div>
+                <div class="nav-icon"><i class="ph-plus" style="color:#f1f5f9;font-size:18px"></i></div>
+                <div class="nav-icon"><i class="ph-info" style="color:#f1f5f9;font-size:18px"></i></div>
+              </div>
+              <div class="tabs-old border-dark">
+                <div class="tab active">Materials</div>
+                <div class="tab">Courseworks</div>
+                <div class="tab">RapidGrader</div>
+              </div>
+              <div class="scroll pt-2">
+                <div class="card-old-dark">
+                  <div class="chip chip-old ic-doc-d"><i class="ph-book-open-text-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Material: Video 1</p>
+                    <p class="text-xs meta-dark">Posted Jun 2, 2026</p>
+                  </div>
+                </div>
+                <div class="card-old-dark">
+                  <div class="chip chip-old ic-doc-d"><i class="ph-book-open-text-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Material: Video 0</p>
+                    <p class="text-xs meta-dark">Posted Jun 2, 2026</p>
+                  </div>
+                </div>
+                <div class="card-old-dark">
+                  <div class="chip chip-old ic-doc-d"><i class="ph-book-open-text-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Material: Lesson 0</p>
+                    <p class="text-xs meta-dark">Posted Jun 2, 2026</p>
+                  </div>
+                </div>
+                <div class="card-old-dark">
+                  <div class="chip chip-old ic-doc-d"><i class="ph-book-open-text-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Material: ITest</p>
+                    <p class="text-xs meta-dark">Posted May 29, 2026</p>
+                  </div>
+                </div>
+                <div class="card-old-dark">
+                  <div class="chip chip-old ic-doc-d"><i class="ph-book-open-text-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Material: Lesson Demo</p>
+                    <p class="text-xs meta-dark">Posted May 29, 2026</p>
+                  </div>
+                </div>
+                <div class="card-old-dark">
+                  <div class="chip chip-old ic-doc-d"><i class="ph-book-open-text-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Material: JOnabels</p>
+                    <p class="text-xs meta-dark">Posted May 29, 2026</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AFTER DARK -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-after">After · Dark</span></div>
+            <div class="phone dark" style="position:relative">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-icon"><i class="ph-arrow-left" style="color:#f1f5f9;font-size:18px"></i></div>
+                <div class="flex-1 text-center min-w-0">
+                  <p class="font-bold title-dark truncate" style="font-size:15px">Demo Subject</p>
+                  <p class="text-[11px] meta-dark truncate">Section A · MWF 10:00 AM · 32 students</p>
+                </div>
+                <div class="nav-icon"><i class="ph-plus" style="color:#f1f5f9;font-size:18px"></i></div>
+                <div class="nav-icon"><i class="ph-info" style="color:#f1f5f9;font-size:18px"></i></div>
+              </div>
+              <div class="tabs-new">
+                <div class="tab active dark"><span>Materials</span><span class="tab-count-dark">12</span></div>
+                <div class="tab dark"><span>Courseworks</span><span class="tab-count-dark">18</span></div>
+                <div class="tab dark"><span>RapidGrader</span></div>
+              </div>
+              <div class="filter-row">
+                <span class="filter-chip active dark">All <span class="opacity-70">· 12</span></span>
+                <span class="filter-chip idle dark">Videos <span class="opacity-70">· 3</span></span>
+                <span class="filter-chip idle dark">PDFs <span class="opacity-70">· 5</span></span>
+                <span class="filter-chip idle dark">Links <span class="opacity-70">· 2</span></span>
+              </div>
+
+              <div class="scroll" style="padding-bottom:80px">
+                <div class="section-head dark"><span>This week · 3</span><span></span></div>
+                <div class="card-new-dark">
+                  <div class="chip ic-video-d"><i class="ph-play-circle-bold" style="font-size:20px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Video 1</p>
+                    <p class="text-[11px] meta-dark truncate">Video · Posted Jun 2 · 24 views</p>
+                  </div>
+                  <i class="ph-caret-right meta-dark" style="font-size:14px"></i>
+                </div>
+                <div class="card-new-dark">
+                  <div class="chip ic-video-d"><i class="ph-play-circle-bold" style="font-size:20px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Video 0</p>
+                    <p class="text-[11px] meta-dark truncate">Video · Posted Jun 2 · 18 views</p>
+                  </div>
+                  <i class="ph-caret-right meta-dark" style="font-size:14px"></i>
+                </div>
+                <div class="card-new-dark">
+                  <div class="chip ic-doc-d"><i class="ph-book-open-text-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Lesson 0</p>
+                    <p class="text-[11px] meta-dark truncate">Document · Posted Jun 2 · 30 views</p>
+                  </div>
+                  <i class="ph-caret-right meta-dark" style="font-size:14px"></i>
+                </div>
+
+                <div class="section-head dark"><span>Earlier · 9</span><span></span></div>
+                <div class="card-new-dark">
+                  <div class="chip ic-pdf-d"><i class="ph-file-pdf-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">ITest</p>
+                    <p class="text-[11px] meta-dark truncate">PDF · Posted May 29 · 2.4 MB</p>
+                  </div>
+                  <i class="ph-caret-right meta-dark" style="font-size:14px"></i>
+                </div>
+                <div class="card-new-dark">
+                  <div class="chip ic-doc-d"><i class="ph-book-open-text-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">Lesson Demo</p>
+                    <p class="text-[11px] meta-dark truncate">Document · Posted May 29 · 12 views</p>
+                  </div>
+                  <i class="ph-caret-right meta-dark" style="font-size:14px"></i>
+                </div>
+                <div class="card-new-dark">
+                  <div class="chip ic-link-d"><i class="ph-link-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">JOnabels</p>
+                    <p class="text-[11px] meta-dark truncate">External link · Posted May 29</p>
+                  </div>
+                  <i class="ph-caret-right meta-dark" style="font-size:14px"></i>
+                </div>
+                <div class="card-new-dark">
+                  <div class="chip ic-embed-d"><i class="ph-frame-corners-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-dark truncate">TEst Lesson #12</p>
+                    <p class="text-[11px] meta-dark truncate">Sway · Posted May 28</p>
+                  </div>
+                  <i class="ph-caret-right meta-dark" style="font-size:14px"></i>
+                </div>
+              </div>
+
+              <div class="fab"><i class="ph-plus-bold" style="font-size:22px"></i></div>
+            </div>
+          </div>
+
+          <!-- AFTER LIGHT -->
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-after">After · Light</span></div>
+            <div class="phone light" style="position:relative">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-icon"><i class="ph-arrow-left" style="color:#1e293b;font-size:18px"></i></div>
+                <div class="flex-1 text-center min-w-0">
+                  <p class="font-bold title-light truncate" style="font-size:15px">Demo Subject</p>
+                  <p class="text-[11px] meta-light truncate">Section A · MWF 10:00 AM · 32 students</p>
+                </div>
+                <div class="nav-icon"><i class="ph-plus" style="color:#1e293b;font-size:18px"></i></div>
+                <div class="nav-icon"><i class="ph-info" style="color:#1e293b;font-size:18px"></i></div>
+              </div>
+              <div class="tabs-new">
+                <div class="tab active light"><span>Materials</span><span class="tab-count-light">12</span></div>
+                <div class="tab light"><span>Courseworks</span><span class="tab-count-light">18</span></div>
+                <div class="tab light"><span>RapidGrader</span></div>
+              </div>
+              <div class="filter-row">
+                <span class="filter-chip active light">All <span class="opacity-70">· 12</span></span>
+                <span class="filter-chip idle light">Videos <span class="opacity-70">· 3</span></span>
+                <span class="filter-chip idle light">PDFs <span class="opacity-70">· 5</span></span>
+                <span class="filter-chip idle light">Links <span class="opacity-70">· 2</span></span>
+              </div>
+
+              <div class="scroll" style="padding-bottom:80px">
+                <div class="section-head light"><span>This week · 3</span><span></span></div>
+                <div class="card-new-light">
+                  <div class="chip ic-video-l"><i class="ph-play-circle-bold" style="font-size:20px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Video 1</p>
+                    <p class="text-[11px] meta-light truncate">Video · Posted Jun 2 · 24 views</p>
+                  </div>
+                  <i class="ph-caret-right meta-light" style="font-size:14px"></i>
+                </div>
+                <div class="card-new-light">
+                  <div class="chip ic-video-l"><i class="ph-play-circle-bold" style="font-size:20px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Video 0</p>
+                    <p class="text-[11px] meta-light truncate">Video · Posted Jun 2 · 18 views</p>
+                  </div>
+                  <i class="ph-caret-right meta-light" style="font-size:14px"></i>
+                </div>
+                <div class="card-new-light">
+                  <div class="chip ic-doc-l"><i class="ph-book-open-text-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Lesson 0</p>
+                    <p class="text-[11px] meta-light truncate">Document · Posted Jun 2 · 30 views</p>
+                  </div>
+                  <i class="ph-caret-right meta-light" style="font-size:14px"></i>
+                </div>
+
+                <div class="section-head light"><span>Earlier · 9</span><span></span></div>
+                <div class="card-new-light">
+                  <div class="chip ic-pdf-l"><i class="ph-file-pdf-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">ITest</p>
+                    <p class="text-[11px] meta-light truncate">PDF · Posted May 29 · 2.4 MB</p>
+                  </div>
+                  <i class="ph-caret-right meta-light" style="font-size:14px"></i>
+                </div>
+                <div class="card-new-light">
+                  <div class="chip ic-doc-l"><i class="ph-book-open-text-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">Lesson Demo</p>
+                    <p class="text-[11px] meta-light truncate">Document · Posted May 29 · 12 views</p>
+                  </div>
+                  <i class="ph-caret-right meta-light" style="font-size:14px"></i>
+                </div>
+                <div class="card-new-light">
+                  <div class="chip ic-link-l"><i class="ph-link-bold" style="font-size:18px"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-[15px] title-light truncate">JOnabels</p>
+                    <p class="text-[11px] meta-light truncate">External link · Posted May 29</p>
+                  </div>
+                  <i class="ph-caret-right meta-light" style="font-size:14px"></i>
+                </div>
+              </div>
+
+              <div class="fab"><i class="ph-plus-bold" style="font-size:22px"></i></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ HEADER DETAIL ============ -->
+      <section class="mb-14">
+        <h2 class="text-xl font-bold mb-1">Header detail</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          Title + thin meta row (Section · schedule · roster size). Tap title to expand into a class-info sheet.
+        </p>
+        <div class="grid grid-cols-2 gap-6 max-w-3xl">
+          <div class="bg-white rounded-2xl p-4 shadow-md">
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Before</div>
+            <div class="border border-slate-200 rounded-lg p-3 flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center"><i class="ph-arrow-left" style="font-size:16px;color:#1e293b"></i></div>
+              <div class="flex-1 text-center font-semibold text-slate-800">Demo Subject</div>
+              <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center"><i class="ph-plus" style="font-size:16px;color:#1e293b"></i></div>
+              <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center"><i class="ph-info" style="font-size:16px;color:#1e293b"></i></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Title only. + and i are ambiguous; no class context.</p>
+          </div>
+          <div class="bg-white rounded-2xl p-4 shadow-md">
+            <div class="text-xs font-bold uppercase tracking-wider text-emerald-600 mb-2">After</div>
+            <div class="border border-slate-200 rounded-lg p-3 flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center"><i class="ph-arrow-left" style="font-size:16px;color:#1e293b"></i></div>
+              <div class="flex-1 text-center">
+                <p class="font-bold text-slate-800 text-sm">Demo Subject</p>
+                <p class="text-[11px] text-slate-500">Section A · MWF 10:00 AM · 32 students</p>
+              </div>
+              <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center"><i class="ph-plus" style="font-size:16px;color:#1e293b"></i></div>
+              <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center"><i class="ph-info" style="font-size:16px;color:#1e293b"></i></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Meta row gives instant orientation. Tap title to open class info sheet.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CHANGE LIST ============ -->
+      <section class="bg-slate-800/60 rounded-2xl p-6 border border-slate-700">
+        <h2 class="text-xl font-bold mb-4">Change summary</h2>
+        <div class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">Header</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>Add meta row under title (section · schedule · roster size).</li>
+              <li>Tap title → open class-info sheet (replaces the <code class="text-amber-300">i</code> icon's separate screen).</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">Tabs</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>Pill segmented control instead of underline.</li>
+              <li>Per-tab count badge.</li>
+              <li>Consistent with rest of app's tab UI.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">Row content</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>Drop "Assignment:" / "Material:" prefix.</li>
+              <li>Typed icon chip per activity / file type with its own tint.</li>
+              <li>Compact meta line: type · due · points · views.</li>
+              <li>Right-aligned status pill (Released / Draft / Ungraded / Submitted ratio).</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">List structure</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>Section headers: Overdue / Due this week / Upcoming / Earlier.</li>
+              <li>Drop per-row "Overdue" pill in the Overdue group.</li>
+              <li>Filter chip row (status / type) above list, with counts.</li>
+              <li>Search bar appears when item count &gt; 10.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">Add affordance</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>Replace header <code class="text-amber-300">+</code> with a FAB on the active tab.</li>
+              <li>FAB action is tab-aware (Add lesson / Create activity).</li>
+              <li>RapidGrader tab has no FAB.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">Empty / Error</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li>Adopt the new <code class="text-emerald-300">&lt;Fallback&gt;</code> for all error / empty / offline / no-results states.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

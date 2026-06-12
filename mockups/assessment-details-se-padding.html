@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Assessment Details — SE padding</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+          sans-serif;
+        background: #0f172a;
+      }
+      .phone {
+        width: 375px;
+        height: 667px;
+        background: #f8fafc;
+        border-radius: 36px;
+        box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .scroll {
+        flex: 1;
+        overflow-y: auto;
+      }
+      .scroll::-webkit-scrollbar {
+        display: none;
+      }
+      .hero-glow-tr {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 60% 60% at 100% 0%,
+          rgba(255, 255, 255, 0.18) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        pointer-events: none;
+      }
+      .hero-glow-bl {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 55% 55% at 0% 100%,
+          rgba(255, 255, 255, 0.08) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        pointer-events: none;
+      }
+      .dots {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 60px;
+        background-image: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.18) 1.5px,
+          transparent 1.5px
+        );
+        background-size: 14px 12px;
+        pointer-events: none;
+      }
+      .cta {
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        padding: 10px 16px 16px 16px;
+      }
+      .cta.tight {
+        padding: 8px 12px 12px 12px;
+      }
+      .cta-btn {
+        background: #2563eb;
+        color: white;
+        border-radius: 9999px;
+        padding: 11px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 15px;
+      }
+      .tab {
+        flex: 1;
+        padding: 9px 4px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+      }
+      .tab.active {
+        color: #2563eb;
+        border-bottom-color: #2563eb;
+      }
+      .tab.tight {
+        padding: 7px 4px;
+        font-size: 13px;
+      }
+      .measure-tag {
+        font-size: 10px;
+        font-weight: 600;
+        color: #64748b;
+        padding: 2px 6px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        display: inline-block;
+      }
+      .delta {
+        color: #059669;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body class="p-10">
+    <div class="text-white text-sm mb-6 max-w-3xl">
+      <span class="font-semibold">Proposal:</span> tighten screen padding on
+      phone widths to reclaim ~40–50pt of usable area for tab content. Below
+      is iPhone SE (375×667). The right column is the proposal.
+    </div>
+
+    <div class="flex flex-wrap gap-10 items-start">
+      <!-- CURRENT (iPhone SE with current paddings) -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          Current padding
+        </div>
+        <div class="phone">
+          <!-- Status bar/safe area: 24pt -->
+          <div style="height: 24px"></div>
+          <!-- Back row: 44pt -->
+          <div class="px-4 py-2 flex items-center" style="height: 44px">
+            <div
+              class="w-9 h-9 flex items-center justify-center text-lg bg-slate-100 rounded-full"
+            >
+              ←
+            </div>
+          </div>
+          <!-- Hero block (mt-4=16pt + p-5=20pt internal) -->
+          <div class="px-4 pt-4">
+            <div
+              class="relative rounded-2xl overflow-hidden"
+              style="
+                background: linear-gradient(135deg, #2563eb, #1e40af, #1e3a8a);
+                padding: 20px;
+              "
+            >
+              <div class="hero-glow-tr"></div>
+              <div class="hero-glow-bl"></div>
+              <div class="dots"></div>
+              <div class="flex items-center justify-between mb-3 relative">
+                <div
+                  class="text-[10px] tracking-widest uppercase font-semibold text-white/85"
+                >
+                  Quiz
+                </div>
+                <div
+                  class="px-2 py-0.5 rounded-full bg-white/20 border border-white/25 text-[10px] font-semibold text-white"
+                >
+                  Completed
+                </div>
+              </div>
+              <div class="text-xl font-bold text-white leading-tight relative">
+                Test Data $20
+              </div>
+              <div class="text-[11px] text-white/75 mt-1.5 mb-4 relative">
+                Due Jun 5 · Passing 60% · Highest of 2
+              </div>
+              <div class="flex gap-2 relative">
+                <div
+                  class="flex-1 rounded-xl bg-white/15 border border-white/20"
+                  style="padding: 12px"
+                >
+                  <div class="text-lg font-bold text-white">2</div>
+                  <div
+                    class="text-[9px] tracking-widest uppercase text-white/75"
+                  >
+                    Questions
+                  </div>
+                </div>
+                <div
+                  class="flex-1 rounded-xl bg-white/15 border border-white/20"
+                  style="padding: 12px"
+                >
+                  <div class="text-lg font-bold text-white">1h</div>
+                  <div
+                    class="text-[9px] tracking-widest uppercase text-white/75"
+                  >
+                    Time
+                  </div>
+                </div>
+                <div
+                  class="flex-1 rounded-xl bg-white/15 border border-white/20"
+                  style="padding: 12px"
+                >
+                  <div class="text-lg font-bold text-white">0</div>
+                  <div
+                    class="text-[9px] tracking-widest uppercase text-white/75"
+                  >
+                    Left
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabs (mt-4=16pt) -->
+          <div class="px-4 mt-4 flex border-b border-slate-200">
+            <div class="tab active">Instructions</div>
+            <div class="tab">Materials</div>
+            <div class="tab">Results</div>
+          </div>
+
+          <!-- Tab content (p-4=16pt) -->
+          <div
+            class="scroll relative"
+            style="background: #f1f5f9; padding: 16px"
+          >
+            <div class="text-sm text-slate-700 leading-relaxed">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis
+              fermentum ullamcorper lorem sed tempus. Proin eu pellentesque
+              mi. Aenean sit amet neque sodales, vehicula turpis sed.
+            </div>
+            <div class="text-sm font-semibold text-blue-600 mt-1">
+              Show more
+            </div>
+            <div class="mt-3 bg-white border border-slate-200 rounded-xl p-2.5 flex items-center gap-2">
+              <div
+                class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center"
+              >
+                📷
+              </div>
+              <div class="flex-1 text-xs text-slate-700">
+                86baaefc-f5b9-4859-…
+              </div>
+              <div class="text-slate-400">↗</div>
+            </div>
+            <!-- measurement overlay -->
+            <div
+              class="absolute top-1 right-1 text-[10px] text-slate-500 bg-white/80 px-1.5 py-0.5 rounded"
+            >
+              content area
+            </div>
+          </div>
+        </div>
+        <div class="text-white/70 text-xs mt-3 space-y-1 max-w-[375px]">
+          <div><span class="measure-tag">Hero</span> p-5 = 20pt internal</div>
+          <div>
+            <span class="measure-tag">Stat tile</span> p-3 = 12pt each
+          </div>
+          <div>
+            <span class="measure-tag">Screen px</span> px-4 = 16pt each side
+          </div>
+          <div>
+            <span class="measure-tag">Tab content</span> p-4 = 16pt all
+          </div>
+          <div class="text-white font-semibold mt-2">
+            Tab content area: ~333pt
+          </div>
+        </div>
+      </div>
+
+      <!-- PROPOSED (tighter padding) -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          Proposed — tighter padding
+        </div>
+        <div class="phone">
+          <div style="height: 24px"></div>
+          <div class="px-3 py-1.5 flex items-center" style="height: 40px">
+            <div
+              class="w-9 h-9 flex items-center justify-center text-lg bg-slate-100 rounded-full"
+            >
+              ←
+            </div>
+          </div>
+          <!-- Hero: px-3 outer + p-4 internal + mt-2 -->
+          <div class="px-3 pt-2">
+            <div
+              class="relative rounded-2xl overflow-hidden"
+              style="
+                background: linear-gradient(135deg, #2563eb, #1e40af, #1e3a8a);
+                padding: 16px;
+              "
+            >
+              <div class="hero-glow-tr"></div>
+              <div class="hero-glow-bl"></div>
+              <div class="dots"></div>
+              <div class="flex items-center justify-between mb-2 relative">
+                <div
+                  class="text-[10px] tracking-widest uppercase font-semibold text-white/85"
+                >
+                  Quiz
+                </div>
+                <div
+                  class="px-2 py-0.5 rounded-full bg-white/20 border border-white/25 text-[10px] font-semibold text-white"
+                >
+                  Completed
+                </div>
+              </div>
+              <div class="text-xl font-bold text-white leading-tight relative">
+                Test Data $20
+              </div>
+              <div class="text-[11px] text-white/75 mt-1 mb-3 relative">
+                Due Jun 5 · Passing 60% · Highest of 2
+              </div>
+              <div class="flex gap-1.5 relative">
+                <div
+                  class="flex-1 rounded-xl bg-white/15 border border-white/20"
+                  style="padding: 10px"
+                >
+                  <div class="text-lg font-bold text-white">2</div>
+                  <div
+                    class="text-[9px] tracking-widest uppercase text-white/75"
+                  >
+                    Questions
+                  </div>
+                </div>
+                <div
+                  class="flex-1 rounded-xl bg-white/15 border border-white/20"
+                  style="padding: 10px"
+                >
+                  <div class="text-lg font-bold text-white">1h</div>
+                  <div
+                    class="text-[9px] tracking-widest uppercase text-white/75"
+                  >
+                    Time
+                  </div>
+                </div>
+                <div
+                  class="flex-1 rounded-xl bg-white/15 border border-white/20"
+                  style="padding: 10px"
+                >
+                  <div class="text-lg font-bold text-white">0</div>
+                  <div
+                    class="text-[9px] tracking-widest uppercase text-white/75"
+                  >
+                    Left
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabs: mt-3 + tighter trigger -->
+          <div class="px-3 mt-3 flex border-b border-slate-200">
+            <div class="tab tight active">Instructions</div>
+            <div class="tab tight">Materials</div>
+            <div class="tab tight">Results</div>
+          </div>
+
+          <!-- Tab content: p-3 -->
+          <div
+            class="scroll relative"
+            style="background: #f1f5f9; padding: 12px"
+          >
+            <div class="text-sm text-slate-700 leading-relaxed">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis
+              fermentum ullamcorper lorem sed tempus. Proin eu pellentesque
+              mi. Aenean sit amet neque sodales, vehicula turpis sed, tempor
+              neque. Aenean iaculis mi metus, auctor blandit lectus
+              elementum consectetur.
+            </div>
+            <div class="text-sm font-semibold text-blue-600 mt-1">
+              Show more
+            </div>
+            <div class="mt-3 bg-white border border-slate-200 rounded-xl p-2.5 flex items-center gap-2">
+              <div
+                class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center"
+              >
+                📷
+              </div>
+              <div class="flex-1 text-xs text-slate-700">
+                86baaefc-f5b9-4859-…
+              </div>
+              <div class="text-slate-400">↗</div>
+            </div>
+            <div
+              class="absolute top-1 right-1 text-[10px] text-slate-500 bg-white/80 px-1.5 py-0.5 rounded"
+            >
+              content area
+            </div>
+          </div>
+        </div>
+        <div class="text-white/70 text-xs mt-3 space-y-1 max-w-[375px]">
+          <div>
+            <span class="measure-tag">Hero</span> p-4 = 16pt internal
+            <span class="delta">−4pt × 2 = 8pt</span>
+          </div>
+          <div>
+            <span class="measure-tag">Stat tile</span> p-2.5 = 10pt each
+          </div>
+          <div>
+            <span class="measure-tag">Screen px</span> px-3 = 12pt each side
+            <span class="delta">+8pt width</span>
+          </div>
+          <div>
+            <span class="measure-tag">Tab content</span> p-3 = 12pt all
+            <span class="delta">−4pt × 2 = 8pt</span>
+          </div>
+          <div>
+            <span class="measure-tag">Hero margin</span> pt-2 (was pt-4)
+            <span class="delta">−8pt</span>
+          </div>
+          <div>
+            <span class="measure-tag">Tabs margin</span> mt-3 (was mt-4)
+            <span class="delta">−4pt</span>
+          </div>
+          <div class="text-white font-semibold mt-2">
+            Tab content area: ~377pt
+            <span class="delta">(+44pt)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-white/70 text-xs mt-10 max-w-3xl space-y-2">
+      <div class="font-semibold text-white">What changes (phone only):</div>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>
+          Outer screen padding: <code>px-4</code> → <code>px-3</code>. Gives
+          the body 8pt more horizontal width — wraps fewer lines.
+        </li>
+        <li>
+          Hero internal padding: <code>p-5</code> → <code>p-4</code>. Saves
+          8pt vertical without making the card feel cramped (the gradient +
+          dots still breathe).
+        </li>
+        <li>
+          Stat tile padding: <code>p-3</code> → <code>p-2.5</code>. Numbers
+          stay legible; tile gets shorter.
+        </li>
+        <li>
+          Hero top margin: <code>pt-4</code> → <code>pt-2</code> on phone.
+          The back row already provides visual separation.
+        </li>
+        <li>
+          Tabs top margin: <code>mt-4</code> → <code>mt-3</code>. Minor but
+          adds up.
+        </li>
+        <li>
+          Tab content padding: <code>p-4</code> → <code>p-3</code>. More
+          content per scroll page.
+        </li>
+        <li>
+          Tab trigger vertical padding: <code>py-2</code> → <code>py-1.5</code>.
+          Smaller hit target but still ≥44pt for tap.
+        </li>
+      </ul>
+      <div class="font-semibold text-white pt-3">Net result:</div>
+      <p>
+        Tab content area gains ~44pt on iPhone SE. That's roughly
+        <span class="text-white">2 extra lines of body text</span> visible
+        without scrolling, or one more attempt card visible in the Results
+        tab. Tablet keeps current padding — only the phone branch tightens.
+      </p>
+    </div>
+  </body>
+</html>

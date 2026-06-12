@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Attempt — Text Input Family</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+          sans-serif;
+        background: #0f172a;
+      }
+      .mono {
+        font-variant-numeric: tabular-nums;
+      }
+      .panel {
+        width: 360px;
+        background: white;
+        border-radius: 20px;
+        padding: 16px;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.45);
+      }
+      .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        color: #94a3b8;
+        margin-bottom: 12px;
+      }
+      .input-base {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-size: 15px;
+        color: #0f172a;
+        border: 1px solid #e2e8f0;
+      }
+      .input-focus {
+        border: 2px solid #2563eb;
+        background: white;
+        padding: 13px 15px; /* compensate for thicker border */
+      }
+      .placeholder {
+        color: #94a3b8;
+      }
+      .meta {
+        font-size: 11px;
+        color: #94a3b8;
+      }
+    </style>
+  </head>
+  <body class="p-10">
+    <div class="text-white text-sm mb-6 max-w-3xl">
+      <span class="font-semibold">Text input family polish.</span> Shared
+      visual language across Essay, Fill-in-the-blank, and Numeric:
+      <code>rounded-xl</code>, soft <code>bg-field-background</code>,
+      accent border on focus, character meter + saved indicator on Essay.
+    </div>
+
+    <!-- ESSAY -->
+    <div class="mb-10">
+      <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+        Essay
+      </div>
+      <div class="flex flex-wrap gap-6">
+        <!-- Before -->
+        <div>
+          <div class="text-white/60 text-[10px] mb-2 uppercase tracking-widest">
+            Before
+          </div>
+          <div class="panel">
+            <div class="label">Essay</div>
+            <div class="font-semibold text-slate-900 mb-4">
+              Explain Newton's first law in your own words.
+            </div>
+            <div
+              style="
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                padding: 12px;
+                min-height: 140px;
+                font-size: 14px;
+                color: #94a3b8;
+              "
+            >
+              Write your response here…
+            </div>
+            <div class="text-xs text-slate-400 text-right mt-1">
+              0 words · 0 characters
+            </div>
+          </div>
+        </div>
+
+        <!-- After — typed -->
+        <div>
+          <div class="text-white/60 text-[10px] mb-2 uppercase tracking-widest">
+            After — typed
+          </div>
+          <div class="panel">
+            <div class="label">Essay</div>
+            <div class="font-semibold text-slate-900 mb-4">
+              Explain Newton's first law in your own words.
+            </div>
+            <div class="input-base" style="min-height: 140px">
+              An object will stay at rest or in uniform motion unless acted
+              on by an external force. This is why a ball rolling on a
+              perfectly frictionless surface would continue forever.
+            </div>
+            <div class="flex items-center justify-between mt-1.5">
+              <div class="flex items-center gap-1">
+                <div
+                  class="w-1.5 h-1.5 rounded-full"
+                  style="background: #059669"
+                ></div>
+                <div class="meta mono" style="color: #059669">Saved</div>
+              </div>
+              <div class="meta mono">28 words · 167 characters</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- After — focused -->
+        <div>
+          <div class="text-white/60 text-[10px] mb-2 uppercase tracking-widest">
+            After — focused
+          </div>
+          <div class="panel">
+            <div class="label">Essay</div>
+            <div class="font-semibold text-slate-900 mb-4">
+              Explain Newton's first law in your own words.
+            </div>
+            <div class="input-base input-focus" style="min-height: 140px">
+              <span class="placeholder">Write your response here…</span>
+              <span style="color: #0f172a; border-left: 1px solid #2563eb; height: 14px; display: inline-block; margin-left: 1px"></span>
+            </div>
+            <div class="flex items-center justify-between mt-1.5">
+              <div class="flex items-center gap-1">
+                <div
+                  class="w-1.5 h-1.5 rounded-full"
+                  style="background: #94a3b8"
+                ></div>
+                <div class="meta mono">Editing</div>
+              </div>
+              <div class="meta mono">0 words · 0 characters</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILL IN THE BLANK -->
+    <div class="mb-10">
+      <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+        Fill in the blank
+      </div>
+      <div class="flex flex-wrap gap-6">
+        <!-- Before -->
+        <div>
+          <div class="text-white/60 text-[10px] mb-2 uppercase tracking-widest">
+            Before
+          </div>
+          <div class="panel">
+            <div class="label">Fill in the blank</div>
+            <div class="font-semibold text-slate-900 mb-4">
+              The unit of force is the ___.
+            </div>
+            <div
+              style="
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                padding: 12px;
+                font-size: 14px;
+                color: #94a3b8;
+              "
+            >
+              Type your answer…
+            </div>
+          </div>
+        </div>
+
+        <!-- After — typed -->
+        <div>
+          <div class="text-white/60 text-[10px] mb-2 uppercase tracking-widest">
+            After — typed
+          </div>
+          <div class="panel">
+            <div class="label">Fill in the blank</div>
+            <div class="font-semibold text-slate-900 mb-4">
+              The unit of force is the ___.
+            </div>
+            <div class="input-base">newton</div>
+            <div class="flex items-center gap-1 mt-1.5">
+              <div
+                class="w-1.5 h-1.5 rounded-full"
+                style="background: #059669"
+              ></div>
+              <div class="meta mono" style="color: #059669">Saved</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- After — focused -->
+        <div>
+          <div class="text-white/60 text-[10px] mb-2 uppercase tracking-widest">
+            After — focused
+          </div>
+          <div class="panel">
+            <div class="label">Fill in the blank</div>
+            <div class="font-semibold text-slate-900 mb-4">
+              The unit of force is the ___.
+            </div>
+            <div class="input-base input-focus">
+              <span class="placeholder">Type your answer…</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NUMERIC -->
+    <div class="mb-10">
+      <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+        Numeric
+      </div>
+      <div class="flex flex-wrap gap-6">
+        <!-- Before -->
+        <div>
+          <div class="text-white/60 text-[10px] mb-2 uppercase tracking-widest">
+            Before
+          </div>
+          <div class="panel">
+            <div class="label">Calculated numeric</div>
+            <div class="font-semibold text-slate-900 mb-4">
+              If F = 10N and m = 2kg, what is a in m/s²?
+            </div>
+            <div
+              style="
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                padding: 12px;
+                font-size: 14px;
+                text-align: right;
+                color: #94a3b8;
+              "
+            >
+              Enter numeric answer...
+            </div>
+          </div>
+        </div>
+
+        <!-- After — typed -->
+        <div>
+          <div class="text-white/60 text-[10px] mb-2 uppercase tracking-widest">
+            After — typed
+          </div>
+          <div class="panel">
+            <div class="label">Calculated numeric</div>
+            <div class="font-semibold text-slate-900 mb-4">
+              If F = 10N and m = 2kg, what is a in m/s²?
+            </div>
+            <div
+              class="input-base mono"
+              style="text-align: right; font-size: 24px; font-weight: 700; padding: 18px 16px"
+            >
+              5.0
+            </div>
+            <div class="flex items-center gap-1 mt-1.5">
+              <div
+                class="w-1.5 h-1.5 rounded-full"
+                style="background: #059669"
+              ></div>
+              <div class="meta mono" style="color: #059669">Saved</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- After — focused -->
+        <div>
+          <div class="text-white/60 text-[10px] mb-2 uppercase tracking-widest">
+            After — focused
+          </div>
+          <div class="panel">
+            <div class="label">Calculated numeric</div>
+            <div class="font-semibold text-slate-900 mb-4">
+              If F = 10N and m = 2kg, what is a in m/s²?
+            </div>
+            <div
+              class="input-base input-focus mono"
+              style="text-align: right; font-size: 24px; font-weight: 700; padding: 17px 15px; color: #94a3b8"
+            >
+              0
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-white/70 text-xs mt-10 max-w-3xl space-y-2">
+      <div class="font-semibold text-white">Shared rules:</div>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>
+          <span class="text-white">Radius</span>: <code>rounded-xl</code> (12pt)
+          on all inputs.
+        </li>
+        <li>
+          <span class="text-white">Background</span>:
+          <code>bg-field-background</code> (theme token — softer than the
+          surface) so the field reads as interactive.
+        </li>
+        <li>
+          <span class="text-white">Border</span>: 1pt <code>border-border</code>
+          at rest, 2pt <code>border-accent</code> when focused. Padding tightens
+          by 1pt on focus to compensate, so the input doesn't shift.
+        </li>
+        <li>
+          <span class="text-white">Padding</span>: 14pt vertical, 16pt
+          horizontal. More breathing room than the 12pt today.
+        </li>
+        <li>
+          <span class="text-white">Saved indicator</span>: small green dot +
+          "Saved" once a value is committed (driven by the existing
+          debounced save). On focus it reads "Editing" in muted gray.
+        </li>
+        <li>
+          <span class="text-white">Numeric specifics</span>: larger, bold,
+          tabular-nums value when typed — the answer is the point, so it
+          deserves the size. Stays right-aligned.
+        </li>
+        <li>
+          <span class="text-white">Essay specifics</span>: word + char meter
+          stays bottom-right (where it is today), gains the saved-state
+          dot on the left.
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>

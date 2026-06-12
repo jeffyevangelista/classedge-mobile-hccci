@@ -1,18 +1,16 @@
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import React from "react";
 import { useClassroomActivities } from "../classroom.hooks";
 import { Link, useGlobalSearchParams } from "expo-router";
 import { AppText } from "@/components/AppText";
 import { ScreenList } from "@/components/ScreenList";
-import { Card, Skeleton } from "heroui-native";
+import { Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { formatDate } from "@/utils/formatDate";
 import SyncingPill from "@/features/sync/components/SyncingPill";
-
-const ASSESSMENT_ICON_COLOR = "#f97316";
 
 type ClassroomActivity = {
   localId: string;
@@ -24,15 +22,22 @@ type ClassroomActivity = {
 
 const ClassroomActivitiyList = () => {
   const { classroomId } = useGlobalSearchParams();
-  const { data, isLoading, isError, error, refetch, isRefetching } =
-    useClassroomActivities(classroomId as string);
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+    isFetching,
+  } = useClassroomActivities(classroomId as string);
 
-  if (isLoading)
+  // Skeleton during the initial fetch AND during a retry from the
+  // error state — see features/classroom/components/LessonList for the
+  // full rationale.
+  if (isLoading || (isFetching && !data?.length))
     return (
       <View className="flex-1">
-        <View className="px-2.5 pb-1.5">
-          <SyncingPill priority={2} />
-        </View>
         <ActivityListSkeleton />
       </View>
     );
@@ -43,9 +48,6 @@ const ClassroomActivitiyList = () => {
   if (data.length === 0)
     return (
       <View className="flex-1">
-        <View className="px-2.5 pb-1.5">
-          <SyncingPill priority={2} />
-        </View>
         <NoDataFallback
           icon="SmileySad"
           title="No activities found"
@@ -56,9 +58,6 @@ const ClassroomActivitiyList = () => {
 
   return (
     <View className="flex-1">
-      <View className="px-2.5 pb-1.5">
-        <SyncingPill priority={2} />
-      </View>
       <ScreenList
         renderItem={({ item }) => (
           <ActivityItem
@@ -69,10 +68,23 @@ const ClassroomActivitiyList = () => {
         data={data}
         refreshing={isRefetching}
         onRefresh={refetch}
+        // `SyncingPill` rides inside the scroll content so its top gap
+        // scrolls away with the rest of the list — same behavior as
+        // the Materials / Courseworks tabs. `ScreenList` already trims
+        // the bottom via `useScrollBottomInset`; the extra 8pt keeps
+        // the last card off the home indicator.
+        ListHeaderComponent={<SyncingPillRow />}
+        contentContainerStyle={{ paddingBottom: 8 }}
       />
     </View>
   );
 };
+
+const SyncingPillRow = () => (
+  <View className="px-2.5 pb-2">
+    <SyncingPill priority={2} />
+  </View>
+);
 
 type ActivityItemProps = {
   activity: ClassroomActivity;
@@ -85,85 +97,86 @@ const ActivityItem = ({ activity, href }: ActivityItemProps) => {
     : null;
   const isClassroomActivity = !!activity.classroomMode;
   const hasSubmission = (activity.attempts?.length ?? 0) > 0;
-  const isOverdue =
-    !isClassroomActivity &&
-    !hasSubmission &&
-    activity.endTime != null &&
-    new Date(activity.endTime).getTime() < Date.now();
 
   return (
-    <Link
-      href={href as never}
-      className="w-full max-w-3xl mx-auto mb-2.5 px-2.5"
-    >
-      <Card className="rounded-xl flex-row items-center gap-3 shadow-none">
-        <View className="p-2 rounded-full bg-orange-100 dark:bg-orange-900/50">
-          <Icon name="PencilLineIcon" size={24} color={ASSESSMENT_ICON_COLOR} />
-        </View>
-        <View className="flex-1">
-          <AppText
-            weight="semibold"
-            className="text-lg"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {activity.activityName}
-          </AppText>
-          <View className="flex-row items-center gap-1.5 mt-0.5 flex-wrap">
-            {formattedDate && (
-              <AppText className="text-xs text-muted">
-                Due {formattedDate}
-              </AppText>
-            )}
-            {isClassroomActivity ? (
-              <View className="px-2 py-0.5 rounded-full bg-accent-soft">
-                <AppText weight="semibold" className="text-[10px] text-accent">
-                  In class
+    <Link href={href as never} asChild>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Grade ${activity.activityName}`}
+        android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
+        className="w-full max-w-3xl mx-auto mb-2 px-3 active:opacity-80"
+      >
+        <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
+          <View className="w-10 h-10 rounded-full items-center justify-center bg-accent-soft">
+            <Icon
+              name="PencilLineIcon"
+              size={18}
+              className="text-accent"
+            />
+          </View>
+          <View className="flex-1 min-w-0">
+            <AppText
+              weight="semibold"
+              className="text-[15px] text-foreground"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {activity.activityName}
+            </AppText>
+            <View className="flex-row items-center gap-1.5 mt-0.5 flex-wrap">
+              {formattedDate ? (
+                <AppText className="text-[11px] text-muted">
+                  Due {formattedDate}
                 </AppText>
-              </View>
-            ) : hasSubmission ? (
-              <View className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50">
-                <AppText
-                  weight="semibold"
-                  className="text-[10px]"
-                  style={{ color: "#10b981" }}
-                >
-                  Submitted
-                </AppText>
-              </View>
-            ) : isOverdue ? (
-              <View className="px-2 py-0.5 rounded-full bg-danger-soft">
-                <AppText
-                  weight="semibold"
-                  className="text-[10px] text-danger"
-                >
-                  Overdue
-                </AppText>
-              </View>
-            ) : null}
+              ) : null}
+              {isClassroomActivity ? (
+                <View className="px-2 py-0.5 rounded-full bg-accent-soft">
+                  <AppText
+                    weight="semibold"
+                    className="text-[10px] text-accent"
+                  >
+                    In class
+                  </AppText>
+                </View>
+              ) : hasSubmission ? (
+                <View className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50">
+                  <AppText
+                    weight="semibold"
+                    className="text-[10px]"
+                    style={{ color: "#10b981" }}
+                  >
+                    Submitted
+                  </AppText>
+                </View>
+              ) : null}
+            </View>
           </View>
         </View>
-      </Card>
+      </Pressable>
     </Link>
   );
 };
 
-const ActivityListSkeleton = () => (
-  <View className="gap-2.5">
-    {Array(5)
-      .fill(0)
-      .map((_, i) => (
-        <View key={i} className="w-full max-w-3xl mx-auto px-2.5">
-          <Card className="rounded-xl flex-row items-center gap-3 shadow-none">
+const ActivityListSkeleton = () => {
+  // Width permutations match the LessonList / CourseworkList skeletons
+  // so the three grading lists feel visually consistent while loading.
+  const widths = ["w-3/4", "w-1/2", "w-2/3", "w-4/5", "w-1/2"] as const;
+  return (
+    <View>
+      {widths.map((titleWidth, i) => (
+        <View key={i} className="w-full max-w-3xl mx-auto px-3 mb-2">
+          <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
             <Skeleton className="w-10 h-10 rounded-full" />
-            <View className="flex-1 gap-1.5">
-              <Skeleton className="h-5 w-3/4 rounded" />
-              <Skeleton className="h-3 w-1/3 rounded" />
+            <View className="flex-1">
+              <Skeleton className={`h-[18px] ${titleWidth} rounded`} />
+              <View style={{ height: 2 }} />
+              <Skeleton className="h-[14px] w-44 rounded" />
             </View>
-          </Card>
+          </View>
         </View>
       ))}
-  </View>
-);
+    </View>
+  );
+};
 
 export default ClassroomActivitiyList;

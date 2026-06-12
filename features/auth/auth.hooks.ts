@@ -38,24 +38,21 @@ export const useLogout = () => {
 };
 
 export const useForgotPassword = () => {
-  const { setEmail } = useStore.getState();
-  const { toast } = useToast();
-  const router = useRouter();
+  const { setEmail, setOtpExpiresAt } = useStore.getState();
   return useMutation({
     mutationKey: ["forgot-password"],
     mutationFn: ({ email }: { email: string }) => forgotPassword(email),
     onSuccess: (data, { email }: { email: string }) => {
-      if (data.provider && data.success === false) {
-        toast.show({
-          label: "Error",
-          description: data.message,
-          variant: "danger",
-        });
-      }
-
-      if (data.success) router.push("/forgot-password/otp-verification");
-
+      // Server intentionally returns a neutral response regardless of whether
+      // the email maps to an existing account (account-enumeration prevention,
+      // see backend OTPRequestAPIView). Callers decide what to do next — the
+      // forgot-password form navigates to OTP; the OTP screen uses this hook
+      // for resend and stays put.
       setEmail(email);
+      const expiresIn = (data as { expiresIn?: number } | undefined)?.expiresIn;
+      if (expiresIn) {
+        setOtpExpiresAt(Date.now() + expiresIn * 1000);
+      }
     },
   });
 };
@@ -71,8 +68,15 @@ export const useVerifyOtp = () => {
 export const useResetPassword = () => {
   return useMutation({
     mutationKey: ["reset-password"],
-    mutationFn: ({ email, password }: { email: string; password: string }) =>
-      resetPassword(email, password),
+    mutationFn: ({
+      email,
+      password,
+      resetToken,
+    }: {
+      email: string;
+      password: string;
+      resetToken: string;
+    }) => resetPassword(email, password, resetToken),
   });
 };
 
