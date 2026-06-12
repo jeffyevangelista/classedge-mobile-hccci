@@ -213,7 +213,8 @@ const EventCard = ({
         <View className="flex-row items-center gap-1">
           <Icon name="ClockIcon" size={14} className="text-muted" />
           <AppText className="text-xs text-muted">
-            {formatDate(event.startDate)} - {formatTime(event.time)}
+            {formatDate(event.startDate)}
+            {event.time ? ` - ${formatTime(event.time)}` : ""}
           </AppText>
         </View>
       </View>
