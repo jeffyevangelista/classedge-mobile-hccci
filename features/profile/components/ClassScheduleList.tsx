@@ -1,8 +1,11 @@
-import { AppState, Pressable, View } from "react-native";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Pressable, View } from "react-native";
+import { router } from "expo-router";
+import { useMemo, useState } from "react";
 import { Card, Separator, Skeleton } from "heroui-native";
 import { useClassSchedule } from "../profile.hooks";
+import { useClock } from "@/hooks/useClock";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
 import { ScreenList } from "@/components/ScreenList";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { AppText } from "@/components/AppText";
@@ -64,23 +67,11 @@ const ClassScheduleList = () => {
     isFetching,
   } = useClassSchedule();
 
-  // Day precision only — refresh `todayShort` on focus and on foreground
-  // so the "Today" ring on the strip tracks the real day without a
-  // per-minute clock subscription. `selectedDay` is independent: it is
-  // seeded to today on mount and only changes when the user taps a pill.
-  const [todayShort, setTodayShort] = useState<DayShort>(todayDayShort);
+  // `todayShort` is driven by a minute-aligned clock so the "Today" ring
+  // flips at midnight even on a long-open session. `selectedDay` is
+  // independent: seeded to today on mount and only changes on user tap.
+  const todayShort = DAY_NAMES[useClock().getDay()];
   const [selectedDay, setSelectedDay] = useState<DayShort>(todayDayShort);
-
-  const refreshToday = useCallback(() => {
-    setTodayShort(todayDayShort());
-  }, []);
-  useFocusEffect(refreshToday);
-  useEffect(() => {
-    const sub = AppState.addEventListener("change", (next) => {
-      if (next === "active") refreshToday();
-    });
-    return () => sub.remove();
-  }, [refreshToday]);
 
   const { dayItems, daysWithClasses } = useMemo(() => {
     const enrollments = data ?? [];
@@ -132,10 +123,18 @@ const ClassScheduleList = () => {
     return { dayItems: items, daysWithClasses: dayCoverage };
   }, [data, selectedDay]);
 
-  // Render the skeleton any time a fetch is in flight and we have
-  // nothing to show — covers the initial mount AND retries from the
-  // error state. Same condition as the previous implementation.
-  if ((isLoading || isFetching) && !data) return <ClassScheduleSkeleton />;
+  // Classify the section so we can show the "you're offline and we
+  // haven't synced yet" fallback instead of a misleading day-scoped
+  // empty state. Emptiness is computed at the enrollment level — once
+  // any enrollments are present, the day filter takes over and the
+  // per-day empty case is handled by `ListEmptyComponent`.
+  const status = useSectionStatus({
+    data: data ?? [],
+    isEmpty: (d) => d.length === 0,
+    isLoading: isLoading || isFetching,
+  });
+
+  if (status.phase === "loading") return <ClassScheduleSkeleton />;
 
   if (isError)
     return (
@@ -144,6 +143,9 @@ const ClassScheduleList = () => {
         onRetry={() => refetch()}
       />
     );
+
+  if (status.phase === "offline-empty")
+    return <OfflineEmpty section="schedule" />;
 
   const fullDayName =
     DAY_NAMES_LONG[DAY_NAMES.indexOf(selectedDay)] ?? selectedDay;
