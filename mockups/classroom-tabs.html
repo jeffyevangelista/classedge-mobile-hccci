@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Classroom top tabs — proposal</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/phosphor-icons"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+          sans-serif;
+        background: #0f172a;
+      }
+      .phone {
+        width: 390px;
+        height: 760px;
+        border-radius: 36px;
+        box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .phone.light { background: #f8fafc; }
+      .phone.dark  { background: #0b1220; }
+      .top-pad { height: 28px; }
+      .light .top-pad { background: #ffffff; }
+      .dark  .top-pad { background: #0f172a; }
+
+      .nav {
+        padding: 10px 14px 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .light .nav { background: #ffffff; }
+      .dark  .nav { background: #0f172a; }
+      .nav-icon {
+        width: 36px; height: 36px;
+        border-radius: 18px;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .light .nav-icon { background: #f1f5f9; }
+      .dark  .nav-icon { background: #1e293b; }
+
+      .fg-light { color: #0f172a; }
+      .fg-dark  { color: #f8fafc; }
+      .muted-light { color: #64748b; }
+      .muted-dark  { color: #94a3b8; }
+
+      /* === Material underline tabs (current + option A) === */
+      .mtabs {
+        display: flex;
+        position: relative;
+      }
+      .light .mtabs { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+      .dark  .mtabs { background: #0f172a; border-bottom: 1px solid #1e293b; }
+      .mtab {
+        flex: 1;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+      }
+      .mtab.active.light { color: #2563eb; }
+      .mtab.active.dark  { color: #60a5fa; }
+      .mtab:not(.active).light { color: #64748b; }
+      .mtab:not(.active).dark  { color: #94a3b8; }
+      .indicator-light { background: #2563eb; }
+      .indicator-dark  { background: #60a5fa; }
+
+      .count-pill {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 1px 6px;
+        border-radius: 999px;
+      }
+      .cp-active-light { background: #dbeafe; color: #1d4ed8; }
+      .cp-active-dark  { background: rgba(37,99,235,0.25); color: #93c5fd; }
+      .cp-idle-light   { background: #f1f5f9; color: #64748b; }
+      .cp-idle-dark    { background: #1e293b; color: #94a3b8; }
+
+      .unread-dot { width: 6px; height: 6px; border-radius: 999px; background: #f59e0b; }
+
+      /* === Pill segmented tabs (option B) === */
+      .stabs {
+        padding: 4px;
+        display: flex;
+        gap: 4px;
+        border-radius: 12px;
+        margin: 6px 12px 8px;
+      }
+      .light .stabs { background: #f1f5f9; }
+      .dark  .stabs { background: #1e293b; }
+      .stab {
+        flex: 1;
+        padding: 7px 6px;
+        border-radius: 9px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        display: flex; align-items: center; justify-content: center;
+        gap: 4px;
+      }
+      .stab.active.light { background: #ffffff; color: #1e293b; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+      .stab.active.dark  { background: #0b1220; color: #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+      .stab:not(.active).light { color: #64748b; }
+      .stab:not(.active).dark  { color: #94a3b8; }
+
+      /* Row sample */
+      .card-flat-light { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; }
+      .card-flat-dark  { background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; }
+      .chip-accent-light { background: #dbeafe; }
+      .chip-accent-dark  { background: rgba(37,99,235,0.22); }
+      .chip-default-light { background: #f1f5f9; }
+      .chip-default-dark  { background: #1e293b; }
+
+      .label {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .label-current { background: #e0e7ff; color: #3730a3; }
+      .label-a       { background: #fef3c7; color: #b45309; }
+      .label-b       { background: #dcfce7; color: #166534; }
+    </style>
+  </head>
+  <body class="text-slate-100">
+    <div class="max-w-7xl mx-auto py-12 px-6">
+      <header class="mb-10">
+        <h1 class="text-3xl font-bold">Classroom top tabs — proposal</h1>
+        <p class="text-slate-300 mt-2 max-w-3xl text-sm leading-relaxed">
+          Three variants side-by-side: <span class="text-indigo-300">Current</span> (Material underline,
+          no counts), <span class="text-amber-300">Option A</span> (same Material underline + per-tab counts
+          + un-graded dot, low-risk), and <span class="text-emerald-300">Option B</span> (pill segmented
+          control matching the rest of the app).
+        </p>
+      </header>
+
+      <!-- ============ CURRENT ============ -->
+      <section class="mb-14">
+        <h2 class="text-xl font-bold mb-1">Current</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          Material top-tab navigator. Underline indicator, no counts, no
+          icons. Decent on its own — feels foreign next to the
+          assessment-details tabs that already use a pill segmented
+          control.
+        </p>
+        <div class="grid grid-cols-2 gap-6 max-w-3xl">
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-current">Current · Light</span></div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-icon"><i class="ph-arrow-left" style="color:#0f172a;font-size:18px"></i></div>
+                <div class="flex-1 text-center font-bold fg-light text-sm">Demo Subject</div>
+                <div class="nav-icon"><i class="ph-plus" style="color:#0f172a;font-size:18px"></i></div>
+                <div class="nav-icon"><i class="ph-info" style="color:#0f172a;font-size:18px"></i></div>
+              </div>
+
+              <div class="mtabs">
+                <div class="mtab" style="padding:14px 0">Materials</div>
+                <div class="mtab active light" style="padding:14px 0;position:relative">
+                  Courseworks
+                  <span style="position:absolute;bottom:0;left:25%;right:25%;height:2px;border-radius:2px" class="indicator-light"></span>
+                </div>
+                <div class="mtab" style="padding:14px 0">RapidGrader</div>
+              </div>
+
+              <div class="flex-1 pt-3 px-3 gap-2 flex flex-col">
+                <div class="card-flat-light flex items-center gap-3 p-3">
+                  <div class="chip-accent-light w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#2563eb;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-light">Pagac Joy</p><p class="text-[11px] muted-light">Due Jun 12, 11:00 AM</p></div>
+                </div>
+                <div class="card-flat-light flex items-center gap-3 p-3">
+                  <div class="chip-accent-light w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#2563eb;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-light">Test # 23</p><p class="text-[11px] muted-light">Quiz · Due May 26, 2:15 PM</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-current">Current · Dark</span></div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-icon"><i class="ph-arrow-left" style="color:#f8fafc;font-size:18px"></i></div>
+                <div class="flex-1 text-center font-bold fg-dark text-sm">Demo Subject</div>
+                <div class="nav-icon"><i class="ph-plus" style="color:#f8fafc;font-size:18px"></i></div>
+                <div class="nav-icon"><i class="ph-info" style="color:#f8fafc;font-size:18px"></i></div>
+              </div>
+              <div class="mtabs">
+                <div class="mtab" style="padding:14px 0">Materials</div>
+                <div class="mtab active dark" style="padding:14px 0;position:relative">
+                  Courseworks
+                  <span style="position:absolute;bottom:0;left:25%;right:25%;height:2px;border-radius:2px" class="indicator-dark"></span>
+                </div>
+                <div class="mtab" style="padding:14px 0">RapidGrader</div>
+              </div>
+              <div class="flex-1 pt-3 px-3 gap-2 flex flex-col">
+                <div class="card-flat-dark flex items-center gap-3 p-3">
+                  <div class="chip-accent-dark w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#60a5fa;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-dark">Pagac Joy</p><p class="text-[11px] muted-dark">Due Jun 12, 11:00 AM</p></div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3">
+                  <div class="chip-accent-dark w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#60a5fa;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-dark">Test # 23</p><p class="text-[11px] muted-dark">Quiz · Due May 26, 2:15 PM</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ OPTION A — light polish ============ -->
+      <section class="mb-14">
+        <h2 class="text-xl font-bold mb-1">Option A — Material underline + counts + un-graded dot</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          Keep the same navigator (low risk, no swap). Each label gets a
+          count pill — tinted accent on the active tab, neutral
+          otherwise. Tighter vertical padding. A small amber dot appears
+          on RapidGrader when there are un-graded classroom activities so
+          the tab calls out for attention.
+        </p>
+        <div class="grid grid-cols-2 gap-6 max-w-3xl">
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-a">Option A · Light</span></div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-icon"><i class="ph-arrow-left" style="color:#0f172a;font-size:18px"></i></div>
+                <div class="flex-1 text-center font-bold fg-light text-sm">Demo Subject</div>
+                <div class="nav-icon"><i class="ph-plus" style="color:#0f172a;font-size:18px"></i></div>
+                <div class="nav-icon"><i class="ph-info" style="color:#0f172a;font-size:18px"></i></div>
+              </div>
+              <div class="mtabs">
+                <div class="mtab" style="padding:10px 0">
+                  <span>Materials</span>
+                  <span class="count-pill cp-idle-light">12</span>
+                </div>
+                <div class="mtab active light" style="padding:10px 0;position:relative">
+                  <span>Courseworks</span>
+                  <span class="count-pill cp-active-light">18</span>
+                  <span style="position:absolute;bottom:0;left:20%;right:20%;height:2px;border-radius:2px" class="indicator-light"></span>
+                </div>
+                <div class="mtab" style="padding:10px 0;position:relative">
+                  <span>RapidGrader</span>
+                  <span class="unread-dot"></span>
+                </div>
+              </div>
+              <div class="flex-1 pt-3 px-3 gap-2 flex flex-col">
+                <div class="card-flat-light flex items-center gap-3 p-3">
+                  <div class="chip-accent-light w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#2563eb;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-light">Pagac Joy</p><p class="text-[11px] muted-light">Due Jun 12, 11:00 AM</p></div>
+                </div>
+                <div class="card-flat-light flex items-center gap-3 p-3">
+                  <div class="chip-accent-light w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#2563eb;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-light">Test # 23</p><p class="text-[11px] muted-light">Quiz · Due May 26, 2:15 PM</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-a">Option A · Dark</span></div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-icon"><i class="ph-arrow-left" style="color:#f8fafc;font-size:18px"></i></div>
+                <div class="flex-1 text-center font-bold fg-dark text-sm">Demo Subject</div>
+                <div class="nav-icon"><i class="ph-plus" style="color:#f8fafc;font-size:18px"></i></div>
+                <div class="nav-icon"><i class="ph-info" style="color:#f8fafc;font-size:18px"></i></div>
+              </div>
+              <div class="mtabs">
+                <div class="mtab" style="padding:10px 0">
+                  <span>Materials</span>
+                  <span class="count-pill cp-idle-dark">12</span>
+                </div>
+                <div class="mtab active dark" style="padding:10px 0;position:relative">
+                  <span>Courseworks</span>
+                  <span class="count-pill cp-active-dark">18</span>
+                  <span style="position:absolute;bottom:0;left:20%;right:20%;height:2px;border-radius:2px" class="indicator-dark"></span>
+                </div>
+                <div class="mtab" style="padding:10px 0;position:relative">
+                  <span>RapidGrader</span>
+                  <span class="unread-dot"></span>
+                </div>
+              </div>
+              <div class="flex-1 pt-3 px-3 gap-2 flex flex-col">
+                <div class="card-flat-dark flex items-center gap-3 p-3">
+                  <div class="chip-accent-dark w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#60a5fa;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-dark">Pagac Joy</p><p class="text-[11px] muted-dark">Due Jun 12, 11:00 AM</p></div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3">
+                  <div class="chip-accent-dark w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#60a5fa;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-dark">Test # 23</p><p class="text-[11px] muted-dark">Quiz · Due May 26, 2:15 PM</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ OPTION B — pill segmented ============ -->
+      <section class="mb-14">
+        <h2 class="text-xl font-bold mb-1">Option B — pill segmented control</h2>
+        <p class="text-slate-400 text-sm mb-6">
+          Replace the underline with a segmented pill control that
+          matches the rest of the app (AssessmentDetailsScreen,
+          notifications, etc.). Per-tab counts inline. RapidGrader gets
+          the same amber dot for un-graded. The whole control floats with
+          breathing room rather than spanning edge-to-edge.
+        </p>
+        <div class="grid grid-cols-2 gap-6 max-w-3xl">
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-b">Option B · Light</span></div>
+            <div class="phone light">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-icon"><i class="ph-arrow-left" style="color:#0f172a;font-size:18px"></i></div>
+                <div class="flex-1 text-center font-bold fg-light text-sm">Demo Subject</div>
+                <div class="nav-icon"><i class="ph-plus" style="color:#0f172a;font-size:18px"></i></div>
+                <div class="nav-icon"><i class="ph-info" style="color:#0f172a;font-size:18px"></i></div>
+              </div>
+              <div class="stabs">
+                <div class="stab light">
+                  <span>Materials</span>
+                  <span class="count-pill cp-idle-light">12</span>
+                </div>
+                <div class="stab active light">
+                  <span>Courseworks</span>
+                  <span class="count-pill cp-active-light">18</span>
+                </div>
+                <div class="stab light" style="position:relative">
+                  <span>RapidGrader</span>
+                  <span class="unread-dot" style="position:absolute;top:6px;right:8px"></span>
+                </div>
+              </div>
+              <div class="flex-1 pt-1 px-3 gap-2 flex flex-col">
+                <div class="card-flat-light flex items-center gap-3 p-3">
+                  <div class="chip-accent-light w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#2563eb;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-light">Pagac Joy</p><p class="text-[11px] muted-light">Due Jun 12, 11:00 AM</p></div>
+                </div>
+                <div class="card-flat-light flex items-center gap-3 p-3">
+                  <div class="chip-accent-light w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#2563eb;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-light">Test # 23</p><p class="text-[11px] muted-light">Quiz · Due May 26, 2:15 PM</p></div>
+                </div>
+                <div class="card-flat-light flex items-center gap-3 p-3">
+                  <div class="chip-accent-light w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#2563eb;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-light">Test All Activity</p><p class="text-[11px] muted-light">Exam · Due May 20, 10:00 AM</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 mb-2"><span class="label label-b">Option B · Dark</span></div>
+            <div class="phone dark">
+              <div class="top-pad"></div>
+              <div class="nav">
+                <div class="nav-icon"><i class="ph-arrow-left" style="color:#f8fafc;font-size:18px"></i></div>
+                <div class="flex-1 text-center font-bold fg-dark text-sm">Demo Subject</div>
+                <div class="nav-icon"><i class="ph-plus" style="color:#f8fafc;font-size:18px"></i></div>
+                <div class="nav-icon"><i class="ph-info" style="color:#f8fafc;font-size:18px"></i></div>
+              </div>
+              <div class="stabs">
+                <div class="stab dark">
+                  <span>Materials</span>
+                  <span class="count-pill cp-idle-dark">12</span>
+                </div>
+                <div class="stab active dark">
+                  <span>Courseworks</span>
+                  <span class="count-pill cp-active-dark">18</span>
+                </div>
+                <div class="stab dark" style="position:relative">
+                  <span>RapidGrader</span>
+                  <span class="unread-dot" style="position:absolute;top:6px;right:8px"></span>
+                </div>
+              </div>
+              <div class="flex-1 pt-1 px-3 gap-2 flex flex-col">
+                <div class="card-flat-dark flex items-center gap-3 p-3">
+                  <div class="chip-accent-dark w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#60a5fa;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-dark">Pagac Joy</p><p class="text-[11px] muted-dark">Due Jun 12, 11:00 AM</p></div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3">
+                  <div class="chip-accent-dark w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#60a5fa;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-dark">Test # 23</p><p class="text-[11px] muted-dark">Quiz · Due May 26, 2:15 PM</p></div>
+                </div>
+                <div class="card-flat-dark flex items-center gap-3 p-3">
+                  <div class="chip-accent-dark w-10 h-10 rounded-full flex items-center justify-center"><i class="ph-pencil-line-bold" style="color:#60a5fa;font-size:18px"></i></div>
+                  <div class="flex-1"><p class="font-semibold text-sm fg-dark">Test All Activity</p><p class="text-[11px] muted-dark">Exam · Due May 20, 10:00 AM</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ COMPARISON ============ -->
+      <section class="bg-slate-800/60 rounded-2xl p-6 border border-slate-700">
+        <h2 class="text-xl font-bold mb-4">Trade-offs</h2>
+        <div class="grid grid-cols-2 gap-6 text-sm">
+          <div>
+            <p class="font-semibold text-amber-300 mb-1">Option A — Material + counts</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li><strong>Low risk</strong> — same navigator, just adds count pills and a dot.</li>
+              <li>Keeps the swipe-between-tabs gesture for free.</li>
+              <li>Still feels like Material Design — visually distinct from the rest of the app's pill tabs.</li>
+              <li>Indicator underline can clip against the count pill on narrow screens.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold text-emerald-300 mb-1">Option B — Pill segmented</p>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              <li><strong>Unifies the tab vocabulary</strong> across the app (assessment-details, here, anywhere else).</li>
+              <li>Floats with breathing room — no full-width navigation chrome.</li>
+              <li>Slightly more work — custom <code class="text-amber-300">tabBar</code> render prop.</li>
+              <li>Loses the Material indicator slide animation (can add a CSS transform if needed).</li>
+            </ul>
+          </div>
+        </div>
+        <p class="text-slate-400 text-sm mt-4">
+          Recommendation: <strong class="text-emerald-300">Option B</strong>.
+          One tab idiom across the app is the bigger win; the small swap
+          in implementation is worth it.
+        </p>
+      </section>
+    </div>
+  </body>
+</html>

@@ -5,12 +5,21 @@ import React, {
   createContext,
   forwardRef,
   ReactNode,
+  useCallback,
   useContext,
+  useEffect,
   useImperativeHandle,
   useRef,
   useState,
 } from "react";
-import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  BackHandler,
+  Dimensions,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 // Types
 interface ImageContextType {
@@ -45,25 +54,44 @@ export default function ImageProvider({ children }: ImageProviderProps) {
 
 const ImageView = forwardRef<ImageViewRef>((props, ref) => {
   const [show, setShow] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const imageUriRef = useRef("");
 
-  useImperativeHandle(ref, () => ({
-    hide: () => {
-      imageUriRef.current = "";
-      setShow(false);
-    },
-    show: (uri: string = "") => {
-      imageUriRef.current = uri;
-      setShow(true);
-    },
-  }));
+  const hide = useCallback(() => {
+    imageUriRef.current = "";
+    setShow(false);
+    setLoaded(false);
+  }, []);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      hide,
+      show: (uri: string = "") => {
+        imageUriRef.current = uri;
+        setLoaded(false);
+        setShow(true);
+      },
+    }),
+    [hide],
+  );
+
+  // The overlay is a plain View (not a Modal), so we have to intercept the
+  // Android hardware back button manually — otherwise back press falls
+  // through to the navigator and the image overlay just sits on top.
+  useEffect(() => {
+    if (!show) return;
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        hide();
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, [show, hide]);
 
   if (!show) return null;
-
-  const hide = () => {
-    setShow(false);
-    imageUriRef.current = "";
-  };
 
   return (
     <View style={styles.overlayContainer}>
@@ -81,8 +109,19 @@ const ImageView = forwardRef<ImageViewRef>((props, ref) => {
             source={{ uri: imageUriRef.current }}
             contentFit="contain"
             style={styles.fullScreenImage}
+            onLoad={() => setLoaded(true)}
+            onError={() => setLoaded(true)}
           />
         </Zoomable>
+        {/* Spinner sits above the image and disappears the moment
+            expo-image fires `onLoad`. `onError` also clears it so a
+            failed load doesn't leave the spinner stranded over a broken
+            placeholder. */}
+        {!loaded ? (
+          <View pointerEvents="none" style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color="#ffffff" />
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -127,6 +166,11 @@ const styles = StyleSheet.create({
   fullScreenImage: {
     width: Dimensions.get("window").width,
     height: Dimensions.get("window").height,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 

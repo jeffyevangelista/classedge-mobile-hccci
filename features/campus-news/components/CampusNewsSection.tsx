@@ -1,6 +1,8 @@
 import { View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
+import { Icon } from "@/components/Icon";
+import { SectionHeader } from "@/components/SectionHeader";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useFacebookPosts } from "../campus-news.hooks";
 import { useSectionStatus } from "@/features/sync/useSectionStatus";
@@ -21,7 +23,7 @@ export default function CampusNewsSection() {
   if (isError) {
     return (
       <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
-        <SectionHeader />
+        <SectionHeader title="Campus News" />
         <ErrorComponent
           message={getApiErrorMessage(error)}
           onRetry={() => refetch()}
@@ -33,7 +35,7 @@ export default function CampusNewsSection() {
   if (status.phase === "loading") {
     return (
       <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
-        <SectionHeader />
+        <SectionHeader title="Campus News" />
         <CampusNewsBannerSkeleton />
       </View>
     );
@@ -42,25 +44,30 @@ export default function CampusNewsSection() {
   if (status.phase === "offline-empty") {
     return (
       <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
-        <SectionHeader />
+        <SectionHeader title="Campus News" />
         <OfflineEmpty section="campus-news" />
       </View>
     );
   }
 
-  // phase "empty" → hide section entirely (current behavior preserved)
-  if (status.phase === "empty") return null;
+  if (status.phase === "empty") {
+    return (
+      <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
+        <SectionHeader title="Campus News" />
+        <View className="items-center justify-center py-8 gap-2 rounded-2xl border border-border bg-surface-secondary">
+          <Icon name="NewspaperIcon" size={28} className="text-muted" />
+          <AppText className="text-sm text-muted">
+            No campus news yet
+          </AppText>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
-      <SectionHeader />
+      <SectionHeader title="Campus News" />
       <CampusNewsBanner posts={posts} />
     </View>
   );
 }
-
-const SectionHeader = () => (
-  <AppText weight="semibold" className="text-lg mb-3">
-    Campus News
-  </AppText>
-);

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-import { Spinner } from "heroui-native";
+import { Spinner, useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
+import { Icon } from "@/components/Icon";
 import { UploadEmpty } from "./UploadEmpty";
 import { UploadFilled } from "./UploadFilled";
 import { SourcePickerSheet, type UploadSource } from "./SourcePickerSheet";
@@ -26,6 +27,7 @@ export const UploadCard = ({
 }: Props) => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [meta, setMeta] = useState<FileMeta | null>(null);
+  const dangerColor = useThemeColor("danger");
 
   useEffect(() => {
     let cancelled = false;
@@ -42,6 +44,7 @@ export const UploadCard = ({
   }, [uri]);
 
   const openSheet = () => setSheetOpen(true);
+  const hasError = !!errorMessage && !uri;
 
   return (
     <View>
@@ -55,12 +58,18 @@ export const UploadCard = ({
             disabled={disabled}
           />
         ) : (
-          <UploadEmpty onAdd={openSheet} disabled={disabled} />
+          <UploadEmpty
+            onAdd={openSheet}
+            disabled={disabled}
+            hasError={hasError}
+          />
         )}
         {picking ? (
+          // Translucent surface overlay matches the underlying card's
+          // rounded-xl radius so the loader sits inside the same shape.
           <View
             pointerEvents="none"
-            className="absolute inset-0 items-center justify-center bg-background/60 rounded-lg"
+            className="absolute inset-0 items-center justify-center bg-surface/70 rounded-xl"
           >
             <Spinner size="sm" />
           </View>
@@ -68,7 +77,12 @@ export const UploadCard = ({
       </View>
 
       {errorMessage ? (
-        <AppText className="text-xs text-danger mt-2">{errorMessage}</AppText>
+        <View className="flex-row items-center gap-1.5 mt-2">
+          <Icon name="WarningCircleIcon" size={12} color={dangerColor} />
+          <AppText weight="semibold" className="text-xs text-danger">
+            {errorMessage}
+          </AppText>
+        </View>
       ) : null}
 
       <SourcePickerSheet

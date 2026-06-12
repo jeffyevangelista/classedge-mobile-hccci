@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as WebBrowser from "expo-web-browser";
 import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
+import { Icon } from "@/components/Icon";
 import Image from "@/components/Image";
 import {
   type FacebookPost,
@@ -29,11 +30,8 @@ export function CampusNewsCard({ post }: Props) {
   };
 
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
+    <View
       accessibilityLabel={`${title}, ${timeLabel}`}
-      accessibilityHint="Opens the full post on Facebook"
       className="rounded-2xl overflow-hidden"
       style={{ height: 220 }}
     >
@@ -72,6 +70,20 @@ export function CampusNewsCard({ post }: Props) {
           top: 0,
         }}
       />
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel="Open post on Facebook"
+        accessibilityHint="Opens the full post on Facebook"
+        android_ripple={{
+          color: "rgba(255,255,255,0.15)",
+          borderless: true,
+        }}
+        hitSlop={8}
+        className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/55 items-center justify-center active:opacity-80"
+      >
+        <Icon name="ArrowSquareOutIcon" size={16} color="#fff" />
+      </Pressable>
       <View
         style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}
         className="p-4"
@@ -91,6 +103,6 @@ export function CampusNewsCard({ post }: Props) {
           {timeLabel}
         </AppText>
       </View>
-    </Pressable>
+    </View>
   );
 }

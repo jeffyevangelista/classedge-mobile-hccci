@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import React, { useCallback, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
@@ -7,9 +7,12 @@ import { ScreenList } from "@/components/ScreenList";
 import Image from "@/components/Image";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import { AppText } from "@/components/AppText";
+import { ErrorComponent } from "@/components/ErrorComponent";
 import { Icon, type IconName } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
 import { Skeleton, useThemeColor } from "heroui-native";
+import { formatTime } from "@/features/calendar/components/date-formatter";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { toTitleCase } from "@/utils/toTitleCase";
 
 type Schedule = {
@@ -48,6 +51,8 @@ const CourseDetails = () => {
   const {
     data: courseDetails,
     isLoading: isLoadingDetails,
+    isError: isErrorDetails,
+    error: detailsError,
     refetch: refetchDetails,
   } = useCourseDetails(enrollmentId);
   const {
@@ -65,6 +70,13 @@ const CourseDetails = () => {
   }, [refetchDetails, refetchStudents]);
 
   if (isLoadingDetails) return <CourseDetailsSkeleton />;
+  if (isErrorDetails)
+    return (
+      <ErrorComponent
+        message={getApiErrorMessage(detailsError)}
+        onRetry={() => refetchDetails()}
+      />
+    );
 
   return (
     <ScreenList
@@ -100,11 +112,23 @@ const CourseDetails = () => {
           {isLoadingStudents ? (
             <StudentListSkeleton />
           ) : isErrorStudents ? (
-            <EmptyState
-              icon="Warning"
-              title="Failed to load students"
-              description="Something went wrong while fetching the student list"
-            />
+            <View className="items-center">
+              <EmptyState
+                icon="Warning"
+                title="Failed to load students"
+                description="Something went wrong while fetching the student list"
+              />
+              <Pressable
+                onPress={() => refetchStudents()}
+                accessibilityRole="button"
+                accessibilityLabel="Retry loading students"
+                className="mt-2 px-4 py-2 rounded-full bg-accent-soft active:opacity-70"
+              >
+                <AppText weight="semibold" className="text-sm text-accent">
+                  Try again
+                </AppText>
+              </Pressable>
+            </View>
           ) : (
             <EmptyState
               icon="UsersIcon"
@@ -120,23 +144,23 @@ const CourseDetails = () => {
 
 const StudentListHeader = ({ count }: { count: number }) => {
   return (
-    <View className="flex-row items-baseline mb-2 gap-2">
-      <AppText weight="bold" className="text-lg">
-        Enrolled Students
+    <View className="px-3 mb-2">
+      <AppText
+        weight="semibold"
+        className="text-xs uppercase tracking-wider text-muted"
+      >
+        Enrolled Students · {count}
       </AppText>
-      <AppText className="text-sm text-muted">· {count}</AppText>
     </View>
   );
 };
 
-const formatTime = (time: string) => {
-  const [h, m] = time.split(":").map(Number);
-  const period = h >= 12 ? "PM" : "AM";
-  const hour12 = h % 12 || 12;
-  return `${hour12}:${m.toString().padStart(2, "0")} ${period}`;
-};
+const DAY_ORDER = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const safeFormatTime = (time?: string | null) => {
+  if (!time) return "";
+  return formatTime(time.slice(0, 8));
+};
 
 interface InfoRowProps {
   icon: IconName;
@@ -202,8 +226,8 @@ const CourseInfoCard = ({
         <View className="h-px bg-border" />
         <InfoRow
           icon="MapPinIcon"
-          iconColor="#10b981"
-          iconBgClass="bg-emerald-100 dark:bg-emerald-900/50"
+          iconColor={accentColor}
+          iconBgClass="bg-accent-soft"
           label="Room"
           value={courseDetails?.subjectId?.roomNumber || "TBA"}
         />
@@ -212,8 +236,8 @@ const CourseInfoCard = ({
       {activeSchedules.length > 0 && (
         <View className="bg-surface-secondary rounded-2xl p-4">
           <View className="flex-row items-center mb-3">
-            <View className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/50 items-center justify-center mr-3">
-              <Icon name="ClockIcon" size={16} color="#f97316" />
+            <View className="w-8 h-8 rounded-full bg-accent-soft items-center justify-center mr-3">
+              <Icon name="ClockIcon" size={16} color={accentColor} />
             </View>
             <AppText weight="semibold" className="text-sm">
               Class Schedule
@@ -239,11 +263,11 @@ const CourseInfoCard = ({
                     {days.map((day: string) => (
                       <View
                         key={day}
-                        className="bg-orange-100 dark:bg-orange-900/50 px-2.5 py-1 rounded-lg"
+                        className="bg-accent-soft px-2.5 py-1 rounded-lg"
                       >
                         <AppText
                           weight="semibold"
-                          className="text-[11px] text-orange-700 dark:text-orange-300"
+                          className="text-[11px] text-accent"
                         >
                           {day}
                         </AppText>
@@ -254,8 +278,8 @@ const CourseInfoCard = ({
                     weight="semibold"
                     className="text-xs text-muted ml-2"
                   >
-                    {formatTime(schedule.scheduleStartTime)} –{" "}
-                    {formatTime(schedule.scheduleEndTime)}
+                    {safeFormatTime(schedule.scheduleStartTime)} –{" "}
+                    {safeFormatTime(schedule.scheduleEndTime)}
                   </AppText>
                 </View>
               );

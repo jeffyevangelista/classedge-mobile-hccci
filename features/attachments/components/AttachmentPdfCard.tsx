@@ -3,8 +3,8 @@ import {
   ActivityIndicator,
   Modal,
   Platform,
+  Pressable,
   StatusBar,
-  TouchableOpacity,
   useColorScheme,
   View,
 } from "react-native";
@@ -14,6 +14,10 @@ import WebView from "react-native-webview";
 import { useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
+
+// PDF attachments use a red identity, distinct from image (teal) and video
+// (purple) so file types are recognizable at a glance.
+const PDF_ICON_COLOR = "#ef4444";
 
 interface Props {
   uri: string;
@@ -51,25 +55,24 @@ export const AttachmentPdfCard = ({ uri, fileName }: Props) => {
 
   return (
     <>
-      <TouchableOpacity
-        activeOpacity={0.7}
+      <Pressable
         onPress={handlePress}
         disabled={opening}
         accessibilityRole="button"
         accessibilityLabel={`Open PDF ${fileName}`}
         accessibilityState={{ disabled: opening, busy: opening }}
-        className="flex-row items-center gap-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl px-4 py-4"
+        android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
+        className="flex-row items-center gap-3 bg-surface-secondary rounded-xl px-4 py-3 active:opacity-70"
       >
-        <View className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/50 items-center justify-center shrink-0">
+        <View className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/50 items-center justify-center shrink-0">
           {opening ? (
-            <ActivityIndicator color="#ef4444" />
+            <ActivityIndicator color={PDF_ICON_COLOR} />
           ) : (
-            <Icon name="FilePdfIcon" size={24} color="#ef4444" />
+            <Icon name="FilePdfIcon" size={20} color={PDF_ICON_COLOR} />
           )}
         </View>
         <View className="flex-1">
           <AppText
-            weight="semibold"
             numberOfLines={1}
             ellipsizeMode="middle"
             className="text-sm"
@@ -78,8 +81,8 @@ export const AttachmentPdfCard = ({ uri, fileName }: Props) => {
           </AppText>
           <AppText className="text-xs text-muted mt-0.5">Tap to view</AppText>
         </View>
-        <Icon name="ArrowSquareOutIcon" size={18} color={mutedColor} />
-      </TouchableOpacity>
+        <Icon name="ArrowSquareOutIcon" size={16} color={mutedColor} />
+      </Pressable>
 
       <Modal
         visible={fullscreen}
@@ -108,6 +111,7 @@ const FullscreenPdfView = ({
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const bg = isDark ? "#1a1a1a" : "#f5f5f5";
+  const [loading, setLoading] = React.useState(true);
 
   return (
     <>
@@ -121,11 +125,37 @@ const FullscreenPdfView = ({
           style={{ flex: 1 }}
           originWhitelist={["*"]}
           javaScriptEnabled
+          onLoadStart={() => setLoading(true)}
+          onLoadEnd={() => setLoading(false)}
         />
-        <TouchableOpacity
+        {/* Spinner overlays the WebView until the PDF finishes loading.
+            `onLoadEnd` fires for both success and failure so the spinner
+            doesn't get stranded on a broken page. */}
+        {loading ? (
+          <View
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <ActivityIndicator
+              size="large"
+              color={isDark ? "#ffffff" : "#1e293b"}
+            />
+          </View>
+        ) : null}
+        <Pressable
           onPress={onClose}
           accessibilityRole="button"
           accessibilityLabel="Close"
+          android_ripple={{ color: "rgba(255,255,255,0.15)", borderless: true }}
+          hitSlop={8}
           style={{
             position: "absolute",
             top: 60,
@@ -138,9 +168,10 @@ const FullscreenPdfView = ({
             borderRadius: 22,
             zIndex: 100001,
           }}
+          className="active:opacity-70"
         >
           <Icon name="XIcon" size={24} color="#ffffff" />
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </>
   );

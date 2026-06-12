@@ -48,11 +48,11 @@ const ClassroomTabsLayout = () => {
       <MaterialTopTabs.Screen name="index" options={{ title: "Materials" }} />
       <MaterialTopTabs.Screen
         name="courseworks"
-        options={{ title: "Courseworks" }}
+        options={{ title: "Assessments" }}
       />
       <MaterialTopTabs.Screen
         name="rapid-grader"
-        options={{ title: "RapidGrader" }}
+        options={{ title: "In-class" }}
       />
     </MaterialTopTabs>
   );

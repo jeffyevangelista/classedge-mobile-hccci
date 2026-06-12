@@ -1,16 +1,26 @@
 import { z } from "zod";
 
 const emailSchema = z
-  .email("Please enter a valid email")
-  .min(1, "Email is required");
+  .string()
+  .trim()
+  .min(1, "Email is required")
+  .email("Please enter a valid email");
 
 // .refine((val) => val.toLowerCase().endsWith("@hccci.edu.ph"), {
 //   message: "Email must end with @hccci.edu.ph",
 // })
-// .min(1, "Email is required");
 
 export const forgotPasswordSchema = z.object({
   email: emailSchema,
+});
+
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email is required")
+    .email("Please enter a valid email"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export const confirmPasswordSchema = z
@@ -31,3 +41,4 @@ export const confirmPasswordSchema = z
 
 export type ForgotPasswordFormvalues = z.infer<typeof forgotPasswordSchema>;
 export type ConfirmPasswordFormValues = z.infer<typeof confirmPasswordSchema>;
+export type LoginFormValues = z.infer<typeof loginSchema>;

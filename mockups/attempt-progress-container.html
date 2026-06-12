@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Attempt — Progress & Question Container</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+          sans-serif;
+        background: #0f172a;
+      }
+      .mono {
+        font-variant-numeric: tabular-nums;
+      }
+      .phone {
+        width: 380px;
+        height: 760px;
+        background: #f8fafc;
+        border-radius: 36px;
+        box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .top-pad {
+        background: white;
+        height: 36px;
+      }
+      .navbar {
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .scroll {
+        flex: 1;
+        overflow-y: auto;
+      }
+      .scroll::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="p-10">
+    <div class="text-white text-sm mb-6 max-w-3xl">
+      <span class="font-semibold">Progress + question container polish.</span>
+      Surface answered count alongside position, lift the question into a
+      surface card so it has a clear visual home.
+    </div>
+
+    <div class="flex flex-wrap gap-8 items-start">
+      <!-- BEFORE -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          Before
+        </div>
+        <div class="phone">
+          <div class="top-pad"></div>
+          <div class="navbar">
+            <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center">←</div>
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span class="text-sm font-bold text-slate-900 mono">12:34</span>
+            </div>
+            <div style="width: 36px"></div>
+          </div>
+          <div class="scroll p-4">
+            <div class="text-center text-base font-bold text-slate-900 mb-3">
+              Question 3 of 10
+            </div>
+            <div class="h-1.5 bg-slate-200 rounded-full mb-4 overflow-hidden">
+              <div class="h-full bg-blue-600 rounded-full" style="width: 30%"></div>
+            </div>
+            <div class="text-base font-semibold text-slate-900 mb-3">
+              Which of the following best describes Newton's first law?
+            </div>
+            <div class="text-xs text-slate-500 mb-3">Multiple choice · 2 points</div>
+            <div class="space-y-2">
+              <div class="border border-slate-200 rounded-xl p-3 text-sm">
+                A. Force equals mass times acceleration
+              </div>
+              <div class="border-2 rounded-xl p-3 text-sm" style="border-color: #2563eb; background: #eff6ff; color: #1e3a8a;">
+                B. An object in motion stays in motion unless acted on by a force
+              </div>
+              <div class="border border-slate-200 rounded-xl p-3 text-sm">
+                C. Every action has an equal and opposite reaction
+              </div>
+              <div class="border border-slate-200 rounded-xl p-3 text-sm">
+                D. Energy can't be created or destroyed
+              </div>
+            </div>
+          </div>
+          <div class="border-t border-slate-200 p-4 flex gap-3 bg-white">
+            <button class="flex-1 py-3 rounded-full border border-slate-300 text-slate-700 font-semibold text-sm">
+              ← Previous
+            </button>
+            <button class="flex-1 py-3 rounded-full bg-blue-600 text-white font-semibold text-sm">
+              Next →
+            </button>
+          </div>
+        </div>
+        <div class="text-white/60 text-xs mt-2 max-w-[380px] space-y-1">
+          <div>• Position only — no answered signal</div>
+          <div>• Question text and progress share the same flat surface</div>
+          <div>• Nothing visually anchors the question</div>
+        </div>
+      </div>
+
+      <!-- AFTER -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          After
+        </div>
+        <div class="phone">
+          <div class="top-pad"></div>
+          <div class="navbar">
+            <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center">←</div>
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span class="text-sm font-bold text-slate-900 mono">12:34</span>
+            </div>
+            <div style="width: 36px"></div>
+          </div>
+
+          <!-- Progress strip -->
+          <div class="px-4 pt-3 pb-2">
+            <div class="flex items-baseline justify-between mb-2">
+              <div class="text-xs font-semibold text-slate-700 mono">
+                Question 3 <span class="text-slate-400 font-normal">of 10</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span class="text-[11px] font-semibold mono" style="color: #059669">6 answered</span>
+              </div>
+            </div>
+            <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden flex">
+              <!-- answered (green tint) -->
+              <div style="background: #86efac; width: 60%"></div>
+              <!-- current position marker (blue) just past answered -->
+              <div style="background: #2563eb; width: 4px"></div>
+            </div>
+          </div>
+
+          <!-- Question card -->
+          <div class="scroll p-4">
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+              <!-- type meta strip -->
+              <div class="flex items-center gap-2 mb-2">
+                <div class="px-2 py-0.5 rounded-full bg-blue-50 text-[10px] font-bold uppercase tracking-widest" style="color: #1d4ed8">
+                  Multiple choice
+                </div>
+                <div class="text-[11px] text-slate-500">2 points</div>
+              </div>
+              <div class="text-base font-semibold text-slate-900 leading-snug mb-4">
+                Which of the following best describes Newton's first law?
+              </div>
+              <div class="space-y-2">
+                <div class="border border-slate-200 rounded-xl p-3 text-sm">
+                  A. Force equals mass times acceleration
+                </div>
+                <div class="border-2 rounded-xl p-3 text-sm" style="border-color: #2563eb; background: #eff6ff; color: #1e3a8a;">
+                  B. An object in motion stays in motion unless acted on by a force
+                </div>
+                <div class="border border-slate-200 rounded-xl p-3 text-sm">
+                  C. Every action has an equal and opposite reaction
+                </div>
+                <div class="border border-slate-200 rounded-xl p-3 text-sm">
+                  D. Energy can't be created or destroyed
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-200 p-4 flex gap-3 bg-white">
+            <button class="flex-1 py-3 rounded-full border border-slate-300 text-slate-700 font-semibold text-sm">
+              ← Previous
+            </button>
+            <button class="flex-1 py-3 rounded-full bg-blue-600 text-white font-semibold text-sm">
+              Next →
+            </button>
+          </div>
+        </div>
+        <div class="text-white/60 text-xs mt-2 max-w-[380px] space-y-1">
+          <div>• Position + answered count both visible</div>
+          <div>• Bar: green fill for answered, blue tick for current position</div>
+          <div>• Question lives in its own card surface</div>
+          <div>• Type chip ("Multiple choice") + points moved inside card</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alt: critical state combined with new progress + card -->
+    <div class="mt-10">
+      <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+        Critical timer + same redesign in context
+      </div>
+      <div class="phone">
+        <div class="top-pad"></div>
+        <div class="navbar">
+          <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center">←</div>
+          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style="background: #fee2e2">
+            <div class="w-1.5 h-1.5 rounded-full" style="background: #dc2626"></div>
+            <span class="text-sm font-bold mono" style="color: #b91c1c">00:47</span>
+          </div>
+          <div style="width: 36px"></div>
+        </div>
+
+        <div class="px-4 pt-3 pb-2">
+          <div class="flex items-baseline justify-between mb-2">
+            <div class="text-xs font-semibold text-slate-700 mono">
+              Question 9 <span class="text-slate-400 font-normal">of 10</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span class="text-[11px] font-semibold mono" style="color: #059669">8 answered</span>
+            </div>
+          </div>
+          <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden flex">
+            <div style="background: #86efac; width: 80%"></div>
+            <div style="background: #2563eb; width: 4px"></div>
+          </div>
+        </div>
+
+        <div class="scroll p-4">
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="px-2 py-0.5 rounded-full bg-purple-50 text-[10px] font-bold uppercase tracking-widest" style="color: #6d28d9">
+                Essay
+              </div>
+              <div class="text-[11px] text-slate-500">10 points</div>
+            </div>
+            <div class="text-base font-semibold text-slate-900 leading-snug mb-4">
+              Explain the relationship between potential and kinetic energy
+              using an example from everyday life.
+            </div>
+            <div class="border border-slate-200 rounded-xl p-3 min-h-[140px] text-sm text-slate-700">
+              In a roller coaster, the car at the top of the first hill has
+              maximum potential energy and minimal kinetic energy...
+            </div>
+            <div class="text-[10px] text-slate-400 mt-1 text-right">142 chars · saved</div>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-200 p-4 flex gap-3 bg-white">
+          <button class="flex-1 py-3 rounded-full border border-slate-300 text-slate-700 font-semibold text-sm">
+            ← Previous
+          </button>
+          <button class="flex-1 py-3 rounded-full bg-blue-600 text-white font-semibold text-sm">
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-white/70 text-xs mt-10 max-w-3xl space-y-2">
+      <div class="font-semibold text-white">Specifics:</div>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>
+          <span class="text-white">Progress row</span>: "Question N of M"
+          left-aligned with the position number bolded; "K answered"
+          right-aligned with a small check icon (uses
+          <code>text-success</code> token, so it adapts to theme).
+        </li>
+        <li>
+          <span class="text-white">Progress bar</span>: split fill —
+          <span style="color: #86efac">green tint</span> for the answered
+          portion + <span style="color: #2563eb">a 4-pt blue tick</span> for
+          the current position. Lets the student see "I'm here, this is how
+          much I've actually completed."
+        </li>
+        <li>
+          <span class="text-white">Question card</span>:
+          <code>bg-surface border border-border rounded-2xl</code> with
+          subtle shadow. Separates the question from the progress strip
+          above and footer below.
+        </li>
+        <li>
+          <span class="text-white">Type chip</span> inside the card (e.g.
+          "Multiple choice", "Essay", "Identification") + points value to
+          the right. Replaces today's bare "Multiple choice · 2 points"
+          line with a more glanceable header.
+        </li>
+        <li>
+          <span class="text-white">Tabular-nums</span> on the position
+          number and "K answered" so digits don't jitter as the student
+          navigates.
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>

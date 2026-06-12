@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Attempt Screen — Timer Redesign</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+          sans-serif;
+        background: #0f172a;
+      }
+      .mono {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum";
+      }
+      .phone {
+        width: 380px;
+        background: #f8fafc;
+        border-radius: 36px;
+        box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+        position: relative;
+      }
+      .navbar {
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .back {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: #0f172a;
+      }
+      .top-pad {
+        padding-top: 36px;
+        background: white;
+      }
+      .pulse {
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+      .timer-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+      }
+    </style>
+  </head>
+  <body class="p-10">
+    <div class="text-white text-sm mb-6 max-w-3xl">
+      <span class="font-semibold">Timer redesign</span> — clock icon + state
+      colors (normal / caution / danger) + a subtle pill background. Below
+      shows the current state on top, four state samples beneath, then a
+      preview of the bottom-right placement in context.
+    </div>
+
+    <!-- BEFORE -->
+    <div class="mb-8">
+      <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+        Before
+      </div>
+      <div class="phone">
+        <div class="top-pad"></div>
+        <div class="navbar">
+          <div class="back">←</div>
+          <div class="mono text-base font-bold text-slate-900">12:34</div>
+          <div style="width: 36px"></div>
+        </div>
+        <div class="p-4 text-xs text-slate-500">
+          Plain monospaced text in the center. No state, no icon, no
+          affordance.
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER — state samples -->
+    <div class="mb-8">
+      <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+        After — timer state pill
+      </div>
+
+      <div class="flex flex-wrap gap-6 items-start">
+        <!-- Normal (> 5 min) -->
+        <div>
+          <div class="text-white/60 text-[10px] uppercase tracking-widest mb-2">
+            Normal &gt; 5 min
+          </div>
+          <div class="phone">
+            <div class="top-pad"></div>
+            <div class="navbar">
+              <div class="back">←</div>
+              <div
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+                style="background: #f1f5f9"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#0f172a"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span class="mono text-sm font-bold text-slate-900">12:34</span>
+              </div>
+              <div style="width: 36px"></div>
+            </div>
+            <div class="p-3 text-[11px] text-slate-500 space-y-1">
+              <div>• Muted background, foreground icon + text</div>
+              <div>• Calm; doesn't pull focus</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Caution (1-5 min) -->
+        <div>
+          <div class="text-white/60 text-[10px] uppercase tracking-widest mb-2">
+            Caution 1–5 min
+          </div>
+          <div class="phone">
+            <div class="top-pad"></div>
+            <div class="navbar">
+              <div class="back">←</div>
+              <div
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+                style="background: #fef3c7"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#92400e"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span class="mono text-sm font-bold" style="color: #92400e">
+                  04:21
+                </span>
+              </div>
+              <div style="width: 36px"></div>
+            </div>
+            <div class="p-3 text-[11px] text-slate-500 space-y-1">
+              <div>• Amber soft background</div>
+              <div>• Earns attention without alarm</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Critical (< 1 min) -->
+        <div>
+          <div class="text-white/60 text-[10px] uppercase tracking-widest mb-2">
+            Critical &lt; 1 min
+          </div>
+          <div class="phone">
+            <div class="top-pad"></div>
+            <div class="navbar">
+              <div class="back">←</div>
+              <div
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full pulse"
+                style="background: #fee2e2"
+              >
+                <div class="timer-dot" style="background: #dc2626"></div>
+                <span class="mono text-sm font-bold" style="color: #b91c1c">
+                  00:47
+                </span>
+              </div>
+              <div style="width: 36px"></div>
+            </div>
+            <div class="p-3 text-[11px] text-slate-500 space-y-1">
+              <div>• Red soft background, pulsing</div>
+              <div>• Dot replaces clock — distinct urgency cue</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Time up -->
+        <div>
+          <div class="text-white/60 text-[10px] uppercase tracking-widest mb-2">
+            Time up
+          </div>
+          <div class="phone">
+            <div class="top-pad"></div>
+            <div class="navbar">
+              <div class="back">←</div>
+              <div
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+                style="background: #dc2626"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#fff"
+                  stroke-width="2.5"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                </svg>
+                <span class="mono text-sm font-bold text-white">
+                  00:00
+                </span>
+              </div>
+              <div style="width: 36px"></div>
+            </div>
+            <div class="p-3 text-[11px] text-slate-500 space-y-1">
+              <div>• Solid danger fill (locked state)</div>
+              <div>• Pairs with the existing "Submitting…" banner</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- In context: full attempt screen with timer pill -->
+    <div>
+      <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+        In context
+      </div>
+      <div class="phone">
+        <div class="top-pad"></div>
+        <div class="navbar">
+          <div class="back">←</div>
+          <div
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+            style="background: #fef3c7"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#92400e"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span class="mono text-sm font-bold" style="color: #92400e">
+              04:21
+            </span>
+          </div>
+          <div style="width: 36px"></div>
+        </div>
+
+        <div class="p-4">
+          <div class="text-xs text-slate-500 mb-2">Question 3 of 10</div>
+          <div
+            class="h-1.5 bg-slate-200 rounded-full mb-4 overflow-hidden"
+          >
+            <div
+              class="h-full bg-blue-600 rounded-full"
+              style="width: 30%"
+            ></div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-2xl p-4">
+            <div class="font-semibold text-slate-900 mb-3">
+              Which of the following best describes Newton's first law?
+            </div>
+            <div class="space-y-2">
+              <div class="border border-slate-200 rounded-xl p-3">
+                A. Force equals mass times acceleration
+              </div>
+              <div
+                class="border-2 rounded-xl p-3"
+                style="
+                  border-color: #2563eb;
+                  background: #eff6ff;
+                  color: #1e3a8a;
+                "
+              >
+                B. An object in motion stays in motion unless acted on by a
+                force
+              </div>
+              <div class="border border-slate-200 rounded-xl p-3">
+                C. Every action has an equal and opposite reaction
+              </div>
+              <div class="border border-slate-200 rounded-xl p-3">
+                D. Energy can't be created or destroyed
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-200 p-4 flex gap-3 bg-white">
+          <button
+            class="flex-1 py-3 rounded-full border border-slate-300 text-slate-700 font-semibold"
+          >
+            ← Previous
+          </button>
+          <button
+            class="flex-1 py-3 rounded-full bg-blue-600 text-white font-semibold"
+          >
+            Next →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-white/70 text-xs mt-10 max-w-3xl space-y-2">
+      <div class="font-semibold text-white">Rules:</div>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>
+          <span class="text-white">Normal</span> (&gt; 5 min): muted
+          <code>bg-default</code> + foreground text. Calm.
+        </li>
+        <li>
+          <span class="text-white">Caution</span> (1–5 min):
+          amber-soft background, amber-700 text. Earns glances.
+        </li>
+        <li>
+          <span class="text-white">Critical</span> (&lt; 1 min):
+          danger-soft background, danger-700 text, gentle pulse, clock
+          swaps for a solid dot to telegraph urgency.
+        </li>
+        <li>
+          <span class="text-white">Time-up</span>: solid danger fill, white
+          text, X-circle icon. Locked state — pairs with the existing
+          "Time is up! Submitting…" banner.
+        </li>
+        <li>
+          Uses <code>font-variant-numeric: tabular-nums</code> so digits
+          don't jitter as they tick.
+        </li>
+        <li>
+          Same pill width across states — only colors change. Avoids layout
+          shift each minute.
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>

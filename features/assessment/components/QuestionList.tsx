@@ -1,4 +1,5 @@
 import {
+  Pressable,
   View,
   StyleSheet,
   ScrollView,
@@ -65,8 +66,13 @@ const QuestionList = ({
   const accentColor = useThemeColor("accent");
   const dangerColor = useThemeColor("danger");
   const dangerForegroundColor = useThemeColor("danger-foreground");
-  const mutedTrackColor = useThemeColor("default");
+  // Use `border` rather than `default` for the track — in light mode
+  // `default` is slate-100, identical to the screen background, so the
+  // track disappears. `border` is slate-200 light / slate-800 dark, which
+  // reads as a subtle visible track in both modes.
+  const mutedTrackColor = useThemeColor("border");
   const foregroundColor = useThemeColor("foreground");
+  const successColor = useThemeColor("success");
 
   // Populate answers from existing records on load / re-entry
   useEffect(() => {
@@ -222,6 +228,31 @@ const QuestionList = ({
   const totalQuestions = questions.length;
   const isLastQuestion = currentPage === totalQuestions - 1;
 
+  // A question is "answered" if there's a non-empty text answer OR an
+  // uploaded file. Used to drive the submit dialog summary + jump chips.
+  const isAnswered = (questionId: number): boolean => {
+    const a = answers[questionId];
+    const u = uploads[questionId];
+    return (
+      (typeof a === "string" && a.trim().length > 0) ||
+      (typeof u === "string" && u.length > 0)
+    );
+  };
+  const answeredCount = questions.filter((q) => isAnswered(q.id)).length;
+  const allAnswered = answeredCount === totalQuestions;
+  // 1-based position in the current question order, for display.
+  const unansweredPositions = questions
+    .map((q, idx) => (isAnswered(q.id) ? null : idx + 1))
+    .filter((n): n is number => n != null);
+
+  const handleJumpTo = (position1Based: number) => {
+    setSubmitOpen(false);
+    flushPendingSaves();
+    const target = position1Based - 1;
+    setCurrentPage(target);
+    onIndexChange(target);
+  };
+
   return (
     <View style={styles.paginationContainer}>
       {isTimeUp && (
@@ -235,47 +266,97 @@ const QuestionList = ({
           </AppText>
         </View>
       )}
-      <ScrollView
-        style={styles.questionScrollView}
-        pointerEvents={isTimeUp ? "none" : "auto"}
+      {/* Progress strip — pinned above the scrolling question so the
+          "where am I / how many done" read stays anchored as the student
+          scrolls a long question body. */}
+      <View
+        className="px-4 pt-3 pb-2"
+        accessibilityRole="progressbar"
+        accessibilityLabel={`Question ${currentPage + 1} of ${totalQuestions}, ${answeredCount} answered`}
+        accessibilityValue={{
+          min: 0,
+          max: totalQuestions,
+          now: currentPage + 1,
+        }}
       >
-        <View style={styles.currentQuestionContainer}>
-          <AppText style={styles.questionNumber}>
-            Question {currentPage + 1} of {totalQuestions}
-          </AppText>
-          <View
-            style={[styles.progressTrack, { backgroundColor: mutedTrackColor }]}
-            accessibilityRole="progressbar"
-            accessibilityValue={{
-              min: 0,
-              max: totalQuestions,
-              now: currentPage + 1,
-            }}
+        <View className="flex-row items-baseline justify-between mb-2">
+          <AppText
+            weight="semibold"
+            className="text-xs text-foreground"
+            style={{ fontVariant: ["tabular-nums"] }}
           >
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  backgroundColor: accentColor,
-                  width: `${
-                    totalQuestions > 0
-                      ? ((currentPage + 1) / totalQuestions) * 100
-                      : 0
-                  }%`,
-                },
-              ]}
-            />
+            Question {currentPage + 1}{" "}
+            <AppText weight="regular" className="text-muted">
+              of {totalQuestions}
+            </AppText>
+          </AppText>
+          <View className="flex-row items-center gap-1">
+            <Icon name="CheckIcon" size={11} color={successColor} />
+            <AppText
+              weight="semibold"
+              className="text-[11px] text-success"
+              style={{ fontVariant: ["tabular-nums"] }}
+            >
+              {answeredCount} answered
+            </AppText>
           </View>
-          <QuestionRenderer
-            question={currentQuestion}
-            currentAnswer={answers[currentQuestion.id] ?? ""}
-            onAnswer={handleAnswer}
-            disabled={isTimeUp}
-            choices={choices}
-            currentUpload={uploads[currentQuestion.id]}
-            onUpload={handleUpload}
+        </View>
+        {/* Split-fill bar: green tint = answered share, blue tick = current
+            position. The tick is absolutely positioned so it can sit
+            anywhere — including back inside the green if the student is
+            reviewing an earlier answered question. */}
+        <View
+          className="h-1.5 rounded-full overflow-hidden relative"
+          style={{ backgroundColor: mutedTrackColor }}
+        >
+          <View
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: `${
+                totalQuestions > 0
+                  ? (answeredCount / totalQuestions) * 100
+                  : 0
+              }%`,
+              backgroundColor: successColor,
+              opacity: 0.45,
+            }}
+          />
+          <View
+            style={{
+              position: "absolute",
+              left: `${
+                totalQuestions > 0
+                  ? ((currentPage + 1) / totalQuestions) * 100
+                  : 0
+              }%`,
+              top: 0,
+              bottom: 0,
+              width: 4,
+              marginLeft: -2,
+              backgroundColor: accentColor,
+              borderRadius: 2,
+            }}
           />
         </View>
+      </View>
+
+      <ScrollView
+        style={styles.questionScrollView}
+        contentContainerStyle={{ padding: 16 }}
+        pointerEvents={isTimeUp ? "none" : "auto"}
+      >
+        <QuestionRenderer
+          question={currentQuestion}
+          currentAnswer={answers[currentQuestion.id] ?? ""}
+          onAnswer={handleAnswer}
+          disabled={isTimeUp}
+          choices={choices}
+          currentUpload={uploads[currentQuestion.id]}
+          onUpload={handleUpload}
+        />
       </ScrollView>
 
       <View
@@ -315,7 +396,9 @@ const QuestionList = ({
                 isDisabled={isTimeUp}
               >
                 <Icon name="CheckIcon" size={16} color="#fff" />
-                <Button.Label>Submit</Button.Label>
+                <Button.Label>
+                  Submit · {answeredCount}/{totalQuestions}
+                </Button.Label>
               </Button>
             ) : (
               <Button
@@ -335,16 +418,104 @@ const QuestionList = ({
         <Dialog.Portal>
           <Dialog.Overlay />
           <Dialog.Content className="w-full max-w-lg mx-auto">
-            <View className="mb-5 gap-3">
+            <View className="mb-4 gap-2">
               <Dialog.Title>Submit assessment?</Dialog.Title>
               <Dialog.Description>
                 Once submitted, you can't change your answers.
               </Dialog.Description>
             </View>
+
+            {allAnswered ? (
+              <View className="flex-row items-center gap-3 rounded-xl bg-success-soft border border-success/30 p-3 mb-4">
+                <View className="w-10 h-10 rounded-xl items-center justify-center bg-success/15">
+                  <Icon name="CheckIcon" size={18} color="#059669" />
+                </View>
+                <View className="flex-1">
+                  <AppText weight="semibold" className="text-sm text-success">
+                    All {totalQuestions} answered
+                  </AppText>
+                  <AppText className="text-xs text-success/80">
+                    Looks good.
+                  </AppText>
+                </View>
+              </View>
+            ) : (
+              <View className="gap-2 mb-4">
+                <View className="flex-row items-center gap-3 rounded-xl bg-default border border-border p-3">
+                  <View className="w-10 h-10 rounded-xl items-center justify-center bg-success/15">
+                    <Icon name="CheckIcon" size={18} color="#059669" />
+                  </View>
+                  <View className="flex-1">
+                    <AppText
+                      weight="semibold"
+                      className="text-sm text-foreground"
+                    >
+                      Answered
+                    </AppText>
+                    <AppText className="text-xs text-muted">
+                      {answeredCount} of {totalQuestions} questions
+                    </AppText>
+                  </View>
+                  <AppText
+                    weight="bold"
+                    className="text-2xl text-foreground"
+                    style={{ fontVariant: ["tabular-nums"] }}
+                  >
+                    {answeredCount}
+                  </AppText>
+                </View>
+                <View className="rounded-xl bg-warning-soft border border-warning/30 p-3">
+                  <View className="flex-row items-center gap-3 mb-2">
+                    <View className="w-10 h-10 rounded-xl items-center justify-center bg-warning/20">
+                      <Icon
+                        name="WarningCircleIcon"
+                        size={18}
+                        color="#b45309"
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <AppText
+                        weight="semibold"
+                        className="text-sm text-warning"
+                      >
+                        {unansweredPositions.length} unanswered
+                      </AppText>
+                      <AppText className="text-xs text-warning/80">
+                        Tap a number to jump back.
+                      </AppText>
+                    </View>
+                  </View>
+                  <View className="flex-row flex-wrap gap-1.5">
+                    {unansweredPositions.map((position) => (
+                      <Pressable
+                        key={position}
+                        onPress={() => handleJumpTo(position)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Jump to question ${position}`}
+                        className="rounded-lg bg-surface px-2.5 py-1 active:opacity-70"
+                      >
+                        <AppText
+                          weight="bold"
+                          className="text-xs text-warning"
+                          style={{ fontVariant: ["tabular-nums"] }}
+                        >
+                          {position}
+                        </AppText>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              </View>
+            )}
+
             <View>
-              <Button onPress={handleSubmitConfirm}>Submit</Button>
+              <Button onPress={handleSubmitConfirm}>
+                <Button.Label>
+                  {allAnswered ? "Submit" : "Submit anyway"}
+                </Button.Label>
+              </Button>
               <Button variant="ghost" onPress={() => setSubmitOpen(false)}>
-                Cancel
+                <Button.Label>Go back</Button.Label>
               </Button>
             </View>
           </Dialog.Content>
@@ -360,25 +531,6 @@ const styles = StyleSheet.create({
   },
   questionScrollView: {
     flex: 1,
-  },
-  currentQuestionContainer: {
-    padding: 16,
-  },
-  questionNumber: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  progressTrack: {
-    height: 6,
-    borderRadius: 3,
-    marginBottom: 16,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: 3,
   },
   navigationContainer: {
     flexDirection: "row",
@@ -401,8 +553,14 @@ const styles = StyleSheet.create({
 const QuestionListSkeleton = () => {
   return (
     <View style={styles.paginationContainer}>
-      <View style={styles.currentQuestionContainer}>
-        <Skeleton className="h-6 w-40 rounded mb-3" />
+      <View className="px-4 pt-3 pb-2 gap-2">
+        <View className="flex-row justify-between">
+          <Skeleton className="h-3 w-24 rounded-full" />
+          <Skeleton className="h-3 w-20 rounded-full" />
+        </View>
+        <Skeleton className="h-1.5 w-full rounded-full" />
+      </View>
+      <View className="p-4">
         <View style={questionStyles.questionContainer}>
           <Skeleton className="h-5 w-full rounded mb-2" />
           <Skeleton className="h-3 w-20 rounded mb-3" />

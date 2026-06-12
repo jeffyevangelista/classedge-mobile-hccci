@@ -48,6 +48,12 @@ export const ATTACHMENT_COLUMNS: AttachmentColumnConfig[] = [
     resource: "choice_images",
     priority: 2,
   },
+  {
+    table: "activity_activityquestion",
+    column: "question_instruction",
+    resource: "question_instructions",
+    priority: 2,
+  },
 ];
 
 export const TRACKED_TABLES = Array.from(

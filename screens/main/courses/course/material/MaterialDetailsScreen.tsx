@@ -1,11 +1,10 @@
 import { useLocalSearchParams } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
-import { Skeleton, useThemeColor } from "heroui-native";
+import { Skeleton } from "heroui-native";
 import React from "react";
 import {
   Modal,
+  Pressable,
   StatusBar,
-  TouchableOpacity,
   useColorScheme,
   useWindowDimensions,
   View,
@@ -13,9 +12,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
 import { AppText } from "@/components/AppText";
+import { CollapsibleDescription } from "@/components/CollapsibleDescription";
 import ErrorFallback from "@/components/ErrorFallback";
 import { Icon } from "@/components/Icon";
+import { LinkCard } from "@/components/LinkCard";
 import NoDataFallback from "@/components/NoDataFallback";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
 import Screen from "@/components/screen";
 import { AttachmentFile } from "@/features/attachments/components/AttachmentFile";
@@ -24,6 +26,7 @@ import HydrationDebugPill from "@/features/notifications/HydrationDebugPill";
 import { makeEntityKey } from "@/features/notifications/pushPayloadCache";
 import { useEntityFromPushOrSync } from "@/features/notifications/useEntityFromPushOrSync";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { formatDate } from "@/utils/formatDate";
 
 const MaterialDetailsScreen = () => {
   const { materialId } = useLocalSearchParams();
@@ -66,31 +69,47 @@ const MaterialDetailsScreen = () => {
   // apiFetch is absent; kept as a type-narrowing guard for `data`.
   if (!data) return null;
 
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  // Only offer to collapse the description when there's something below it
+  // the user might want to reach without scrolling. Descriptions that ARE
+  // the material's content (no file/iframe/link) stay fully expanded.
+  // The component itself measures the rendered line count and only shows
+  // the toggle when the text actually overflows.
+  const canCollapseDescription = !!(
+    data.file ||
+    data.iframeCode ||
+    data.url
+  );
 
   return (
     <Screen>
-      <ScreenScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="gap-6 w-full max-w-3xl mx-auto p-4">
-          {/* [push-hydrate verify] */}
-          <HydrationDebugPill
-            entityKey={materialEntityKey}
-            source={source}
-            isResolving={isResolving}
-            isMissing={isMissing}
+      <ScreenScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshIndicator
+            refreshing={watch.isFetching && !watch.isLoading}
+            onRefresh={watch.refetch}
           />
+        }
+      >
+        <View className="gap-6 w-full max-w-3xl mx-auto p-4">
+          {__DEV__ && (
+            <HydrationDebugPill
+              entityKey={materialEntityKey}
+              source={source}
+              isResolving={isResolving}
+              isMissing={isMissing}
+            />
+          )}
           <View>
-            <AppText className="text-sm text-neutral-500 dark:text-neutral-400">
+            <AppText className="text-sm text-muted">
               Posted {formatDate(data.startDate)}
             </AppText>
             <AppText
               weight="semibold"
-              className="text-xl text-neutral-900 dark:text-neutral-100 mt-1"
+              numberOfLines={2}
+              ellipsizeMode="tail"
+              className="text-xl text-foreground mt-1"
             >
               {data.fileName}
             </AppText>
@@ -98,50 +117,31 @@ const MaterialDetailsScreen = () => {
 
           {data.description && (
             <View>
-              <AppText
-                weight="semibold"
-                className="text-base text-neutral-900 dark:text-neutral-100 mb-1"
-              >
-                Description
-              </AppText>
-              <AppText className="text-neutral-500 dark:text-neutral-400 text-justify leading-relaxed">
-                {data.description}
-              </AppText>
+              <SectionLabel>Description</SectionLabel>
+              <CollapsibleDescription
+                text={data.description}
+                canCollapse={canCollapseDescription}
+              />
             </View>
           )}
 
           {data.file && (
             <View>
-              <AppText
-                weight="semibold"
-                className="text-base text-neutral-900 dark:text-neutral-100 mb-2"
-              >
-                Attached File
-              </AppText>
+              <SectionLabel>Attached File</SectionLabel>
               <AttachmentFile file={data.file} fileName={data.fileName} />
             </View>
           )}
 
           {data.iframeCode && (
             <View>
-              <AppText
-                weight="semibold"
-                className="text-base text-neutral-900 dark:text-neutral-100 mb-2"
-              >
-                Embedded Content
-              </AppText>
+              <SectionLabel>Embedded Content</SectionLabel>
               <IFrameViewer html={data.iframeCode} />
             </View>
           )}
 
           {data.url && (
             <View>
-              <AppText
-                weight="semibold"
-                className="text-base text-neutral-900 dark:text-neutral-100 mb-2"
-              >
-                Link
-              </AppText>
+              <SectionLabel>Link</SectionLabel>
               <LinkCard url={data.url} />
             </View>
           )}
@@ -150,6 +150,15 @@ const MaterialDetailsScreen = () => {
     </Screen>
   );
 };
+
+const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+  <AppText
+    weight="semibold"
+    className="text-xs uppercase tracking-wider text-muted mb-2"
+  >
+    {children}
+  </AppText>
+);
 
 const IFrameViewer = ({ html }: { html: string }) => {
   const { width } = useWindowDimensions();
@@ -206,8 +215,13 @@ const IFrameViewer = ({ html }: { html: string }) => {
         }}
       >
         {webview(false)}
-        <TouchableOpacity
+        <Pressable
           onPress={() => setFullscreen(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Open fullscreen"
+          android_ripple={{ color: "rgba(255,255,255,0.15)", borderless: true }}
+          hitSlop={8}
+          className="active:opacity-70"
           style={{
             position: "absolute",
             top: 10,
@@ -218,7 +232,7 @@ const IFrameViewer = ({ html }: { html: string }) => {
           }}
         >
           <Icon name="ArrowsOutIcon" size={18} color="#fff" />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <Modal
@@ -241,8 +255,13 @@ const IFrameViewer = ({ html }: { html: string }) => {
               backgroundColor: "#000",
             }}
           >
-            <TouchableOpacity
+            <Pressable
               onPress={() => setFullscreen(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Close fullscreen"
+              android_ripple={{ color: "rgba(255,255,255,0.15)", borderless: true }}
+              hitSlop={8}
+              className="active:opacity-70"
               style={{
                 backgroundColor: closeBg,
                 borderRadius: 8,
@@ -250,33 +269,12 @@ const IFrameViewer = ({ html }: { html: string }) => {
               }}
             >
               <Icon name="XIcon" size={20} color={closeColor} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
           {webview(true)}
         </SafeAreaView>
       </Modal>
     </>
-  );
-};
-
-const LinkCard = ({ url }: { url: string }) => {
-  const display = url.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  const themeColorAccent = useThemeColor("accent");
-
-  return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      onPress={() => WebBrowser.openBrowserAsync(url)}
-      className="flex-row items-center gap-3 bg-default rounded-xl px-4 py-3"
-    >
-      <View className="w-10 h-10 rounded-lg bg-accent-soft items-center justify-center shrink-0">
-        <Icon name="LinkIcon" size={20} color={themeColorAccent} />
-      </View>
-      <AppText numberOfLines={2} className="flex-1 text-accent text-sm">
-        {display}
-      </AppText>
-      <Icon name="ArrowSquareOutIcon" size={16} color="#94a3b8" />
-    </TouchableOpacity>
   );
 };
 

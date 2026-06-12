@@ -29,6 +29,7 @@ const StudentList = () => {
     fetchNextPage,
     refetch,
     isRefetching,
+    isFetching,
   } = useStudents(classroomId as string);
 
   const students = useMemo(
@@ -52,7 +53,14 @@ const StudentList = () => {
 
   const safeBottom = useScrollBottomInset();
 
-  if (isLoading) return <StudentsSkeleton />;
+  // Render the skeleton any time a fetch is in flight and we have
+  // nothing to show — see features/classroom/components/LessonList for
+  // the full rationale.
+  if (
+    students.length === 0 &&
+    (isLoading || (isFetching && !isFetchingNextPage))
+  )
+    return <StudentsSkeleton />;
   if (isError)
     return (
       <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />

@@ -4,51 +4,36 @@ import { eq, inArray } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { queryClient } from "@/providers/QueryProvider";
 
-export const getAssessmentDetails = async (
+// Returns the drizzle query builder (not awaited) so the hook can wrap it
+// with `toCompilableQuery` for PowerSync's watch. The hook flattens the
+// `findMany` result to `rows[0] ?? null` for the consumer.
+export const getAssessmentDetails = (
   assessmentId: string,
   userId: number,
 ) => {
-  const result = await db.query.studentAssessment.findFirst({
+  return db.query.studentAssessment.findMany({
     where: (studentAssessment, { and, eq }) =>
       and(
         eq(studentAssessment.activityId, assessmentId),
         eq(studentAssessment.studentId, userId),
       ),
+    limit: 1,
   });
-  return result ?? null;
 };
 
-export const getAttemptRecords = async (
+// Returns the drizzle query builder so the hook can wrap it for watch.
+// No more console.logs here — watch ticks would flood them.
+export const getAttemptRecords = (
   studentActivityId: string,
   studentId: number,
 ) => {
-  console.log("[getAttemptRecords] params:", {
-    studentActivityId,
-    typeofStudentActivityId: typeof studentActivityId,
-    studentId,
-  });
-  const rows = await db.query.attemptsTable.findMany({
+  return db.query.attemptsTable.findMany({
     where: (t, { and, eq }) =>
       and(
         eq(t.studentActivityId, studentActivityId),
         eq(t.studentId, studentId),
       ),
   });
-  console.log("[getAttemptRecords] matched count:", rows.length, "rows:", rows);
-  if (rows.length === 0) {
-    const allForStudent = await db.query.attemptsTable.findMany({
-      where: (t, { eq }) => eq(t.studentId, studentId),
-    });
-    console.log(
-      "[getAttemptRecords] all attempts for studentId=",
-      studentId,
-      "count=",
-      allForStudent.length,
-      "rows=",
-      allForStudent,
-    );
-  }
-  return rows;
 };
 
 export const getAssessmentAttempt = (localId: string) => {
@@ -64,58 +49,56 @@ export const getQuestions = (activityId: string) => {
   });
 };
 
-export const getQuestionCount = async (
-  activityId: string,
-): Promise<number> => {
-  const rows = await db.query.assessmentQuestionTable.findMany({
+// Compilable building blocks for the review screen — each returns an
+// un-awaited Drizzle query the hook can wrap with `toCompilableQuery`
+// for PowerSync's watch. The five-step join used to live in
+// `getAttemptReviewData`, but a single async queryFn could only refresh
+// on mount/focus. Splitting into watches makes the review screen react
+// live to server-side grading updates.
+
+export const getActivityById = (activityId: string) => {
+  return db.query.assessmentTable.findFirst({
+    where: (t, { eq }) => eq(t.id, activityId),
+  });
+};
+
+export const getAnswersForRetakeRecordId = (retakeRecordId: string) => {
+  return db.query.attemptAnswerTable.findMany({
+    where: (t, { eq }) => eq(t.retakeRecordId, retakeRecordId),
+  });
+};
+
+export const getChoicesForQuestionIds = (questionIds: number[]) => {
+  // Drizzle's `inArray(col, [])` historically produced invalid SQL on
+  // some adapters; using a never-matching sentinel keeps the SQL safe
+  // and the watch alive while the questions list is still loading.
+  const ids = questionIds.length > 0 ? questionIds : [-1];
+  return db.query.assessmentQuestionsTable.findMany({
+    where: (t) => inArray(t.questionId, ids),
+    orderBy: (t, { asc }) => [asc(t.id)],
+  });
+};
+
+// Returns the drizzle query builder (not awaited) so the hook can wrap
+// it with `toCompilableQuery` for PowerSync's watch. The hook drops join
+// rows whose module hasn't synced yet — the next watch tick will surface
+// them when they arrive.
+export const getAssessmentMaterials = (activityId: string) => {
+  return db.query.assessmentAdditionalModulesJoin.findMany({
+    where: (t, { eq }) => eq(t.activityId, activityId),
+    with: { module: true },
+  });
+};
+
+// Returns the drizzle query builder so the hook can wrap it for watch.
+// The hook reduces `rows.length` for the consumer.
+export const getQuestionCount = (activityId: string) => {
+  return db.query.assessmentQuestionTable.findMany({
     where: (t, { eq }) => eq(t.activityId, activityId),
     columns: { id: true },
   });
-  return rows.length;
 };
 
-export const getOrderedQuestions = async (
-  activityId: string,
-  questionOrder: number[],
-) => {
-  console.log("[getOrderedQuestions] called with:", {
-    activityId,
-    questionOrder,
-  });
-  if (!Array.isArray(questionOrder) || questionOrder.length === 0) {
-    console.warn(
-      "[getOrderedQuestions] non-array questionOrder, returning []:",
-      questionOrder,
-    );
-    return [];
-  }
-  const questions = await db.query.assessmentQuestionTable.findMany({
-    where: (t, { eq }) => eq(t.activityId, activityId),
-  });
-  console.log(
-    "[getOrderedQuestions] questions found for activityId:",
-    questions.length,
-    "ids:",
-    questions.map((q) => q.id),
-  );
-
-  if (questions.length === 0) {
-    const sample = await db.query.assessmentQuestionTable.findMany({});
-    console.log(
-      "[getOrderedQuestions] sample of all question rows (count=",
-      sample.length,
-      "):",
-      sample.slice(0, 5).map((q) => ({ id: q.id, activityId: q.activityId })),
-    );
-  }
-
-  const questionMap = new Map(questions.map((q) => [String(q.id), q]));
-  const ordered = questionOrder
-    .map((id) => questionMap.get(String(id)))
-    .filter((q): q is NonNullable<typeof q> => q != null);
-  console.log("[getOrderedQuestions] final ordered count:", ordered.length);
-  return ordered;
-};
 
 export const saveAnswer = async (
   retakeRecordId: string,
@@ -160,48 +143,6 @@ export const saveAnswer = async (
     .returning();
 };
 
-export const getAnswersForAttempt = async (attemptLocalId: string) => {
-  console.log("[getAnswersForAttempt] attemptLocalId:", attemptLocalId);
-  const attempt = await db.query.attemptsTable.findFirst({
-    where: (t, { eq }) => eq(t.localId, attemptLocalId),
-  });
-  console.log(
-    "[getAnswersForAttempt] attempt row:",
-    attempt
-      ? { id: attempt.id, localId: attempt.localId, status: attempt.status }
-      : null,
-  );
-  if (!attempt) return [];
-
-  const rows = await db.query.attemptAnswerTable.findMany({
-    where: (t, { eq }) => eq(t.retakeRecordId, attempt.id),
-  });
-  console.log(
-    "[getAnswersForAttempt] answer rows count:",
-    rows.length,
-    "sample:",
-    rows.slice(0, 5).map((r) => ({
-      id: r.id,
-      retakeRecordId: r.retakeRecordId,
-      activityQuestionId: r.activityQuestionId,
-      studentAnswer: r.studentAnswer,
-    })),
-  );
-  if (rows.length === 0) {
-    const all = await db.query.attemptAnswerTable.findMany({});
-    console.log(
-      "[getAnswersForAttempt] all answer rows count:",
-      all.length,
-      "sample:",
-      all.slice(0, 5).map((r) => ({
-        id: r.id,
-        retakeRecordId: r.retakeRecordId,
-        studentId: r.studentId,
-      })),
-    );
-  }
-  return rows;
-};
 
 export const updateHeartbeat = (attemptLocalId: string) => {
   return db
@@ -221,38 +162,6 @@ export const getQuestionTypes = () => {
   return db.query.questionType.findMany();
 };
 
-export const getChoicesForActivity = async (activityId: string) => {
-  console.log("[getChoicesForActivity] activityId:", activityId);
-  const questions = await db.query.assessmentQuestionTable.findMany({
-    where: (t, { eq }) => eq(t.activityId, activityId),
-    columns: { id: true },
-  });
-  const questionIds = questions.map((q) => q.id);
-  console.log("[getChoicesForActivity] questionIds:", questionIds);
-  if (questionIds.length === 0) return [];
-  const choices = await db.query.assessmentQuestionsTable.findMany({
-    where: (t) => inArray(t.questionId, questionIds),
-    orderBy: (t, { asc }) => [asc(t.id)],
-  });
-  console.log(
-    "[getChoicesForActivity] choices count:",
-    choices.length,
-    "sample:",
-    choices.slice(0, 3),
-  );
-  if (choices.length === 0) {
-    const sample = await db.query.assessmentQuestionsTable.findMany({});
-    console.log(
-      "[getChoicesForActivity] all choice rows count=",
-      sample.length,
-      "sample=",
-      sample
-        .slice(0, 5)
-        .map((c) => ({ id: c.id, questionId: c.questionId, text: c.choiceText })),
-    );
-  }
-  return choices;
-};
 
 export const getOngoingAttempt = (
   studentActivityId: string,

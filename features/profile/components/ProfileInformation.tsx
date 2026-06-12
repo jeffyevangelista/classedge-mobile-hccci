@@ -1,27 +1,44 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { View } from "react-native";
-import { ScreenScrollView } from "@/components/ScreenScrollView";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
-import { useUserDetails } from "../profile.hooks";
+import { Avatar, Card, Skeleton } from "heroui-native";
 import { AppText } from "@/components/AppText";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import NoDataFallback from "@/components/NoDataFallback";
-import { Card, Skeleton } from "heroui-native";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
+import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import { formatDate } from "@/features/calendar/components/date-formatter";
+import useStore from "@/lib/store";
 import { toTitleCase } from "@/utils/toTitleCase";
+import { useUserDetails } from "../profile.hooks";
 
-// 1. Move static mapping outside to prevent re-creation on every render
-const INFO_FIELDS = [
-  { label: "Full Name", key: "fullName" },
-  { label: "Phone Number", key: "phoneNumber" },
+type FieldKey =
+  | "fullName"
+  | "phoneNumber"
+  | "dateOfBirth"
+  | "gender"
+  | "nationality"
+  | "address"
+  | "idNumber";
+
+type FieldDef = { label: string; key: FieldKey };
+
+const PERSONAL_FIELDS: FieldDef[] = [
   { label: "Date of Birth", key: "dateOfBirth" },
   { label: "Gender", key: "gender" },
   { label: "Nationality", key: "nationality" },
+];
+
+const CONTACT_FIELDS: FieldDef[] = [
+  { label: "Phone Number", key: "phoneNumber" },
   { label: "Address", key: "address" },
-  { label: "Id number", key: "idNumber" },
-] as const;
+  { label: "ID Number", key: "idNumber" },
+];
 
 const ProfileInformation = () => {
   const { data, isLoading, error, refresh } = useUserDetails();
+  const role = useStore((s) => s.authUser?.role);
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
@@ -33,22 +50,15 @@ const ProfileInformation = () => {
     }
   }, [refresh]);
 
-  // 2. Memoize formatted data to prevent unnecessary string logic on re-renders
   const formattedData = useMemo(() => {
     if (!data || data.length === 0) return null;
+    const row = data[0];
     return {
-      ...data[0],
+      ...row,
       fullName:
-        toTitleCase(
-          `${data[0]?.firstName ?? ""} ${data[0]?.lastName ?? ""}`.trim(),
-        ) || "N/A",
-      dateOfBirth: data[0]?.dateOfBirth
-        ? new Date(data[0].dateOfBirth).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
-        : null,
+        toTitleCase(`${row?.firstName ?? ""} ${row?.lastName ?? ""}`.trim()) ||
+        null,
+      dateOfBirth: row?.dateOfBirth ? formatDate(row.dateOfBirth) : null,
     };
   }, [data]);
 
@@ -69,67 +79,181 @@ const ProfileInformation = () => {
       />
     );
 
+  const fullName =
+    formattedData.fullName ??
+    (toTitleCase(
+      `${formattedData.firstName ?? ""} ${formattedData.lastName ?? ""}`.trim(),
+    ) ||
+      "User");
+
   return (
     <ScreenScrollView
       className="p-2.5"
       refreshControl={
         <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />
       }
+      contentContainerClassName="gap-6 pb-8"
     >
-      {INFO_FIELDS.map((field) => (
-        <InFormationItem
-          key={field.label}
-          label={field.label}
-          value={
-            String(
-              formattedData[field.key as keyof typeof formattedData] ?? "",
-            ) || null
-          }
-        />
-      ))}
+      <ProfileHero
+        fullName={fullName}
+        role={role}
+        idNumber={formattedData.idNumber ?? null}
+        photo={formattedData.studentPhoto}
+      />
+
+      <FieldSection
+        title="Personal"
+        fields={PERSONAL_FIELDS}
+        data={formattedData}
+      />
+      <FieldSection
+        title="Contact"
+        fields={CONTACT_FIELDS}
+        data={formattedData}
+      />
     </ScreenScrollView>
   );
 };
 
-// 4. Memoize the child component to prevent unnecessary re-renders
-const InFormationItem = React.memo(
-  ({ label, value }: { label: string; value: string | null | undefined }) => (
-    <Card className="mb-2.5 shadow-none rounded-xl max-w-3xl mx-auto w-full">
-      <View className="flex-row justify-between items-center p-3">
-        <View>
-          <AppText
-            weight="regular"
-            className="text-gray-500 dark:text-gray-400 text-xs uppercase"
-          >
-            {label}
-          </AppText>
-          <AppText weight="semibold" className="text-lg">
-            {value || "—"}
+const ProfileHero = ({
+  fullName,
+  role,
+  idNumber,
+  photo,
+}: {
+  fullName: string;
+  role?: string | null;
+  idNumber: string | null;
+  photo?: string | null;
+}) => (
+  <View className="items-center max-w-3xl mx-auto w-full">
+    <Avatar
+      alt={fullName}
+      size="lg"
+      className="w-20 h-20 border-2 border-border"
+    >
+      <AttachmentAvatarImage path={photo ?? undefined} />
+      <AvatarFallbackImage />
+    </Avatar>
+    <AppText weight="bold" className="text-xl mt-3 text-center">
+      {fullName}
+    </AppText>
+    <View className="flex-row items-center gap-1.5 mt-1.5 flex-wrap justify-center">
+      {role ? (
+        <View className="px-2.5 py-0.5 rounded-full bg-accent-soft">
+          <AppText weight="semibold" className="text-[11px] text-accent">
+            {role}
           </AppText>
         </View>
-      </View>
-    </Card>
-  ),
+      ) : null}
+      {idNumber ? (
+        <View className="px-2.5 py-0.5 rounded-full bg-surface-secondary border border-border">
+          <AppText weight="semibold" className="text-[11px] text-muted">
+            ID · {idNumber}
+          </AppText>
+        </View>
+      ) : null}
+    </View>
+  </View>
 );
 
-const ProfileInformationSkeleton = () => {
-  return (
-    <View className="p-2.5">
-      {Array(7)
-        .fill(0)
-        .map((_, index) => (
-          <Card
-            key={index}
-            className="mb-2.5 shadow-none rounded-xl max-w-3xl mx-auto w-full"
+const FieldSection = ({
+  title,
+  fields,
+  data,
+}: {
+  title: string;
+  fields: FieldDef[];
+  data: Record<string, unknown>;
+}) => (
+  <View className="max-w-3xl mx-auto w-full">
+    <View className="px-3 mb-2">
+      <AppText
+        weight="semibold"
+        className="text-xs uppercase tracking-wider text-muted"
+      >
+        {title}
+      </AppText>
+    </View>
+    <Card className="shadow-none rounded-xl overflow-hidden">
+      {fields.map((field, idx) => {
+        const raw = data[field.key];
+        const value =
+          raw === null || raw === undefined || raw === "" ? null : String(raw);
+        return (
+          <View
+            key={field.label}
+            className={idx < fields.length - 1 ? "border-b border-border" : ""}
           >
-            <View className="flex-row justify-between items-center p-3">
-              <View className="gap-1.5">
-                <Skeleton className="h-3 w-20 rounded" />
-                <Skeleton className="h-5 w-40 rounded" />
-              </View>
-            </View>
+            <InformationItem label={field.label} value={value} />
+          </View>
+        );
+      })}
+    </Card>
+  </View>
+);
+
+const InformationItem = React.memo(
+  ({ label, value }: { label: string; value: string | null }) => (
+    <View
+      accessibilityLabel={`${label}: ${value ?? "Not provided"}`}
+      className={`p-3 ${value ? "" : "opacity-60"}`}
+    >
+      <AppText
+        weight="regular"
+        className="text-muted text-xs uppercase tracking-wider"
+      >
+        {label}
+      </AppText>
+      {value ? (
+        <AppText weight="semibold" className="text-base mt-0.5">
+          {value}
+        </AppText>
+      ) : (
+        <AppText className="text-xs text-muted mt-0.5">Not provided</AppText>
+      )}
+    </View>
+  ),
+);
+InformationItem.displayName = "InformationItem";
+
+const ProfileInformationSkeleton = () => {
+  const personalCount = PERSONAL_FIELDS.length;
+  const contactCount = CONTACT_FIELDS.length;
+  return (
+    <View className="p-2.5 gap-6">
+      <View className="items-center max-w-3xl mx-auto w-full">
+        <Skeleton className="w-20 h-20 rounded-full" />
+        <Skeleton className="h-6 w-40 rounded mt-3" />
+        <View className="flex-row gap-1.5 mt-1.5">
+          <Skeleton className="h-4 w-16 rounded-full" />
+          <Skeleton className="h-4 w-24 rounded-full" />
+        </View>
+      </View>
+      {[personalCount, contactCount].map((count, sectionIdx) => (
+        <View key={sectionIdx} className="max-w-3xl mx-auto w-full">
+          <View className="px-3 mb-2">
+            <Skeleton className="h-3 w-16 rounded" />
+          </View>
+          <Card className="shadow-none rounded-xl overflow-hidden">
+            {Array(count)
+              .fill(0)
+              .map((_, index) => (
+                <View
+                  key={index}
+                  className={
+                    index < count - 1 ? "border-b border-border" : ""
+                  }
+                >
+                  <View className="p-3 gap-1.5">
+                    <Skeleton className="h-3 w-20 rounded" />
+                    <Skeleton className="h-5 w-40 rounded" />
+                  </View>
+                </View>
+              ))}
           </Card>
-        ))}
+        </View>
+      ))}
     </View>
   );
 };

@@ -67,7 +67,15 @@ const FinancialRecordsScreen = () => {
     );
   }, [data, selectedTermId]);
 
-  if (isLoadingFinancials || isLoadingTerms) {
+  // Skeleton during the initial fetch AND during a retry from the
+  // error state — `isLoading` only flips on first mount, so we also
+  // arm on `isRefetching && !data` to avoid a blank flash between
+  // tapping "Try again" and the error reappearing.
+  if (
+    isLoadingFinancials ||
+    isLoadingTerms ||
+    (isRefetching && !data?.results?.length)
+  ) {
     return <FinancialRecordsSkeleton />;
   }
 

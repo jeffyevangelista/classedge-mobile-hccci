@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 export const questionStyles = StyleSheet.create({
   questionContainer: {
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 16,
     borderWidth: 1,
   },
   questionText: {

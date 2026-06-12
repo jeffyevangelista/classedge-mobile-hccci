@@ -1,14 +1,19 @@
-import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { AppText } from "@/components/AppText";
+import { CollapsibleDescription } from "@/components/CollapsibleDescription";
 import { AttachmentFile } from "@/features/attachments/components/AttachmentFile";
 
 interface Props {
   text: string | undefined;
   filePath: string | undefined;
+  /**
+   * Suppress the "INSTRUCTIONS" section label. Use when this component is
+   * rendered inside a tab whose label already names the section, to avoid
+   * the duplicate header that would otherwise read "Instructions ›
+   * INSTRUCTIONS".
+   */
+  hideHeader?: boolean;
 }
-
-const COLLAPSE_THRESHOLD = 280;
 
 const getFilename = (path: string): string => {
   const cleaned = path.split("?")[0].split("#")[0];
@@ -20,7 +25,11 @@ const getFilename = (path: string): string => {
   }
 };
 
-export const AssessmentInstructions = ({ text, filePath }: Props) => {
+export const AssessmentInstructions = ({
+  text,
+  filePath,
+  hideHeader = false,
+}: Props) => {
   const trimmedText = text?.trim() ?? "";
   const hasText = trimmedText.length > 0;
   const cleanedFilePath = filePath?.trim() ?? "";
@@ -30,11 +39,22 @@ export const AssessmentInstructions = ({ text, filePath }: Props) => {
 
   return (
     <View>
-      <AppText weight="semibold" className="text-base mb-2">
-        Instructions
-      </AppText>
+      {hideHeader ? null : (
+        <AppText
+          weight="semibold"
+          className="text-xs uppercase tracking-wider text-muted mb-2"
+        >
+          Instructions
+        </AppText>
+      )}
       <View className="gap-3">
-        {hasText ? <InstructionText text={trimmedText} /> : null}
+        {hasText ? (
+          <CollapsibleDescription
+            text={trimmedText}
+            textClassName="text-sm leading-relaxed"
+            noun="instructions"
+          />
+        ) : null}
         {hasFile ? (
           <AttachmentFile
             file={cleanedFilePath}
@@ -42,34 +62,6 @@ export const AssessmentInstructions = ({ text, filePath }: Props) => {
           />
         ) : null}
       </View>
-    </View>
-  );
-};
-
-const InstructionText = ({ text }: { text: string }) => {
-  const [expanded, setExpanded] = useState(false);
-  const canCollapse = text.length > COLLAPSE_THRESHOLD;
-
-  return (
-    <View>
-      <AppText
-        className="text-sm leading-relaxed"
-        numberOfLines={!canCollapse || expanded ? undefined : 4}
-      >
-        {text}
-      </AppText>
-      {canCollapse ? (
-        <Pressable
-          onPress={() => setExpanded((e) => !e)}
-          accessibilityRole="button"
-          accessibilityLabel={expanded ? "Show less" : "Show more"}
-          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-        >
-          <AppText weight="semibold" className="text-accent text-sm mt-2">
-            {expanded ? "Show less" : "Show more"}
-          </AppText>
-        </Pressable>
-      ) : null}
     </View>
   );
 };

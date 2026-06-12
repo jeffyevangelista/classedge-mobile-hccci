@@ -48,6 +48,7 @@ export type Assessment = {
   maxRetake: number;
   retakeMethod: "highest" | string; // can refine if backend has strict choices
   activityInstruction: string;
+  activityFileInstruction: string | null;
   classroomMode: boolean;
   shuffleQuestions: boolean;
   studentRetakeCount: number;

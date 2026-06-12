@@ -1,10 +1,13 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Select } from "heroui-native";
+import { useState } from "react";
 import { Platform, Pressable, View } from "react-native";
-import { AppText } from "@/components/AppText";
 import BackButton from "@/components/BackButton";
 import { Icon } from "@/components/Icon";
 import { useClassroom } from "@/features/classroom/classroom.hooks";
+import {
+  CreateActionSheet,
+  type CreateAction,
+} from "@/features/classroom/components/CreateActionSheet";
 import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 
 const ClassroomLayout = () => {
@@ -13,11 +16,30 @@ const ClassroomLayout = () => {
   const headerOptions = useThemedHeaderOptions();
   const { data } = useClassroom(classroomId);
   const subjectName = data?.[0]?.subjectName ?? "";
+  const [createSheetOpen, setCreateSheetOpen] = useState(false);
+
+  // Adding a new "Create ..." flow is a one-liner here.
+  const createActions: CreateAction[] = [
+    {
+      key: "activity",
+      icon: "PencilLineIcon",
+      label: "In-class activity",
+      description: "You'll grade students manually after class.",
+      onPress: () =>
+        router.push(`/(main)/classroom/${classroomId}/create-activity`),
+    },
+  ];
 
   return (
+    <>
     <Stack
       screenOptions={{
         ...headerOptions,
+        // iOS centers headers by default; force left-alignment on both
+        // platforms so the title sits right after the back button —
+        // matches the Android convention and avoids the title getting
+        // visually shoved by iOS's liquid-glass back-button capsule.
+        headerTitleAlign: "left",
         headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
         headerTitle: "",
       }}
@@ -28,38 +50,21 @@ const ClassroomLayout = () => {
           headerTitle: subjectName,
           headerRight: ({ tintColor }) => (
             <View className="flex-row items-center gap-1">
-              <Select
-                onValueChange={(v) => {
-                  const value = Array.isArray(v) ? v[0]?.value : v?.value;
-                  if (value === "activity") {
-                    router.push(
-                      `/(main)/classroom/${classroomId}/create-activity`,
-                    );
-                  }
-                }}
+              <Pressable
+                onPress={() => setCreateSheetOpen(true)}
+                className="w-9 h-9 rounded-full flex justify-center items-center"
+                accessibilityRole="button"
+                accessibilityLabel="Create new"
               >
-                <Select.Trigger
-                  variant="unstyled"
-                  className="w-9 h-9 rounded-full justify-center items-center"
-                >
-                  <Icon name="PlusIcon" color={tintColor} />
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Overlay />
-                  <Select.Content presentation="popover">
-                    <Select.Item value="activity" label="Create Activity">
-                      <AppText className="text-sm text-foreground">
-                        Create Activity
-                      </AppText>
-                    </Select.Item>
-                  </Select.Content>
-                </Select.Portal>
-              </Select>
+                <Icon name="PlusIcon" color={tintColor} />
+              </Pressable>
               <Pressable
                 onPress={() =>
                   router.push(`/(main)/classroom/${classroomId}/course-details`)
                 }
                 className="w-9 h-9 rounded-full flex justify-center items-center"
+                accessibilityRole="button"
+                accessibilityLabel="Class info"
               >
                 <Icon
                   name="InfoIcon"
@@ -74,7 +79,7 @@ const ClassroomLayout = () => {
       <Stack.Screen
         name="create-activity"
         options={{
-          headerTitle: "Create Activity",
+          headerTitle: "New in-class activity",
         }}
       />
       <Stack.Screen
@@ -85,6 +90,12 @@ const ClassroomLayout = () => {
       />
       <Stack.Screen name="course-details" />
     </Stack>
+    <CreateActionSheet
+      isOpen={createSheetOpen}
+      onOpenChange={setCreateSheetOpen}
+      actions={createActions}
+    />
+    </>
   );
 };
 

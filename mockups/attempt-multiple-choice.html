@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Attempt — Multiple Choice</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+          sans-serif;
+        background: #0f172a;
+      }
+      .panel {
+        width: 360px;
+        background: white;
+        border-radius: 20px;
+        padding: 16px;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.45);
+      }
+      .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        color: #94a3b8;
+        margin-bottom: 12px;
+      }
+    </style>
+  </head>
+  <body class="p-10">
+    <div class="text-white text-sm mb-6 max-w-3xl">
+      <span class="font-semibold">Multiple-choice polish.</span> Stronger
+      selected state (accent left strip + tinted fill), more prominent
+      unselected letter chip, larger touch target, rounded-xl to match the
+      question card. Same content, clearer visual hierarchy.
+    </div>
+
+    <div class="flex flex-wrap gap-8 items-start">
+      <!-- BEFORE -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          Before
+        </div>
+        <div class="panel">
+          <div class="label">Multiple choice</div>
+          <div class="font-semibold text-slate-900 mb-4">
+            Which of the following best describes Newton's first law?
+          </div>
+          <div class="space-y-2">
+            <!-- unselected -->
+            <div class="px-3 py-3 rounded-lg border border-slate-200">
+              <div class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-semibold text-slate-900">
+                  A
+                </div>
+                <div class="flex-1 text-sm text-slate-700">
+                  Force equals mass times acceleration
+                </div>
+              </div>
+            </div>
+            <!-- selected -->
+            <div class="px-3 py-3 rounded-lg border" style="border-color: #2563eb; background: rgba(37, 99, 235, 0.1)">
+              <div class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold text-white" style="background: #2563eb">
+                  B
+                </div>
+                <div class="flex-1 text-sm text-slate-900">
+                  An object in motion stays in motion unless acted on by a force
+                </div>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+            </div>
+            <div class="px-3 py-3 rounded-lg border border-slate-200">
+              <div class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-semibold text-slate-900">
+                  C
+                </div>
+                <div class="flex-1 text-sm text-slate-700">
+                  Every action has an equal and opposite reaction
+                </div>
+              </div>
+            </div>
+            <div class="px-3 py-3 rounded-lg border border-slate-200">
+              <div class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-semibold text-slate-900">
+                  D
+                </div>
+                <div class="flex-1 text-sm text-slate-700">
+                  Energy can't be created or destroyed
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-white/60 text-xs mt-2 max-w-[360px] space-y-1">
+          <div>• Selected: faint blue tint, thin border, tiny check</div>
+          <div>• Letter chip blends with background when unselected</div>
+          <div>• Tight padding</div>
+        </div>
+      </div>
+
+      <!-- AFTER -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          After
+        </div>
+        <div class="panel">
+          <div class="label">Multiple choice</div>
+          <div class="font-semibold text-slate-900 mb-4">
+            Which of the following best describes Newton's first law?
+          </div>
+          <div class="space-y-2">
+            <!-- unselected -->
+            <div class="relative px-3.5 py-3.5 rounded-xl border border-slate-200">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold text-slate-700" style="background: #f1f5f9; border: 1px solid #e2e8f0">
+                  A
+                </div>
+                <div class="flex-1 text-sm text-slate-700">
+                  Force equals mass times acceleration
+                </div>
+              </div>
+            </div>
+            <!-- selected — left accent strip + tinted fill + bold border -->
+            <div class="relative px-3.5 py-3.5 rounded-xl border-2 overflow-hidden" style="border-color: #2563eb; background: #eff6ff">
+              <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #2563eb"></div>
+              <div class="flex items-center gap-3 pl-1">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold text-white" style="background: #2563eb">
+                  B
+                </div>
+                <div class="flex-1 text-sm font-medium" style="color: #1e3a8a">
+                  An object in motion stays in motion unless acted on by a force
+                </div>
+                <div class="w-6 h-6 rounded-full flex items-center justify-center" style="background: #2563eb">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="relative px-3.5 py-3.5 rounded-xl border border-slate-200">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold text-slate-700" style="background: #f1f5f9; border: 1px solid #e2e8f0">
+                  C
+                </div>
+                <div class="flex-1 text-sm text-slate-700">
+                  Every action has an equal and opposite reaction
+                </div>
+              </div>
+            </div>
+            <div class="relative px-3.5 py-3.5 rounded-xl border border-slate-200">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold text-slate-700" style="background: #f1f5f9; border: 1px solid #e2e8f0">
+                  D
+                </div>
+                <div class="flex-1 text-sm text-slate-700">
+                  Energy can't be created or destroyed
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-white/60 text-xs mt-2 max-w-[360px] space-y-1">
+          <div>• 4-pt accent strip on selected — unmistakable signal</div>
+          <div>• Letter chip is rounded-xl square with stronger contrast</div>
+          <div>• Selected check sits in a filled accent circle</div>
+          <div>• rounded-xl + 14-pt padding matches the question card</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disabled state -->
+    <div class="mt-10 flex flex-wrap gap-8 items-start">
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          Disabled (time-up)
+        </div>
+        <div class="panel" style="opacity: 0.6">
+          <div class="label">Multiple choice</div>
+          <div class="font-semibold text-slate-900 mb-4">
+            Which of the following best describes Newton's first law?
+          </div>
+          <div class="space-y-2">
+            <div class="relative px-3.5 py-3.5 rounded-xl border border-slate-200">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold text-slate-500" style="background: #f1f5f9">A</div>
+                <div class="flex-1 text-sm text-slate-500">Force equals mass times acceleration</div>
+              </div>
+            </div>
+            <div class="relative px-3.5 py-3.5 rounded-xl border-2 overflow-hidden" style="border-color: #93c5fd; background: #eff6ff">
+              <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #93c5fd"></div>
+              <div class="flex items-center gap-3 pl-1">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold text-white" style="background: #93c5fd">B</div>
+                <div class="flex-1 text-sm" style="color: #475569">An object in motion stays in motion unless acted on by a force</div>
+                <div class="w-6 h-6 rounded-full flex items-center justify-center" style="background: #93c5fd">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12" /></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-white/60 text-xs mt-2 max-w-[360px]">
+          Container opacity drops; selected state remains visible but muted.
+        </div>
+      </div>
+
+      <!-- With image -->
+      <div>
+        <div class="text-white/80 text-xs mb-2 uppercase tracking-widest">
+          Choice with image
+        </div>
+        <div class="panel">
+          <div class="label">Multiple choice</div>
+          <div class="font-semibold text-slate-900 mb-4">
+            Which diagram correctly shows refraction?
+          </div>
+          <div class="space-y-2">
+            <div class="relative px-3.5 py-3.5 rounded-xl border-2 overflow-hidden" style="border-color: #2563eb; background: #eff6ff">
+              <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #2563eb"></div>
+              <div class="flex items-center gap-3 pl-1 mb-3">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold text-white" style="background: #2563eb">A</div>
+                <div class="flex-1 text-sm font-medium" style="color: #1e3a8a">Light bends toward the normal entering glass</div>
+                <div class="w-6 h-6 rounded-full flex items-center justify-center" style="background: #2563eb">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12" /></svg>
+                </div>
+              </div>
+              <div class="rounded-lg overflow-hidden" style="background: #f8fafc; height: 110px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 11px">[diagram]</div>
+            </div>
+          </div>
+        </div>
+        <div class="text-white/60 text-xs mt-2 max-w-[360px]">
+          Image stays below text inside the same card; left strip extends
+          full height.
+        </div>
+      </div>
+    </div>
+
+    <div class="text-white/70 text-xs mt-10 max-w-3xl space-y-2">
+      <div class="font-semibold text-white">Specifics:</div>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>
+          <span class="text-white">Container</span>:
+          <code>rounded-xl</code> (12pt) instead of <code>rounded-lg</code>
+          (8pt), matching the question card.
+        </li>
+        <li>
+          <span class="text-white">Padding</span>: <code>px-3.5 py-3.5</code>
+          (14pt) up from 12pt — larger touch target.
+        </li>
+        <li>
+          <span class="text-white">Letter chip</span>: rounded-xl square (was
+          rounded-full circle), <code>w-8 h-8</code> (was 7×7).
+          <code>bg-default</code> + border on unselected; solid
+          <code>bg-accent</code> with white text on selected. Bold weight.
+        </li>
+        <li>
+          <span class="text-white">Selected accent strip</span>: 4-pt
+          <code>bg-accent</code> bar on the left edge. Unmistakable visual
+          signal that scales down to small screens.
+        </li>
+        <li>
+          <span class="text-white">Selected check</span>: 6×6 filled accent
+          circle with white check (was floating check icon). More
+          recognizable as a "selected" mark.
+        </li>
+        <li>
+          <span class="text-white">Selected border</span>:
+          <code>border-2</code> instead of <code>border</code> — slightly
+          bolder edge.
+        </li>
+        <li>
+          <span class="text-white">Pressable</span> instead of
+          TouchableOpacity for Android ripple support.
+        </li>
+        <li>
+          <span class="text-white">Disabled</span>: container drops opacity;
+          selected option dims to a desaturated tint.
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>

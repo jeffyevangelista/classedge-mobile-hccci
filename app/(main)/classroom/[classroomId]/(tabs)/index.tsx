@@ -3,7 +3,7 @@ import LessonList from "@/features/classroom/components/LessonList";
 
 export default function MaterialsTab() {
   return (
-    <Screen className="py-2.5">
+    <Screen>
       <LessonList />
     </Screen>
   );

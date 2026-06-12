@@ -1,53 +1,39 @@
-import { StyleSheet, View } from "react-native";
+import AuthIllustrationLayout from "@/components/AuthIllustrationLayout";
 import { AppText } from "@/components/AppText";
 import PasswordResetForm from "@/features/auth/components/PasswordResetForm";
-import { useWindowDimensions } from "react-native";
-import Screen from "@/components/screen";
 import EnterPassword from "@/assets/illustrations/forgot-password/enter-password.svg";
 import { Button } from "heroui-native";
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
+import useStore from "@/lib/store";
 
 const PasswordResetScreen = () => {
-  const { height, width } = useWindowDimensions();
-  const verticalPadding = height > 800 ? 64 : 32;
+  const router = useRouter();
+  const email = useStore((s) => s.email);
 
   return (
-    <Screen>
-      <View
-        style={{
-          paddingVertical: verticalPadding,
-          paddingBottom: verticalPadding / 2,
-        }}
-        className="flex-1 items-center justify-start px-6"
+    <AuthIllustrationLayout
+      Illustration={EnterPassword}
+      title="Set a New Password"
+      description={
+        <>
+          Create a new password for{" "}
+          <AppText weight="semibold" className="text-foreground">
+            {email}
+          </AppText>
+        </>
+      }
+      step={{ current: 3, total: 3 }}
+    >
+      <PasswordResetForm />
+      <Button
+        size="sm"
+        variant="ghost"
+        onPress={() => router.dismissTo("/(auth)/login")}
       >
-        <EnterPassword
-          width={width * 0.7}
-          height={height * 0.2}
-          style={styles.image}
-        />
-        <AppText
-          className="text-center text-2xl text-foreground mb-2"
-          weight="semibold"
-        >
-          Set a New Password
-        </AppText>
-
-        <AppText className="text-center text-muted mb-8">
-          Create a new, more secure password to protect your account
-        </AppText>
-        <PasswordResetForm />
-        <Link href={"/(auth)/login"} asChild>
-          <Button size={height > 800 ? "lg" : "md"} variant="ghost">
-            <Button.Label>Cancel</Button.Label>
-          </Button>
-        </Link>
-      </View>
-    </Screen>
+        <Button.Label>Cancel</Button.Label>
+      </Button>
+    </AuthIllustrationLayout>
   );
 };
-
-const styles = StyleSheet.create({
-  image: { marginBottom: 40 },
-});
 
 export default PasswordResetScreen;

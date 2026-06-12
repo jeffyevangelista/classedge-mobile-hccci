@@ -126,22 +126,33 @@ const AnnouncementDetailsScreen = () => {
           {announcement.description}
         </AppText>
 
-        {announcement.events.length > 0 && (
-          <>
-            <AppText weight="semibold" className="text-base mt-2">
-              Associated Events
-            </AppText>
-            <View className="gap-2">
-              {announcement.events.map((eventLink) => (
-                <EventCard
-                  key={eventLink.event.id}
-                  event={eventLink.event}
-                  onPress={() => router.push(`/event/${eventLink.event.id}`)}
-                />
-              ))}
-            </View>
-          </>
-        )}
+        {(() => {
+          // Defensive filter: in-flight push payloads from older server
+          // builds shipped `events: [number]` (flat IDs) instead of
+          // `[{ event: {...} }]`, which crashed the map below. Filter out
+          // any entries missing the nested event before rendering — they
+          // hydrate correctly once PowerSync catches up.
+          const validEvents = announcement.events.filter(
+            (eventLink) => eventLink?.event?.id != null,
+          );
+          if (validEvents.length === 0) return null;
+          return (
+            <>
+              <AppText weight="semibold" className="text-base mt-2">
+                Associated Events
+              </AppText>
+              <View className="gap-2">
+                {validEvents.map((eventLink) => (
+                  <EventCard
+                    key={eventLink.event.id}
+                    event={eventLink.event}
+                    onPress={() => router.push(`/event/${eventLink.event.id}`)}
+                  />
+                ))}
+              </View>
+            </>
+          );
+        })()}
       </View>
     </ScreenScrollView>
   );

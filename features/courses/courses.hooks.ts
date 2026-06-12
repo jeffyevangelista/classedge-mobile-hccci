@@ -96,11 +96,22 @@ export const useCourseTimeline = (courseId: string) => {
   });
 };
 
+// Watch-backed single material row. Re-fires when the material is
+// edited server-side and replicated locally (teacher updates the file,
+// description, dates, etc.).
 export const useCourseMaterial = (materialId: string) => {
-  return useQuery({
-    queryKey: ["course-material", materialId],
-    queryFn: () => getCourseMaterial(materialId),
-  });
+  const { data: rows, isLoading, isFetching, error, refresh } =
+    usePowerSyncQuery(toCompilableQuery(getCourseMaterial(materialId)));
+  const data = useMemo(() => rows?.[0] ?? null, [rows]);
+  return {
+    data,
+    isLoading,
+    isFetching,
+    isError: !!error,
+    error,
+    refetch: refresh ?? (async () => {}),
+    isRefetching: isFetching && !isLoading,
+  };
 };
 
 // Watch-backed course details (single enrollment row + nested subject +

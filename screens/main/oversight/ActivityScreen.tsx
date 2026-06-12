@@ -1,25 +1,35 @@
-import { AppText } from "@/components/AppText";
-import FileRenderer from "@/components/FileRenderer";
-import { useAssessment } from "@/features/oversight/oversight.hooks";
-import { formatDate } from "@/utils/formatDate";
 import { useLocalSearchParams } from "expo-router";
-import { Skeleton } from "heroui-native";
+import { Skeleton, useThemeColor } from "heroui-native";
+import React, { useState } from "react";
+import { Pressable, useWindowDimensions, View } from "react-native";
+import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
+import { Icon } from "@/components/Icon";
+import { LinkCard } from "@/components/LinkCard";
 import NoDataFallback from "@/components/NoDataFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { View } from "react-native";
-import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
+import Screen from "@/components/screen";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
+import { RemoteAttachmentFile } from "@/features/attachments/components/RemoteAttachmentFile";
+import { useAssessment } from "@/features/oversight/oversight.hooks";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { AssessmentHeroCard } from "@/screens/main/courses/course/assessment/details/AssessmentHeroCard";
+import { CollapsibleDescription } from "@/components/CollapsibleDescription";
+
+// Cap visible materials so a long attachment list doesn't dominate the
+// screen; expand-to-see-all matches the AssessmentMaterials behavior.
+const DEFAULT_VISIBLE_MATERIALS = 3;
 
 const ActivityScreen = () => {
   const { activityId } = useLocalSearchParams();
-  const { isLoading, isError, error, data, refetch, isRefetching } =
+  const { width: windowWidth } = useWindowDimensions();
+  const { isLoading, isError, error, data, refetch, isRefetching, isFetching } =
     useAssessment(activityId as string);
 
-  if (isLoading)
-    return (
-      <LoadingComponent isRefetching={isLoading} refetch={() => refetch()} />
-    );
+  // Skeleton during the initial fetch AND during a retry from the
+  // error state — see features/classroom/components/LessonList for the
+  // full rationale.
+  if (isLoading || (isFetching && !data)) return <ActivityScreenSkeleton />;
 
   if (isError)
     return (
@@ -35,108 +45,226 @@ const ActivityScreen = () => {
       />
     );
 
-  const ongoing = data.ongoingAttempt;
-  const isPastDue = data.endTime ? new Date(data.endTime) < new Date() : false;
-  const isOutOfAttempts = data.remainingAttempts === 0;
-
-  let actionButton = null;
+  // Phone vs tablet: the hero card has a compact mode that folds the
+  // rules into the subtitle, matching the student-side screen.
+  const isPhone = windowWidth < 768;
 
   return (
-    <View className="flex-1 w-full max-w-3xl mx-auto bg-background">
+    <Screen className="max-w-3xl mx-auto w-full">
       <ScreenScrollView
-        className="pb-24"
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
         }
-        showsVerticalScrollIndicator={false}
       >
-        <View className="p-4">
-          <AppText className="text-sm text-neutral-500 dark:text-neutral-400">
-            Due {formatDate(data.endTime, true)}
-          </AppText>
-          <AppText
-            weight="semibold"
-            className="text-xl text-neutral-900 dark:text-neutral-100 mt-1"
-          >
-            {data.activityTypeName}: {data?.activityName}
-          </AppText>
+        <View className="px-3 pt-3 gap-4">
+          <AssessmentHeroCard
+            activityName={data.activityName}
+            endTime={data.endTime}
+            // Teacher payload doesn't carry per-student progress data, so
+            // we hide the status pill and swap the two student-context
+            // stat tiles for configuration metrics (max score, max
+            // retakes) that are actually present in the API response.
+            questionCount={undefined}
+            timeDurationMinutes={data.timeDuration}
+            attemptsUsed={undefined}
+            maxRetake={data.maxRetake}
+            passingScore={data.passingScore}
+            passingScoreType={data.passingScoreType}
+            maxScore={data.maxScore}
+            retakeMethod={data.retakeMethod}
+            classroomMode={!!data.classroomMode}
+            isInProgress={false}
+            compact={isPhone}
+            hideStatusPill
+            // Suppress the rules line — "Highest of 5 attempts" would
+            // double up with the Max retakes stat tile below.
+            hideRules
+            primaryStat={{
+              icon: "TrophyIcon",
+              value: String(data.maxScore),
+              label: data.maxScore === 1 ? "Max point" : "Max points",
+            }}
+            trailingStat={{
+              icon: "ArrowsClockwiseIcon",
+              value: String(data.maxRetake),
+              label: data.maxRetake === 1 ? "Max retake" : "Max retakes",
+            }}
+          />
 
-          <AppText className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            {data.maxScore} Points • {data.timeDuration} Minutes
-          </AppText>
+          <ActivityInstructionsSection
+            text={data.activityInstruction}
+            filePath={data.activityFileInstruction ?? undefined}
+          />
 
-          {data.activityInstruction && (
-            <View className="mt-5">
-              <AppText
-                weight="semibold"
-                className="text-base text-neutral-900 dark:text-neutral-100 mb-1"
-              >
-                Instructions
-              </AppText>
-              <AppText className="text-neutral-500 dark:text-neutral-400 text-justify leading-relaxed">
-                {data.activityInstruction}
-              </AppText>
-            </View>
-          )}
-          <View className="mt-5">
-            <AppText
-              weight="semibold"
-              className="text-base text-neutral-900 dark:text-neutral-100 mb-1"
-            >
-              Materials
-            </AppText>
-            {data.lessonUrls.length > 0 ? (
-              data.lessonUrls.map((url) => (
-                <FileRenderer url={url} key={url.id} />
-              ))
-            ) : (
-              <AppText className="text-neutral-400 dark:text-neutral-500">
-                No materials available
-              </AppText>
-            )}
-          </View>
+          <ActivityMaterialsSection lessonUrls={data.lessonUrls} />
         </View>
       </ScreenScrollView>
-    </View>
+    </Screen>
   );
 };
 
-const LoadingComponent = ({
-  isRefetching,
-  refetch,
+const getFilenameFromUrl = (path: string): string => {
+  const cleaned = path.split("?")[0].split("#")[0];
+  const last = cleaned.split("/").pop() ?? "attachment";
+  try {
+    return decodeURIComponent(last);
+  } catch {
+    return last;
+  }
+};
+
+// Teacher-side instructions block — mirrors the student-side
+// AssessmentInstructions layout (uppercase section label +
+// collapsible description + attached file) but routes the attached
+// file through `RemoteAttachmentFile` because the teacher payload
+// surfaces it as a raw REST URL, not a PowerSync attachment path.
+const ActivityInstructionsSection = ({
+  text,
+  filePath,
 }: {
-  isRefetching: boolean;
-  refetch: () => void;
+  text: string | undefined;
+  filePath: string | undefined;
 }) => {
+  const trimmedText = text?.trim() ?? "";
+  const hasText = trimmedText.length > 0;
+  const cleanedFilePath = filePath?.trim() ?? "";
+  const hasFile = cleanedFilePath.length > 0;
+
+  if (!hasText && !hasFile) return null;
+
   return (
-    <View className="flex-1 w-full max-w-3xl mx-auto p-2.5 bg-background">
-      <ScreenScrollView
-        refreshControl={
-          <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
-        }
-        showsVerticalScrollIndicator={false}
+    <View>
+      <AppText
+        weight="semibold"
+        className="text-xs uppercase tracking-wider text-muted mb-2"
       >
-        <View className="w-full max-w-3xl mx-auto flex-1 gap-10">
-          <View className="gap-2">
-            <Skeleton className="rounded-full h-3 w-40" />
-            <Skeleton className="rounded-full h-6" />
-            <Skeleton className="rounded-full h-3 w-20" />
-          </View>
-          <Skeleton className="rounded-full h-4" />
-          <View className="gap-2">
-            <Skeleton className="h-4 w-28 rounded-full" />
-            <Skeleton className="rounded-full h-16" />
-            <Skeleton className="rounded-full h-16" />
-            <Skeleton className="rounded-full h-16" />
-            <Skeleton className="rounded-full h-16" />
-          </View>
-        </View>
-      </ScreenScrollView>
-      <View className="bg-surface-secondary absolute bottom-0 left-0 right-0 z-10 p-4">
-        <Skeleton className="h-12 w-full max-w-3xl mx-auto rounded-full" />
+        Instructions
+      </AppText>
+      <View className="gap-3">
+        {hasText ? (
+          <CollapsibleDescription
+            text={trimmedText}
+            textClassName="text-sm leading-relaxed"
+            noun="instructions"
+          />
+        ) : null}
+        {hasFile ? (
+          <RemoteAttachmentFile
+            url={cleanedFilePath}
+            fileName={getFilenameFromUrl(cleanedFilePath)}
+          />
+        ) : null}
       </View>
     </View>
   );
 };
+
+interface ActivityMaterial {
+  id: number;
+  lessonName?: string;
+  lessonUrl: string | null;
+  lessonFile: string | null;
+}
+
+const ActivityMaterialsSection = ({
+  lessonUrls,
+}: {
+  lessonUrls: ActivityMaterial[];
+}) => {
+  const accentColor = useThemeColor("accent");
+  const [expanded, setExpanded] = useState(false);
+  const total = lessonUrls?.length ?? 0;
+  if (total === 0) return null;
+
+  const canCollapse = total > DEFAULT_VISIBLE_MATERIALS;
+  const visible =
+    expanded || !canCollapse ? lessonUrls : lessonUrls.slice(0, DEFAULT_VISIBLE_MATERIALS);
+  const hiddenCount = total - DEFAULT_VISIBLE_MATERIALS;
+
+  return (
+    <View>
+      <View className="flex-row items-center justify-between mb-2">
+        <AppText
+          weight="semibold"
+          className="text-xs uppercase tracking-wider text-muted"
+        >
+          Materials
+        </AppText>
+        {canCollapse ? (
+          <AppText className="text-xs text-muted">{total} total</AppText>
+        ) : null}
+      </View>
+
+      <View className="gap-2">
+        {visible.map((m) => (
+          <ActivityMaterialTile key={m.id} material={m} />
+        ))}
+      </View>
+
+      {canCollapse ? (
+        <Pressable
+          onPress={() => setExpanded((v) => !v)}
+          accessibilityRole="button"
+          accessibilityLabel={
+            expanded ? "Show fewer materials" : `Show all ${total} materials`
+          }
+          hitSlop={6}
+          className="mt-2 self-start active:opacity-70"
+        >
+          <View className="flex-row items-center gap-1">
+            <AppText weight="semibold" className="text-sm text-accent">
+              {expanded ? "Show less" : `Show all ${total} (+${hiddenCount})`}
+            </AppText>
+            <Icon
+              name={expanded ? "CaretUpIcon" : "CaretDownIcon"}
+              size={14}
+              color={accentColor}
+            />
+          </View>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+};
+
+const ActivityMaterialTile = ({ material }: { material: ActivityMaterial }) => {
+  if (material.lessonFile) {
+    const fileName =
+      material.lessonName ||
+      material.lessonFile.split("/").pop() ||
+      "File";
+    return (
+      <RemoteAttachmentFile url={material.lessonFile} fileName={fileName} />
+    );
+  }
+  if (material.lessonUrl) {
+    return <LinkCard url={material.lessonUrl} label={material.lessonName} />;
+  }
+  return null;
+};
+
+const ActivityScreenSkeleton = () => (
+  <Screen className="max-w-3xl mx-auto w-full">
+    <View className="px-3 pt-3 gap-4">
+      {/* Hero card */}
+      <Skeleton className="h-44 w-full rounded-2xl" />
+      {/* Instructions block */}
+      <View className="gap-2">
+        <Skeleton className="h-3 w-24 rounded-full" />
+        <Skeleton className="h-3 w-full rounded-full" />
+        <Skeleton className="h-3 w-full rounded-full" />
+        <Skeleton className="h-3 w-2/3 rounded-full" />
+      </View>
+      {/* Materials block */}
+      <View className="gap-2">
+        <Skeleton className="h-3 w-20 rounded-full" />
+        <Skeleton className="h-16 w-full rounded-xl" />
+        <Skeleton className="h-16 w-full rounded-xl" />
+      </View>
+    </View>
+  </Screen>
+);
 
 export default ActivityScreen;

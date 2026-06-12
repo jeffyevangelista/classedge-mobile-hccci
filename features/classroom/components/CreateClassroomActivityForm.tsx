@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import {
   Button,
   FieldError,
-  Input,
   Label,
   Select,
   Separator,
@@ -11,7 +10,9 @@ import {
   Surface,
   TextField,
   useThemeColor,
+  useToast,
 } from "heroui-native";
+import AppInput from "@/components/AppInput";
 import { Icon } from "@/components/Icon";
 import DateTimePicker, {
   DateTimePickerEvent,
@@ -38,6 +39,8 @@ const CreateClassroomActivityForm = () => {
   const router = useRouter();
   const { classroomId } = useLocalSearchParams();
   const mutedColor = useThemeColor("muted");
+  const accentColor = useThemeColor("accent");
+  const { toast } = useToast();
   const [title, setTitle] = useState("");
   const [term, setTerm] = useState<SelectOption | undefined>();
   const [instructions, setInstructions] = useState("");
@@ -166,8 +169,17 @@ const CreateClassroomActivityForm = () => {
       termId: termIdNum,
     };
     try {
-      const { localId } = await createActivity(data);
-      router.replace(`/classroom/${classroomId}/input-grades/${localId}`);
+      await createActivity(data);
+      // Land back on the classroom tabs root instead of the empty
+      // grading screen — a brand-new activity has zero scores yet, so
+      // dropping straight into the scoring list felt anticlimactic. The
+      // toast tells the teacher exactly where to find it.
+      router.replace(`/(main)/classroom/${classroomId}`);
+      toast.show({
+        label: "Activity created",
+        description: "Find it in the In-class tab to grade students.",
+        variant: "success",
+      });
     } catch (error) {
       console.error("Error creating activity:", error);
       Alert.alert(
@@ -181,11 +193,35 @@ const CreateClassroomActivityForm = () => {
 
   return (
     <View className="w-full max-w-xl mx-auto px-2.5 gap-3">
+      {/* In-class mode banner — the classroom + button always creates
+          in-class activities, but the form looked generic and a teacher
+          reaching it from this entry point might still expect students
+          to take it on-device. The banner makes the mode explicit
+          before they fill anything out. */}
+      <View className="rounded-xl bg-accent-soft p-3 flex-row items-start gap-3">
+        <View style={{ marginTop: 1 }}>
+          <Icon
+            name="ChalkboardTeacherIcon"
+            size={18}
+            color={accentColor}
+          />
+        </View>
+        <View className="flex-1">
+          <AppText weight="semibold" className="text-sm text-accent mb-0.5">
+            In-class activity
+          </AppText>
+          <AppText className="text-xs text-muted">
+            You'll grade students manually after class. Students can see
+            this in the app but won't take it on their device.
+          </AppText>
+        </View>
+      </View>
+
       <SectionHeader>Basic info</SectionHeader>
 
       <TextField isRequired isInvalid={!!errors.title}>
         <Label>Title</Label>
-        <Input
+        <AppInput
           value={title}
           onChangeText={(text) => {
             setTitle(text);
@@ -223,7 +259,7 @@ const CreateClassroomActivityForm = () => {
 
       <TextField>
         <Label>Instructions</Label>
-        <Input
+        <AppInput
           placeholder="Enter your message here..."
           value={instructions}
           onChangeText={setInstructions}
@@ -274,7 +310,7 @@ const CreateClassroomActivityForm = () => {
           className="flex-1"
         >
           <Label>Max score</Label>
-          <Input
+          <AppInput
             value={maxScore}
             onChangeText={(text) => {
               setMaxScore(text);
@@ -291,7 +327,7 @@ const CreateClassroomActivityForm = () => {
           className="flex-1"
         >
           <Label>Passing score</Label>
-          <Input
+          <AppInput
             value={passingScore}
             onChangeText={(text) => {
               setPassingScore(text);

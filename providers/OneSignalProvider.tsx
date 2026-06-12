@@ -54,6 +54,23 @@ const OneSignalProvider = ({ children }: { children: React.ReactNode }) => {
           if (Array.isArray(payload.attachments)) {
             void enqueuePushAttachments(payload.attachments);
           }
+
+          // Announcement payloads embed their associated events fully
+          // (see logs/push_payloads.build_announcement_payload). Cache
+          // each embedded event under its own entity key so that
+          // tapping an event card from the announcement also hydrates
+          // first-paint without waiting for PowerSync.
+          if (entityType === "announcement" && Array.isArray(payload.events)) {
+            for (const link of payload.events) {
+              const nested = link?.event;
+              if (nested?.id != null) {
+                setPushPayload(
+                  makeEntityKey("event", nested.id),
+                  nested,
+                );
+              }
+            }
+          }
         }
 
         const href = getNotificationHref(entityType, entityId);

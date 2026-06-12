@@ -34,6 +34,7 @@ const MaterialList = () => {
     error,
     refetch,
     isRefetching,
+    isFetching,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
@@ -55,7 +56,15 @@ const MaterialList = () => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  if (isLoading && !data) return <MaterialsSkeleton />;
+  // Render the skeleton any time a fetch is in flight and we have
+  // nothing to show — covers the initial mount AND retries from the
+  // error state. See features/classroom/components/LessonList for the
+  // full rationale.
+  if (
+    materials.length === 0 &&
+    (isLoading || (isFetching && !isFetchingNextPage))
+  )
+    return <MaterialsSkeleton />;
   if (isError)
     return (
       <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />

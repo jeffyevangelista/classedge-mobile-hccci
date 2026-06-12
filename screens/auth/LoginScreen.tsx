@@ -10,9 +10,10 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const LoginScreen = () => {
-  const { height } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const isSmallScreen = height < 700;
+  const isTablet = width >= 768;
   const dynamicTopPadding = isSmallScreen
     ? insets.top + 10
     : Math.max(insets.top + 20, height * 0.05);
@@ -40,16 +41,22 @@ const LoginScreen = () => {
           <View className="items-center mb-48 md:mb-56 lg:mb-64">
             <Image
               source={require("@/assets/logo.png")}
-              className={isSmallScreen ? "w-20 h-20" : "w-28 h-28"}
+              className={
+                isTablet
+                  ? "w-32 h-32"
+                  : isSmallScreen
+                    ? "w-24 h-24"
+                    : "w-28 h-28"
+              }
               contentFit="contain"
             />
             <AppText
               weight="semibold"
-              className="text-2xl sm:text-3xl mt-4 text-foreground"
+              className={`${isTablet ? "text-3xl mt-5" : "text-2xl mt-4"} text-foreground`}
             >
               Welcome to Classedge
             </AppText>
-            <AppText className="text-xs text-muted text-center mt-1">
+            <AppText className="text-sm text-muted text-center mt-1">
               Login to manage your classes and learning
             </AppText>
           </View>

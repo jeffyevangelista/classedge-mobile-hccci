@@ -81,7 +81,17 @@ const AcademicRecordsScreen = () => {
     return records.find((r) => r.academicTermCode === key);
   }, [records, selectedTerm]);
 
-  if (isLoadingRecords || isLoadingTerms) return <AcademicRecordsSkeleton />;
+  // Skeleton during the initial fetch AND during a retry from the
+  // error state. `isLoading` only flips on first mount; subsequent
+  // retries surface as `isFetching` (more reliable than `isRefetching`
+  // when `keepPreviousData` is in play), so the second arm prevents a
+  // blank flash between tapping "Try again" and the error reappearing.
+  const isRecordsFetching = isLoadingRecords || isRefetching;
+  if (
+    isLoadingTerms ||
+    (isRecordsFetching && !records)
+  )
+    return <AcademicRecordsSkeleton />;
   if (isErrorRecords || isErrorTerms) {
     return (
       <Screen>

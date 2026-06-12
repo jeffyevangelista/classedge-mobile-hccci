@@ -51,25 +51,28 @@ const NetworkBanner = () => {
   useEffect(() => {
     if (isVisible) {
       const totalHeight = BANNER_HEIGHT + insets.bottom;
+      // Reserve layout space upfront so scroll consumers
+      // (useScrollBottomInset) immediately push content above the banner
+      // area, even before the slide-in animation finishes. Without this,
+      // scroll viewports can be cut by the banner during the animation
+      // window or if the completion callback fails to fire.
+      setBannerHeight(totalHeight);
       translateY.value = withTiming(0, {
         duration: ANIMATION_DURATION,
         easing: Easing.out(Easing.cubic),
       });
-      heightValue.value = withTiming(
-        totalHeight,
-        {
-          duration: ANIMATION_DURATION,
-          easing: Easing.out(Easing.cubic),
-        },
-        () => {
-          runOnJS(setBannerHeight)(totalHeight);
-        },
-      );
+      heightValue.value = withTiming(totalHeight, {
+        duration: ANIMATION_DURATION,
+        easing: Easing.out(Easing.cubic),
+      });
     } else {
       translateY.value = withTiming(BANNER_HEIGHT + insets.bottom, {
         duration: ANIMATION_DURATION,
         easing: Easing.in(Easing.cubic),
       });
+      // Defer clearing the reserved height until the banner has finished
+      // sliding out — otherwise content would snap up before the banner
+      // is gone from view.
       heightValue.value = withTiming(
         0,
         {

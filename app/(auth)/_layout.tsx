@@ -4,12 +4,14 @@ import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 
 const AuthLayout = () => {
   const headerOptions = useThemedHeaderOptions();
+  const transparentHeaderOptions = useThemedHeaderOptions({ transparent: true });
   return (
     <Stack screenOptions={headerOptions}>
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen
         name="login-email"
         options={{
+          ...transparentHeaderOptions,
           headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
           headerTitle: "",
         }}

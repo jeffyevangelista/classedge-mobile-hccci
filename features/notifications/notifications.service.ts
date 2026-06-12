@@ -24,6 +24,18 @@ export const readNotification = (notificationId: string) => {
     .where(eq(notificationsTable.id, Number(notificationId)));
 };
 
+export const readAllNotifications = (userId: string) => {
+  return db
+    .update(notificationsTable)
+    .set({ isRead: 1 })
+    .where(
+      and(
+        eq(notificationsTable.userId, Number(userId)),
+        eq(notificationsTable.isRead, 0),
+      ),
+    );
+};
+
 export const getNotificationCount = (userId: string) => {
   const result = db
     .select({
