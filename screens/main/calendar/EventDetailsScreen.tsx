@@ -1,7 +1,9 @@
+import dayjs from "dayjs";
 import { useLocalSearchParams } from "expo-router";
-import { Skeleton, useThemeColor } from "heroui-native";
+import { Skeleton } from "heroui-native";
 import { View } from "react-native";
 import { AppText } from "@/components/AppText";
+import { EntityTypePill } from "@/components/EntityTypePill";
 import ErrorFallback from "@/components/ErrorFallback";
 import { Icon } from "@/components/Icon";
 import NoDataFallback from "@/components/NoDataFallback";
@@ -20,7 +22,6 @@ import { toTitleCase } from "@/utils/toTitleCase";
 const EventDetailsScreen = () => {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const numericId = Number(eventId);
-  const accentColor = useThemeColor("accent");
 
   const watch = useEvent(numericId);
   const localEvent = watch.data?.[0] ?? null;
@@ -82,10 +83,9 @@ const EventDetailsScreen = () => {
   // apiFetch is absent; kept as a type-narrowing guard for `event`.
   if (!event) return null;
 
-  const startDate = formatDate(event.startDate);
-  const endDate = formatDate(event.endDate);
-  const dateText =
-    startDate === endDate ? startDate : `${startDate} – ${endDate}`;
+  const start = dayjs(event.startDate);
+  const endsDifferentDay =
+    event.endDate && !dayjs(event.endDate).isSame(start, "day");
 
   return (
     <ScreenScrollView
@@ -94,118 +94,137 @@ const EventDetailsScreen = () => {
     >
       <View className="w-full max-w-3xl mx-auto px-5 pt-2">
         {/* [push-hydrate verify] */}
-        <View className="mb-2">
-          <HydrationDebugPill
-            entityKey={eventEntityKey}
-            source={source}
-            isResolving={isResolving}
-            isMissing={isMissing}
-          />
+        <HydrationDebugPill
+          entityKey={eventEntityKey}
+          source={source}
+          isResolving={isResolving}
+          isMissing={isMissing}
+        />
+
+        <View className="mt-2 mb-3">
+          <EntityTypePill type="event" />
         </View>
-        <View className="mb-6">
-          <AppText weight="bold" className="text-2xl text-foreground mb-2">
-            {event.title}
-          </AppText>
-          {event.description ? (
-            <AppText className="text-muted leading-relaxed">
-              {event.description}
+
+        {/* Date hero card */}
+        <View className="flex-row items-center gap-3 bg-surface border border-accent/30 rounded-2xl px-4 py-3 mb-4">
+          <View className="w-16 py-2 rounded-xl bg-accent items-center justify-center">
+            <AppText
+              weight="bold"
+              className="text-[10px] tracking-widest uppercase text-accent-foreground opacity-90"
+            >
+              {start.format("MMM")}
             </AppText>
-          ) : null}
+            <AppText
+              weight="bold"
+              className="text-[26px] leading-7 text-accent-foreground"
+            >
+              {start.format("D")}
+            </AppText>
+          </View>
+          <View className="flex-1">
+            <AppText weight="semibold" className="text-foreground">
+              {start.format("dddd")}
+            </AppText>
+            {event.time ? (
+              <AppText className="text-xs text-muted">
+                {formatTime(event.time)}
+              </AppText>
+            ) : null}
+            {endsDifferentDay ? (
+              <AppText className="text-xs text-muted mt-0.5">
+                to {formatDate(event.endDate)}
+              </AppText>
+            ) : null}
+          </View>
         </View>
 
-        <View className="gap-4">
-          <DetailRow
-            iconName="CalendarIcon"
-            iconColor={accentColor}
-            label="Date"
-            value={dateText}
-            extra={event.time ? formatTime(event.time) : undefined}
-          />
+        {/* Title + description */}
+        <AppText
+          weight="bold"
+          className="text-2xl text-foreground mb-4"
+        >
+          {event.title}
+        </AppText>
+        {event.description ? (
+          <AppText className="text-muted leading-relaxed mb-4">
+            {event.description}
+          </AppText>
+        ) : null}
 
-          {event.location ? (
-            <DetailRow
-              iconName="MapPinIcon"
-              iconColor={accentColor}
-              label="Location"
-              value={event.location}
-            />
-          ) : null}
+        {/* Location card — only when present */}
+        {event.location ? (
+          <View className="flex-row items-start gap-3 bg-surface border border-border rounded-xl px-4 py-3 mb-4">
+            <View className="mt-0.5">
+              <Icon name="MapPinIcon" size={18} className="text-accent" />
+            </View>
+            <View className="flex-1">
+              <AppText
+                weight="semibold"
+                className="text-[11px] tracking-wider uppercase text-muted mb-0.5"
+              >
+                Location
+              </AppText>
+              <AppText className="text-foreground">{event.location}</AppText>
+            </View>
+          </View>
+        ) : null}
 
+        {/* Footer metadata */}
+        <View className="mt-4 pt-3 border-t border-border gap-1">
           {event.createdById ? (
-            <DetailRow
-              iconName="UserIcon"
-              iconColor={accentColor}
-              label="Created by"
-              value={toTitleCase(
+            <AppText className="text-xs text-muted">
+              Created by{" "}
+              {toTitleCase(
                 `${event.createdById.firstName} ${event.createdById.lastName}`,
               )}
-            />
+            </AppText>
           ) : null}
-
-          <DetailRow
-            iconName="ClockIcon"
-            iconColor={accentColor}
-            label="Posted"
-            value={new Date(event.createdAt).toLocaleDateString("en-US", {
+          <AppText className="text-xs text-muted">
+            Posted{" "}
+            {new Date(event.createdAt).toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",
               day: "numeric",
               hour: "2-digit",
               minute: "2-digit",
             })}
-          />
+          </AppText>
         </View>
       </View>
     </ScreenScrollView>
   );
 };
 
-const DetailRow = ({
-  iconName,
-  iconColor,
-  label,
-  value,
-  extra,
-}: {
-  iconName: "CalendarIcon" | "MapPinIcon" | "UserIcon" | "ClockIcon";
-  iconColor: string;
-  label: string;
-  value: string;
-  extra?: string;
-}) => (
-  <View className="flex-row items-start gap-3">
-    <View className="mt-1">
-      <Icon name={iconName} size={20} color={iconColor} />
-    </View>
-    <View className="flex-1">
-      <AppText weight="semibold" className="text-foreground mb-1">
-        {label}
-      </AppText>
-      <AppText className="text-muted">{value}</AppText>
-      {extra ? <AppText className="text-muted">{extra}</AppText> : null}
-    </View>
-  </View>
-);
-
 const EventDetailsSkeleton = () => (
   <View className="w-full max-w-3xl mx-auto px-5 pt-2">
-    <View className="mb-6 gap-2">
+    {/* pill */}
+    <Skeleton className="h-5 w-20 rounded-full mt-2 mb-3" />
+    {/* date hero */}
+    <View className="flex-row items-center gap-3 bg-surface border border-border rounded-2xl px-4 py-3 mb-4">
+      <Skeleton className="w-16 h-14 rounded-xl" />
+      <View className="flex-1 gap-1.5">
+        <Skeleton className="h-4 w-24 rounded" />
+        <Skeleton className="h-3 w-16 rounded" />
+      </View>
+    </View>
+    {/* title + description */}
+    <View className="mb-4 gap-2">
       <Skeleton className="h-7 w-3/4 rounded" />
       <Skeleton className="h-4 w-full rounded" />
       <Skeleton className="h-4 w-2/3 rounded" />
     </View>
-    <View className="gap-4">
-      {Array(3)
-        .fill(0)
-        .map((_, i) => (
-          <View key={i} className="flex-row items-start">
-            <Skeleton className="w-5 h-5 rounded mr-3 mt-1" />
-            <View className="flex-1 gap-1.5">
-              <Skeleton className="h-4 w-24 rounded" />
-              <Skeleton className="h-4 w-36 rounded" />
-            </View>
-          </View>
-        ))}
+    {/* location card */}
+    <View className="flex-row items-start gap-3 bg-surface border border-border rounded-xl px-4 py-3 mb-4">
+      <Skeleton className="w-5 h-5 rounded mt-0.5" />
+      <View className="flex-1 gap-1.5">
+        <Skeleton className="h-3 w-20 rounded" />
+        <Skeleton className="h-4 w-32 rounded" />
+      </View>
+    </View>
+    {/* footer */}
+    <View className="mt-4 pt-3 border-t border-border gap-1">
+      <Skeleton className="h-3 w-40 rounded" />
+      <Skeleton className="h-3 w-52 rounded" />
     </View>
   </View>
 );
