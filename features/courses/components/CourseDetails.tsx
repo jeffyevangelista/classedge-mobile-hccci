@@ -81,6 +81,7 @@ const CourseDetails = () => {
   return (
     <ScreenList
       className="w-full"
+      style={{ marginBottom: 0 }}
       refreshControl={
         <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />
       }

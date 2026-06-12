@@ -66,7 +66,8 @@ const ScheduleComponent = () => {
 
   const currentDay = now.getDay();
 
-  const { data, isError, error, isLoading } = useClassSchedule();
+  const { data, isError, error, isLoading, isFetching, refetch } =
+    useClassSchedule();
 
   const {
     currentClass,
@@ -141,21 +142,29 @@ const ScheduleComponent = () => {
   const status = useSectionStatus({
     data: data ?? [],
     isEmpty: (d) => d.length === 0,
-    isLoading,
+    isLoading: isLoading || isFetching,
   });
 
-  if (isError) return <ErrorComponent message={getApiErrorMessage(error)} />;
+  if (isError)
+    return (
+      <ErrorComponent
+        message={getApiErrorMessage(error)}
+        onRetry={() => refetch()}
+      />
+    );
 
   if (status.phase === "offline-empty")
     return <OfflineEmpty section="schedule" />;
 
-  if (!data) return <ScheduleSkeleton />;
+  if (status.phase === "loading") return <ScheduleSkeleton />;
 
   const endsInText = currentClass
     ? formatCountdown(currentClass.end, now)
     : null;
   const startsInText =
-    nextClass && !nextClassDayLabel ? formatCountdown(nextClass.start, now) : null;
+    nextClass && !nextClassDayLabel
+      ? formatCountdown(nextClass.start, now)
+      : null;
 
   const emptyLeft = (() => {
     if (nextClass && !nextClassDayLabel) {
@@ -171,255 +180,251 @@ const ScheduleComponent = () => {
   })();
 
   return (
-    <Skeleton isLoading={isLoading}>
-      <View>
-        <View className="flex-row gap-3 items-stretch">
-          {/* Left Card */}
-          {currentClass ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Current class: ${currentClass.subject.subjectId.subjectName}`}
-              android_ripple={{
-                color: "rgba(255,255,255,0.12)",
-                borderless: false,
-              }}
-              className="flex-1 rounded-2xl overflow-hidden active:opacity-90 min-h-[180px]"
-              onPress={() => router.push(`/course/${currentClass.subject.id}`)}
-            >
-              <LinearGradient
-                colors={["#2563eb", "#1e3a8a"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={{
-                  flex: 1,
-                  padding: 20,
-                  justifyContent: "space-between",
-                }}
-              >
-                <View
-                  style={{
-                    position: "absolute",
-                    right: -28,
-                    bottom: -28,
-                    opacity: 0.1,
-                  }}
-                  pointerEvents="none"
-                >
-                  <Icon
-                    name="BookOpenIcon"
-                    size={150}
-                    color="#ffffff"
-                    weight="fill"
-                  />
-                </View>
-
-                <View className="flex-row items-center gap-2">
-                  <MotiView
-                    from={{ opacity: 1, scale: 1 }}
-                    animate={{ opacity: 0.4, scale: 1.5 }}
-                    transition={{
-                      type: "timing",
-                      duration: 1100,
-                      loop: true,
-                      repeatReverse: true,
-                    }}
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: "#ffffff",
-                    }}
-                  />
-                  <AppText
-                    weight="bold"
-                    className="uppercase text-[11px] tracking-widest text-accent-foreground/85"
-                  >
-                    In Session
-                  </AppText>
-                </View>
-
-                <View className="flex-1 justify-center">
-                  <AppText
-                    weight="bold"
-                    className="text-[15px] leading-5 text-accent-foreground"
-                    numberOfLines={2}
-                  >
-                    {currentClass.subject.subjectId.subjectName}
-                  </AppText>
-                </View>
-
-                <View>
-                  <View className="rounded-xl px-3 py-2 self-start bg-white/20">
-                    <AppText
-                      weight="bold"
-                      className="text-xs text-accent-foreground"
-                      numberOfLines={1}
-                    >
-                      Ends in {endsInText}
-                      {currentClass.subject.subjectId.roomNumber
-                        ? ` · ${currentClass.subject.subjectId.roomNumber}`
-                        : ""}
-                    </AppText>
-                  </View>
-                  <View className="mt-3 h-1 rounded-full bg-white/20 overflow-hidden">
-                    <View
-                      className="h-full bg-white/90"
-                      style={{ width: `${currentProgress * 100}%` }}
-                    />
-                  </View>
-                </View>
-              </LinearGradient>
-            </Pressable>
-          ) : (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={emptyLeft.label}
-              android_ripple={{
-                color: "rgba(0,0,0,0.05)",
-                borderless: false,
-              }}
-              className="flex-1 rounded-2xl border-2 border-border p-4 justify-center min-h-[150px] active:opacity-70 gap-1.5"
-              onPress={() => router.push("/(main)/profile/class-schedule")}
-            >
-              <AppText
-                weight="bold"
-                className="uppercase text-[11px] tracking-widest text-muted"
-              >
-                {emptyLeft.label}
-              </AppText>
-              <AppText
-                weight="bold"
-                className="text-[15px] leading-5 text-foreground"
-                numberOfLines={2}
-              >
-                {emptyLeft.title}
-              </AppText>
-            </Pressable>
-          )}
-
-          {/* Right Card — Upcoming */}
+    <View>
+      <View className="flex-row gap-3 items-stretch">
+        {/* Left Card */}
+        {currentClass ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={
-              nextClass
-                ? `Up next: ${nextClass.subject.subjectId.subjectName}`
-                : "No upcoming classes"
-            }
+            accessibilityLabel={`Current class: ${currentClass.subject.subjectId.subjectName}`}
             android_ripple={{
-              color: "rgba(0,0,0,0.05)",
+              color: "rgba(255,255,255,0.12)",
               borderless: false,
             }}
-            className={`flex-1 rounded-2xl p-5 justify-between border border-border active:opacity-80 overflow-hidden ${
-              currentClass ? "min-h-[180px]" : "min-h-[150px]"
-            } ${nextClass ? "bg-accent-soft" : "bg-surface-secondary"}`}
-            onPress={() =>
-              nextClass
-                ? router.push(`/course/${nextClass.subject.id}`)
-                : router.push("/(main)/profile/class-schedule")
-            }
+            className="flex-1 rounded-2xl overflow-hidden active:opacity-90 min-h-[180px]"
+            onPress={() => router.push(`/course/${currentClass.subject.id}`)}
           >
-            {nextClass && (
+            <LinearGradient
+              colors={["#2563eb", "#1e3a8a"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                flex: 1,
+                padding: 20,
+                justifyContent: "space-between",
+              }}
+            >
               <View
                 style={{
                   position: "absolute",
                   right: -28,
                   bottom: -28,
-                  opacity: 0.08,
+                  opacity: 0.1,
                 }}
                 pointerEvents="none"
               >
                 <Icon
                   name="BookOpenIcon"
-                  size={140}
-                  color="#2563eb"
+                  size={150}
+                  color="#ffffff"
                   weight="fill"
                 />
               </View>
-            )}
 
-            <View className="flex-row items-center gap-1.5">
-              {nextClass && nextClassDayLabel ? (
-                <View className="bg-accent rounded-md px-1.5 py-0.5">
+              <View className="flex-row items-center gap-2">
+                <MotiView
+                  from={{ opacity: 1, scale: 1 }}
+                  animate={{ opacity: 0.4, scale: 1.5 }}
+                  transition={{
+                    type: "timing",
+                    duration: 1100,
+                    loop: true,
+                    repeatReverse: true,
+                  }}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: "#ffffff",
+                  }}
+                />
+                <AppText
+                  weight="bold"
+                  className="uppercase text-[11px] tracking-widest text-accent-foreground/85"
+                >
+                  In Session
+                </AppText>
+              </View>
+
+              <View className="flex-1 justify-center">
+                <AppText
+                  weight="bold"
+                  className="text-[15px] leading-5 text-accent-foreground"
+                  numberOfLines={2}
+                >
+                  {currentClass.subject.subjectId.subjectName}
+                </AppText>
+              </View>
+
+              <View>
+                <View className="rounded-xl px-3 py-2 self-start bg-white/20">
                   <AppText
                     weight="bold"
-                    className="text-[10px] uppercase tracking-wider text-accent-foreground"
+                    className="text-xs text-accent-foreground"
+                    numberOfLines={1}
                   >
-                    {nextClassDayLabel}
+                    Ends in {endsInText}
+                    {currentClass.subject.subjectId.roomNumber
+                      ? ` · ${currentClass.subject.subjectId.roomNumber}`
+                      : ""}
                   </AppText>
                 </View>
-              ) : null}
-              <AppText
-                weight="bold"
-                className={`uppercase text-[11px] tracking-widest ${
-                  nextClass ? "text-accent" : "text-muted"
-                }`}
-              >
-                Up Next
-                {nextClass && !nextClassDayLabel ? " · Today" : ""}
-              </AppText>
-            </View>
-
-            <View className="flex-1 justify-center">
-              <AppText
-                weight="bold"
-                className={`text-[15px] leading-5 ${
-                  nextClass ? "text-foreground" : "text-muted"
-                }`}
-                numberOfLines={2}
-              >
-                {nextClass
-                  ? nextClass.subject.subjectId.subjectName
-                  : todayHasClasses
-                    ? "Done for today"
-                    : "No classes today"}
-              </AppText>
-            </View>
-
-            <View
-              className={`rounded-xl px-3 py-2 self-start ${
-                nextClass ? "bg-surface" : "bg-default"
-              }`}
-            >
-              <AppText
-                weight="bold"
-                className={`text-xs ${
-                  nextClass ? "text-accent" : "text-muted"
-                }`}
-                numberOfLines={2}
-              >
-                {nextClass
-                  ? startsInText
-                    ? `Starts in ${startsInText}${
-                        nextClass.subject.subjectId.roomNumber
-                          ? ` · ${nextClass.subject.subjectId.roomNumber}`
-                          : ""
-                      }`
-                    : `${formatTime(nextClass.scheduleStartTime)}${
-                        nextClass.subject.subjectId.roomNumber
-                          ? ` · ${nextClass.subject.subjectId.roomNumber}`
-                          : ""
-                      }`
-                  : "Rest & recharge"}
-              </AppText>
-            </View>
+                <View className="mt-3 h-1 rounded-full bg-white/20 overflow-hidden">
+                  <View
+                    className="h-full bg-white/90"
+                    style={{ width: `${currentProgress * 100}%` }}
+                  />
+                </View>
+              </View>
+            </LinearGradient>
           </Pressable>
-        </View>
-
-        {remainingTodayCount > 0 && (
+        ) : (
           <Pressable
-            onPress={() => router.push("/(main)/profile/class-schedule")}
             accessibilityRole="button"
-            accessibilityLabel={`${remainingTodayCount} more classes today`}
-            className="mt-2 self-end active:opacity-60"
+            accessibilityLabel={emptyLeft.label}
+            android_ripple={{
+              color: "rgba(0,0,0,0.05)",
+              borderless: false,
+            }}
+            className="flex-1 rounded-2xl border-2 border-border p-4 justify-center min-h-[150px] active:opacity-70 gap-1.5"
+            onPress={() => router.push("/(main)/profile/class-schedule")}
           >
-            <AppText weight="semibold" className="text-xs text-muted">
-              +{remainingTodayCount} more{" "}
-              {remainingTodayCount === 1 ? "class" : "classes"} today
+            <AppText
+              weight="bold"
+              className="uppercase text-[11px] tracking-widest text-muted"
+            >
+              {emptyLeft.label}
+            </AppText>
+            <AppText
+              weight="bold"
+              className="text-[15px] leading-5 text-foreground"
+              numberOfLines={2}
+            >
+              {emptyLeft.title}
             </AppText>
           </Pressable>
         )}
+
+        {/* Right Card — Upcoming */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            nextClass
+              ? `Up next: ${nextClass.subject.subjectId.subjectName}`
+              : "No upcoming classes"
+          }
+          android_ripple={{
+            color: "rgba(0,0,0,0.05)",
+            borderless: false,
+          }}
+          className={`flex-1 rounded-2xl p-5 justify-between border border-border active:opacity-80 overflow-hidden ${
+            currentClass ? "min-h-[180px]" : "min-h-[150px]"
+          } ${nextClass ? "bg-accent-soft" : "bg-surface-secondary"}`}
+          onPress={() =>
+            nextClass
+              ? router.push(`/course/${nextClass.subject.id}`)
+              : router.push("/(main)/profile/class-schedule")
+          }
+        >
+          {nextClass && (
+            <View
+              style={{
+                position: "absolute",
+                right: -28,
+                bottom: -28,
+                opacity: 0.08,
+              }}
+              pointerEvents="none"
+            >
+              <Icon
+                name="BookOpenIcon"
+                size={140}
+                color="#2563eb"
+                weight="fill"
+              />
+            </View>
+          )}
+
+          <View className="flex-row items-center gap-1.5">
+            {nextClass && nextClassDayLabel ? (
+              <View className="bg-accent rounded-md px-1.5 py-0.5">
+                <AppText
+                  weight="bold"
+                  className="text-[10px] uppercase tracking-wider text-accent-foreground"
+                >
+                  {nextClassDayLabel}
+                </AppText>
+              </View>
+            ) : null}
+            <AppText
+              weight="bold"
+              className={`uppercase text-[11px] tracking-widest ${
+                nextClass ? "text-accent" : "text-muted"
+              }`}
+            >
+              Up Next
+              {nextClass && !nextClassDayLabel ? " · Today" : ""}
+            </AppText>
+          </View>
+
+          <View className="flex-1 justify-center">
+            <AppText
+              weight="bold"
+              className={`text-[15px] leading-5 ${
+                nextClass ? "text-foreground" : "text-muted"
+              }`}
+              numberOfLines={2}
+            >
+              {nextClass
+                ? nextClass.subject.subjectId.subjectName
+                : todayHasClasses
+                  ? "Done for today"
+                  : "No classes today"}
+            </AppText>
+          </View>
+
+          <View
+            className={`rounded-xl px-3 py-2 self-start ${
+              nextClass ? "bg-surface" : "bg-default"
+            }`}
+          >
+            <AppText
+              weight="bold"
+              className={`text-xs ${nextClass ? "text-accent" : "text-muted"}`}
+              numberOfLines={2}
+            >
+              {nextClass
+                ? startsInText
+                  ? `Starts in ${startsInText}${
+                      nextClass.subject.subjectId.roomNumber
+                        ? ` · ${nextClass.subject.subjectId.roomNumber}`
+                        : ""
+                    }`
+                  : `${formatTime(nextClass.scheduleStartTime)}${
+                      nextClass.subject.subjectId.roomNumber
+                        ? ` · ${nextClass.subject.subjectId.roomNumber}`
+                        : ""
+                    }`
+                : "Rest & recharge"}
+            </AppText>
+          </View>
+        </Pressable>
       </View>
-    </Skeleton>
+
+      {remainingTodayCount > 0 && (
+        <Pressable
+          onPress={() => router.push("/(main)/profile/class-schedule")}
+          accessibilityRole="button"
+          accessibilityLabel={`${remainingTodayCount} more classes today`}
+          className="mt-2 self-end active:opacity-60"
+        >
+          <AppText weight="semibold" className="text-xs text-muted">
+            +{remainingTodayCount} more{" "}
+            {remainingTodayCount === 1 ? "class" : "classes"} today
+          </AppText>
+        </Pressable>
+      )}
+    </View>
   );
 };
 

@@ -1,49 +1,60 @@
-import { AppState, Pressable, View } from "react-native";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { Pressable, View } from "react-native";
+import { router } from "expo-router";
+import { useMemo, useState } from "react";
+import { Card, Separator, Skeleton } from "heroui-native";
 import { useClassSchedule } from "../profile.hooks";
+import { useClock } from "@/hooks/useClock";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
 import { ScreenList } from "@/components/ScreenList";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
-import { Icon } from "@/components/Icon";
-import { Skeleton, Card, Separator, Chip } from "heroui-native";
+import { Icon, type IconName } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
 import { formatTime } from "@/features/calendar/components/date-formatter";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { toTitleCase } from "@/utils/toTitleCase";
 
-const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const DAY_ORDER = new Map(DAY_NAMES.map((d, i) => [d, i]));
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+const DAY_NAMES_LONG = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+] as const;
+
+type DayShort = (typeof DAY_NAMES)[number];
+
+type DayItem = {
+  enrollmentId: number;
+  scheduleId: number;
+  subjectId: number;
+  subjectName: string;
+  teacherName: string | null;
+  roomNumber: string | null;
+  startTime: string | null;
+  endTime: string | null;
+};
 
 const safeFormatTime = (time?: string | null) => {
   if (!time) return null;
   return formatTime(time.slice(0, 8));
 };
 
-const subjectHasToday = (
-  schedules: { daysOfWeek?: string | null }[],
-  todayShort: string,
-) =>
-  schedules.some((s) =>
-    s.daysOfWeek
-      ?.split(",")
-      .map((d) => d.trim())
-      .includes(todayShort),
-  );
+const formatTimeRange = (
+  start?: string | null,
+  end?: string | null,
+): string => {
+  const s = safeFormatTime(start);
+  const e = safeFormatTime(end);
+  return s && e ? `${s} – ${e}` : "N/A";
+};
 
-const sortByStartTime = <T extends { scheduleStartTime?: string | null }>(
-  schedules: T[],
-) =>
-  [...schedules].sort((a, b) =>
-    (a.scheduleStartTime ?? "").localeCompare(b.scheduleStartTime ?? ""),
-  );
-
-const sortDays = (days: string[]) =>
-  [...days].sort(
-    (a, b) =>
-      (DAY_ORDER.get(a.trim()) ?? 99) - (DAY_ORDER.get(b.trim()) ?? 99),
-  );
+const todayDayShort = () => DAY_NAMES[new Date().getDay()];
 
 const ClassScheduleList = () => {
   const {
@@ -56,42 +67,74 @@ const ClassScheduleList = () => {
     isFetching,
   } = useClassSchedule();
 
-  // Day precision only — refresh on screen focus and app foreground so
-  // "Today" stays correct without a per-minute clock subscription.
-  const [todayShort, setTodayShort] = useState(
-    () => DAY_NAMES[new Date().getDay()],
-  );
-  const refreshToday = useCallback(() => {
-    setTodayShort(DAY_NAMES[new Date().getDay()]);
-  }, []);
-  useFocusEffect(refreshToday);
-  useEffect(() => {
-    const sub = AppState.addEventListener("change", (next) => {
-      if (next === "active") refreshToday();
-    });
-    return () => sub.remove();
-  }, [refreshToday]);
-  const classSchedules = [...(data ?? [])].sort((a, b) => {
-    const aToday = subjectHasToday(a.schedules ?? [], todayShort);
-    const bToday = subjectHasToday(b.schedules ?? [], todayShort);
-    if (aToday === bToday) return 0;
-    return aToday ? -1 : 1;
+  // `todayShort` is driven by a minute-aligned clock so the "Today" ring
+  // flips at midnight even on a long-open session. `selectedDay` is
+  // independent: seeded to today on mount and only changes on user tap.
+  const todayShort = DAY_NAMES[useClock().getDay()];
+  const [selectedDay, setSelectedDay] = useState<DayShort>(todayDayShort);
+
+  const { dayItems, daysWithClasses } = useMemo(() => {
+    const enrollments = data ?? [];
+    const dayCoverage = new Set<DayShort>();
+    const items: DayItem[] = [];
+
+    for (const enrollment of enrollments) {
+      const subject = enrollment.subjectId;
+      const teacher = subject?.assignTeacherId;
+      const teacherName = teacher
+        ? toTitleCase(`${teacher.firstName} ${teacher.lastName}`)
+        : null;
+      const roomNumber = subject?.roomNumber ?? null;
+      const subjectName = subject?.subjectName || "N/A";
+      const enrollmentId = enrollment.id ?? 0;
+      const subjectId = subject?.id ?? 0;
+
+      for (const schedule of enrollment.schedules ?? []) {
+        const days = (schedule.daysOfWeek ?? "")
+          .split(",")
+          .map((d) => d.trim())
+          .filter(Boolean) as DayShort[];
+
+        for (const day of days) {
+          if (DAY_NAMES.includes(day)) {
+            dayCoverage.add(day);
+          }
+        }
+
+        if (days.includes(selectedDay)) {
+          items.push({
+            enrollmentId,
+            scheduleId: schedule.id ?? 0,
+            subjectId,
+            subjectName,
+            teacherName,
+            roomNumber,
+            startTime: schedule.scheduleStartTime ?? null,
+            endTime: schedule.scheduleEndTime ?? null,
+          });
+        }
+      }
+    }
+
+    items.sort((a, b) =>
+      (a.startTime ?? "\uffff").localeCompare(b.startTime ?? "\uffff"),
+    );
+
+    return { dayItems: items, daysWithClasses: dayCoverage };
+  }, [data, selectedDay]);
+
+  // Classify the section so we can show the "you're offline and we
+  // haven't synced yet" fallback instead of a misleading day-scoped
+  // empty state. Emptiness is computed at the enrollment level — once
+  // any enrollments are present, the day filter takes over and the
+  // per-day empty case is handled by `ListEmptyComponent`.
+  const status = useSectionStatus({
+    data: data ?? [],
+    isEmpty: (d) => d.length === 0,
+    isLoading: isLoading || isFetching,
   });
 
-  const todayCount = classSchedules.filter((item) =>
-    subjectHasToday(item.schedules ?? [], todayShort),
-  ).length;
-  const summary =
-    todayCount === 0
-      ? "No classes today"
-      : `You have ${todayCount} ${todayCount === 1 ? "class" : "classes"} today`;
-
-  // Render the skeleton any time a fetch is in flight and we have
-  // nothing to show — covers the initial mount AND retries from the
-  // error state. `isFetching` is the most reliable signal: `keepPreviousData`
-  // and similar query options can keep `isRefetching` / `!data` from
-  // reliably flipping during the post-error retry path.
-  if ((isLoading || isFetching) && !data) return <ClassScheduleSkeleton />;
+  if (status.phase === "loading") return <ClassScheduleSkeleton />;
 
   if (isError)
     return (
@@ -101,163 +144,200 @@ const ClassScheduleList = () => {
       />
     );
 
+  if (status.phase === "offline-empty")
+    return <OfflineEmpty section="schedule" />;
+
+  const fullDayName =
+    DAY_NAMES_LONG[DAY_NAMES.indexOf(selectedDay)] ?? selectedDay;
+  const isViewingToday = selectedDay === todayShort;
+  const count = dayItems.length;
+
+  let summary: string | null = null;
+  if (count > 0) {
+    summary = isViewingToday
+      ? `You have ${count} ${count === 1 ? "class" : "classes"} today`
+      : `${count} ${count === 1 ? "class" : "classes"} on ${fullDayName}`;
+  }
+
   return (
-    <ScreenList
-      className="mx-auto w-full max-w-3xl"
-      refreshControl={
-        <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
-      }
-      ListHeaderComponent={
-        classSchedules.length > 0 ? (
-          <View className="px-2.5 pt-2 pb-3">
-            <AppText
-              weight="semibold"
-              className="text-sm text-muted"
-            >
-              {summary}
-            </AppText>
-          </View>
-        ) : null
-      }
-      ListEmptyComponent={
-        <EmptyState
-          icon="CalendarBlankIcon"
-          title="No schedules found"
-          description="Your class schedule will appear here"
-        />
-      }
-      keyExtractor={(item, index) =>
-        item?.id?.toString() || `schedule-${index}`
-      }
-      renderItem={({ item }) => {
-        const subject = item.subjectId;
-        const teacher = subject?.assignTeacherId;
-        const schedules = sortByStartTime(item.schedules ?? []);
-        const hasToday = subjectHasToday(schedules, todayShort);
-        const subjectName = subject?.subjectName || "N/A";
-
-        return (
-          <Pressable
-            onPress={() => subject?.id && router.push(`/course/${subject.id}`)}
-            accessibilityRole="button"
-            accessibilityLabel={`Open course ${subjectName}`}
-            android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
-            className="active:opacity-80 rounded-xl overflow-hidden mb-3"
-          >
-            <Card
-              className={`shadow-none rounded-xl border ${
-                hasToday ? "border-accent" : "border-border"
-              }`}
-            >
-              <Card.Body className="gap-3">
-                <View className="flex-row items-start gap-2">
-                  <View className="flex-1 gap-1">
-                    <AppText
-                      weight="semibold"
-                      className="text-lg text-foreground"
-                      numberOfLines={2}
-                    >
-                      {subjectName}
-                    </AppText>
-                    <AppText
-                      className="text-sm text-muted"
-                      numberOfLines={1}
-                    >
-                      {teacher
-                        ? toTitleCase(
-                            `${teacher.firstName} ${teacher.lastName}`,
-                          )
-                        : "No teacher assigned"}
-                    </AppText>
-                  </View>
-                  {hasToday ? (
-                    <View className="px-2 py-0.5 rounded-full bg-accent-soft">
-                      <AppText
-                        weight="semibold"
-                        className="text-[11px] text-accent"
-                      >
-                        Today
-                      </AppText>
-                    </View>
-                  ) : null}
-                </View>
-
-                <Separator className="my-1" />
-
-                <MetaRow
-                  icon="MapPinIcon"
-                  value={subject?.roomNumber || "N/A"}
-                />
-
-                {schedules.length === 0 ? (
-                  <MetaRow icon="ClockIcon" value="No time set" />
-                ) : (
-                  schedules.map((s, idx) => (
-                    <ScheduleBlock
-                      key={s.id ?? idx}
-                      startTime={s.scheduleStartTime}
-                      endTime={s.scheduleEndTime}
-                      daysOfWeek={s.daysOfWeek}
-                      todayShort={todayShort}
-                    />
-                  ))
-                )}
-              </Card.Body>
-            </Card>
-          </Pressable>
-        );
-      }}
-      data={classSchedules}
-    />
+    <View className="flex-1">
+      <WeekStrip
+        selectedDay={selectedDay}
+        todayShort={todayShort}
+        daysWithClasses={daysWithClasses}
+        onSelect={setSelectedDay}
+        summary={summary}
+      />
+      <ScreenList
+        className="mx-auto w-full max-w-3xl"
+        style={{ marginBottom: 0 }}
+        refreshControl={
+          <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
+        }
+        ListEmptyComponent={
+          <EmptyState
+            icon="CalendarBlankIcon"
+            title={
+              isViewingToday
+                ? "No classes today"
+                : `No classes on ${fullDayName}`
+            }
+            description="Tap a day with a dot to see its schedule."
+          />
+        }
+        keyExtractor={(item) => `${item.enrollmentId}-${item.scheduleId}`}
+        renderItem={({ item }) => (
+          <TimeBlockCard
+            item={item}
+            onPress={() =>
+              item.enrollmentId && router.push(`/course/${item.enrollmentId}`)
+            }
+          />
+        )}
+        data={dayItems}
+      />
+    </View>
   );
 };
 
-const ScheduleBlock = ({
-  startTime,
-  endTime,
-  daysOfWeek,
+const WeekStrip = ({
+  selectedDay,
   todayShort,
+  daysWithClasses,
+  onSelect,
+  summary,
 }: {
-  startTime?: string | null;
-  endTime?: string | null;
-  daysOfWeek?: string | null;
-  todayShort: string;
+  selectedDay: DayShort;
+  todayShort: DayShort;
+  daysWithClasses: Set<DayShort>;
+  onSelect: (day: DayShort) => void;
+  summary: string | null;
 }) => {
-  const startStr = safeFormatTime(startTime);
-  const endStr = safeFormatTime(endTime);
-  const timeLabel = startStr && endStr ? `${startStr} – ${endStr}` : "N/A";
-
   return (
-    <View className="gap-2">
-      <MetaRow icon="ClockIcon" value={timeLabel} />
-      {daysOfWeek ? (
-        <View className="flex-row flex-wrap gap-1.5">
-          {sortDays(daysOfWeek.split(",")).map((day) => {
-            const trimmed = day.trim();
-            const isToday = trimmed === todayShort;
-            return (
-              <Chip
-                key={trimmed}
-                variant={isToday ? "primary" : "soft"}
-                color="accent"
-              >
-                <Chip.Label>{trimmed}</Chip.Label>
-              </Chip>
-            );
-          })}
+    <View className="bg-background px-2.5 pt-2 pb-3">
+      <View className="flex-row gap-1.5">
+        {DAY_NAMES.map((day) => (
+          <DayPill
+            key={day}
+            day={day}
+            isSelected={day === selectedDay}
+            isToday={day === todayShort}
+            hasClasses={daysWithClasses.has(day)}
+            onPress={() => onSelect(day)}
+          />
+        ))}
+      </View>
+      {summary ? (
+        <View className="px-1 pt-3">
+          <AppText weight="semibold" className="text-sm text-muted">
+            {summary}
+          </AppText>
         </View>
       ) : null}
     </View>
   );
 };
 
-const MetaRow = ({
-  icon,
-  value,
+const DayPill = ({
+  day,
+  isSelected,
+  isToday,
+  hasClasses,
+  onPress,
 }: {
-  icon: "ClockIcon" | "MapPinIcon";
-  value: string;
-}) => (
+  day: DayShort;
+  isSelected: boolean;
+  isToday: boolean;
+  hasClasses: boolean;
+  onPress: () => void;
+}) => {
+  const containerClass = isSelected
+    ? "bg-accent border-accent"
+    : isToday
+      ? "bg-accent/15 border-accent/30"
+      : "bg-surface border-border";
+
+  const labelClass = isSelected
+    ? "text-accent-foreground"
+    : isToday
+      ? "text-accent"
+      : "text-muted";
+
+  const dotClass = !hasClasses
+    ? "bg-transparent"
+    : isSelected
+      ? "bg-accent-foreground"
+      : isToday
+        ? "bg-accent"
+        : "bg-muted";
+
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Show schedule for ${DAY_NAMES_LONG[DAY_NAMES.indexOf(day)]}`}
+      accessibilityState={{ selected: isSelected }}
+      android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
+      className={`flex-1 items-center justify-center py-2.5 rounded-xl border ${containerClass}`}
+    >
+      <AppText
+        weight="semibold"
+        className={`text-[11px] uppercase tracking-wider ${labelClass}`}
+      >
+        {day}
+      </AppText>
+      <View className={`mt-1 w-1.5 h-1.5 rounded-full ${dotClass}`} />
+    </Pressable>
+  );
+};
+
+const TimeBlockCard = ({
+  item,
+  onPress,
+}: {
+  item: DayItem;
+  onPress: () => void;
+}) => {
+  const timeLabel = formatTimeRange(item.startTime, item.endTime);
+
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Open course ${item.subjectName}`}
+      android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
+      className="active:opacity-80 rounded-xl overflow-hidden mb-3"
+    >
+      <Card className="shadow-none rounded-xl border border-border">
+        <Card.Body className="gap-2">
+          <AppText
+            weight="semibold"
+            className="text-xs uppercase tracking-wider text-accent"
+          >
+            {timeLabel}
+          </AppText>
+          <AppText
+            weight="semibold"
+            className="text-base text-foreground"
+            numberOfLines={2}
+          >
+            {item.subjectName}
+          </AppText>
+          <Separator className="my-1" />
+          <View className="gap-1.5">
+            <MetaRow
+              icon="UserIcon"
+              value={item.teacherName ?? "No teacher assigned"}
+            />
+            <MetaRow icon="MapPinIcon" value={item.roomNumber ?? "N/A"} />
+          </View>
+        </Card.Body>
+      </Card>
+    </Pressable>
+  );
+};
+
+const MetaRow = ({ icon, value }: { icon: IconName; value: string }) => (
   <View className="flex-row items-center gap-2">
     <Icon name={icon} size={16} className="text-muted" />
     <AppText className="text-sm text-foreground flex-1">{value}</AppText>
@@ -267,24 +347,23 @@ const MetaRow = ({
 const ClassScheduleSkeleton = () => {
   return (
     <View className="mx-auto w-full max-w-3xl gap-3 p-2.5">
-      <View className="px-0 pt-2 pb-1">
-        <Skeleton className="h-4 w-40 rounded" />
+      <View className="flex-row gap-1.5 pb-3">
+        {DAY_NAMES.map((day) => (
+          <View key={day} className="flex-1">
+            <Skeleton className="h-12 w-full rounded-xl" />
+          </View>
+        ))}
       </View>
-      {Array(4)
+      {Array(3)
         .fill(0)
         .map((_, index) => (
           <Card
             key={index}
             className="mb-3 rounded-xl shadow-none border border-border"
           >
-            <Card.Body className="gap-3">
-              <View className="flex-row items-start gap-2">
-                <View className="flex-1 gap-1">
-                  <Skeleton className="h-5 w-3/4 rounded" />
-                  <Skeleton className="h-4 w-1/2 rounded" />
-                </View>
-                <Skeleton className="h-5 w-12 rounded-full" />
-              </View>
+            <Card.Body className="gap-2">
+              <Skeleton className="h-4 w-32 rounded" />
+              <Skeleton className="h-5 w-3/4 rounded" />
               <Separator className="my-1" />
               <View className="gap-2">
                 <View className="flex-row items-center gap-2">
@@ -295,11 +374,6 @@ const ClassScheduleSkeleton = () => {
                   <Skeleton className="w-4 h-4 rounded" />
                   <Skeleton className="h-4 w-20 rounded" />
                 </View>
-              </View>
-              <View className="flex-row flex-wrap gap-1.5 mt-1">
-                <Skeleton className="h-7 w-14 rounded-full" />
-                <Skeleton className="h-7 w-14 rounded-full" />
-                <Skeleton className="h-7 w-14 rounded-full" />
               </View>
             </Card.Body>
           </Card>
