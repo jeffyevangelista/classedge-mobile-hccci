@@ -1,8 +1,10 @@
+import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Avatar, Separator, Skeleton, Surface } from "heroui-native";
+import { Avatar, Skeleton, Surface } from "heroui-native";
 import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
+import { EntityTypePill } from "@/components/EntityTypePill";
 import ErrorFallback from "@/components/ErrorFallback";
 import { Icon } from "@/components/Icon";
 import NoDataFallback from "@/components/NoDataFallback";
@@ -85,6 +87,16 @@ const AnnouncementDetailsScreen = () => {
   const authorName = toTitleCase(
     `${announcement.createdById.firstName} ${announcement.createdById.lastName}`,
   );
+  const postedDate = formatDate(announcement.createdAt);
+  const postedTime = dayjs(announcement.createdAt).format("hh:mm A");
+
+  // Defensive filter: in-flight push payloads from older server builds
+  // shipped `events: [number]` (flat IDs) instead of `[{ event: {...} }]`,
+  // which crashed the map below. Filter out any entries missing the nested
+  // event before rendering — they hydrate correctly once PowerSync catches up.
+  const validEvents = announcement.events.filter(
+    (eventLink) => eventLink?.event?.id != null,
+  );
 
   return (
     <ScreenScrollView
@@ -99,24 +111,30 @@ const AnnouncementDetailsScreen = () => {
           isResolving={isResolving}
           isMissing={isMissing}
         />
-        <View className="flex-row items-center gap-2">
-          <Avatar alt={authorName} size="sm" className="border border-border">
+
+        <EntityTypePill type="announcement" />
+
+        {/* Author card */}
+        <View className="flex-row items-center gap-3 bg-surface border border-border rounded-2xl px-3.5 py-3">
+          <Avatar alt={authorName} size="md" className="border border-border">
             <AttachmentAvatarImage
               path={announcement.createdById.studentPhoto}
             />
             <AvatarFallbackImage />
           </Avatar>
-          <View>
-            <AppText weight="semibold" className="text-base">
+          <View className="flex-1">
+            <AppText weight="semibold" className="text-foreground">
               {authorName}
             </AppText>
-            <AppText className="text-xs text-muted">
-              {formatDate(announcement.createdAt)}
-            </AppText>
+            <View className="flex-row items-center gap-1.5">
+              <AppText className="text-xs text-muted">
+                Posted {postedDate}
+              </AppText>
+              <View className="w-1 h-1 bg-muted rounded-full" />
+              <AppText className="text-xs text-muted">{postedTime}</AppText>
+            </View>
           </View>
         </View>
-
-        <Separator />
 
         <AppText weight="bold" className="text-2xl text-foreground">
           {announcement.title}
@@ -126,39 +144,32 @@ const AnnouncementDetailsScreen = () => {
           {announcement.description}
         </AppText>
 
-        {(() => {
-          // Defensive filter: in-flight push payloads from older server
-          // builds shipped `events: [number]` (flat IDs) instead of
-          // `[{ event: {...} }]`, which crashed the map below. Filter out
-          // any entries missing the nested event before rendering — they
-          // hydrate correctly once PowerSync catches up.
-          const validEvents = announcement.events.filter(
-            (eventLink) => eventLink?.event?.id != null,
-          );
-          if (validEvents.length === 0) return null;
-          return (
-            <>
-              <AppText weight="semibold" className="text-base mt-2">
-                Associated Events
+        {validEvents.length > 0 ? (
+          <View className="mt-1 gap-2">
+            <View className="flex-row items-center gap-1.5">
+              <Icon name="CalendarIcon" size={13} className="text-muted" />
+              <AppText
+                weight="semibold"
+                className="text-[11px] tracking-wider uppercase text-muted"
+              >
+                Linked Events
               </AppText>
-              <View className="gap-2">
-                {validEvents.map((eventLink) => (
-                  <EventCard
-                    key={eventLink.event.id}
-                    event={eventLink.event}
-                    onPress={() => router.push(`/event/${eventLink.event.id}`)}
-                  />
-                ))}
-              </View>
-            </>
-          );
-        })()}
+            </View>
+            {validEvents.map((eventLink) => (
+              <LinkedEventCard
+                key={eventLink.event.id}
+                event={eventLink.event}
+                onPress={() => router.push(`/event/${eventLink.event.id}`)}
+              />
+            ))}
+          </View>
+        ) : null}
       </View>
     </ScreenScrollView>
   );
 };
 
-type EventCardProps = {
+type LinkedEventCardProps = {
   event: {
     id: number;
     title: string;
@@ -170,53 +181,62 @@ type EventCardProps = {
   onPress: () => void;
 };
 
-const EventCard = ({ event, onPress }: EventCardProps) => (
+const LinkedEventCard = ({ event, onPress }: LinkedEventCardProps) => (
   <Pressable onPress={onPress} className="active:opacity-80">
-    <Surface variant="secondary" className="rounded-xl p-3 gap-2.5">
-      <AppText weight="semibold" className="text-base">
-        {event.title}
-      </AppText>
-      {event.createdById ? (
-        <AppText className="text-xs text-muted">
-          By{" "}
-          {toTitleCase(
-            `${event.createdById.firstName} ${event.createdById.lastName}`,
-          )}
+    <View className="flex-row rounded-xl overflow-hidden border border-border">
+      {/* Blue left-stripe — chromatic preview of the Event screen */}
+      <View className="w-1 bg-accent" />
+      <Surface variant="secondary" className="flex-1 p-3 gap-2 rounded-none">
+        <AppText weight="semibold" className="text-base text-foreground">
+          {event.title}
         </AppText>
-      ) : null}
-      <View className="gap-1">
-        {event.location ? (
-          <View className="flex-row items-center gap-1">
-            <Icon name="MapPinIcon" size={14} className="text-muted" />
-            <AppText className="text-xs text-muted">{event.location}</AppText>
-          </View>
-        ) : null}
-        <View className="flex-row items-center gap-1">
-          <Icon name="ClockIcon" size={14} className="text-muted" />
+        {event.createdById ? (
           <AppText className="text-xs text-muted">
-            {formatDate(event.startDate)}
-            {event.time ? ` - ${formatTime(event.time)}` : ""}
+            By{" "}
+            {toTitleCase(
+              `${event.createdById.firstName} ${event.createdById.lastName}`,
+            )}
           </AppText>
+        ) : null}
+        <View className="gap-1">
+          {event.location ? (
+            <View className="flex-row items-center gap-1">
+              <Icon name="MapPinIcon" size={14} className="text-muted" />
+              <AppText className="text-xs text-muted">{event.location}</AppText>
+            </View>
+          ) : null}
+          <View className="flex-row items-center gap-1">
+            <Icon name="ClockIcon" size={14} className="text-muted" />
+            <AppText className="text-xs text-muted">
+              {formatDate(event.startDate)}
+              {event.time ? ` - ${formatTime(event.time)}` : ""}
+            </AppText>
+          </View>
         </View>
-      </View>
-    </Surface>
+      </Surface>
+    </View>
   </Pressable>
 );
 
 const AnnouncementDetailsSkeleton = () => (
   <View className="w-full max-w-3xl mx-auto px-5 pt-2 gap-4">
-    <View className="flex-row items-center gap-2">
-      <Skeleton className="w-8 h-8 rounded-full" />
-      <View className="flex-1 gap-1">
+    {/* pill */}
+    <Skeleton className="h-5 w-28 rounded-full" />
+    {/* author card */}
+    <View className="flex-row items-center gap-3 bg-surface border border-border rounded-2xl px-3.5 py-3">
+      <Skeleton className="w-12 h-12 rounded-full" />
+      <View className="flex-1 gap-1.5">
         <Skeleton className="h-4 w-32 rounded" />
-        <Skeleton className="h-3 w-20 rounded" />
+        <Skeleton className="h-3 w-40 rounded" />
       </View>
     </View>
+    {/* title + body */}
     <Skeleton className="h-7 w-3/4 rounded" />
     <Skeleton className="h-4 w-full rounded" />
     <Skeleton className="h-4 w-full rounded" />
     <Skeleton className="h-4 w-2/3 rounded" />
-    <Skeleton className="h-20 w-full rounded mt-2" />
+    {/* linked-events teaser */}
+    <Skeleton className="h-20 w-full rounded-xl mt-2" />
   </View>
 );
 
