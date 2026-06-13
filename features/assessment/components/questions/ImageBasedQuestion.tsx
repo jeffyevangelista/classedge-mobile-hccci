@@ -6,6 +6,19 @@ import * as DocumentPicker from "expo-document-picker";
 import { UploadCard } from "./upload/UploadCard";
 import type { UploadSource } from "./upload/SourcePickerSheet";
 
+// Server-side limit; keep client cap aligned with what the upload
+// endpoint will accept so users don't burn a slow upload before being
+// rejected.
+const MAX_BYTES = 25 * 1024 * 1024;
+const MAX_LABEL = "25 MB";
+
+// `mimeType` can be missing on some Android pickers — when present we
+// validate, otherwise we trust the OS picker's `type` filter below.
+const isAllowedDocMime = (mime?: string | null): boolean => {
+  if (!mime) return true;
+  return mime.startsWith("image/") || mime === "application/pdf";
+};
+
 const ImageBasedQuestion = ({
   question,
   currentUpload,
@@ -32,7 +45,12 @@ const ImageBasedQuestion = ({
           quality: 0.8,
         });
         if (!result.canceled && result.assets[0]) {
-          onUpload(question.id, result.assets[0].uri);
+          const asset = result.assets[0];
+          if (asset.fileSize != null && asset.fileSize > MAX_BYTES) {
+            setError(`Photo is too large. Max ${MAX_LABEL}.`);
+            return;
+          }
+          onUpload(question.id, asset.uri);
         }
       } else if (source === "library") {
         const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -45,14 +63,32 @@ const ImageBasedQuestion = ({
           quality: 0.8,
         });
         if (!result.canceled && result.assets[0]) {
-          onUpload(question.id, result.assets[0].uri);
+          const asset = result.assets[0];
+          if (asset.fileSize != null && asset.fileSize > MAX_BYTES) {
+            setError(`Image is too large. Max ${MAX_LABEL}.`);
+            return;
+          }
+          onUpload(question.id, asset.uri);
         }
       } else {
         const result = await DocumentPicker.getDocumentAsync({
           copyToCacheDirectory: true,
+          // Hint to the OS picker; we still re-validate the returned
+          // asset's mime and size below since Android can ignore this
+          // filter on some devices.
+          type: ["image/*", "application/pdf"],
         });
         if (!result.canceled && result.assets[0]) {
-          onUpload(question.id, result.assets[0].uri);
+          const asset = result.assets[0];
+          if (!isAllowedDocMime(asset.mimeType)) {
+            setError("Only images and PDFs are allowed.");
+            return;
+          }
+          if (asset.size != null && asset.size > MAX_BYTES) {
+            setError(`File is too large. Max ${MAX_LABEL}.`);
+            return;
+          }
+          onUpload(question.id, asset.uri);
         }
       }
     } catch (err) {

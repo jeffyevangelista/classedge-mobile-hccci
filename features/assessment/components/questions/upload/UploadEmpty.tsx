@@ -47,7 +47,7 @@ export const UploadEmpty = ({ onAdd, disabled, hasError }: Props) => {
         Tap to add an attachment
       </AppText>
       <AppText className="text-xs text-muted mt-0.5">
-        Photo · PDF · Document
+        Photo or PDF · Up to 25 MB
       </AppText>
     </Pressable>
   );

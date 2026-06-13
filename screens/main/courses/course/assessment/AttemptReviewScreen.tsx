@@ -44,7 +44,7 @@ const AttemptReviewScreen = () => {
   const answerByQuestion = useMemo(() => {
     const m = new Map<
       string,
-      { studentAnswer: string; uploadedFile?: string }
+      { studentAnswer: string; uploadedFile?: string; score: number | null }
     >();
     data?.answers.forEach((a) => {
       m.set(String(a.activityQuestionId), {
@@ -53,6 +53,7 @@ const AttemptReviewScreen = () => {
           a.uploadedFile && a.uploadedFile.length > 0
             ? a.uploadedFile
             : undefined,
+        score: typeof a.score === "number" ? a.score : null,
       });
     });
     return m;
@@ -261,6 +262,8 @@ const AttemptReviewScreen = () => {
                 uploadedFile={ans?.uploadedFile}
                 isRevealed={canRevealCorrect}
                 choices={data.choices}
+                answerScore={ans?.score ?? null}
+                isAttemptGraded={isGraded}
               />
             );
           })}

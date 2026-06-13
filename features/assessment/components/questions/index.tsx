@@ -159,6 +159,12 @@ export const QuestionRenderer = ({
       {typeof question.questionInstruction === "string" &&
       question.questionInstruction.trim().length > 0 ? (
         <View className="mt-2 mb-3">
+          <AppText
+            weight="bold"
+            className="text-[10px] uppercase tracking-widest text-muted mb-1"
+          >
+            Reference file
+          </AppText>
           <AttachmentFile
             file={question.questionInstruction}
             fileName={instructionFileName(question.questionInstruction)}

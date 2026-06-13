@@ -19,6 +19,11 @@ interface Props {
   uploadedFile?: string;
   isRevealed: boolean;
   choices: Choice[];
+  // Per-answer score from the server. For manually graded items this is
+  // the teacher's recorded score; gated behind `isAttemptGraded` so we
+  // don't mistake a server-side default of 0 for "graded as zero".
+  answerScore?: number | null;
+  isAttemptGraded?: boolean;
 }
 
 const normalize = (s: string) =>
@@ -40,6 +45,8 @@ export const QuestionResultCard = ({
   uploadedFile,
   isRevealed,
   choices,
+  answerScore = null,
+  isAttemptGraded = false,
 }: Props) => {
   const { data: types } = useQuestionTypes();
   const typeRow = useMemo(
@@ -53,10 +60,31 @@ export const QuestionResultCard = ({
   const correct = isAnswerCorrect(typeKey, question, studentAnswer, choices);
 
   // Right-side header: per-question score (auto-graded + revealed) or
-  // "Manually graded" badge (essay/upload), or the raw max points
-  // otherwise.
+  // teacher-recorded score (manually graded + revealed + attempt graded),
+  // or "Manually graded" badge / raw max points otherwise.
   const scoreRow = (() => {
     if (!autoGraded) {
+      // Only reveal the teacher's recorded score once the whole attempt
+      // is graded — `answerScore` can be a server default of 0 before
+      // grading, which would otherwise read as "graded as zero".
+      if (isRevealed && isAttemptGraded && answerScore != null) {
+        const full = answerScore >= question.score;
+        const cls = full
+          ? "text-success"
+          : answerScore === 0
+            ? "text-warning"
+            : "text-foreground";
+        return (
+          <AppText
+            weight="bold"
+            className={`text-[11px] ${cls}`}
+            style={{ fontVariant: ["tabular-nums"] }}
+          >
+            {full ? "+" : ""}
+            {answerScore} / {question.score}
+          </AppText>
+        );
+      }
       return (
         <View className="px-2 py-0.5 rounded-md bg-default border border-border">
           <AppText
@@ -187,6 +215,12 @@ export const QuestionResultCard = ({
       {typeof question.questionInstruction === "string" &&
       question.questionInstruction.trim().length > 0 ? (
         <View className="mb-3">
+          <AppText
+            weight="bold"
+            className="text-[10px] uppercase tracking-widest text-muted mb-1"
+          >
+            Reference file
+          </AppText>
           <AttachmentFile
             file={question.questionInstruction}
             fileName={instructionFileName(question.questionInstruction)}
