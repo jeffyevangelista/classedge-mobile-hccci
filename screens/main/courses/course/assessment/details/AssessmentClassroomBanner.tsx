@@ -12,7 +12,7 @@ export const AssessmentClassroomBanner = () => {
       </View>
       <View className="flex-1">
         <AppText weight="semibold" className="text-sm text-accent mb-1">
-          In-class activity
+          In-class assessment
         </AppText>
         <AppText className="text-xs text-muted">
           Your teacher will score this in class. No submission is needed from

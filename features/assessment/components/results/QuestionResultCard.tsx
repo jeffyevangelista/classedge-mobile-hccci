@@ -201,7 +201,7 @@ export const QuestionResultCard = ({
 
   return (
     <View className="bg-surface border border-border rounded-2xl p-4">
-      <View className="flex-row items-center justify-between mb-2">
+      <View className="flex-row items-center justify-between mb-1">
         <View className="px-2 py-1 rounded-full bg-accent-soft">
           <AppText weight="semibold" className="text-[10px] text-accent">
             {displayName}

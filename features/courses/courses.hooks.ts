@@ -78,8 +78,16 @@ export const useCourseTimeline = (courseId: string) => {
         CASE WHEN a.show_score      THEN 1 ELSE 0 END AS showScore,
         a.max_score                                   AS maxScore,
         CASE WHEN a.classroom_mode  THEN 1 ELSE 0 END AS classroomMode,
-        CASE WHEN r.submitted_cnt > 0 THEN 1 ELSE 0 END AS hasSubmission,
-        CASE WHEN r.submitted_cnt > 0 THEN COALESCE(sa.total_score, 0) ELSE 0 END AS totalScore
+        CASE
+          WHEN a.classroom_mode AND sa.id IS NOT NULL THEN 1
+          WHEN r.submitted_cnt > 0 THEN 1
+          ELSE 0
+        END AS hasSubmission,
+        CASE
+          WHEN a.classroom_mode AND sa.id IS NOT NULL THEN COALESCE(sa.total_score, 0)
+          WHEN r.submitted_cnt > 0 THEN COALESCE(sa.total_score, 0)
+          ELSE 0
+        END AS totalScore
       FROM activity_activity a
       LEFT JOIN activity_studentactivity sa
         ON sa.activity_id = a.id AND sa.student_id = ?

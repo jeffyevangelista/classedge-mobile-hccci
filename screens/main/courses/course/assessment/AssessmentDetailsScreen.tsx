@@ -256,7 +256,9 @@ const AssessmentDetailsScreen = () => {
   const hasAttempts =
     !!studentAssessment && !!authUser?.id && (attempts?.length ?? 0) > 0;
   const hasResultsContent =
-    (revealScores && !!studentAssessment) || hasAttempts;
+    (revealScores && !!studentAssessment) ||
+    hasAttempts ||
+    (!!data.classroomMode && !!studentAssessment);
 
   // Layout switch: phones get tabbed body to keep the three sections from
   // sharing one cramped scroll viewport; tablets keep the inline layout.

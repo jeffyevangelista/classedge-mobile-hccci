@@ -104,7 +104,10 @@ const LessonList = () => {
         // ends up flush against the list edge on scroll for a cleaner
         // read. `paddingBottom` includes the safe-area inset so the last
         // card clears the home indicator while remaining scrollable.
-        contentContainerStyle={{ paddingTop: 10, paddingBottom: safeBottom + 8 }}
+        contentContainerStyle={{
+          paddingTop: 10,
+          paddingBottom: safeBottom + 8,
+        }}
       />
     </View>
   );
@@ -123,15 +126,11 @@ const MaterialItem = React.memo(
             label ? `Open ${label}: ${lessonName}` : `Open ${lessonName}`
           }
           android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
-          className="w-full max-w-3xl mx-auto mb-2 px-3 active:opacity-80"
+          className="w-full max-w-3xl mx-auto mb-1 px-3 active:opacity-80"
         >
           <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
             <View className="w-10 h-10 rounded-full items-center justify-center bg-surface-secondary">
-              <Icon
-                name="BookOpenTextIcon"
-                size={18}
-                className="text-muted"
-              />
+              <Icon name="BookOpenTextIcon" size={18} className="text-muted" />
             </View>
             <View className="flex-1 min-w-0">
               <AppText
@@ -166,7 +165,7 @@ const MaterialsSkeleton = () => {
   return (
     <View style={{ paddingTop: 10 }}>
       {widths.map((titleWidth, index) => (
-        <View key={index} className="w-full max-w-3xl mx-auto px-3 mb-2">
+        <View key={index} className="w-full max-w-3xl mx-auto px-3 mb-1">
           <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
             <Skeleton className="w-10 h-10 rounded-full" />
             <View className="flex-1">

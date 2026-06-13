@@ -113,7 +113,7 @@ const CalendarItemCard = ({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? title}
       android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
-      className="active:opacity-80 rounded-xl overflow-hidden mb-2"
+      className="active:opacity-80 rounded-xl overflow-hidden 1"
     >
       <Card className="rounded-xl flex-row items-center gap-2 shadow-none border border-border">
         <View className={`rounded-full p-2.5 ${iconBgClass}`}>
@@ -249,12 +249,7 @@ const CalendarComponent = () => {
     if (!data) return [];
 
     return data.filter((item) =>
-      dayjs(selectedDate).isBetween(
-        item.startDate,
-        item.endDate,
-        "day",
-        "[]",
-      ),
+      dayjs(selectedDate).isBetween(item.startDate, item.endDate, "day", "[]"),
     );
   }, [data, selectedDate]);
 
@@ -340,7 +335,11 @@ const CalendarComponent = () => {
         <View className="flex-row items-center flex-wrap gap-x-3 gap-y-1.5">
           <LegendChip color={accentColor} label="Selected" />
           <LegendChip color={EVENT_PERIOD_COLOR} label="Event" />
-          <LegendChip color={CROWDED_DOT_COLOR} label="Multiple" variant="dot" />
+          <LegendChip
+            color={CROWDED_DOT_COLOR}
+            label="Multiple"
+            variant="dot"
+          />
           <LegendChip color={accentColor} label="Today" variant="ring" />
         </View>
         {!isViewingCurrentMonth && (
@@ -357,7 +356,7 @@ const CalendarComponent = () => {
         )}
       </View>
 
-      <View className="mt-4 px-5 max-w-3xl w-full mx-auto flex-row items-center justify-between mb-2">
+      <View className="mt-4 px-5 max-w-3xl w-full mx-auto flex-row items-center justify-between mb-1">
         <AppText weight="semibold" className="text-base">
           {selectedDate === today
             ? "Today"
@@ -379,7 +378,11 @@ const CalendarComponent = () => {
         {itemsForSelected.length === 0 ? (
           <View className="items-center justify-center py-10 gap-3">
             <View className="p-4 rounded-full bg-accent-soft">
-              <Icon name="CalendarBlankIcon" size={32} className="text-accent" />
+              <Icon
+                name="CalendarBlankIcon"
+                size={32}
+                className="text-accent"
+              />
             </View>
             <AppText className="text-center text-sm text-muted">
               No events or activities for this date.
@@ -437,7 +440,7 @@ const CalendarSkeleton = () => {
           {Array(5)
             .fill(0)
             .map((_, row) => (
-              <View key={row} className="flex-row justify-between mb-2">
+              <View key={row} className="flex-row justify-between mb-1">
                 {Array(7)
                   .fill(0)
                   .map((_, col) => (
@@ -457,7 +460,7 @@ const CalendarSkeleton = () => {
             </View>
           ))}
       </View>
-      <View className="mt-4 px-5 max-w-3xl w-full mx-auto flex-row items-center justify-between mb-2">
+      <View className="mt-4 px-5 max-w-3xl w-full mx-auto flex-row items-center justify-between mb-1">
         <Skeleton className="h-4 w-32 rounded" />
         <Skeleton className="h-3 w-12 rounded" />
       </View>

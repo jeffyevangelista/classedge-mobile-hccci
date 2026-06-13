@@ -108,7 +108,7 @@ const MaterialItem = React.memo(
 
     return (
       <Link
-        className="w-full max-w-3xl mx-auto mb-2.5 px-2.5"
+        className="w-full max-w-3xl mx-auto mb-1 px-2.5"
         href={`/lesson/${id}`}
       >
         <Card className="rounded-xl flex-row items-center gap-3 shadow-none">
@@ -147,7 +147,7 @@ const MaterialsSkeleton = () => {
   return (
     <>
       {Array.from({ length: 5 }).map((_, index) => (
-        <View key={index} className="w-full max-w-3xl mx-auto px-2.5 mb-2.5">
+        <View key={index} className="w-full max-w-3xl mx-auto px-2.5 mb-1">
           <Card className="shadow-none rounded-xl flex-row gap-2.5 items-center">
             <View className="gap-2 flex-row flex-1">
               <Skeleton className="rounded-md h-16 w-16" />

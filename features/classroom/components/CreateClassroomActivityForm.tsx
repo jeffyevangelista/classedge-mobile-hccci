@@ -1,4 +1,10 @@
-import { ActivityIndicator, View, Pressable, Platform, Alert } from "react-native";
+import {
+  ActivityIndicator,
+  View,
+  Pressable,
+  Platform,
+  Alert,
+} from "react-native";
 import React, { useState } from "react";
 import {
   Button,
@@ -130,7 +136,8 @@ const CreateClassroomActivityForm = () => {
     if (!activityType?.value)
       nextErrors.activityType = "Activity type is required";
     if (!type?.value) nextErrors.type = "Scoring type is required";
-    if (Number.isNaN(maxScoreNum)) nextErrors.maxScore = "Max score is required";
+    if (Number.isNaN(maxScoreNum))
+      nextErrors.maxScore = "Max score is required";
     if (Number.isNaN(passingScoreNum))
       nextErrors.passingScore = "Passing score is required";
 
@@ -153,7 +160,7 @@ const CreateClassroomActivityForm = () => {
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
       showScore: false,
-      maxRetake: 1,
+      maxRetake: 0,
       timeDuration: 0,
       maxScore: maxScoreNum,
       passingScore: passingScoreNum,
@@ -200,19 +207,15 @@ const CreateClassroomActivityForm = () => {
           before they fill anything out. */}
       <View className="rounded-xl bg-accent-soft p-3 flex-row items-start gap-3">
         <View style={{ marginTop: 1 }}>
-          <Icon
-            name="ChalkboardTeacherIcon"
-            size={18}
-            color={accentColor}
-          />
+          <Icon name="ChalkboardTeacherIcon" size={18} color={accentColor} />
         </View>
         <View className="flex-1">
           <AppText weight="semibold" className="text-sm text-accent mb-0.5">
-            In-class activity
+            In-class assessment
           </AppText>
           <AppText className="text-xs text-muted">
-            You'll grade students manually after class. Students can see
-            this in the app but won't take it on their device.
+            You'll grade students manually after class. Students can see this in
+            the app but won't take it on their device.
           </AppText>
         </View>
       </View>
@@ -288,7 +291,7 @@ const CreateClassroomActivityForm = () => {
           <Select.Portal>
             <Select.Overlay />
             <Select.Content presentation="popover" width="trigger">
-              <Select.ListLabel className="mb-2">
+              <Select.ListLabel className="mb-1">
                 Choose a type
               </Select.ListLabel>
               {scoringTypes.map((state, index) => (
@@ -304,11 +307,7 @@ const CreateClassroomActivityForm = () => {
       </TextField>
 
       <View className="flex-row gap-2">
-        <TextField
-          isRequired
-          isInvalid={!!errors.maxScore}
-          className="flex-1"
-        >
+        <TextField isRequired isInvalid={!!errors.maxScore} className="flex-1">
           <Label>Max score</Label>
           <AppInput
             value={maxScore}
@@ -442,11 +441,7 @@ const CreateClassroomActivityForm = () => {
         {!!errors.schedule && <FieldError>{errors.schedule}</FieldError>}
       </TextField>
 
-      <Button
-        onPress={handleSubmit}
-        isDisabled={isSubmitting}
-        className="mt-2"
-      >
+      <Button onPress={handleSubmit} isDisabled={isSubmitting} className="mt-2">
         {isSubmitting ? (
           <ActivityIndicator size="small" />
         ) : (
@@ -485,7 +480,7 @@ const GradingPeriodSelector = ({
       <Select.Portal>
         <Select.Overlay />
         <Select.Content presentation="popover" width="trigger">
-          <Select.ListLabel className="mb-2">
+          <Select.ListLabel className="mb-1">
             Choose a grading period
           </Select.ListLabel>
           {data?.map((gradingPeriod, index) => (
@@ -522,7 +517,7 @@ const ActivityTypeSelector = ({
       <Select.Portal>
         <Select.Overlay />
         <Select.Content presentation="popover" width="trigger">
-          <Select.ListLabel className="mb-2">
+          <Select.ListLabel className="mb-1">
             Choose an activity type
           </Select.ListLabel>
           {data?.map((activityType, index) => (

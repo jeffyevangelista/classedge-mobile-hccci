@@ -241,9 +241,7 @@ const ProfileInformationSkeleton = () => {
               .map((_, index) => (
                 <View
                   key={index}
-                  className={
-                    index < count - 1 ? "border-b border-border" : ""
-                  }
+                  className={index < count - 1 ? "border-b border-border" : ""}
                 >
                   <View className="p-3 gap-1.5">
                     <Skeleton className="h-3 w-20 rounded" />

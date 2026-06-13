@@ -140,11 +140,8 @@ export const QuestionRenderer = ({
   const displayName = typeRow?.name ?? "Unknown";
 
   return (
-    <View
-      style={styles.questionContainer}
-      className="bg-surface border-border"
-    >
-      <View className="flex-row items-center justify-between mb-2">
+    <View style={styles.questionContainer} className="bg-surface border-border">
+      <View className="flex-row items-center justify-between mb-1">
         <View className="px-2 py-1 rounded-full bg-accent-soft">
           <AppText className="text-xs text-accent">{displayName}</AppText>
         </View>

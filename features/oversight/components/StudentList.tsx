@@ -135,7 +135,7 @@ const StudentList = () => {
 const StudentItem = React.memo(({ name, studentPhoto }: Student) => {
   const displayName = name ? toTitleCase(name) : "Unknown student";
   return (
-    <View className="w-full max-w-3xl mx-auto mb-2.5 px-2.5">
+    <View className="w-full max-w-3xl mx-auto mb-1 px-2.5">
       <Card className="rounded-xl flex-row items-center gap-3 shadow-none">
         <Avatar alt={displayName} size="sm">
           <AttachmentAvatarImage path={studentPhoto} />
@@ -159,7 +159,7 @@ const StudentsSkeleton = () => {
   return (
     <>
       {Array.from({ length: 8 }).map((_, index) => (
-        <View key={index} className="w-full max-w-3xl mx-auto px-2.5 mb-2.5">
+        <View key={index} className="w-full max-w-3xl mx-auto px-2.5 mb-1">
           <Card className="shadow-none rounded-xl flex-row gap-2.5 items-center">
             <Skeleton className="rounded-full h-8 w-8" />
             <Skeleton className="h-4 flex-1 rounded-full" />

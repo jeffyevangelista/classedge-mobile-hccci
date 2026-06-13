@@ -22,15 +22,8 @@ type ClassroomActivity = {
 
 const ClassroomActivitiyList = () => {
   const { classroomId } = useGlobalSearchParams();
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isRefetching,
-    isFetching,
-  } = useClassroomActivities(classroomId as string);
+  const { data, isLoading, isError, error, refetch, isRefetching, isFetching } =
+    useClassroomActivities(classroomId as string);
 
   // Skeleton during the initial fetch AND during a retry from the
   // error state — see features/classroom/components/LessonList for the
@@ -104,15 +97,11 @@ const ActivityItem = ({ activity, href }: ActivityItemProps) => {
         accessibilityRole="button"
         accessibilityLabel={`Grade ${activity.activityName}`}
         android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
-        className="w-full max-w-3xl mx-auto mb-2 px-3 active:opacity-80"
+        className="w-full max-w-3xl mx-auto mb-1 px-3 active:opacity-80"
       >
         <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
           <View className="w-10 h-10 rounded-full items-center justify-center bg-accent-soft">
-            <Icon
-              name="PencilLineIcon"
-              size={18}
-              className="text-accent"
-            />
+            <Icon name="PencilLineIcon" size={18} className="text-accent" />
           </View>
           <View className="flex-1 min-w-0">
             <AppText
@@ -164,7 +153,7 @@ const ActivityListSkeleton = () => {
   return (
     <View>
       {widths.map((titleWidth, i) => (
-        <View key={i} className="w-full max-w-3xl mx-auto px-3 mb-2">
+        <View key={i} className="w-full max-w-3xl mx-auto px-3 mb-1">
           <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
             <Skeleton className="w-10 h-10 rounded-full" />
             <View className="flex-1">

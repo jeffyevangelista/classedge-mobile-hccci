@@ -126,7 +126,7 @@ const StudentScoreItemBase = ({
   const mutedColor = useThemeColor("muted");
 
   return (
-    <View className="max-w-3xl w-full mx-auto mb-2">
+    <View className="max-w-3xl w-full mx-auto mb-1">
       <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
         {/* Left accent strip only on un-saved (dirty / ungraded) rows so
             the eye lands on the rows that still need attention. We
@@ -170,9 +170,7 @@ const StudentScoreItemBase = ({
           }`}
           style={{ fontVariant: ["tabular-nums"] }}
         />
-        <AppText className="text-xs text-muted shrink-0">
-          / {maxScore}
-        </AppText>
+        <AppText className="text-xs text-muted shrink-0">/ {maxScore}</AppText>
         {hasImage ? (
           <View style={styles.thumbnailWrapper}>
             <Pressable
