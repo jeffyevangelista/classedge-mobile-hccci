@@ -1,6 +1,9 @@
 import useStore from "@/lib/store";
 import { logDbPath, powersync, setupPowerSync } from "@/powersync/system";
-import { unsubscribeAllRoleStreams } from "@/powersync/streamSubscriptions";
+import {
+  syncRoleStreams,
+  unsubscribeAllRoleStreams,
+} from "@/powersync/streamSubscriptions";
 import { PowerSyncContext } from "@powersync/react-native";
 import { useEffect, useRef, useState } from "react";
 import { startAttachmentWatcher } from "@/features/attachments/attachments.watcher";
@@ -9,6 +12,12 @@ import { attachmentQueue } from "@/features/attachments/attachments.queue";
 const PowerSyncProvider = ({ children }: { children: React.ReactNode }) => {
   const [isReady, setIsReady] = useState(false);
   const accessToken = useStore((state) => state.accessToken);
+  // Gate setupPowerSync on `powersyncToken` too. `hydrateSession` writes
+  // `accessToken` and `powersyncToken` as separate Zustand updates — without
+  // this gate, the effect fires on the first write and runs `setupPowerSync`
+  // with an empty `powersyncToken`, so `syncRoleStreams` subscribes to no
+  // role-specific streams and `fetchCredentials` returns "" to the SDK.
+  const powersyncToken = useStore((state) => state.powersyncToken);
   const isConnected = useStore((state) => state.isConnected);
   const isInternetReachable = useStore((state) => state.isInternetReachable);
   const wasConnectedRef = useRef(false);
@@ -23,9 +32,9 @@ const PowerSyncProvider = ({ children }: { children: React.ReactNode }) => {
         await powersync.init();
         logDbPath();
 
-        if (accessToken && isOnline) {
+        if (accessToken && powersyncToken && isOnline) {
           if (!wasConnectedRef.current) {
-            await setupPowerSync();
+            await setupPowerSync(powersyncToken);
             wasConnectedRef.current = true;
           }
           attachmentQueue.start();
@@ -76,7 +85,16 @@ const PowerSyncProvider = ({ children }: { children: React.ReactNode }) => {
       stopWatcher?.();
       attachmentQueue.stop();
     };
-  }, [accessToken, isOnline]);
+  }, [accessToken, powersyncToken, isOnline]);
+
+  // Keep stream subscriptions in sync with the active `powersyncToken`. Handles
+  // token rotations from `silentRefresh` (e.g. a role claim change) without
+  // requiring a full `setupPowerSync` rerun. Idempotent — `syncRoleStreams`
+  // diffs against `activeSubscriptions` and dedup's repeat calls.
+  useEffect(() => {
+    if (!wasConnectedRef.current || !powersyncToken) return;
+    void syncRoleStreams(powersyncToken);
+  }, [powersyncToken]);
 
   // Optional: Don't render the app until the DB is ready
   if (!isReady) return null;

@@ -43,7 +43,16 @@ export const logDbPath = () => {
   }
 };
 
-export const setupPowerSync = async () => {
+/**
+ * Initialize PowerSync after login. Takes the `powersyncToken` explicitly
+ * (rather than reading from `useStore.getState()`) so callers commit to the
+ * exact token they expect — closes a race where the provider could call this
+ * with the store mid-write and `syncRoleStreams` would see an empty token,
+ * silently subscribing to zero role-specific streams.
+ */
+export const setupPowerSync = async (
+  powersyncToken: string | null | undefined,
+) => {
   await powersync.execute(`
     CREATE TABLE IF NOT EXISTS attachments_local (
       id TEXT PRIMARY KEY,
@@ -105,7 +114,6 @@ export const setupPowerSync = async () => {
   // Phase C: subscribe only to streams matching the user's role.
   // Safe before backend flips auto_subscribe:false — calling subscribe()
   // on a stream that is already auto-subscribed is a no-op.
-  const { powersyncToken } = useStore.getState();
   await syncRoleStreams(powersyncToken);
 };
 
@@ -116,5 +124,6 @@ export const resetPowerSync = async () => {
   await clearAllAttachments();
   unsubscribeAllRoleStreams();
   await powersync.disconnectAndClear();
-  await setupPowerSync();
+  const { powersyncToken } = useStore.getState();
+  await setupPowerSync(powersyncToken);
 };
