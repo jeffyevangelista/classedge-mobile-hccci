@@ -62,6 +62,12 @@ const EssayQuestion = ({
 
   return (
     <View>
+      <AppText
+        weight="bold"
+        className="text-[10px] uppercase tracking-widest text-muted mb-1"
+      >
+        Your answer
+      </AppText>
       <TextInput
         // borderWidth + padding switch together so the box doesn't shift
         // sizes when the accent border kicks in on focus.

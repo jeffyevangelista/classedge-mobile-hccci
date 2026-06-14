@@ -2,13 +2,13 @@ import * as FileSystem from "expo-file-system/legacy";
 import { powersync } from "@/powersync/system";
 import {
   ATTACHMENT_COLUMNS,
-  AUTO_RETRY_CAP,
-  TRACKED_TABLES,
-  extractAttachmentId,
   type AttachmentColumnConfig,
+  AUTO_RETRY_CAP,
+  extractAttachmentId,
+  TRACKED_TABLES,
 } from "./attachments.config";
-import { ATTACHMENT_STATES } from "./attachments.schema";
 import { attachmentQueue } from "./attachments.queue";
+import { ATTACHMENT_STATES } from "./attachments.schema";
 
 type Row = Record<string, unknown> & { [key: string]: unknown };
 
@@ -42,11 +42,19 @@ async function scanColumn(
     );
     // Auto-heal: if this attachment was previously FAILED and we still have
     // retry budget, flip it back to QUEUED so a code/URL fix recovers without
-    // user action. Manual retry resets retry_count to 0 to bypass the cap.
+    // user action. The 30 s `updated_at` cooldown stops a server outage from
+    // burning the retry budget in one burst — pushes still force-retry via
+    // `enqueuePushAttachments`, which has its own code path. Manual retry
+    // resets retry_count to 0 to bypass the cap.
+    //
+    // `datetime(updated_at)` is required because rows store ISO 8601 strings
+    // while `datetime('now', ...)` returns SQLite's `YYYY-MM-DD HH:MM:SS`;
+    // wrapping both sides normalizes them to the numeric Julian rep.
     await powersync.execute(
       `UPDATE attachments_local
        SET state = ?, error = NULL, updated_at = ?
-       WHERE id = ? AND state = ? AND retry_count < ?`,
+       WHERE id = ? AND state = ? AND retry_count < ?
+         AND datetime(updated_at) < datetime('now', '-30 seconds')`,
       [
         ATTACHMENT_STATES.QUEUED,
         now,
@@ -103,7 +111,10 @@ export async function scanAllColumns(): Promise<void> {
     try {
       await scanColumn(cfg, referenced);
     } catch (e) {
-      console.warn(`[attachments] scan failed for ${cfg.table}.${cfg.column}`, e);
+      console.warn(
+        `[attachments] scan failed for ${cfg.table}.${cfg.column}`,
+        e,
+      );
     }
   }
   try {

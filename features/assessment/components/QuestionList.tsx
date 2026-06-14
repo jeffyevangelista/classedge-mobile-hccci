@@ -93,7 +93,8 @@ const QuestionList = ({
     const restoredUploads: Record<number, string> = {};
     for (const a of existingAnswers) {
       restoredAnswers[a.activityQuestionId] = a.studentAnswer;
-      if (a.uploadedFile) restoredUploads[a.activityQuestionId] = a.uploadedFile;
+      if (a.uploadedFile)
+        restoredUploads[a.activityQuestionId] = a.uploadedFile;
     }
     setAnswers(restoredAnswers);
     setUploads(restoredUploads);
@@ -113,9 +114,8 @@ const QuestionList = ({
     pendingSavesRef.current.clear();
     await Promise.all(
       entries.map(([questionId, { answer }]) =>
-        saveAnswer(retakeRecordId, questionId, studentId, answer).catch(
-          (err) =>
-            console.error("[QuestionList] Flush save failed:", err),
+        saveAnswer(retakeRecordId, questionId, studentId, answer).catch((err) =>
+          console.error("[QuestionList] Flush save failed:", err),
         ),
       ),
     );
@@ -129,9 +129,8 @@ const QuestionList = ({
       if (existing) clearTimeout(existing.timer);
 
       const timer = setTimeout(() => {
-        saveAnswer(retakeRecordId, questionId, studentId, answer).catch(
-          (err) =>
-            console.error("[QuestionList] Failed to save answer:", err),
+        saveAnswer(retakeRecordId, questionId, studentId, answer).catch((err) =>
+          console.error("[QuestionList] Failed to save answer:", err),
         );
         pendingSavesRef.current.delete(questionId);
       }, 250);
@@ -162,9 +161,8 @@ const QuestionList = ({
     return () => {
       pendingSavesRef.current.forEach(({ answer, timer }, questionId) => {
         clearTimeout(timer);
-        saveAnswer(retakeRecordId, questionId, studentId, answer).catch(
-          (err) =>
-            console.error("[QuestionList] Unmount flush failed:", err),
+        saveAnswer(retakeRecordId, questionId, studentId, answer).catch((err) =>
+          console.error("[QuestionList] Unmount flush failed:", err),
         );
       });
       pendingSavesRef.current.clear();
@@ -172,14 +170,11 @@ const QuestionList = ({
   }, [retakeRecordId, studentId]);
 
   useEffect(() => {
-    const sub = AppState.addEventListener(
-      "change",
-      (next: AppStateStatus) => {
-        if (next === "background" || next === "inactive") {
-          flushPendingSaves();
-        }
-      },
-    );
+    const sub = AppState.addEventListener("change", (next: AppStateStatus) => {
+      if (next === "background" || next === "inactive") {
+        flushPendingSaves();
+      }
+    });
     return () => sub.remove();
   }, [flushPendingSaves]);
 
@@ -256,9 +251,7 @@ const QuestionList = ({
   return (
     <View style={styles.paginationContainer}>
       {isTimeUp && (
-        <View
-          style={[styles.timeUpBanner, { backgroundColor: dangerColor }]}
-        >
+        <View style={[styles.timeUpBanner, { backgroundColor: dangerColor }]}>
           <AppText
             style={[styles.timeUpText, { color: dangerForegroundColor }]}
           >
@@ -279,7 +272,7 @@ const QuestionList = ({
           now: currentPage + 1,
         }}
       >
-        <View className="flex-row items-baseline justify-between mb-2">
+        <View className="flex-row items-baseline justify-between mb-1">
           <AppText
             weight="semibold"
             className="text-xs text-foreground"
@@ -316,9 +309,7 @@ const QuestionList = ({
               top: 0,
               bottom: 0,
               width: `${
-                totalQuestions > 0
-                  ? (answeredCount / totalQuestions) * 100
-                  : 0
+                totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0
               }%`,
               backgroundColor: successColor,
               opacity: 0.45,
@@ -465,7 +456,7 @@ const QuestionList = ({
                   </AppText>
                 </View>
                 <View className="rounded-xl bg-warning-soft border border-warning/30 p-3">
-                  <View className="flex-row items-center gap-3 mb-2">
+                  <View className="flex-row items-center gap-3 mb-1">
                     <View className="w-10 h-10 rounded-xl items-center justify-center bg-warning/20">
                       <Icon
                         name="WarningCircleIcon"
@@ -562,12 +553,12 @@ const QuestionListSkeleton = () => {
       </View>
       <View className="p-4">
         <View style={questionStyles.questionContainer}>
-          <Skeleton className="h-5 w-full rounded mb-2" />
+          <Skeleton className="h-5 w-full rounded mb-1" />
           <Skeleton className="h-3 w-20 rounded mb-3" />
           {Array(4)
             .fill(0)
             .map((_, index) => (
-              <Skeleton key={index} className="h-12 w-full rounded-md mb-2" />
+              <Skeleton key={index} className="h-12 w-full rounded-md mb-1" />
             ))}
         </View>
       </View>

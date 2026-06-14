@@ -3,6 +3,7 @@ import { Pressable, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Skeleton, useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
+import Fallback from "@/components/Fallback";
 import { Icon } from "@/components/Icon";
 import { useAssessmentMaterials } from "@/features/assessment/assessment.hooks";
 
@@ -51,7 +52,27 @@ export const AssessmentMaterials = ({
     );
   }
 
-  if (!data || data.length === 0) return null;
+  if (!data || data.length === 0) {
+    return (
+      <View>
+        {hideHeader ? null : (
+          <AppText
+            weight="semibold"
+            className="text-xs uppercase tracking-wider text-muted mb-2"
+          >
+            Materials
+          </AppText>
+        )}
+        <Fallback
+          variant="empty"
+          density="inline"
+          icon="BookOpenIcon"
+          title="No materials"
+          description="There are no materials linked to this assessment."
+        />
+      </View>
+    );
+  }
 
   const total = data.length;
   const canCollapse = total > DEFAULT_VISIBLE;

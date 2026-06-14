@@ -1,9 +1,9 @@
-import { View } from "react-native";
 import { Spinner } from "heroui-native";
+import { View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
+import { useAttachmentStatus } from "@/features/attachments/hooks/useAttachmentStatus";
 import { useSyncData } from "../useSyncData";
-import { useAttachmentSyncStatus } from "@/features/attachments/hooks/useAttachmentSyncStatus";
 
 type StatusConfig = {
   label: string;
@@ -162,7 +162,7 @@ const SyncStatusCard = () => {
     uploadError,
   } = useSyncData();
 
-  const attachments = useAttachmentSyncStatus();
+  const attachments = useAttachmentStatus();
 
   const connectionStatus = getConnectionStatus(!!connected, !!connecting);
   const syncActivity = getSyncActivity(

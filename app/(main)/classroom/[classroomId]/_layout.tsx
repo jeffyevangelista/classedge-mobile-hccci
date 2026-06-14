@@ -23,7 +23,7 @@ const ClassroomLayout = () => {
     {
       key: "activity",
       icon: "PencilLineIcon",
-      label: "In-class activity",
+      label: "In-class assessment",
       description: "You'll grade students manually after class.",
       onPress: () =>
         router.push(`/(main)/classroom/${classroomId}/create-activity`),
@@ -32,69 +32,71 @@ const ClassroomLayout = () => {
 
   return (
     <>
-    <Stack
-      screenOptions={{
-        ...headerOptions,
-        // iOS centers headers by default; force left-alignment on both
-        // platforms so the title sits right after the back button —
-        // matches the Android convention and avoids the title getting
-        // visually shoved by iOS's liquid-glass back-button capsule.
-        headerTitleAlign: "left",
-        headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
-        headerTitle: "",
-      }}
-    >
-      <Stack.Screen
-        name="(tabs)"
-        options={{
-          headerTitle: subjectName,
-          headerRight: ({ tintColor }) => (
-            <View className="flex-row items-center gap-1">
-              <Pressable
-                onPress={() => setCreateSheetOpen(true)}
-                className="w-9 h-9 rounded-full flex justify-center items-center"
-                accessibilityRole="button"
-                accessibilityLabel="Create new"
-              >
-                <Icon name="PlusIcon" color={tintColor} />
-              </Pressable>
-              <Pressable
-                onPress={() =>
-                  router.push(`/(main)/classroom/${classroomId}/course-details`)
-                }
-                className="w-9 h-9 rounded-full flex justify-center items-center"
-                accessibilityRole="button"
-                accessibilityLabel="Class info"
-              >
-                <Icon
-                  name="InfoIcon"
-                  color={tintColor}
-                  style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
-                />
-              </Pressable>
-            </View>
-          ),
+      <Stack
+        screenOptions={{
+          ...headerOptions,
+          // iOS centers headers by default; force left-alignment on both
+          // platforms so the title sits right after the back button —
+          // matches the Android convention and avoids the title getting
+          // visually shoved by iOS's liquid-glass back-button capsule.
+          headerTitleAlign: "left",
+          headerLeft: ({ tintColor }) => <BackButton tintColor={tintColor} />,
+          headerTitle: "",
         }}
+      >
+        <Stack.Screen
+          name="(tabs)"
+          options={{
+            headerTitle: subjectName,
+            headerRight: ({ tintColor }) => (
+              <View className="flex-row items-center gap-1">
+                <Pressable
+                  onPress={() => setCreateSheetOpen(true)}
+                  className="w-9 h-9 rounded-full flex justify-center items-center"
+                  accessibilityRole="button"
+                  accessibilityLabel="Create new"
+                >
+                  <Icon name="PlusIcon" color={tintColor} />
+                </Pressable>
+                <Pressable
+                  onPress={() =>
+                    router.push(
+                      `/(main)/classroom/${classroomId}/course-details`,
+                    )
+                  }
+                  className="w-9 h-9 rounded-full flex justify-center items-center"
+                  accessibilityRole="button"
+                  accessibilityLabel="Class info"
+                >
+                  <Icon
+                    name="InfoIcon"
+                    color={tintColor}
+                    style={{ marginLeft: Platform.OS === "ios" ? -2 : 0 }}
+                  />
+                </Pressable>
+              </View>
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="create-activity"
+          options={{
+            headerTitle: "New in-class assessment",
+          }}
+        />
+        <Stack.Screen
+          name="input-grades/[activityId]"
+          options={{
+            headerTitle: "Input Grades",
+          }}
+        />
+        <Stack.Screen name="course-details" />
+      </Stack>
+      <CreateActionSheet
+        isOpen={createSheetOpen}
+        onOpenChange={setCreateSheetOpen}
+        actions={createActions}
       />
-      <Stack.Screen
-        name="create-activity"
-        options={{
-          headerTitle: "New in-class activity",
-        }}
-      />
-      <Stack.Screen
-        name="input-grades/[activityId]"
-        options={{
-          headerTitle: "Input Grades",
-        }}
-      />
-      <Stack.Screen name="course-details" />
-    </Stack>
-    <CreateActionSheet
-      isOpen={createSheetOpen}
-      onOpenChange={setCreateSheetOpen}
-      actions={createActions}
-    />
     </>
   );
 };

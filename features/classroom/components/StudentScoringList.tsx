@@ -357,14 +357,11 @@ const StudentScoringList = ({
   return (
     <View className="flex-1">
       <View className="px-2.5 pt-2.5">
-        <GradingProgressBar
-          graded={gradedCount}
-          total={validStudents.length}
-        />
+        <GradingProgressBar graded={gradedCount} total={validStudents.length} />
         {/* Filter chips — quick toggle between the full roster and the
             ungraded subset so a teacher can blast through the
             remaining rows without scrolling past already-graded ones. */}
-        <View className="flex-row gap-2 mb-2 px-1">
+        <View className="flex-row gap-2 mb-1 px-1">
           <FilterChip
             label="All"
             count={validStudents.length}
@@ -499,7 +496,7 @@ export const StudentScoringSkeleton = () => (
         <Skeleton className="h-6 w-24 rounded-full" />
       </View>
       {/* Search bar */}
-      <Skeleton className="h-10 w-full rounded-xl mb-2" />
+      <Skeleton className="h-10 w-full rounded-xl mb-1" />
       {/* Single-row student cards — matches the new live row chrome */}
       {Array(6)
         .fill(0)

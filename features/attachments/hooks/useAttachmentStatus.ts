@@ -1,14 +1,18 @@
-import { useEffect, useState } from "react";
 import { useQuery } from "@powersync/react-native";
+import { useEffect, useState } from "react";
 import { attachmentQueue } from "../attachments.queue";
 
 type CountRow = { state: string; n: number };
 
 export type AttachmentStatus = {
-  pending: number;
+  queued: number;
   downloading: number;
   synced: number;
   failed: number;
+  total: number;
+  inFlight: number;
+  isDownloading: boolean;
+  progress: number;
   lowStorage: boolean;
 };
 
@@ -25,13 +29,24 @@ export function useAttachmentStatus(): AttachmentStatus {
     });
   }, []);
 
-  const counts = { pending: 0, downloading: 0, synced: 0, failed: 0 };
+  const counts = { queued: 0, downloading: 0, synced: 0, failed: 0 };
   for (const row of data ?? []) {
-    if (row.state === "queued") counts.pending = row.n;
+    if (row.state === "queued") counts.queued = row.n;
     else if (row.state === "downloading") counts.downloading = row.n;
     else if (row.state === "synced") counts.synced = row.n;
     else if (row.state === "failed") counts.failed = row.n;
   }
 
-  return { ...counts, lowStorage };
+  const total =
+    counts.queued + counts.downloading + counts.synced + counts.failed;
+  const inFlight = counts.queued + counts.downloading;
+
+  return {
+    ...counts,
+    total,
+    inFlight,
+    isDownloading: inFlight > 0,
+    progress: total > 0 ? counts.synced / total : 1,
+    lowStorage,
+  };
 }

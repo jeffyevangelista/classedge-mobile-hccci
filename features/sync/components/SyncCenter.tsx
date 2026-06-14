@@ -1,3 +1,4 @@
+import { useThemeColor } from "heroui-native";
 import { useEffect, useMemo } from "react";
 import { Pressable, View } from "react-native";
 import Animated, {
@@ -7,12 +8,11 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
-import { useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
-import { useSyncData } from "../useSyncData";
+import { useAttachmentStatus } from "@/features/attachments/hooks/useAttachmentStatus";
 import { useSyncSheet } from "../SyncSheetContext";
-import { useAttachmentSyncStatus } from "@/features/attachments/hooks/useAttachmentSyncStatus";
+import { useSyncData } from "../useSyncData";
 
 const SyncBadge = ({ count }: { count: number }) => (
   <View className="absolute -top-0.5 -right-0.5 min-w-4 h-4 bg-danger rounded-full items-center justify-center px-1 border-2 border-surface">
@@ -30,7 +30,7 @@ const SyncCenter = () => {
   const { openSyncSheet } = useSyncSheet();
   const { uploading, downloading, connected, connecting } = useSyncData();
   const { isDownloading: attachmentsDownloading, failed: attachmentsFailed } =
-    useAttachmentSyncStatus();
+    useAttachmentStatus();
 
   const dangerColor = useThemeColor("danger");
   const warningColor = useThemeColor("warning");
@@ -63,7 +63,8 @@ const SyncCenter = () => {
     if (attachmentsFailed > 0 && !attachmentsDownloading) {
       return `Sync center, ${attachmentsFailed} failed download${attachmentsFailed === 1 ? "" : "s"}`;
     }
-    if (downloading || attachmentsDownloading) return "Sync center, downloading";
+    if (downloading || attachmentsDownloading)
+      return "Sync center, downloading";
     if (uploading) return "Sync center, uploading";
     return "Sync center, synced";
   }, [

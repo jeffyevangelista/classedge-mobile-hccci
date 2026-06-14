@@ -67,7 +67,7 @@ const ScoreDisplayList = ({
           score !== undefined && score >= activityDetail.maxScore * 0.5;
 
         return (
-          <Card className="rounded-xl items-center gap-2 mb-2 shadow-none flex-row">
+          <Card className="rounded-xl items-center gap-2 mb-1 shadow-none flex-row">
             <Avatar alt="user-avatar">
               <AvatarFallbackImage />
             </Avatar>
