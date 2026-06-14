@@ -16,7 +16,7 @@ import { useSyncData } from "../useSyncData";
 import { SYNC_COPY } from "../copy";
 
 const SyncBadge = ({ count }: { count: number }) => (
-  <View className="absolute -top-0.5 -right-0.5 min-w-4 h-4 bg-danger rounded-full items-center justify-center px-1 border-2 border-surface">
+  <View className="absolute -top-2 -right-2 min-w-4 h-4 bg-danger rounded-full items-center justify-center px-1 border-2 border-surface">
     <AppText
       weight="bold"
       className="text-[9px] text-white"
@@ -120,18 +120,22 @@ const SyncCenter = () => {
       accessibilityLabel={accessibilityLabel}
       className="w-11 h-11 rounded-full justify-center items-center"
     >
-      {connecting ? (
-        <Animated.View key="spin" style={spinStyle}>
-          <Icon name="ArrowsClockwiseIcon" color={mutedColor} size={24} />
-        </Animated.View>
-      ) : isActiveSync ? (
-        <Animated.View key="pulse" style={animatedStyle}>
+      {/* Inner container is sized to the 24pt glyph so the badge anchors to
+          the icon's actual corner instead of the 44pt hit area's corner. */}
+      <View className="w-6 h-6 items-center justify-center">
+        {connecting ? (
+          <Animated.View key="spin" style={spinStyle}>
+            <Icon name="ArrowsClockwiseIcon" color={mutedColor} size={24} />
+          </Animated.View>
+        ) : isActiveSync ? (
+          <Animated.View key="pulse" style={animatedStyle}>
+            <Icon name={icon} color={color} size={24} />
+          </Animated.View>
+        ) : (
           <Icon name={icon} color={color} size={24} />
-        </Animated.View>
-      ) : (
-        <Icon name={icon} color={color} size={24} />
-      )}
-      {attachmentsFailed > 0 && <SyncBadge count={attachmentsFailed} />}
+        )}
+        {attachmentsFailed > 0 && <SyncBadge count={attachmentsFailed} />}
+      </View>
     </Pressable>
   );
 };
