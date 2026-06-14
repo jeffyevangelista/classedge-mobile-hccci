@@ -1,5 +1,6 @@
 import * as FileSystem from "expo-file-system/legacy";
 import { silentRefresh } from "@/features/auth/useTokenRefresh";
+import { appendSyncEvent } from "@/features/sync/syncEvents";
 import useStore from "@/lib/store";
 import { powersync } from "@/powersync/system";
 import {
@@ -172,6 +173,8 @@ class AttachmentQueue {
     // Synchronous reservation to prevent concurrent picks of the same row.
     if (this.inFlight.has(row.id)) return;
     this.inFlight.add(row.id);
+    const target = `attachment/${row.id}`;
+    const started = Date.now();
     try {
       await this.markDownloading(row.id);
       const token = useStore.getState().accessToken;
@@ -186,6 +189,12 @@ class AttachmentQueue {
         (downloaded, total) => setAttachmentProgress(row.id, downloaded, total),
       );
       await this.markSynced(row.id, localUri, sizeBytes);
+      await appendSyncEvent({
+        kind: "download",
+        target,
+        status: "ok",
+        durationMs: Date.now() - started,
+      });
       clearAttachmentProgress(row.id);
       this.retried.delete(row.id);
     } catch (e) {
@@ -213,6 +222,13 @@ class AttachmentQueue {
                 setAttachmentProgress(row.id, downloaded, total),
             );
             await this.markSynced(row.id, localUri, sizeBytes);
+            await appendSyncEvent({
+              kind: "download",
+              target,
+              status: "ok",
+              durationMs: Date.now() - started,
+              retryCount: 1,
+            });
             clearAttachmentProgress(row.id);
             this.retried.delete(row.id);
             return;
@@ -222,6 +238,18 @@ class AttachmentQueue {
             console.warn(
               `[attachments] failed (after 401 retry) ${row.resource}/${row.id}: ${retryMsg}`,
             );
+            await appendSyncEvent({
+              kind: "download",
+              target,
+              status: "fail",
+              httpStatus:
+                retryErr instanceof AttachmentFetchError
+                  ? retryErr.status
+                  : null,
+              message: retryMsg,
+              durationMs: Date.now() - started,
+              retryCount: 1,
+            });
             if (
               retryErr instanceof AttachmentFetchError &&
               !retryErr.retriable
@@ -243,6 +271,14 @@ class AttachmentQueue {
             ? e.message
             : String(e);
       console.warn(`[attachments] failed ${row.resource}/${row.id}: ${msg}`);
+      await appendSyncEvent({
+        kind: "download",
+        target,
+        status: "fail",
+        httpStatus: e instanceof AttachmentFetchError ? e.status : null,
+        message: msg,
+        durationMs: Date.now() - started,
+      });
       if (e instanceof AttachmentFetchError && !e.retriable) {
         await this.markPermanentlyFailed(row.id, msg);
       } else {

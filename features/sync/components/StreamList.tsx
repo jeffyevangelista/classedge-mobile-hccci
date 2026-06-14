@@ -1,12 +1,10 @@
 import { View } from "react-native";
-import Constants from "expo-constants";
 import { useStatus } from "@powersync/react-native";
 import { AppText } from "@/components/AppText";
 
 const StreamList = () => {
   const status = useStatus();
   const streams = status.syncStreams ?? [];
-  if (Constants.expoConfig?.extra?.appVariant !== "development") return null;
   if (streams.length === 0) return null;
 
   const sorted = streams

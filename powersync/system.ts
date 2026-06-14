@@ -62,6 +62,38 @@ export const setupPowerSync = async () => {
   await powersync.execute(
     `CREATE INDEX IF NOT EXISTS idx_attachments_state_priority ON attachments_local (state, priority);`,
   );
+
+  await powersync.execute(`
+    CREATE TABLE IF NOT EXISTS sync_events_local (
+      id          TEXT PRIMARY KEY,
+      ts          TEXT NOT NULL,
+      kind        TEXT NOT NULL,
+      target      TEXT,
+      status      TEXT NOT NULL,
+      http_status INTEGER,
+      message     TEXT,
+      duration_ms INTEGER,
+      retry_count INTEGER
+    );
+  `);
+  await powersync.execute(
+    `CREATE INDEX IF NOT EXISTS idx_sync_events_ts ON sync_events_local (ts DESC);`,
+  );
+
+  await powersync.execute(`
+    CREATE TABLE IF NOT EXISTS ps_crud_meta_local (
+      op_id            TEXT PRIMARY KEY,
+      attempt_count    INTEGER NOT NULL DEFAULT 0,
+      first_failed_at  TEXT,
+      last_attempt_at  TEXT NOT NULL,
+      last_error       TEXT,
+      last_http_status INTEGER
+    );
+  `);
+  await powersync.execute(
+    `CREATE INDEX IF NOT EXISTS idx_ps_crud_meta_stuck ON ps_crud_meta_local (attempt_count, first_failed_at);`,
+  );
+
   const connector = new Connector();
   // Explicit opt-in to the Rust sync client. RUST is the default in
   // @powersync/common 1.52.0, but pinning it here keeps the choice stable

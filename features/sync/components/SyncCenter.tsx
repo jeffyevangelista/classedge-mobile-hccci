@@ -8,11 +8,12 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
+import { useRouter } from "expo-router";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
 import { useAttachmentStatus } from "@/features/attachments/hooks/useAttachmentStatus";
-import { useSyncSheet } from "../SyncSheetContext";
 import { useSyncData } from "../useSyncData";
+import { SYNC_COPY } from "../copy";
 
 const SyncBadge = ({ count }: { count: number }) => (
   <View className="absolute -top-0.5 -right-0.5 min-w-4 h-4 bg-danger rounded-full items-center justify-center px-1 border-2 border-surface">
@@ -27,7 +28,8 @@ const SyncBadge = ({ count }: { count: number }) => (
 );
 
 const SyncCenter = () => {
-  const { openSyncSheet } = useSyncSheet();
+  const router = useRouter();
+  const handlePress = () => router.push("/sync");
   const { uploading, downloading, connected, connecting } = useSyncData();
   const { isDownloading: attachmentsDownloading, failed: attachmentsFailed } =
     useAttachmentStatus();
@@ -59,20 +61,21 @@ const SyncCenter = () => {
   ]);
 
   const accessibilityLabel = useMemo(() => {
-    if (!connected) return "Sync center, offline";
-    if (attachmentsFailed > 0 && !attachmentsDownloading) {
-      return `Sync center, ${attachmentsFailed} failed download${attachmentsFailed === 1 ? "" : "s"}`;
+    let label = SYNC_COPY.iconA11y.base;
+    if (!connected) label += ", offline";
+    else if (downloading || attachmentsDownloading) label += ", downloading";
+    else if (uploading) label += ", uploading";
+    else label += ", synced";
+    if (attachmentsFailed > 0) {
+      label += SYNC_COPY.iconA11y.failedBadge(attachmentsFailed);
     }
-    if (downloading || attachmentsDownloading)
-      return "Sync center, downloading";
-    if (uploading) return "Sync center, uploading";
-    return "Sync center, synced";
+    return label;
   }, [
     connected,
-    attachmentsFailed,
-    attachmentsDownloading,
     downloading,
+    attachmentsDownloading,
     uploading,
+    attachmentsFailed,
   ]);
 
   const isActiveSync =
@@ -112,10 +115,10 @@ const SyncCenter = () => {
 
   return (
     <Pressable
-      onPress={openSyncSheet}
+      onPress={handlePress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      className="w-9 h-9 rounded-full justify-center items-center"
+      className="w-11 h-11 rounded-full justify-center items-center"
     >
       {connecting ? (
         <Animated.View key="spin" style={spinStyle}>

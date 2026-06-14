@@ -4,6 +4,8 @@ import { Icon } from "@/components/Icon";
 import { powersync } from "@/powersync/system";
 import { Connector } from "@/powersync/Connector";
 import useStore from "@/lib/store";
+import { humanizeSyncError } from "@/features/sync/humanizeSyncError";
+import { SYNC_COPY } from "@/features/sync/copy";
 
 const ForceSyncButton = () => {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -33,12 +35,13 @@ const ForceSyncButton = () => {
       await powersync.connect(connector);
     } catch (error) {
       console.error("Force sync failed:", error);
-      const message =
-        error instanceof Error ? error.message : "Please try again.";
+      const humanized = humanizeSyncError(error);
       toast.show({
         variant: "danger",
         label: "Sync failed",
-        description: message,
+        description: humanized.hint
+          ? `${humanized.message} ${humanized.hint}`
+          : humanized.message,
       });
     } finally {
       setIsSyncing(false);
@@ -55,7 +58,7 @@ const ForceSyncButton = () => {
       {isSyncing ? (
         <>
           <Spinner size="sm" />
-          <Button.Label>Reconnecting...</Button.Label>
+          <Button.Label>{SYNC_COPY.status.connecting}</Button.Label>
         </>
       ) : (
         <>
@@ -64,7 +67,7 @@ const ForceSyncButton = () => {
             size={18}
             color={isOnline ? accentColor : mutedColor}
           />
-          <Button.Label>Reconnect</Button.Label>
+          <Button.Label>{SYNC_COPY.status.reconnect}</Button.Label>
         </>
       )}
     </Button>

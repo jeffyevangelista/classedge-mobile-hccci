@@ -7,6 +7,8 @@ import {
 } from "@powersync/react-native";
 import * as FileSystem from "expo-file-system/legacy";
 import { silentRefresh } from "@/features/auth/useTokenRefresh";
+import { appendSyncEvent } from "@/features/sync/syncEvents";
+import { clearCrudMeta, recordCrudAttempt } from "@/features/sync/crudMeta";
 import useStore from "@/lib/store";
 import { env } from "@/utils/env";
 
@@ -50,7 +52,7 @@ async function hasLocalFile(record: Record<string, any>): Promise<boolean> {
   return false;
 }
 
-class UploadOpError extends Error {
+export class UploadOpError extends Error {
   status: number;
   body: string;
   constructor(label: string, status: number, body: string) {
@@ -195,111 +197,139 @@ export class Connector implements PowerSyncBackendConnector {
       headers.Authorization = `Bearer ${accessToken}`;
     }
 
+    const opIds: string[] = [];
     try {
       for (const op of transaction.crud) {
-        // op.id is the PowerSync row id (the client cuid). The server uses
-        // it as the local_id PK. Carry it in the URL, NOT the body — that's
-        // what makes PUT replays idempotent.
-        const record = { ...op.opData };
-        const instanceUrl = `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`;
-        const hasFile = await hasLocalFile(record);
-        const fileFields = Object.entries(record)
-          .filter(([, v]) => isLocalFileUri(v))
-          .map(([k, v]) => ({ field: k, uri: v }));
-        console.log("[Connector] op:", {
-          op: op.op,
-          table: op.table,
-          id: op.id,
-          hasFile,
-          fileFields,
-          url: instanceUrl,
-        });
+        opIds.push(op.id);
+        const started = Date.now();
+        const target = `${op.table}/${op.id}`;
+        try {
+          // op.id is the PowerSync row id (the client cuid). The server uses
+          // it as the local_id PK. Carry it in the URL, NOT the body — that's
+          // what makes PUT replays idempotent.
+          const record = { ...op.opData };
+          const instanceUrl = `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`;
+          const hasFile = await hasLocalFile(record);
+          const fileFields = Object.entries(record)
+            .filter(([, v]) => isLocalFileUri(v))
+            .map(([k, v]) => ({ field: k, uri: v }));
+          console.log("[Connector] op:", {
+            op: op.op,
+            table: op.table,
+            id: op.id,
+            hasFile,
+            fileFields,
+            url: instanceUrl,
+          });
 
-        switch (op.op) {
-          case UpdateType.PUT:
-            if (hasFile) {
-              const multipartHeaders: Record<string, string> = {
-                Accept: "application/json",
-                "X-Platform": "mobile",
-              };
-              if (accessToken)
-                multipartHeaders.Authorization = `Bearer ${accessToken}`;
-
-              await fetchOpWithAuthRetry(
-                `PUT-multipart ${op.table} ${op.id}`,
-                instanceUrl,
-                {
-                  method: "PUT",
-                  headers: multipartHeaders,
-                  body: buildMultipartBody(record),
-                },
-                (token) => ({
+          switch (op.op) {
+            case UpdateType.PUT:
+              if (hasFile) {
+                const multipartHeaders: Record<string, string> = {
                   Accept: "application/json",
                   "X-Platform": "mobile",
-                  Authorization: `Bearer ${token}`,
-                }),
-              );
-            } else {
-              await fetchOpWithAuthRetry(
-                `PUT-json ${op.table} ${op.id}`,
-                instanceUrl,
-                {
-                  method: "PUT",
-                  headers,
-                  body: JSON.stringify(record),
-                },
-                (token) => ({ ...headers, Authorization: `Bearer ${token}` }),
-              );
-            }
-            break;
-          case UpdateType.PATCH:
-            if (hasFile) {
-              const authHeaders: Record<string, string> = {
-                Accept: "application/json",
-                "X-Platform": "mobile",
-              };
-              if (accessToken)
-                authHeaders.Authorization = `Bearer ${accessToken}`;
-              await fetchOpWithAuthRetry(
-                `PATCH-multipart ${op.table} ${op.id}`,
-                `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
-                {
-                  method: "PATCH",
-                  headers: authHeaders,
-                  body: buildMultipartBody({ ...op.opData }),
-                },
-                (token) => ({
+                };
+                if (accessToken)
+                  multipartHeaders.Authorization = `Bearer ${accessToken}`;
+
+                await fetchOpWithAuthRetry(
+                  `PUT-multipart ${op.table} ${op.id}`,
+                  instanceUrl,
+                  {
+                    method: "PUT",
+                    headers: multipartHeaders,
+                    body: buildMultipartBody(record),
+                  },
+                  (token) => ({
+                    Accept: "application/json",
+                    "X-Platform": "mobile",
+                    Authorization: `Bearer ${token}`,
+                  }),
+                );
+              } else {
+                await fetchOpWithAuthRetry(
+                  `PUT-json ${op.table} ${op.id}`,
+                  instanceUrl,
+                  {
+                    method: "PUT",
+                    headers,
+                    body: JSON.stringify(record),
+                  },
+                  (token) => ({ ...headers, Authorization: `Bearer ${token}` }),
+                );
+              }
+              break;
+            case UpdateType.PATCH:
+              if (hasFile) {
+                const authHeaders: Record<string, string> = {
                   Accept: "application/json",
                   "X-Platform": "mobile",
-                  Authorization: `Bearer ${token}`,
-                }),
-              );
-            } else {
+                };
+                if (accessToken)
+                  authHeaders.Authorization = `Bearer ${accessToken}`;
+                await fetchOpWithAuthRetry(
+                  `PATCH-multipart ${op.table} ${op.id}`,
+                  `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
+                  {
+                    method: "PATCH",
+                    headers: authHeaders,
+                    body: buildMultipartBody({ ...op.opData }),
+                  },
+                  (token) => ({
+                    Accept: "application/json",
+                    "X-Platform": "mobile",
+                    Authorization: `Bearer ${token}`,
+                  }),
+                );
+              } else {
+                await fetchOpWithAuthRetry(
+                  `PATCH-json ${op.table} ${op.id}`,
+                  `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
+                  {
+                    method: "PATCH",
+                    headers,
+                    body: JSON.stringify(op.opData),
+                  },
+                  (token) => ({ ...headers, Authorization: `Bearer ${token}` }),
+                );
+              }
+              break;
+            case UpdateType.DELETE:
               await fetchOpWithAuthRetry(
-                `PATCH-json ${op.table} ${op.id}`,
+                `DELETE ${op.table} ${op.id}`,
                 `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
-                {
-                  method: "PATCH",
-                  headers,
-                  body: JSON.stringify(op.opData),
-                },
+                { method: "DELETE", headers },
                 (token) => ({ ...headers, Authorization: `Bearer ${token}` }),
               );
-            }
-            break;
-          case UpdateType.DELETE:
-            await fetchOpWithAuthRetry(
-              `DELETE ${op.table} ${op.id}`,
-              `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
-              { method: "DELETE", headers },
-              (token) => ({ ...headers, Authorization: `Bearer ${token}` }),
-            );
-            break;
+              break;
+          }
+          await appendSyncEvent({
+            kind: "upload",
+            target,
+            status: "ok",
+            durationMs: Date.now() - started,
+          });
+        } catch (opErr) {
+          const httpStatus =
+            opErr instanceof UploadOpError ? opErr.status : null;
+          const message =
+            opErr instanceof Error ? opErr.message : String(opErr);
+          await appendSyncEvent({
+            kind: "upload",
+            target,
+            status: "fail",
+            httpStatus,
+            message,
+            durationMs: Date.now() - started,
+          });
+          await recordCrudAttempt(op.id, { error: message, httpStatus });
+          throw opErr;
         }
       }
 
       // Mark as complete so it's removed from the local queue
       await transaction.complete();
+      await clearCrudMeta(opIds);
     } catch (error) {
       console.error("Upload failed, will retry automatically:", error);
       // Do NOT call transaction.complete() here;

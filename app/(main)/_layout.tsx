@@ -1,6 +1,4 @@
 import BackButton from "@/components/BackButton";
-import { SyncSheetProvider } from "@/features/sync/SyncSheetContext";
-import SyncSheet from "@/features/sync/components/SyncSheet";
 import { Stack } from "expo-router";
 import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 
@@ -18,9 +16,12 @@ const MainLayout = () => {
   };
 
   return (
-    <SyncSheetProvider>
-      <Stack screenOptions={{ ...headerOptions, headerShown: false }}>
+    <Stack screenOptions={{ ...headerOptions, headerShown: false }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          options={{ ...emptyTitleHeader, headerTitle: "Sync Center" }}
+          name="sync"
+        />
         <Stack.Screen name="profile" />
         <Stack.Screen name="course" />
         <Stack.Screen name="subject" />
@@ -69,9 +70,7 @@ const MainLayout = () => {
             animation: "slide_from_bottom",
           }}
         />
-      </Stack>
-      <SyncSheet />
-    </SyncSheetProvider>
+    </Stack>
   );
 };
 

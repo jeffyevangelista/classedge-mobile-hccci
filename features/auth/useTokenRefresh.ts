@@ -2,10 +2,11 @@ import * as BackgroundTask from "expo-background-task";
 import * as TaskManager from "expo-task-manager";
 import { useEffect, useRef } from "react";
 import { AppState, type AppStateStatus } from "react-native";
+import { appendSyncEvent } from "@/features/sync/syncEvents";
 import useStore from "@/lib/store";
 import { captureAuthError, captureAuthMessage } from "@/lib/telemetry";
-import { refresh } from "./refreshToken";
 import { recordForcedLogout } from "./forcedLogoutNotice";
+import { refresh } from "./refreshToken";
 import { signOut } from "./signOut";
 
 const BACKGROUND_TOKEN_REFRESH = "BACKGROUND_TOKEN_REFRESH";
@@ -79,6 +80,11 @@ export async function silentRefresh(opts?: {
         setPowersyncToken(data.powersyncToken);
         await setRefreshToken(data.refreshToken);
         console.log("[TokenRefresh] Tokens refreshed silently");
+        await appendSyncEvent({
+          kind: "auth",
+          status: "ok",
+          message: "Tokens refreshed silently",
+        });
         return true;
       } catch (error: any) {
         console.warn("[TokenRefresh] Silent refresh failed:", error);
@@ -90,6 +96,13 @@ export async function silentRefresh(opts?: {
         // offline-ish.
         const status = error?.response?.status;
         captureAuthError("silent_refresh_failed", error, { status });
+        await appendSyncEvent({
+          kind: "auth",
+          status: "fail",
+          httpStatus: typeof status === "number" ? status : null,
+          message:
+            error instanceof Error ? error.message : "Silent refresh failed",
+        });
         if (status === 401) {
           const { isConnected, isInternetReachable } = useStore.getState();
           if (isConnected && isInternetReachable) {
