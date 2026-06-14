@@ -103,6 +103,40 @@ async function fetchAndLog(
   }
 }
 
+/**
+ * Wraps a single CRUD op fetch with a 401-recovery retry. On a 401 from the
+ * server, forces a token rotation via silentRefresh and retries the same op
+ * once with the rotated token. Any other error — including a second 401 after
+ * refresh — re-throws so PowerSync re-queues the transaction normally.
+ *
+ * Each call site passes `rebuildAuthHeader(token)` because JSON and multipart
+ * op shapes use different header sets, and the retry must preserve the right
+ * shape (multipart omits `Content-Type` so the runtime can set the boundary).
+ */
+async function fetchOpWithAuthRetry(
+  label: string,
+  url: string,
+  init: RequestInit,
+  rebuildAuthHeader: (token: string) => Record<string, string>,
+): Promise<Response> {
+  try {
+    return await fetchAndLog(label, url, init);
+  } catch (err) {
+    if (!(err instanceof UploadOpError) || err.status !== 401) throw err;
+
+    const refreshed = await silentRefresh({ force: true });
+    if (!refreshed) throw err;
+
+    const refreshedToken = useStore.getState().accessToken;
+    if (!refreshedToken) throw err;
+
+    return await fetchAndLog(`${label} (retry-after-refresh)`, url, {
+      ...init,
+      headers: rebuildAuthHeader(refreshedToken),
+    });
+  }
+}
+
 // const logger = createBaseLogger();
 // logger.useDefaults(); // Console output
 // logger.setLevel(LogLevel.DEBUG);
@@ -191,7 +225,7 @@ export class Connector implements PowerSyncBackendConnector {
               if (accessToken)
                 multipartHeaders.Authorization = `Bearer ${accessToken}`;
 
-              await fetchAndLog(
+              await fetchOpWithAuthRetry(
                 `PUT-multipart ${op.table} ${op.id}`,
                 instanceUrl,
                 {
@@ -199,9 +233,14 @@ export class Connector implements PowerSyncBackendConnector {
                   headers: multipartHeaders,
                   body: buildMultipartBody(record),
                 },
+                (token) => ({
+                  Accept: "application/json",
+                  "X-Platform": "mobile",
+                  Authorization: `Bearer ${token}`,
+                }),
               );
             } else {
-              await fetchAndLog(
+              await fetchOpWithAuthRetry(
                 `PUT-json ${op.table} ${op.id}`,
                 instanceUrl,
                 {
@@ -209,6 +248,7 @@ export class Connector implements PowerSyncBackendConnector {
                   headers,
                   body: JSON.stringify(record),
                 },
+                (token) => ({ ...headers, Authorization: `Bearer ${token}` }),
               );
             }
             break;
@@ -220,7 +260,7 @@ export class Connector implements PowerSyncBackendConnector {
               };
               if (accessToken)
                 authHeaders.Authorization = `Bearer ${accessToken}`;
-              await fetchAndLog(
+              await fetchOpWithAuthRetry(
                 `PATCH-multipart ${op.table} ${op.id}`,
                 `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
                 {
@@ -228,9 +268,14 @@ export class Connector implements PowerSyncBackendConnector {
                   headers: authHeaders,
                   body: buildMultipartBody({ ...op.opData }),
                 },
+                (token) => ({
+                  Accept: "application/json",
+                  "X-Platform": "mobile",
+                  Authorization: `Bearer ${token}`,
+                }),
               );
             } else {
-              await fetchAndLog(
+              await fetchOpWithAuthRetry(
                 `PATCH-json ${op.table} ${op.id}`,
                 `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
                 {
@@ -238,14 +283,16 @@ export class Connector implements PowerSyncBackendConnector {
                   headers,
                   body: JSON.stringify(op.opData),
                 },
+                (token) => ({ ...headers, Authorization: `Bearer ${token}` }),
               );
             }
             break;
           case UpdateType.DELETE:
-            await fetchAndLog(
+            await fetchOpWithAuthRetry(
               `DELETE ${op.table} ${op.id}`,
               `${env.EXPO_PUBLIC_API_URL}/${op.table}/${op.id}/`,
               { method: "DELETE", headers },
+              (token) => ({ ...headers, Authorization: `Bearer ${token}` }),
             );
             break;
         }

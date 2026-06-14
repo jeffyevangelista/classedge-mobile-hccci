@@ -1,19 +1,17 @@
 import * as FileSystem from "expo-file-system/legacy";
-import { powersync } from "@/powersync/system";
+import { silentRefresh } from "@/features/auth/useTokenRefresh";
 import useStore from "@/lib/store";
-import {
-  fetchAttachment,
-  AttachmentFetchError,
-} from "./attachments.fetcher";
-import {
-  clearAttachmentProgress,
-  setAttachmentProgress,
-} from "./attachments.progress";
+import { powersync } from "@/powersync/system";
 import {
   AUTO_RETRY_CAP,
   LOW_STORAGE_THRESHOLD_BYTES,
   MAX_CONCURRENT_DOWNLOADS,
 } from "./attachments.config";
+import { AttachmentFetchError, fetchAttachment } from "./attachments.fetcher";
+import {
+  clearAttachmentProgress,
+  setAttachmentProgress,
+} from "./attachments.progress";
 import { ATTACHMENT_STATES } from "./attachments.schema";
 
 type Row = {
@@ -83,8 +81,10 @@ class AttachmentQueue {
 
   private async pickNext(): Promise<Row | null> {
     const inFlightIds = Array.from(this.inFlight);
-    const placeholders = inFlightIds.length > 0 ? inFlightIds.map(() => "?").join(",") : "''";
-    const exclusion = inFlightIds.length > 0 ? `AND id NOT IN (${placeholders})` : "";
+    const placeholders =
+      inFlightIds.length > 0 ? inFlightIds.map(() => "?").join(",") : "''";
+    const exclusion =
+      inFlightIds.length > 0 ? `AND id NOT IN (${placeholders})` : "";
     const rows = await powersync.getAll<Row>(
       `SELECT id, resource, priority, retry_count
        FROM attachments_local
@@ -183,8 +183,7 @@ class AttachmentQueue {
         row.resource,
         row.id,
         token,
-        (downloaded, total) =>
-          setAttachmentProgress(row.id, downloaded, total),
+        (downloaded, total) => setAttachmentProgress(row.id, downloaded, total),
       );
       await this.markSynced(row.id, localUri, sizeBytes);
       clearAttachmentProgress(row.id);
@@ -197,8 +196,12 @@ class AttachmentQueue {
         !this.retried.has(row.id)
       ) {
         this.retried.add(row.id);
-        // Allow the auth slice's refresh flow to land before retrying.
-        await new Promise((r) => setTimeout(r, 1000));
+        // Force a token rotation before retrying. `silentRefresh` is dedup'd
+        // via `inflightRefresh`, so concurrent callers join the same promise.
+        // On failure (offline / dead refresh token / forced logout) the store
+        // either holds the old empty token or signOut has cleared it; either
+        // way the `refreshedToken` guard below routes the row to markFailed.
+        await silentRefresh({ force: true });
         const refreshedToken = useStore.getState().accessToken;
         if (refreshedToken && refreshedToken !== "") {
           try {
