@@ -1,12 +1,7 @@
-import { useCallback, useState } from "react";
-import { Alert, Linking, Modal, Pressable, StyleSheet, View } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import * as ImageManipulator from "expo-image-manipulator";
-import { CameraView } from "expo-camera";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useToast } from "heroui-native";
-import { Icon } from "@/components/Icon";
-import { useCamera } from "@/features/camera/useCamera";
+import { useCallback, useRef, useState } from "react";
+import { Alert, Linking, View, useColorScheme } from "react-native";
+import ImageCropPicker from "react-native-image-crop-picker";
+import { Button, Dialog, useThemeColor, useToast } from "heroui-native";
 import { saveAttachment } from "@/features/classroom/ classroom.service";
 import { ProfilePhotoActionSheet } from "@/features/profile/components/ProfilePhotoActionSheet";
 import { useUpdateStudentPhoto } from "@/features/profile/useUpdateStudentPhoto";
@@ -16,25 +11,72 @@ type EditTarget = {
   currentPhoto?: string | null;
 };
 
-const MANIPULATE_MAX_WIDTH = 1024;
-const MANIPULATE_QUALITY = 0.8;
+const CROP_DIM = 1024;
+const CROP_QUALITY = 0.8;
+
+// react-native-image-crop-picker error codes (string `code` property on Error).
+const ERR_CANCELLED = "E_PICKER_CANCELLED";
+const ERR_NO_LIB_PERM = "E_NO_LIBRARY_PERMISSION";
+const ERR_NO_CAM_PERM = "E_NO_CAMERA_PERMISSION";
+
+type CropPickerError = { code?: string; message?: string } & Error;
+
+function isCancelled(err: unknown): boolean {
+  return (err as CropPickerError | undefined)?.code === ERR_CANCELLED;
+}
+
+function isPermissionError(err: unknown): "library" | "camera" | null {
+  const code = (err as CropPickerError | undefined)?.code;
+  if (code === ERR_NO_LIB_PERM) return "library";
+  if (code === ERR_NO_CAM_PERM) return "camera";
+  return null;
+}
 
 export function useProfilePhotoActionSheet() {
   const [target, setTarget] = useState<EditTarget | null>(null);
   const [showSheet, setShowSheet] = useState(false);
-  const [showCamera, setShowCamera] = useState(false);
+  const [showRemoveDialog, setShowRemoveDialog] = useState(false);
   const { toast } = useToast();
+  // heroui-native's toast.hide closes over the `toasts` state from the render
+  // where the callback was created. By the time our async `finally` block runs,
+  // the captured `toast` reference is stale — its `hide` looks at a `toasts`
+  // snapshot that doesn't include the pending toast and silently no-ops.
+  // The ref always points at the latest toast object so `hide(id)` works.
+  const toastRef = useRef(toast);
+  toastRef.current = toast;
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
 
-  const {
-    cameraRef,
-    facing,
-    flash,
-    ensurePermission: ensureCameraPermission,
-    takePicture,
-    toggleFacing,
-    toggleFlash,
-    resetPhoto,
-  } = useCamera();
+  // Pull theme tokens so the cropper (uCrop on Android) matches the app
+  // chrome in both light and dark mode. The cropper UI on iOS is mostly
+  // system-driven — these knobs primarily affect Android.
+  const backgroundColor = useThemeColor("background");
+  const foregroundColor = useThemeColor("foreground");
+  const accentColor = useThemeColor("accent");
+
+  const cropperTheme = {
+    cropperToolbarColor: backgroundColor,
+    cropperStatusBarColor: backgroundColor,
+    cropperToolbarWidgetColor: foregroundColor,
+    cropperActiveWidgetColor: accentColor,
+    cropperTintColor: accentColor,
+    cropperToolbarTitle: "Crop profile photo",
+    cropperChooseText: "Use",
+    cropperCancelText: "Cancel",
+    cropperCircleOverlay: true,
+    // uCrop's bottom controls panel (rotate/scale dial) doesn't honor the
+    // toolbar colors — it has its own light-themed surface which clashes
+    // hard in dark mode. For an avatar (fixed 1:1 aspect, pinch-zoom on the
+    // image works as scale), the bottom controls are redundant — hide them.
+    hideBottomControls: true,
+    cropperRotateButtonsHidden: true,
+    // Match the system bars to the cropper toolbar so the chrome reads as one
+    // surface. `*Light: true` = light (white) icons, which is what we want
+    // when the toolbar background is dark.
+    cropperStatusBarLight: isDark,
+    cropperNavigationBarLight: isDark,
+  };
+
   const updateStudentPhoto = useUpdateStudentPhoto();
 
   const requestEdit = useCallback((next: EditTarget) => {
@@ -45,111 +87,120 @@ export function useProfilePhotoActionSheet() {
   const persistAndUpdate = useCallback(
     async (sourceUri: string) => {
       if (!target) return;
+      const pendingId = toastRef.current.show({
+        label: "Saving photo…",
+        duration: "persistent",
+      });
       try {
-        const manipulated = await ImageManipulator.manipulateAsync(
-          sourceUri,
-          [{ resize: { width: MANIPULATE_MAX_WIDTH } }],
-          {
-            compress: MANIPULATE_QUALITY,
-            format: ImageManipulator.SaveFormat.JPEG,
-          },
-        );
-        const persistent = await saveAttachment(manipulated.uri);
+        const persistent = await saveAttachment(sourceUri);
         await updateStudentPhoto(target.profileId, persistent);
       } catch (err) {
         console.error("[useProfilePhotoActionSheet] persist failed:", err);
-        toast.show({
+        toastRef.current.show({
           label: "Couldn't save that photo",
           description: "Please try again.",
           variant: "danger",
         });
+      } finally {
+        toastRef.current.hide(pendingId);
       }
     },
-    [target, toast, updateStudentPhoto],
+    [target, updateStudentPhoto],
   );
 
+  // Common option shape — both flows share dimensions, compression, and
+  // theme. The crop-picker library handles the resize step internally, so
+  // we don't need expo-image-manipulator anymore.
+  const sharedOptions = {
+    width: CROP_DIM,
+    height: CROP_DIM,
+    cropping: true,
+    compressImageQuality: CROP_QUALITY,
+    compressImageMaxWidth: CROP_DIM,
+    compressImageMaxHeight: CROP_DIM,
+    mediaType: "photo" as const,
+    ...cropperTheme,
+  };
+
+  const openSettingsAlert = (kind: "library" | "camera") => {
+    Alert.alert(
+      kind === "library"
+        ? "Photo Library Permission Required"
+        : "Camera Permission Required",
+      kind === "library"
+        ? "Enable photo library access in Settings to choose a profile photo."
+        : "Enable camera access in Settings to take a profile photo.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Open Settings", onPress: () => Linking.openSettings() },
+      ],
+    );
+  };
+
   const handlePickLibrary = useCallback(async () => {
-    const current = await ImagePicker.getMediaLibraryPermissionsAsync();
-    let granted = current.granted;
-    if (!granted) {
-      const result = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      granted = result.granted;
-      if (!granted && !result.canAskAgain) {
-        Alert.alert(
-          "Photo Library Permission Required",
-          "Enable photo library access in Settings to choose a profile photo.",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Open Settings", onPress: () => Linking.openSettings() },
-          ],
-        );
+    try {
+      const image = await ImageCropPicker.openPicker(sharedOptions);
+      if (!image?.path) return;
+      await persistAndUpdate(image.path);
+    } catch (err) {
+      if (isCancelled(err)) return;
+      const permKind = isPermissionError(err);
+      if (permKind) {
+        openSettingsAlert(permKind);
         return;
       }
-      if (!granted) return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (result.canceled || !result.assets?.[0]) return;
-    await persistAndUpdate(result.assets[0].uri);
-  }, [persistAndUpdate]);
-
-  const handlePickCamera = useCallback(async () => {
-    const granted = await ensureCameraPermission();
-    if (!granted) {
+      console.error("[useProfilePhotoActionSheet] openPicker failed:", err);
       toast.show({
-        label: "Camera permission denied",
-        description: "Enable camera access in Settings to take a photo.",
+        label: "Couldn't open photo library",
+        description: "Please try again.",
         variant: "danger",
       });
-      return;
     }
-    setShowCamera(true);
-  }, [ensureCameraPermission, toast]);
+  }, [persistAndUpdate, sharedOptions, toast]);
 
-  const handleCapture = useCallback(async () => {
-    const photo = await takePicture();
-    if (!photo) return;
-    setShowCamera(false);
-    resetPhoto();
-    await persistAndUpdate(photo.uri);
-  }, [persistAndUpdate, resetPhoto, takePicture]);
-
-  const handleCloseCamera = useCallback(() => {
-    resetPhoto();
-    setShowCamera(false);
-  }, [resetPhoto]);
+  const handlePickCamera = useCallback(async () => {
+    try {
+      const image = await ImageCropPicker.openCamera({
+        ...sharedOptions,
+        useFrontCamera: true,
+      });
+      if (!image?.path) return;
+      await persistAndUpdate(image.path);
+    } catch (err) {
+      if (isCancelled(err)) return;
+      const permKind = isPermissionError(err);
+      if (permKind) {
+        openSettingsAlert(permKind);
+        return;
+      }
+      console.error("[useProfilePhotoActionSheet] openCamera failed:", err);
+      toast.show({
+        label: "Couldn't open camera",
+        description: "Please try again.",
+        variant: "danger",
+      });
+    }
+  }, [persistAndUpdate, sharedOptions, toast]);
 
   const handleRemove = useCallback(() => {
     if (!target) return;
-    Alert.alert(
-      "Remove profile photo?",
-      "Your initials will appear instead.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await updateStudentPhoto(target.profileId, "");
-            } catch (err) {
-              console.error("[useProfilePhotoActionSheet] remove failed:", err);
-              toast.show({
-                label: "Couldn't remove the photo",
-                description: "Please try again.",
-                variant: "danger",
-              });
-            }
-          },
-        },
-      ],
-    );
-  }, [target, toast, updateStudentPhoto]);
+    setShowRemoveDialog(true);
+  }, [target]);
+
+  const handleConfirmRemove = useCallback(async () => {
+    if (!target) return;
+    setShowRemoveDialog(false);
+    try {
+      await updateStudentPhoto(target.profileId, "");
+    } catch (err) {
+      console.error("[useProfilePhotoActionSheet] remove failed:", err);
+      toastRef.current.show({
+        label: "Couldn't remove the photo",
+        description: "Please try again.",
+        variant: "danger",
+      });
+    }
+  }, [target, updateStudentPhoto]);
 
   const portal = (
     <>
@@ -161,110 +212,37 @@ export function useProfilePhotoActionSheet() {
         onRemove={handleRemove}
         canRemove={!!target?.currentPhoto}
       />
-      <Modal
-        visible={showCamera}
-        animationType="slide"
-        onRequestClose={handleCloseCamera}
-      >
-        <View style={styles.cameraContainer}>
-          <CameraView
-            ref={cameraRef}
-            style={StyleSheet.absoluteFill}
-            facing={facing}
-            flash={flash}
-          />
-          <SafeAreaView style={styles.cameraOverlay}>
-            <View style={styles.cameraTopBar}>
-              <Pressable
-                style={styles.cameraIconButton}
-                onPress={handleCloseCamera}
-                accessibilityRole="button"
-                accessibilityLabel="Close camera"
-              >
-                <Icon name="XIcon" size={24} color="#fff" />
-              </Pressable>
-              <Pressable
-                style={styles.cameraIconButton}
-                onPress={toggleFlash}
-                accessibilityRole="button"
-                accessibilityLabel={flash === "on" ? "Turn flash off" : "Turn flash on"}
-              >
-                <Icon
-                  name={flash === "on" ? "LightningIcon" : "LightningSlashIcon"}
-                  size={24}
-                  color="#fff"
-                />
-              </Pressable>
+      <Dialog isOpen={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
+        <Dialog.Portal>
+          <Dialog.Overlay />
+          <Dialog.Content>
+            <View className="mb-5 gap-1.5">
+              <Dialog.Title>Remove profile photo?</Dialog.Title>
+              <Dialog.Description>
+                Your initials will appear instead.
+              </Dialog.Description>
             </View>
-            <View style={styles.cameraBottomBar}>
-              <View style={styles.cameraSpacer} />
-              <Pressable
-                style={styles.captureButton}
-                onPress={handleCapture}
-                accessibilityRole="button"
-                accessibilityLabel="Take photo"
+            <View className="flex-row justify-end gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onPress={() => setShowRemoveDialog(false)}
               >
-                <View style={styles.captureInner} />
-              </Pressable>
-              <View style={styles.cameraSpacer}>
-                <Pressable
-                  style={styles.cameraIconButton}
-                  onPress={toggleFacing}
-                  accessibilityRole="button"
-                  accessibilityLabel="Flip camera"
-                >
-                  <Icon name="CameraRotateIcon" size={28} color="#fff" />
-                </Pressable>
-              </View>
+                Cancel
+              </Button>
+              <Button variant="danger" size="sm" onPress={handleConfirmRemove}>
+                Remove
+              </Button>
             </View>
-          </SafeAreaView>
-        </View>
-      </Modal>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog>
     </>
   );
 
+  // isDark referenced so the hook re-runs and recomputes cropperTheme when the
+  // scheme flips while the user is on this screen.
+  void isDark;
+
   return { requestEdit, portal };
 }
-
-const styles = StyleSheet.create({
-  cameraContainer: { flex: 1, backgroundColor: "#000" },
-  cameraOverlay: { flex: 1, justifyContent: "space-between" },
-  cameraTopBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-  },
-  cameraBottomBar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingBottom: 32,
-    paddingHorizontal: 24,
-  },
-  cameraSpacer: { flex: 1, alignItems: "center" },
-  cameraIconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  captureButton: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    borderWidth: 4,
-    borderColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  captureInner: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: "#fff",
-  },
-});
