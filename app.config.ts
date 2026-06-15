@@ -93,6 +93,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         barcodeScannerEnabled: true,
       },
     ],
+    [
+      "expo-image-picker",
+      {
+        photosPermission:
+          "Allow Classedge to access your photos so you can change your profile photo.",
+        cameraPermission:
+          "Allow Classedge to use your camera so you can take a new profile photo.",
+      },
+    ],
     "expo-router",
     [
       "expo-splash-screen",
