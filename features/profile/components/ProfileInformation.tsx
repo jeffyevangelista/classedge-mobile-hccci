@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Avatar, Card, Skeleton } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
@@ -12,6 +12,7 @@ import { formatDate } from "@/features/calendar/components/date-formatter";
 import useStore from "@/lib/store";
 import { toTitleCase } from "@/utils/toTitleCase";
 import { useUserDetails } from "../profile.hooks";
+import { useProfilePhotoActionSheet } from "@/features/profile/useProfilePhotoActionSheet";
 
 type FieldKey =
   | "fullName"
@@ -40,6 +41,7 @@ const ProfileInformation = () => {
   const { data, isLoading, error, refresh } = useUserDetails();
   const role = useStore((s) => s.authUser?.role);
   const [refreshing, setRefreshing] = useState(false);
+  const { requestEdit, portal } = useProfilePhotoActionSheet();
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -61,6 +63,16 @@ const ProfileInformation = () => {
       dateOfBirth: row?.dateOfBirth ? formatDate(row.dateOfBirth) : null,
     };
   }, [data]);
+
+  const profileId = formattedData?.id;
+  const openEditor =
+    typeof profileId === "number"
+      ? () =>
+          requestEdit({
+            profileId,
+            currentPhoto: formattedData?.studentPhoto ?? null,
+          })
+      : undefined;
 
   if (isLoading) return <ProfileInformationSkeleton />;
   if (error)
@@ -87,31 +99,34 @@ const ProfileInformation = () => {
       "User");
 
   return (
-    <ScreenScrollView
-      className="p-2.5"
-      refreshControl={
-        <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      contentContainerClassName="gap-6 pb-8"
-    >
-      <ProfileHero
-        fullName={fullName}
-        role={role}
-        idNumber={formattedData.idNumber ?? null}
-        photo={formattedData.studentPhoto}
-      />
-
-      <FieldSection
-        title="Personal"
-        fields={PERSONAL_FIELDS}
-        data={formattedData}
-      />
-      <FieldSection
-        title="Contact"
-        fields={CONTACT_FIELDS}
-        data={formattedData}
-      />
-    </ScreenScrollView>
+    <>
+      <ScreenScrollView
+        className="p-2.5"
+        refreshControl={
+          <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        contentContainerClassName="gap-6 pb-8"
+      >
+        <ProfileHero
+          fullName={fullName}
+          role={role}
+          idNumber={formattedData.idNumber ?? null}
+          photo={formattedData.studentPhoto}
+          onEditPhoto={openEditor}
+        />
+        <FieldSection
+          title="Personal"
+          fields={PERSONAL_FIELDS}
+          data={formattedData}
+        />
+        <FieldSection
+          title="Contact"
+          fields={CONTACT_FIELDS}
+          data={formattedData}
+        />
+      </ScreenScrollView>
+      {portal}
+    </>
   );
 };
 
@@ -120,21 +135,31 @@ const ProfileHero = ({
   role,
   idNumber,
   photo,
+  onEditPhoto,
 }: {
   fullName: string;
   role?: string | null;
   idNumber: string | null;
   photo?: string | null;
+  onEditPhoto?: () => void;
 }) => (
   <View className="items-center max-w-3xl mx-auto w-full">
-    <Avatar
-      alt={fullName}
-      size="lg"
-      className="w-20 h-20 border-2 border-border"
+    <Pressable
+      onPress={onEditPhoto}
+      disabled={!onEditPhoto}
+      accessibilityRole="button"
+      accessibilityLabel="Edit profile photo"
+      className="rounded-full active:opacity-80"
     >
-      <AttachmentAvatarImage path={photo ?? undefined} />
-      <AvatarFallbackImage />
-    </Avatar>
+      <Avatar
+        alt={fullName}
+        size="lg"
+        className="w-20 h-20 border-2 border-border"
+      >
+        <AttachmentAvatarImage path={photo ?? undefined} />
+        <AvatarFallbackImage />
+      </Avatar>
+    </Pressable>
     <AppText weight="bold" className="text-xl mt-3 text-center">
       {fullName}
     </AppText>
