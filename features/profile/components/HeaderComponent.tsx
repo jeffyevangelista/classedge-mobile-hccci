@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import { Avatar, Skeleton } from "heroui-native";
 import { AppText } from "@/components/AppText";
@@ -7,8 +7,6 @@ import { Icon } from "@/components/Icon";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import { toTitleCase } from "@/utils/toTitleCase";
-import Image from "@/components/Image";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import useStore from "@/lib/store";
 
@@ -26,21 +24,7 @@ const HeaderComponent = () => {
 
   return (
     <View className="w-full items-center">
-      <View className="h-[180px] rounded-xl w-full overflow-hidden">
-        <Image
-          source={require("@/assets/bldg.jpg")}
-          style={StyleSheet.absoluteFill}
-          contentFit="cover"
-        />
-        {/* Vertical scrim: photo stays vibrant at the top, contrast lands
-            where the avatar overlaps the bottom edge. */}
-        <LinearGradient
-          colors={["transparent", "rgba(0,0,0,0.55)"]}
-          style={StyleSheet.absoluteFill}
-        />
-      </View>
-
-      {/* Avatar overlaps the bottom of the cover by half its height */}
+      {/* Avatar straddles the hero/sheet boundary via the negative margin */}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Open Profile Information"
@@ -90,7 +74,6 @@ const ProfileHeaderError = ({ message }: { message: string }) => (
 const ProfileHeaderSkeleton = () => {
   return (
     <View className="w-full items-center">
-      <Skeleton className="h-[180px] w-full rounded-xl" />
       <View className="-mt-14 p-1.5 bg-background rounded-full">
         <Skeleton className="w-28 h-28 rounded-full" />
       </View>
