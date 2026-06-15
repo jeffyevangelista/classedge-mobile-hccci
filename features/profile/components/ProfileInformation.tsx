@@ -7,6 +7,7 @@ import { ErrorComponent } from "@/components/ErrorComponent";
 import NoDataFallback from "@/components/NoDataFallback";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
+import { Icon } from "@/components/Icon";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import { formatDate } from "@/features/calendar/components/date-formatter";
 import useStore from "@/lib/store";
@@ -64,15 +65,18 @@ const ProfileInformation = () => {
     };
   }, [data]);
 
-  const profileId = formattedData?.id;
-  const openEditor =
-    typeof profileId === "number"
-      ? () =>
-          requestEdit({
-            profileId,
-            currentPhoto: formattedData?.studentPhoto ?? null,
-          })
-      : undefined;
+  // PowerSync/Drizzle returns the integer PK as a string here (e.g. "14",
+  // not 14). Coerce before handing it to the editor — the EditTarget type
+  // wants a number, and the SQL UPDATE / Connector URL both work fine with
+  // the numeric form.
+  const profileIdNum = Number(formattedData?.id ?? NaN);
+  const openEditor = Number.isFinite(profileIdNum)
+    ? () =>
+        requestEdit({
+          profileId: profileIdNum,
+          currentPhoto: formattedData?.studentPhoto ?? null,
+        })
+    : undefined;
 
   if (isLoading) return <ProfileInformationSkeleton />;
   if (error)
@@ -151,14 +155,24 @@ const ProfileHero = ({
       accessibilityLabel="Edit profile photo"
       className="rounded-full active:opacity-80"
     >
-      <Avatar
-        alt={fullName}
-        size="lg"
-        className="w-20 h-20 border-2 border-border"
-      >
-        <AttachmentAvatarImage path={photo ?? undefined} />
-        <AvatarFallbackImage />
-      </Avatar>
+      <View>
+        <Avatar
+          alt={fullName}
+          size="lg"
+          className="w-32 h-32 border-2 border-border"
+        >
+          <AttachmentAvatarImage path={photo ?? undefined} />
+          <AvatarFallbackImage />
+        </Avatar>
+        {onEditPhoto ? (
+          <View
+            accessibilityElementsHidden
+            className="absolute bottom-0 right-0 w-10 h-10 rounded-full bg-accent items-center justify-center border-2 border-background"
+          >
+            <Icon name="CameraIcon" size={20} color="white" />
+          </View>
+        ) : null}
+      </View>
     </Pressable>
     <AppText weight="bold" className="text-xl mt-3 text-center">
       {fullName}
@@ -248,7 +262,7 @@ const ProfileInformationSkeleton = () => {
   return (
     <View className="p-2.5 gap-6">
       <View className="items-center max-w-3xl mx-auto w-full">
-        <Skeleton className="w-20 h-20 rounded-full" />
+        <Skeleton className="w-32 h-32 rounded-full" />
         <Skeleton className="h-6 w-40 rounded mt-3" />
         <View className="flex-row gap-1.5 mt-1.5">
           <Skeleton className="h-4 w-16 rounded-full" />
