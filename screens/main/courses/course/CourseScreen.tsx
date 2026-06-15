@@ -69,15 +69,17 @@ const CourseScreen = () => {
       {
         translateY: interpolate(
           scrollOffset.value,
-          [-IMAGE_HEIGHT, 0, IMAGE_HEIGHT],
-          [-IMAGE_HEIGHT / 2, 0, IMAGE_HEIGHT * 0.75],
+          [-IMAGE_HEIGHT, 0],
+          [-IMAGE_HEIGHT / 2, 0],
+          Extrapolation.CLAMP,
         ),
       },
       {
         scale: interpolate(
           scrollOffset.value,
-          [-IMAGE_HEIGHT, 0, IMAGE_HEIGHT],
-          [2, 1, 1],
+          [-IMAGE_HEIGHT, 0],
+          [2, 1],
+          Extrapolation.CLAMP,
         ),
       },
     ],
@@ -199,7 +201,7 @@ const CourseScreen = () => {
       {/* Parallax ScrollView */}
       <Animated.ScrollView
         ref={scrollRef}
-        scrollEventThrottle={16}
+        scrollEventThrottle={1}
         refreshControl={refreshControl}
       >
         <Animated.View
