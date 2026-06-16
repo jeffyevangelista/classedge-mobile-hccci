@@ -40,6 +40,18 @@ export const SYNC_COPY = {
     firstFailed: (relative: string) => `First failed ${relative}`,
   },
 
+  failed: {
+    heading: "Failed",
+    needsAttention: "won't retry",
+    empty: "Nothing has been permanently dropped.",
+    emptySubtitle: "If an upload can't recover, we'll list it here.",
+    showDetails: "Show details",
+    hideDetails: "Hide details",
+    dismiss: "Dismiss",
+    httpLabel: (status: number | null) => (status != null ? `HTTP ${status}` : "no response"),
+    droppedAt: (relative: string) => `Dropped ${relative}`,
+  },
+
   events: {
     heading: "Events",
     subheading: "Last 200 sync events",

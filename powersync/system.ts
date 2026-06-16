@@ -103,6 +103,22 @@ export const setupPowerSync = async (
     `CREATE INDEX IF NOT EXISTS idx_ps_crud_meta_stuck ON ps_crud_meta_local (attempt_count, first_failed_at);`,
   );
 
+  // Phase D (permanent 4xx retry handling): add two columns to track dropped
+  // ops. ALTER TABLE … ADD COLUMN is idempotent at the SQL level only on
+  // first install; on re-install SQLite errors with "duplicate column name",
+  // which we swallow. Any other error is rethrown.
+  const tryAddColumn = async (column: string) => {
+    try {
+      await powersync.execute(
+        `ALTER TABLE ps_crud_meta_local ADD COLUMN ${column} TEXT;`,
+      );
+    } catch (err) {
+      if (!String(err).toLowerCase().includes("duplicate column")) throw err;
+    }
+  };
+  await tryAddColumn("dropped_at");
+  await tryAddColumn("target");
+
   const connector = new Connector();
   // Explicit opt-in to the Rust sync client. RUST is the default in
   // @powersync/common 1.52.0, but pinning it here keeps the choice stable

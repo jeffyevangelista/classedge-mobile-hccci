@@ -1,6 +1,7 @@
 import BackButton from "@/components/BackButton";
 import { Stack } from "expo-router";
 import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
+import { DroppedOpToaster } from "@/features/sync/components/DroppedOpToaster";
 
 const MainLayout = () => {
   const headerOptions = useThemedHeaderOptions();
@@ -16,7 +17,9 @@ const MainLayout = () => {
   };
 
   return (
-    <Stack screenOptions={{ ...headerOptions, headerShown: false }}>
+    <>
+      <DroppedOpToaster />
+      <Stack screenOptions={{ ...headerOptions, headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           options={{ ...emptyTitleHeader, headerTitle: "Sync Center" }}
@@ -70,7 +73,8 @@ const MainLayout = () => {
             animation: "slide_from_bottom",
           }}
         />
-    </Stack>
+      </Stack>
+    </>
   );
 };
 

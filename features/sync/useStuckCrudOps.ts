@@ -30,8 +30,9 @@ export function useStuckCrudOps() {
             c.tx_id
      FROM ps_crud_meta_local m
      JOIN ps_crud c ON c.id = m.op_id
-     WHERE m.attempt_count >= ?
-        OR datetime(m.first_failed_at) < datetime('now', ?)
+     WHERE m.dropped_at IS NULL
+       AND (m.attempt_count >= ?
+            OR datetime(m.first_failed_at) < datetime('now', ?))
      ORDER BY m.first_failed_at ASC`,
     [STUCK_ATTEMPT_CAP, `-${STUCK_AGE_HOURS} hours`],
   );

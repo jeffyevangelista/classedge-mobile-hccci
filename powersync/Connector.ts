@@ -8,7 +8,14 @@ import {
 import * as FileSystem from "expo-file-system/legacy";
 import { silentRefresh } from "@/features/auth/useTokenRefresh";
 import { appendSyncEvent } from "@/features/sync/syncEvents";
-import { clearCrudMeta, recordCrudAttempt } from "@/features/sync/crudMeta";
+import {
+  STUCK_ATTEMPT_CAP,
+  clearCrudMeta,
+  markCrudOpDropped,
+  readCrudMeta,
+  recordCrudAttempt,
+} from "@/features/sync/crudMeta";
+import { isPermanentStatus } from "@/features/sync/permanentStatuses";
 import useStore from "@/lib/store";
 import { env } from "@/utils/env";
 
@@ -198,6 +205,7 @@ export class Connector implements PowerSyncBackendConnector {
     }
 
     const opIds: string[] = [];
+    const droppedIds: string[] = [];
     try {
       for (const op of transaction.crud) {
         opIds.push(op.id);
@@ -314,6 +322,34 @@ export class Connector implements PowerSyncBackendConnector {
             opErr instanceof UploadOpError ? opErr.status : null;
           const message =
             opErr instanceof Error ? opErr.message : String(opErr);
+
+          // Record the attempt first so `readCrudMeta` below sees the just-incremented
+          // count. Required for the stuck-cap classification path.
+          await recordCrudAttempt(op.id, { error: message, httpStatus });
+
+          const meta = await readCrudMeta(op.id);
+          const attemptCount = meta?.attempt_count ?? 1;
+          const shouldDrop =
+            isPermanentStatus(httpStatus) || attemptCount >= STUCK_ATTEMPT_CAP;
+
+          if (shouldDrop) {
+            await markCrudOpDropped(op.id, {
+              target,
+              error: message,
+              httpStatus,
+            });
+            await appendSyncEvent({
+              kind: "upload",
+              target,
+              status: "dropped",
+              httpStatus,
+              message,
+              durationMs: Date.now() - started,
+            });
+            droppedIds.push(op.id);
+            continue;
+          }
+
           await appendSyncEvent({
             kind: "upload",
             target,
@@ -322,14 +358,17 @@ export class Connector implements PowerSyncBackendConnector {
             message,
             durationMs: Date.now() - started,
           });
-          await recordCrudAttempt(op.id, { error: message, httpStatus });
           throw opErr;
         }
       }
 
-      // Mark as complete so it's removed from the local queue
+      // Mark as complete so the processed ops (succeeded or dropped) are
+      // removed from the local queue. Dropped meta rows survive because we
+      // filter them out of the clearCrudMeta call below — the Sync Center
+      // "Failed" section reads them via useFailedCrudOps.
       await transaction.complete();
-      await clearCrudMeta(opIds);
+      const succeededIds = opIds.filter((id) => !droppedIds.includes(id));
+      await clearCrudMeta(succeededIds);
     } catch (error) {
       console.error("Upload failed, will retry automatically:", error);
       // Do NOT call transaction.complete() here;

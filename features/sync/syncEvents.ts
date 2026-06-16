@@ -10,7 +10,7 @@ export type SyncEventKind =
   | "connect"
   | "stream";
 
-export type SyncEventStatus = "started" | "ok" | "fail";
+export type SyncEventStatus = "started" | "ok" | "fail" | "dropped";
 
 export type SyncEventInput = {
   kind: SyncEventKind;
