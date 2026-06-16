@@ -10,6 +10,8 @@ import {
   getLessons,
   getStudents,
   getSubject,
+  getSubjectSchedules,
+  getSubjectTimeline,
   getSubjects,
 } from "./oversight.apis";
 
@@ -107,5 +109,21 @@ export const useStudents = (courseId: string) => {
     initialPageParam: 1,
     placeholderData: keepPreviousData,
     enabled: !!courseId,
+  });
+};
+
+export const useSubjectTimeline = (subjectId: string) => {
+  return useQuery({
+    queryKey: ["subject-timeline", subjectId],
+    queryFn: () => getSubjectTimeline(subjectId),
+    enabled: !!subjectId,
+  });
+};
+
+export const useSubjectSchedules = (subjectId: string) => {
+  return useQuery({
+    queryKey: ["subject-schedules", subjectId],
+    queryFn: () => getSubjectSchedules(subjectId),
+    enabled: !!subjectId,
   });
 };

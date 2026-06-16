@@ -1,19 +1,17 @@
 import { useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import dayjs from "dayjs";
 import { AppText } from "@/components/AppText";
-import { useCourseTimeline } from "../courses.hooks";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { formatDate } from "@/utils/formatDate";
+import { useSubjectTimeline } from "../oversight.hooks";
 import {
   BUCKET_ORDER,
   bucketize,
 } from "@/features/timeline/bucketize";
 import type {
-  BucketKey,
   Filter,
   TimelineItem,
   TimelineRowHighlight,
@@ -22,19 +20,19 @@ import { TimelineFilterChips } from "@/features/timeline/components/TimelineFilt
 import { TimelineRow } from "@/features/timeline/components/TimelineRow";
 import { TimelineSkeleton } from "@/features/timeline/components/TimelineSkeleton";
 
-const CourseTimeline = () => {
-  const { courseId } = useLocalSearchParams();
+const SubjectTimeline = () => {
+  const { subjectId } = useLocalSearchParams<{ subjectId: string }>();
   const [filter, setFilter] = useState<Filter>("all");
 
-  const { data, isLoading, isError, error } = useCourseTimeline(
-    courseId as string,
+  const { data, isLoading, isError, error } = useSubjectTimeline(
+    subjectId ?? "",
   );
 
-  const items = (data as TimelineItem[] | undefined) ?? [];
+  const items = data?.results ?? [];
 
   const filtered = useMemo(
     () =>
-      filter === "all" ? items : items.filter((item) => item.type === filter),
+      filter === "all" ? items : items.filter((i) => i.type === filter),
     [items, filter],
   );
 
@@ -57,7 +55,7 @@ const CourseTimeline = () => {
       <EmptyState
         icon="FolderOpenIcon"
         title="No content yet"
-        description="No content found for this course"
+        description="No materials or activities published yet"
       />
     );
   }
@@ -100,7 +98,11 @@ const CourseTimeline = () => {
               </AppText>
             </View>
             {buckets[key].map((item) => (
-              <StudentRow key={`${item.id}-${item.type}`} item={item} bucket={key} />
+              <TeacherRow
+                key={`${item.id}-${item.type}`}
+                item={item}
+                isToday={key === "today"}
+              />
             ))}
           </View>
         ))
@@ -109,68 +111,39 @@ const CourseTimeline = () => {
   );
 };
 
-// Student-side row: composes the shared TimelineRow with submission-state
-// badges, "due-soon" / "today" / "overdue" highlight rules, and the
-// student routes (/material, /assessment).
-const StudentRow = ({
+// Teacher-side row: routes to /lesson or /activity, surfaces only the
+// "In class" pill for classroomMode activities, and uses the "today"
+// highlight when the bucket is "today". No per-student state.
+const TeacherRow = ({
   item,
-  bucket,
+  isToday,
 }: {
   item: TimelineItem;
-  bucket: BucketKey;
+  isToday: boolean;
 }) => {
   const router = useRouter();
   const isAssessment = item.type === "assessment";
+  const isClassroomActivity = isAssessment && !!item.classroomMode;
   const formattedDate = formatDate(item.startDate, isAssessment);
   const dateLabel = isAssessment
     ? `Due ${formattedDate}`
     : `Posted ${formattedDate}`;
 
-  const isClassroomActivity = isAssessment && !!item.classroomMode;
-  const isOverdue =
-    isAssessment &&
-    !isClassroomActivity &&
-    !item.hasSubmission &&
-    new Date(item.startDate).getTime() < Date.now();
-
-  const dueSoon =
-    bucket === "upcoming" &&
-    isAssessment &&
-    !item.hasSubmission &&
-    !isClassroomActivity &&
-    dayjs(item.startDate).diff(dayjs(), "day") <= 3;
-
-  let highlightVariant: TimelineRowHighlight | undefined;
-  if (isOverdue) highlightVariant = "overdue";
-  else if (bucket === "today" || dueSoon) highlightVariant = "today";
+  const highlightVariant: TimelineRowHighlight | undefined = isToday
+    ? "today"
+    : undefined;
 
   const badges = isClassroomActivity ? (
     <View className="px-2 py-0.5 rounded-full bg-accent-soft">
       <AppText weight="semibold" className="text-[10px] text-accent">
-        {item.hasSubmission && item.showScore
-          ? `In class · ${item.totalScore}/${item.maxScore}`
-          : "In class"}
-      </AppText>
-    </View>
-  ) : item.hasSubmission ? (
-    <View className="px-2 py-0.5 rounded-full bg-accent-soft">
-      <AppText weight="semibold" className="text-[10px] text-accent">
-        {item.showScore
-          ? `Submitted · ${item.totalScore}/${item.maxScore}`
-          : "Submitted"}
-      </AppText>
-    </View>
-  ) : isOverdue ? (
-    <View className="px-2 py-0.5 rounded-full bg-danger-soft">
-      <AppText weight="semibold" className="text-[10px] text-danger">
-        Overdue
+        In class
       </AppText>
     </View>
   ) : null;
 
   const handlePress = () => {
     router.push(
-      isAssessment ? `/assessment/${item.id}` : `/material/${item.id}`,
+      isAssessment ? `/activity/${item.id}` : `/lesson/${item.id}`,
     );
   };
 
@@ -185,4 +158,4 @@ const StudentRow = ({
   );
 };
 
-export default CourseTimeline;
+export default SubjectTimeline;

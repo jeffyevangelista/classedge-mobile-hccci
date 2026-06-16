@@ -63,3 +63,31 @@ export type Student = {
   name: string;
   studentPhoto: string;
 };
+
+export type TimelineItem = {
+  id: string;
+  fileName: string;
+  startDate: string;
+  type: "material" | "assessment";
+  hasSubmission: number;
+  showScore: number;
+  maxScore: number;
+  totalScore: number;
+  classroomMode: number;
+};
+
+export type TimelineApiResponse = {
+  results: TimelineItem[];
+};
+
+export type Schedule = {
+  id: number;
+  daysOfWeek: string;
+  scheduleStartTime: string;
+  scheduleEndTime: string;
+  isActiveSemester: number;
+};
+
+export type SchedulesApiResponse = {
+  results: Schedule[];
+};
