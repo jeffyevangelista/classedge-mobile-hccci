@@ -2,23 +2,20 @@ import type { ActivityAction, EmitIds } from "./types";
 
 type RegistryEntry = {
   action: ActivityAction;
-  extract: (params: Record<string, string | string[] | undefined>) => EmitIds;
+  extract: (params: Record<string, string | undefined>) => EmitIds;
 };
 
-const asString = (v: string | string[] | undefined): string | undefined =>
-  Array.isArray(v) ? v[0] : v;
-
-const asNumber = (v: string | string[] | undefined): number | undefined => {
-  const s = asString(v);
-  if (s === undefined) return undefined;
-  const n = Number(s);
+const asNumber = (v: string | undefined): number | undefined => {
+  if (v === undefined) return undefined;
+  const n = Number(v);
   return Number.isFinite(n) ? n : undefined;
 };
 
 /**
  * Pathname → audit action mapper. Keys use expo-router's bracket syntax:
- * a literal `[paramName]` segment matches any value and exposes it under
- * `params[paramName]`. Group dirs `(...)` are not part of the runtime path.
+ * a literal `[paramName]` segment matches any value and exposes it to
+ * `extract(...)` under `params[paramName]`. Group dirs `(...)` are not
+ * part of the runtime path.
  *
  * Routes not in this map produce no auto-emit.
  */
@@ -37,11 +34,11 @@ export const screenRegistry: Record<string, RegistryEntry> = {
   },
   "/activity/[activityId]": {
     action: "open_activity",
-    extract: (p) => ({ activityId: asString(p.activityId) }),
+    extract: (p) => ({ activityId: p.activityId }),
   },
   "/assessment/[assessmentId]": {
     action: "open_activity",
-    extract: (p) => ({ activityId: asString(p.assessmentId) }),
+    extract: (p) => ({ activityId: p.assessmentId }),
   },
   "/lesson/[lessonId]": {
     action: "open_lesson",
@@ -55,19 +52,19 @@ export const screenRegistry: Record<string, RegistryEntry> = {
     action: "open_announcement",
     extract: (p) => ({
       entityType: "announcement",
-      entityId: asString(p.announcementId),
+      entityId: p.announcementId,
     }),
   },
   "/event/[eventId]": {
     action: "open_calendar_event",
     extract: (p) => ({
       entityType: "calendar_event",
-      entityId: asString(p.eventId),
+      entityId: p.eventId,
     }),
   },
   "/attempt/[attemptId]/review": {
     action: "view_score",
-    extract: (p) => ({ activityId: asString(p.attemptId) }),
+    extract: (p) => ({ activityId: p.attemptId }),
   },
   "/profile": {
     action: "open_profile",
@@ -76,39 +73,38 @@ export const screenRegistry: Record<string, RegistryEntry> = {
 };
 
 /**
- * Match a resolved pathname (e.g. "/subject/42/subject-details") to a
- * registry entry by replacing concrete segments with their bracketed
- * template form. Returns `null` if no match.
+ * Match a resolved pathname against the registry and extract the bracket
+ * segments as params (independent of `useLocalSearchParams`, which only
+ * works inside the route component). Returns `null` if no match.
  */
 export function matchPath(
   pathname: string,
-  params: Record<string, string | string[] | undefined>,
-): { entry: RegistryEntry; templatedPath: string } | null {
+): { entry: RegistryEntry; templatedPath: string; params: Record<string, string> } | null {
   for (const key of Object.keys(screenRegistry)) {
-    if (pathMatchesTemplate(pathname, key, params)) {
-      return { entry: screenRegistry[key], templatedPath: key };
+    const params = paramsForTemplate(pathname, key);
+    if (params !== null) {
+      return { entry: screenRegistry[key], templatedPath: key, params };
     }
   }
   return null;
 }
 
-function pathMatchesTemplate(
+function paramsForTemplate(
   actual: string,
   template: string,
-  params: Record<string, string | string[] | undefined>,
-): boolean {
+): Record<string, string> | null {
   const a = actual.split("/").filter(Boolean);
   const t = template.split("/").filter(Boolean);
-  if (a.length !== t.length) return false;
+  if (a.length !== t.length) return null;
+  const extracted: Record<string, string> = {};
   for (let i = 0; i < t.length; i += 1) {
     const seg = t[i];
     if (seg.startsWith("[") && seg.endsWith("]")) {
       const paramName = seg.slice(1, -1);
-      const paramVal = asString(params[paramName]);
-      if (paramVal !== a[i]) return false;
+      extracted[paramName] = a[i];
     } else if (seg !== a[i]) {
-      return false;
+      return null;
     }
   }
-  return true;
+  return extracted;
 }
