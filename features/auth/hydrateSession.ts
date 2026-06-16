@@ -1,6 +1,7 @@
 import useStore from "@/lib/store";
 import { jwtDecode } from "jwt-decode";
 import { captureAuthMessage } from "@/lib/telemetry";
+import { track } from "@/lib/activity-tracker";
 import { signOut } from "./signOut";
 import type { AuthResponse } from "./auth.types";
 
@@ -31,4 +32,6 @@ export async function hydrateSession(data: AuthResponse): Promise<void> {
   setAccessToken(data.accessToken);
   setPowersyncToken(data.powersyncToken);
   await setRefreshToken(data.refreshToken);
+
+  track("login");
 }

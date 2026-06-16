@@ -1,5 +1,8 @@
+import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NetworkBannerProvider } from "@/features/network/NetworkBannerContext";
+import { startActivityTracker } from "@/lib/activity-tracker";
+import { NavListener } from "@/lib/activity-tracker/NavListener";
 import HeroUIProvider from "./HeroUIProvider";
 import KeyboardProvider from "./KeyboardProvider";
 import NetworkProvider from "./NetworkProvider";
@@ -9,6 +12,11 @@ import QueryProvider from "./QueryProvider";
 import ImageProvider from "./ImageProvider";
 
 const RootProvider = ({ children }: { children: React.ReactNode }) => {
+  useEffect(() => {
+    const stop = startActivityTracker();
+    return stop;
+  }, []);
+
   return (
     <SafeAreaProvider>
       <ImageProvider>
@@ -18,7 +26,10 @@ const RootProvider = ({ children }: { children: React.ReactNode }) => {
               <PowerSyncProvider>
                 <QueryProvider>
                   <HeroUIProvider>
-                    <KeyboardProvider>{children}</KeyboardProvider>
+                    <KeyboardProvider>
+                      <NavListener />
+                      {children}
+                    </KeyboardProvider>
                   </HeroUIProvider>
                 </QueryProvider>
               </PowerSyncProvider>

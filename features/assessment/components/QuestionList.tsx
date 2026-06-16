@@ -16,6 +16,7 @@ import { saveAnswer } from "../assessment.service";
 import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
 import EmptyState from "@/components/EmptyState";
+import { track } from "@/lib/activity-tracker";
 import { Skeleton, Button, Dialog, useThemeColor } from "heroui-native";
 import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 import { Icon } from "@/components/Icon";
@@ -108,6 +109,10 @@ const QuestionList = ({
     Map<number, { answer: string; timer: ReturnType<typeof setTimeout> }>
   >(new Map());
 
+  // Fires `start_activity` exactly once per attempt lifecycle, on the first
+  // answer the student saves. Resets when this component unmounts.
+  const startedTrackedRef = useRef(false);
+
   const flushPendingSaves = useCallback(async () => {
     const entries = Array.from(pendingSavesRef.current.entries());
     pendingSavesRef.current.forEach(({ timer }) => clearTimeout(timer));
@@ -123,6 +128,10 @@ const QuestionList = ({
 
   const handleAnswer = useCallback(
     (questionId: number, answer: string) => {
+      if (!startedTrackedRef.current) {
+        startedTrackedRef.current = true;
+        track("start_activity", { activityId });
+      }
       setAnswers((prev) => ({ ...prev, [questionId]: answer }));
 
       const existing = pendingSavesRef.current.get(questionId);
@@ -137,7 +146,7 @@ const QuestionList = ({
 
       pendingSavesRef.current.set(questionId, { answer, timer });
     },
-    [retakeRecordId, studentId],
+    [retakeRecordId, studentId, activityId],
   );
 
   const handleUpload = useCallback(
@@ -199,6 +208,7 @@ const QuestionList = ({
   const handleSubmitConfirm = async () => {
     setSubmitOpen(false);
     await flushPendingSaves();
+    track("submit_activity", { activityId });
     onSubmit();
   };
 

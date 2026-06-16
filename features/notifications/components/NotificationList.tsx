@@ -12,6 +12,7 @@ import { Icon, type IconName } from "@/components/Icon";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { ScreenList } from "@/components/ScreenList";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import { track } from "@/lib/activity-tracker";
 import { getApiErrorMessage } from "@/lib/api-error";
 import useStore from "@/lib/store";
 import type { Notification } from "@/powersync/schema";
@@ -194,6 +195,10 @@ const NotificationItem = ({
   const actorName = hasActor ? toTitleCase(rawActor) : "System";
 
   const handleReadNotification = async () => {
+    track("open_notification", {
+      entityType,
+      entityId: entityId != null ? String(entityId) : undefined,
+    });
     if (isReadBool) return;
     try {
       await readNotification(id.toString());
