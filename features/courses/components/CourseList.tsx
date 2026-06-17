@@ -3,20 +3,20 @@ import Image from "@/components/Image";
 import { Icon } from "@/components/Icon";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import { ScreenList } from "@/components/ScreenList";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import {
-  Button,
   Card,
   InputGroup,
   Skeleton,
   useThemeColor,
 } from "heroui-native";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Pressable,
   useWindowDimensions,
   View,
 } from "react-native";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import {
@@ -28,6 +28,7 @@ import { StudentEnrolledCourses } from "../courses.types";
 import { useSectionStatus } from "@/features/sync/useSectionStatus";
 import { SectionView } from "@/features/sync/components/SectionView";
 import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
+import SyncCenter from "@/features/sync/components/SyncCenter";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -38,16 +39,87 @@ const MIN_CARD_WIDTH = 280;
 
 type SortMode = "asc" | "desc";
 
-const CourseList = () => {
+type CourseListProps = {
+  query?: ReturnType<typeof useStudentCourses>;
+};
+
+const CourseList = ({ query }: CourseListProps = {}) => {
   const { width } = useWindowDimensions();
   const numColumns = Math.max(1, Math.floor(width / MIN_CARD_WIDTH));
   const { authUser } = useStore();
-  const { data, isLoading, isError, error, refetch, isRefetching } =
-    useStudentCourses();
+  const fallbackQuery = useStudentCourses();
+  const { data, isLoading, isError, error, refetch, isRefetching } = query ?? fallbackQuery;
   const pendingCounts = useCoursePendingCounts(authUser?.id);
+  const navigation = useNavigation();
+  const accentColor = useThemeColor("accent");
+  const foregroundColor = useThemeColor("foreground");
 
   const [search, setSearch] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("asc");
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const closeSearch = useCallback(() => {
+    setSearch("");
+    setSearchOpen(false);
+  }, []);
+
+  const toggleSearch = useCallback(() => {
+    setSearchOpen((open) => {
+      if (open) setSearch("");
+      return !open;
+    });
+  }, []);
+
+  const toggleSort = useCallback(() => {
+    setSortMode((mode) => (mode === "asc" ? "desc" : "asc"));
+  }, []);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <View className="flex-row items-center gap-1 pr-1">
+          <Pressable
+            onPress={toggleSort}
+            accessibilityRole="button"
+            accessibilityLabel={`Sort: ${
+              sortMode === "asc" ? "A to Z" : "Z to A"
+            }. Tap to change.`}
+            hitSlop={6}
+            className="w-10 h-10 rounded-full items-center justify-center active:opacity-70"
+          >
+            <Icon
+              name={sortMode === "asc" ? "SortAscendingIcon" : "SortDescendingIcon"}
+              size={22}
+              color={foregroundColor}
+            />
+          </Pressable>
+          <Pressable
+            onPress={toggleSearch}
+            accessibilityRole="button"
+            accessibilityLabel={searchOpen ? "Close search" : "Open search"}
+            accessibilityState={{ expanded: searchOpen }}
+            hitSlop={6}
+            className="w-10 h-10 rounded-full items-center justify-center active:opacity-70"
+          >
+            <Icon
+              name="MagnifyingGlassIcon"
+              size={22}
+              color={searchOpen ? accentColor : foregroundColor}
+            />
+          </Pressable>
+          <SyncCenter />
+        </View>
+      ),
+    });
+  }, [
+    navigation,
+    toggleSort,
+    toggleSearch,
+    searchOpen,
+    sortMode,
+    accentColor,
+    foregroundColor,
+  ]);
 
   const visible = useMemo(() => {
     const list = data ?? [];
@@ -84,11 +156,11 @@ const CourseList = () => {
       </SectionView.Loading>
       <SectionView.Empty>
         <View className="w-full max-w-6xl mx-auto flex-1">
-          <CourseListToolbar
+          <CollapsibleSearch
+            open={searchOpen}
             search={search}
             onSearchChange={setSearch}
-            sortMode={sortMode}
-            onSortChange={setSortMode}
+            onClose={closeSearch}
           />
           <EmptyState
             icon="BookOpenIcon"
@@ -102,11 +174,11 @@ const CourseList = () => {
       </SectionView.OfflineEmpty>
       <SectionView.Ready>
         <View className="w-full max-w-6xl mx-auto flex-1">
-          <CourseListToolbar
+          <CollapsibleSearch
+            open={searchOpen}
             search={search}
             onSearchChange={setSearch}
-            sortMode={sortMode}
-            onSortChange={setSortMode}
+            onClose={closeSearch}
           />
           <ScreenList
             refreshControl={
@@ -140,63 +212,51 @@ const CourseList = () => {
   );
 };
 
-const CourseListToolbar = ({
+const CollapsibleSearch = ({
+  open,
   search,
   onSearchChange,
-  sortMode,
-  onSortChange,
+  onClose,
 }: {
+  open: boolean;
   search: string;
   onSearchChange: (value: string) => void;
-  sortMode: SortMode;
-  onSortChange: (mode: SortMode) => void;
+  onClose: () => void;
 }) => {
   const mutedColor = useThemeColor("muted");
-  const toggle = () => onSortChange(sortMode === "asc" ? "desc" : "asc");
+  if (!open) return null;
   return (
-    <View className="flex-row items-center gap-2 px-2 pt-2 pb-1">
+    <Animated.View
+      entering={FadeInDown.duration(180)}
+      exiting={FadeOutUp.duration(140)}
+      className="flex-row items-center gap-2 px-2 pt-2 pb-1"
+    >
       <InputGroup className="flex-1 shadow-none">
         <InputGroup.Prefix>
           <Icon name="MagnifyingGlassIcon" size={18} color={mutedColor} />
         </InputGroup.Prefix>
         <InputGroup.Input
+          autoFocus
           placeholder="Search courses"
           value={search}
           onChangeText={onSearchChange}
           autoCorrect={false}
           autoCapitalize="none"
+          returnKeyType="search"
           accessibilityLabel="Search courses"
         />
-        {search.length > 0 ? (
-          <InputGroup.Suffix>
-            <Pressable
-              onPress={() => onSearchChange("")}
-              accessibilityRole="button"
-              accessibilityLabel="Clear search"
-              hitSlop={8}
-              className="active:opacity-60"
-            >
-              <Icon name="XCircleIcon" size={18} color={mutedColor} />
-            </Pressable>
-          </InputGroup.Suffix>
-        ) : null}
+        <InputGroup.Suffix>
+          <Pressable
+            onPress={onClose}
+            accessibilityRole="button"
+            accessibilityLabel={search ? "Clear and close search" : "Close search"}
+            hitSlop={6}
+          >
+            <Icon name="XIcon" size={18} color={mutedColor} />
+          </Pressable>
+        </InputGroup.Suffix>
       </InputGroup>
-      <Button
-        isIconOnly
-        variant="outline"
-        onPress={toggle}
-        className="rounded-2xl"
-        accessibilityLabel={`Sort: ${
-          sortMode === "asc" ? "A to Z" : "Z to A"
-        }. Tap to change.`}
-      >
-        <Icon
-          name={sortMode === "asc" ? "SortAscendingIcon" : "SortDescendingIcon"}
-          size={18}
-          color={mutedColor}
-        />
-      </Button>
-    </View>
+    </Animated.View>
   );
 };
 

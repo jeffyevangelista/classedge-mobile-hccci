@@ -38,7 +38,9 @@ const SubjectDetailsScreen = () => {
   const subjectType = data?.subjectType;
   const subjectPhoto = data?.subjectPhoto;
   const subjectDescription = data?.subjectDescription;
-  const instructorName = data?.assignTeacherName ?? "Unassigned";
+  const instructorName = data?.assignTeacherName
+    ? toTitleCase(data.assignTeacherName)
+    : "Unassigned";
   const roomNumber = data?.roomNumber || "TBA";
   const showCode = !!subjectCode && subjectCode !== subjectName;
 

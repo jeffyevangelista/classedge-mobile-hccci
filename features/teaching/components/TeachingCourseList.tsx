@@ -1,16 +1,3 @@
-import { AppText } from "@/components/AppText";
-import Image from "@/components/Image";
-import { Icon } from "@/components/Icon";
-import { ScreenList } from "@/components/ScreenList";
-import { Link, useNavigation } from "expo-router";
-import {
-  Avatar,
-  Card,
-  InputGroup,
-  Skeleton,
-  useThemeColor,
-} from "heroui-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Pressable,
   useWindowDimensions,
@@ -19,25 +6,37 @@ import {
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
-import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
-import { toTitleCase } from "@/utils/toTitleCase";
-import { useGetSubjects } from "../oversight.hooks";
-import { SubjectType } from "../oversight.type";
-import EmptyState from "@/components/EmptyState";
-import ErrorFallback from "@/components/ErrorFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useTeachingCourses } from "@/features/teaching/teaching.hooks";
 import { useSectionStatus } from "@/features/sync/useSectionStatus";
 import { SectionView } from "@/features/sync/components/SectionView";
 import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
 import SyncCenter from "@/features/sync/components/SyncCenter";
+import { AppText } from "@/components/AppText";
+import { FlashList } from "@shopify/flash-list";
+import {
+  Card,
+  InputGroup,
+  Skeleton,
+  useThemeColor,
+} from "heroui-native";
+import { Link, useNavigation } from "expo-router";
+import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
+import Image from "@/components/Image";
+import { Icon } from "@/components/Icon";
+
+import EmptyState from "@/components/EmptyState";
+import ErrorFallback from "@/components/ErrorFallback";
+import { Subject } from "@/powersync/schema";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const MIN_CARD_WIDTH = 280;
 
-const SubjectsList = () => {
+const TeachingCourseList = () => {
   const { width } = useWindowDimensions();
   const numColumns = Math.max(1, Math.floor(width / MIN_CARD_WIDTH));
-  const { data, isLoading, isError, error, isRefetching, refetch } =
-    useGetSubjects();
+  const { isLoading, isError, error, data, refetch, isRefetching } =
+    useTeachingCourses();
   const navigation = useNavigation();
   const accentColor = useThemeColor("accent");
   const foregroundColor = useThemeColor("foreground");
@@ -81,21 +80,17 @@ const SubjectsList = () => {
     });
   }, [navigation, toggleSearch, searchOpen, accentColor, foregroundColor]);
 
-  const subjects = useMemo(
-    () => data?.pages.flatMap((page) => page.results) ?? [],
-    [data],
-  );
-
   const visible = useMemo(() => {
+    const list = data ?? [];
     const q = search.trim().toLowerCase();
-    if (!q) return subjects;
-    return subjects.filter((s) =>
-      (s.subjectName ?? "").toLowerCase().includes(q),
+    if (!q) return list;
+    return list.filter((c) =>
+      (c.subjectName ?? "").toLowerCase().includes(q),
     );
-  }, [subjects, search]);
+  }, [data, search]);
 
   const status = useSectionStatus({
-    data: subjects,
+    data: data ?? [],
     isEmpty: (d) => d.length === 0,
     isLoading,
   });
@@ -108,7 +103,7 @@ const SubjectsList = () => {
   return (
     <SectionView status={status}>
       <SectionView.Loading>
-        <SubjectsListSkeleton numColumns={numColumns} />
+        <TeachingListSkeleton numColumns={numColumns} />
       </SectionView.Loading>
       <SectionView.Empty>
         <View className="w-full max-w-6xl mx-auto flex-1">
@@ -121,12 +116,12 @@ const SubjectsList = () => {
           <EmptyState
             icon="BookOpenIcon"
             title="No courses found"
-            description="You are not enrolled in any courses yet"
+            description="You have no assigned courses yet"
           />
         </View>
       </SectionView.Empty>
       <SectionView.OfflineEmpty>
-        <OfflineEmpty section="oversight" />
+        <OfflineEmpty section="teaching" />
       </SectionView.OfflineEmpty>
       <SectionView.Ready>
         <View className="w-full max-w-6xl mx-auto flex-1">
@@ -136,7 +131,7 @@ const SubjectsList = () => {
             onSearchChange={setSearch}
             onClose={closeSearch}
           />
-          <ScreenList
+          <FlashList
             refreshControl={
               <RefreshIndicator
                 refreshing={isRefetching}
@@ -154,8 +149,9 @@ const SubjectsList = () => {
             numColumns={numColumns}
             data={visible}
             className="p-1"
+            contentContainerStyle={{ paddingBottom: 15 }}
             renderItem={({ item }) => (
-              <Subject subject={item} numColumns={numColumns} />
+              <TeachingCourse item={item} numColumns={numColumns} />
             )}
           />
         </View>
@@ -211,7 +207,57 @@ const CollapsibleSearch = ({
   );
 };
 
-const SubjectsListSkeleton = ({ numColumns }: { numColumns: number }) => {
+const TeachingCourse = ({
+  item,
+  numColumns,
+}: {
+  item: Subject;
+  numColumns: number;
+}) => {
+  return (
+    <Link
+      href={`/classroom/${item.id}`}
+      style={{ flex: 1 / numColumns, padding: 10 / 2 }}
+      asChild
+    >
+      <Pressable>
+        <Card className="p-0 shadow-none rounded-xl">
+          <Card.Body className="gap-2.5">
+            <AttachmentImage
+              path={item.subjectPhoto}
+              fallback={
+                <Image
+                  source={require("@/assets/placeholder/bg-placeholder.png")}
+                  className="rounded-t-xl w-full aspect-video"
+                  contentFit="cover"
+                />
+              }
+              className="rounded-t-xl w-full aspect-video"
+              contentFit="cover"
+              cachePolicy="disk"
+            />
+            <View className="px-4 pb-4">
+              <View className="md:h-14">
+                <AppText
+                  numberOfLines={2}
+                  weight="semibold"
+                  className="text-lg md:text-md leading-6"
+                >
+                  {item.subjectName}
+                </AppText>
+              </View>
+              <AppText numberOfLines={1} className="text-xs text-gray-500">
+                {item.roomNumber} · {item.subjectCode}
+              </AppText>
+            </View>
+          </Card.Body>
+        </Card>
+      </Pressable>
+    </Link>
+  );
+};
+
+const TeachingListSkeleton = ({ numColumns }: { numColumns: number }) => {
   return (
     <View className="w-full max-w-6xl mx-auto flex-1 px-1">
       <ScreenScrollView>
@@ -232,10 +278,6 @@ const SubjectsListSkeleton = ({ numColumns }: { numColumns: number }) => {
                     <View className="px-4 pb-4 gap-2">
                       <Skeleton className="h-5 w-3/4 rounded" />
                       <Skeleton className="h-3 w-1/2 rounded" />
-                      <View className="flex-row gap-2 items-center">
-                        <Skeleton className="rounded-full w-8 h-8" />
-                        <Skeleton className="h-3 w-24 rounded" />
-                      </View>
                     </View>
                   </Card.Body>
                 </Card>
@@ -247,66 +289,4 @@ const SubjectsListSkeleton = ({ numColumns }: { numColumns: number }) => {
   );
 };
 
-const Subject = ({
-  subject,
-  numColumns,
-}: {
-  subject: SubjectType;
-  numColumns: number;
-}) => {
-  return (
-    <Link
-      href={`/subject/${subject.id}`}
-      style={{ flex: 1 / numColumns, padding: 10 / 2 }}
-      asChild
-    >
-      <Pressable>
-        <Card className="p-0 shadow-none rounded-xl">
-          <Card.Body className="gap-2.5">
-            <Image
-              source={
-                subject.subjectPhoto
-                  ? { uri: subject.subjectPhoto }
-                  : require("@/assets/placeholder/bg-placeholder.png")
-              }
-              className="rounded-t-xl w-full aspect-video"
-              contentFit="cover"
-              cachePolicy="disk"
-            />
-            <View className="px-4 pb-4">
-              <View className="md:h-14">
-                <AppText
-                  numberOfLines={2}
-                  weight="semibold"
-                  className="text-lg md:text-md leading-6"
-                >
-                  {subject.subjectName}
-                </AppText>
-              </View>
-              <AppText numberOfLines={1} className="text-xs text-gray-500">
-                {subject.subjectCode}
-              </AppText>
-              <View className="flex-row gap-2 items-center mt-2">
-                <Avatar alt={toTitleCase(subject.assignTeacherName)} size="sm">
-                  <Avatar.Image
-                    source={
-                      subject.teacherPhoto
-                        ? { uri: subject.teacherPhoto }
-                        : require("@/assets/placeholder/avatar-placeholder.png")
-                    }
-                  />
-                  <AvatarFallbackImage />
-                </Avatar>
-                <AppText className="text-xs text-gray-500">
-                  {toTitleCase(subject.assignTeacherName)}
-                </AppText>
-              </View>
-            </View>
-          </Card.Body>
-        </Card>
-      </Pressable>
-    </Link>
-  );
-};
-
-export default SubjectsList;
+export default TeachingCourseList;
