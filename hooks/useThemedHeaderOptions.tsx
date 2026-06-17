@@ -1,4 +1,5 @@
 import { useThemeColor } from "heroui-native";
+import { AppText } from "@/components/AppText";
 
 type Options = {
   /**
@@ -9,7 +10,9 @@ type Options = {
   transparent?: boolean;
 };
 
-export const useThemedHeaderOptions = ({ transparent = false }: Options = {}) => {
+export const useThemedHeaderOptions = ({
+  transparent = false,
+}: Options = {}) => {
   const surfaceColor = useThemeColor("surface");
   const backgroundColor = useThemeColor("background");
   const foregroundColor = useThemeColor("foreground");
@@ -22,10 +25,19 @@ export const useThemedHeaderOptions = ({ transparent = false }: Options = {}) =>
       borderBottomWidth: transparent ? 0 : 1,
     },
     headerTintColor: foregroundColor,
-    headerTitleStyle: {
-      color: foregroundColor,
-      fontFamily: "Poppins-SemiBold",
-    },
+    headerTitle: ({ children }: { children?: string }) => (
+      <AppText
+        weight="semibold"
+        numberOfLines={1}
+        style={{
+          fontSize: 18,
+          color: foregroundColor,
+          textAlignVertical: "center",
+        }}
+      >
+        {children ?? ""}
+      </AppText>
+    ),
     headerShadowVisible: false,
   };
 };

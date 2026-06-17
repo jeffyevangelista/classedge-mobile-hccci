@@ -1,12 +1,13 @@
+import HamburgerButton from "@/components/HamburgerButton";
 import TabIcon from "@/components/TabIcon";
-import TabsHeader from "@/components/TabsHeader";
+import SyncCenter from "@/features/sync/components/SyncCenter";
 import { useThemeColor } from "heroui-native";
 import { useNetworkBannerHeight } from "@/features/network/NetworkBannerContext";
 import { useNotificationCount } from "@/features/notifications/notifications.hooks";
 import useStore from "@/lib/store";
 import { Tabs } from "expo-router";
 import { useEffect, useRef } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -55,18 +56,18 @@ const TabsLayout = () => {
 
   return (
     <Animated.View style={animatedStyle}>
-      <TabsHeader />
       <View style={{ flex: 1 }}>
         <Tabs
           safeAreaInsets={{ bottom: 0 }}
           screenOptions={{
-            headerShown: false,
+            headerShown: true,
             headerShadowVisible: false,
             animation: "shift",
             headerTitleAlign: "left",
             headerTitleStyle: {
               fontFamily: "Poppins-SemiBold",
-              fontSize: Platform.OS === "ios" ? 28 : 32,
+              fontSize: 22,
+              includeFontPadding: false,
             },
             tabBarLabelStyle: {
               fontFamily: "Poppins-Medium",
@@ -107,6 +108,9 @@ const TabsLayout = () => {
             <Tabs.Screen
               name="teaching"
               options={{
+                headerTitle: "Teaching",
+                headerLeft: () => <HamburgerButton />,
+                headerRight: () => <SyncCenter />,
                 tabBarIcon: ({ focused, color }) => (
                   <TabIcon
                     focused={focused}
@@ -114,7 +118,6 @@ const TabsLayout = () => {
                     IconElement="ChalkboardTeacherIcon"
                   />
                 ),
-                headerTitle: "Teaching",
                 tabBarLabel: "Teaching",
               }}
             />
@@ -124,6 +127,9 @@ const TabsLayout = () => {
             <Tabs.Screen
               name="courses"
               options={{
+                headerTitle: "Courses",
+                headerLeft: () => <HamburgerButton />,
+                headerRight: () => <SyncCenter />,
                 tabBarIcon: ({ focused, color }) => (
                   <TabIcon
                     focused={focused}
@@ -146,6 +152,12 @@ const TabsLayout = () => {
             <Tabs.Screen
               name="oversight"
               options={{
+                headerTitle: "Oversight",
+                headerLeft:
+                  authUser?.role !== "Time Keeper"
+                    ? () => <HamburgerButton />
+                    : undefined,
+                headerRight: () => <SyncCenter />,
                 tabBarIcon: ({ focused, color }) => (
                   <TabIcon
                     focused={focused}
@@ -161,6 +173,8 @@ const TabsLayout = () => {
           <Tabs.Screen
             name="calendar"
             options={{
+              headerTitle: "Calendar",
+              headerRight: () => <SyncCenter />,
               tabBarIcon: ({ focused, color }) => (
                 <TabIcon
                   focused={focused}
@@ -168,16 +182,35 @@ const TabsLayout = () => {
                   IconElement="CalendarBlankIcon"
                 />
               ),
-              headerTitle: "Calendar",
               tabBarLabel: "Calendar",
             }}
           />
+
+          <Tabs.Protected guard={__DEV__}>
+            <Tabs.Screen
+              name="chat"
+              options={{
+                headerShown: false,
+                tabBarIcon: ({ focused, color }) => (
+                  <TabIcon
+                    focused={focused}
+                    color={color}
+                    IconElement="ChatCircleIcon"
+                  />
+                ),
+                headerTitle: "Messages",
+                tabBarLabel: "Chat",
+              }}
+            />
+          </Tabs.Protected>
 
           <Tabs.Screen
             name="notifications"
             options={{
               tabBarBadge:
                 (data?.[0]?.count ?? 0) > 0 ? data?.[0]?.count : undefined,
+              headerTitle: "Notifications",
+              headerRight: () => <SyncCenter />,
               tabBarIcon: ({ focused, color }) => (
                 <TabIcon
                   focused={focused}
@@ -185,7 +218,6 @@ const TabsLayout = () => {
                   IconElement="BellIcon"
                 />
               ),
-              headerTitle: "Notifications",
               tabBarLabel: "Notifications",
             }}
           />

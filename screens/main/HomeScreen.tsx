@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
 import Screen from "@/components/screen";
+import TabsHeader from "@/components/TabsHeader";
 import { SectionHeader } from "@/components/SectionHeader";
 import AnnouncementList from "@/features/announcements/components/AnnouncementList";
 import { useAnnouncementsWithEvents } from "@/features/announcements/announcements.hooks";
@@ -30,6 +31,7 @@ const HomeScreen = () => {
 
   return (
     <Screen>
+      <TabsHeader />
       <ScreenScrollView
         className="w-full"
         scrollIndicatorInsets={{ right: 1 }}

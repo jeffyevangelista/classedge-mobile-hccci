@@ -5,7 +5,9 @@ import { DroppedOpToaster } from "@/features/sync/components/DroppedOpToaster";
 
 const MainLayout = () => {
   const headerOptions = useThemedHeaderOptions();
-  const transparentHeaderOptions = useThemedHeaderOptions({ transparent: true });
+  const transparentHeaderOptions = useThemedHeaderOptions({
+    transparent: true,
+  });
 
   const emptyTitleHeader = {
     ...transparentHeaderOptions,
@@ -20,7 +22,7 @@ const MainLayout = () => {
     <>
       <DroppedOpToaster />
       <Stack screenOptions={{ ...headerOptions, headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(drawer)" />
         <Stack.Screen
           options={{ ...emptyTitleHeader, headerTitle: "Sync Center" }}
           name="sync"
@@ -60,10 +62,7 @@ const MainLayout = () => {
           options={emptyTitleHeader}
           name="announcement/[announcementId]/index"
         />
-        <Stack.Screen
-          options={emptyTitleHeader}
-          name="event/[eventId]/index"
-        />
+        <Stack.Screen options={emptyTitleHeader} name="event/[eventId]/index" />
 
         <Stack.Screen name="classroom" />
         <Stack.Screen

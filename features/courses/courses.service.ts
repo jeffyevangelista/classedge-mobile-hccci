@@ -1,5 +1,5 @@
 import { db } from "@/powersync/system";
-import { or } from "drizzle-orm";
+import { and, or } from "drizzle-orm";
 
 // Returns the drizzle query builder (not awaited) so it can be wrapped
 // with `toCompilableQuery` and fed to PowerSync's watch hook. The
@@ -7,7 +7,11 @@ import { or } from "drizzle-orm";
 // `useStudentCourses` as a useMemo over the watch result.
 export const getStudentCourses = (studentId: number) => {
   return db.query.studentEnrolledCoursesTable.findMany({
-    where: (enrollment, { eq }) => eq(enrollment.studentId, studentId),
+    where: (enrollment, { eq, and }) =>
+      and(
+        eq(enrollment.studentId, studentId),
+        eq(enrollment.isActiveSemester, 1),
+      ),
     with: {
       subjectId: {
         columns: {
@@ -75,6 +79,34 @@ export const getCourseDetails = (courseId: string) => {
         },
       },
       schedules: true,
+    },
+  });
+};
+
+// Same student/semester WHERE as getStudentCourses, but the orbit flags
+// (isCoil, isHali, isCte) are INCLUDED in the projection so the hook can
+// filter rows by flag in JS. Drizzle's relational query builder cannot push
+// a boolean filter into a `with` join, so filtering is done client-side.
+export const getStudentOrbitCourses = (studentId: number) => {
+  return db.query.studentEnrolledCoursesTable.findMany({
+    where: (enrollment, { eq, and }) =>
+      and(
+        eq(enrollment.studentId, studentId),
+        eq(enrollment.isActiveSemester, 1),
+      ),
+    with: {
+      subjectId: {
+        columns: {
+          // Exclude heavy/unused columns; keep orbit flags for JS-side filtering.
+          subjectDescription: false,
+          duration: false,
+        },
+        with: {
+          assignTeacherId: {
+            columns: { firstName: true, lastName: true },
+          },
+        },
+      },
     },
   });
 };
