@@ -9,7 +9,8 @@
       "distribution": "internal",
       "environment": "development",
       "env": {
-        "APP_VARIANT": "development"
+        "APP_VARIANT": "development",
+        "EXPO_PUBLIC_ONESIGNAL_APP_ID": "5cb2e0a6-e756-41d0-a84a-d4149c00cc8a"
       }
     },
     "development-simulator": {
@@ -20,14 +21,16 @@
       },
       "environment": "development",
       "env": {
-        "APP_VARIANT": "development"
+        "APP_VARIANT": "development",
+        "EXPO_PUBLIC_ONESIGNAL_APP_ID": "5cb2e0a6-e756-41d0-a84a-d4149c00cc8a"
       }
     },
     "preview": {
       "distribution": "internal",
       "environment": "preview",
       "env": {
-        "APP_VARIANT": "preview"
+        "APP_VARIANT": "preview",
+        "EXPO_PUBLIC_ONESIGNAL_APP_ID": "1a171772-2345-4bd3-b2d0-b87ef2b5e55d"
       }
     },
     "preview-simulator": {
@@ -37,14 +40,16 @@
       },
       "environment": "preview",
       "env": {
-        "APP_VARIANT": "preview"
+        "APP_VARIANT": "preview",
+        "EXPO_PUBLIC_ONESIGNAL_APP_ID": "1a171772-2345-4bd3-b2d0-b87ef2b5e55d"
       }
     },
     "production": {
       "autoIncrement": true,
       "environment": "production",
       "env": {
-        "APP_VARIANT": "production"
+        "APP_VARIANT": "production",
+        "EXPO_PUBLIC_ONESIGNAL_APP_ID": "1a171772-2345-4bd3-b2d0-b87ef2b5e55d"
       }
     }
   },

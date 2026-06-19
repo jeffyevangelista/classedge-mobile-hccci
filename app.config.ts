@@ -21,8 +21,8 @@ const variantConfig = {
     bundleIdentifier: "com.classify.classedge.preview",
     androidPackage: "com.classify.classedge.preview",
     scheme: "classedge.preview",
-    onesignalMode: "development" as const,
-    apsEnvironment: "development" as const,
+    onesignalMode: "production" as const,
+    apsEnvironment: "production" as const,
   },
   production: {
     name: "Classedge",
