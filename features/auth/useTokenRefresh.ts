@@ -6,6 +6,7 @@ import { appendSyncEvent } from "@/features/sync/syncEvents";
 import useStore from "@/lib/store";
 import { captureAuthError, captureAuthMessage } from "@/lib/telemetry";
 import { recordForcedLogout } from "./forcedLogoutNotice";
+import { isTokenInvalidResponse } from "./isTokenInvalidResponse";
 import { refresh } from "./refreshToken";
 import { signOut } from "./signOut";
 
@@ -88,12 +89,12 @@ export async function silentRefresh(opts?: {
         return true;
       } catch (error: any) {
         console.warn("[TokenRefresh] Silent refresh failed:", error);
-        // Only 401 unambiguously means the refresh token itself is dead.
-        // 403 can come from policy/WAF/proxy hiccups during deploys and
-        // shouldn't boot a healthy session — let it fall through to a
-        // normal retry. We also re-check connectivity to avoid signing
-        // out on a captive-portal-style 401 when the device is actually
-        // offline-ish.
+        // A bare 401 (legacy SimpleJWT body) or a 401/403 carrying a
+        // `token_not_valid`/`not_authenticated` code unambiguously means
+        // the refresh token itself is dead. Other 403s (WAF/proxy/deploy
+        // hiccups) fall through to a normal retry. The captive-portal
+        // guard still applies: only force logout when the device is
+        // genuinely online.
         const status = error?.response?.status;
         captureAuthError("silent_refresh_failed", error, { status });
         await appendSyncEvent({
@@ -103,10 +104,12 @@ export async function silentRefresh(opts?: {
           message:
             error instanceof Error ? error.message : "Silent refresh failed",
         });
-        if (status === 401) {
+        if (isTokenInvalidResponse(error)) {
           const { isConnected, isInternetReachable } = useStore.getState();
           if (isConnected && isInternetReachable) {
-            captureAuthMessage("forced_logout", { reason: "refresh_401" });
+            const reason =
+              status === 401 ? "refresh_401" : "refresh_403_token_invalid";
+            captureAuthMessage("forced_logout", { reason });
             await recordForcedLogout();
             await signOut();
           }
