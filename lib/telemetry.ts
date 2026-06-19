@@ -32,7 +32,11 @@ export type TelemetryEvent =
   // section rendering
   | "section_loading_slow"
   | "section_offline_empty"
-  | "post_login_ready";
+  | "post_login_ready"
+  // refresh-token expiry awareness
+  | "refresh_expiry_banner_shown"
+  | "refresh_expiry_modal_shown"
+  | "refresh_expiry_modal_dismissed";
 
 // Backwards-compat alias for existing call sites — TelemetryEvent is a superset.
 export type AuthEvent = TelemetryEvent;

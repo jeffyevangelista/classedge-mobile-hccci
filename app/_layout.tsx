@@ -21,10 +21,14 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import NetworkBanner from "@/features/network/NetworkBanner";
+import RefreshExpiryBanner from "@/features/auth/components/RefreshExpiryBanner";
+import RefreshExpiryModal from "@/features/auth/components/RefreshExpiryModal";
 import "@azure/core-asynciterator-polyfill";
 
 SplashScreen.preventAutoHideAsync();
 initTelemetry();
+
+if (__DEV__) (globalThis as any).__store = useStore;
 
 function RootLayout() {
   const { restoreSession, clearCredentials, isAuthenticated, authUser } =
@@ -144,6 +148,7 @@ function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <RootProvider>
+        <RefreshExpiryBanner />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Protected guard={!isAuthenticated}>
             <Stack.Screen name="(auth)" />
@@ -161,6 +166,7 @@ function RootLayout() {
           </Stack.Protected>
         </Stack>
         <NetworkBanner />
+        <RefreshExpiryModal />
       </RootProvider>
     </GestureHandlerRootView>
   );

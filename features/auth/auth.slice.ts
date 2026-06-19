@@ -25,6 +25,7 @@ type AuthState = {
   accessToken: string | null;
   powersyncToken: string | null;
   refreshToken: string | null;
+  refreshExpiresAt: number | null;
   authUser: AuthUser | null;
   isAuthenticated: boolean;
   expiresAt: number | null;
@@ -54,6 +55,7 @@ const initialState: AuthState = {
   accessToken: null,
   powersyncToken: null,
   refreshToken: null,
+  refreshExpiresAt: null,
   expiresAt: null,
   isAuthenticated: false,
   authUser: null,
@@ -110,13 +112,26 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
   },
   setRefreshToken: async (refreshToken: string) => {
     await setSSItem(env.EXPO_PUBLIC_REFRESH_TOKEN_KEY, refreshToken);
-    set({ refreshToken });
+    let refreshExpiresAt: number | null = null;
+    try {
+      const decoded = jwtDecode<Record<string, unknown>>(refreshToken);
+      const exp = decoded.exp as number | undefined;
+      if (typeof exp === "number") {
+        refreshExpiresAt = exp * 1000;
+        setMMKVItem(MMKV_KEYS.REFRESH_EXPIRES_AT, refreshExpiresAt);
+      }
+    } catch (err) {
+      console.warn("[AUTH] Could not decode refresh token exp", err);
+    }
+    set({ refreshToken, refreshExpiresAt });
   },
   clearCredentials: async () => {
     deleteMMKVItem(MMKV_KEYS.ACCESS_TOKEN);
     deleteMMKVItem(MMKV_KEYS.POWERSYNC_TOKEN);
     deleteMMKVItem(MMKV_KEYS.AUTH_USER);
     deleteMMKVItem(MMKV_KEYS.EXPIRES_AT);
+    deleteMMKVItem(MMKV_KEYS.REFRESH_EXPIRES_AT);
+    deleteMMKVItem(MMKV_KEYS.LAST_REFRESH_EXPIRY_WARNING_SHOWN);
     await deleteSSItem(env.EXPO_PUBLIC_REFRESH_TOKEN_KEY);
     set(() => ({ ...initialState }));
   },
@@ -126,6 +141,9 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
       const powersyncToken = getMMKVItem<string>(MMKV_KEYS.POWERSYNC_TOKEN);
       const authUser = getMMKVItem<AuthUser>(MMKV_KEYS.AUTH_USER);
       const expiresAt = getMMKVItem<number>(MMKV_KEYS.EXPIRES_AT);
+      const refreshExpiresAt = getMMKVItem<number>(
+        MMKV_KEYS.REFRESH_EXPIRES_AT,
+      );
       const refreshToken = await getSSItem(env.EXPO_PUBLIC_REFRESH_TOKEN_KEY);
 
       const isAuthenticated = !!(
@@ -139,6 +157,7 @@ const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
         accessToken,
         powersyncToken,
         refreshToken,
+        refreshExpiresAt,
         authUser,
         isAuthenticated,
         expiresAt,
