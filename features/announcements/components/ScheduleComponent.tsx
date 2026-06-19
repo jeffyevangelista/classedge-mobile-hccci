@@ -191,7 +191,7 @@ const ScheduleComponent = () => {
               color: "rgba(255,255,255,0.12)",
               borderless: false,
             }}
-            className="flex-1 rounded-2xl overflow-hidden active:opacity-90 min-h-[180px]"
+            className="flex-1 active:opacity-90"
             onPress={() => router.push(`/course/${currentClass.subject.id}`)}
           >
             <LinearGradient
@@ -200,6 +200,9 @@ const ScheduleComponent = () => {
               end={{ x: 1, y: 1 }}
               style={{
                 flex: 1,
+                minHeight: 180,
+                borderRadius: 16,
+                overflow: "hidden",
                 padding: 20,
                 justifyContent: "space-between",
               }}
