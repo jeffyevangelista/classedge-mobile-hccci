@@ -33,6 +33,7 @@ const HomeScreen = () => {
     <Screen>
       <TabsHeader />
       <ScreenScrollView
+        showsVerticalScrollIndicator={false}
         className="w-full"
         scrollIndicatorInsets={{ right: 1 }}
         refreshControl={
@@ -41,7 +42,7 @@ const HomeScreen = () => {
       >
         {isStudent && (
           <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
-            <SectionHeader title="My Schedule" />
+            <SectionHeader title="My Schedule" iconName="CalendarIcon" />
             <ScheduleComponent />
           </View>
         )}
@@ -51,6 +52,7 @@ const HomeScreen = () => {
         <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
           <SectionHeader
             title="Announcements"
+            iconName="MegaphoneIcon"
             actionLabel="See all"
             onAction={() => router.push("/announcement")}
           />

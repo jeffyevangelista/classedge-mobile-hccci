@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home Screen — Polish Proposal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0b1220;
+        --foreground: #f1f5f9;
+        --muted: #94a3b8;
+        --surface: #111a2e;
+        --surface-secondary: #1e293b;
+        --surface-tertiary: #334155;
+        --border: #1e293b;
+        --accent: #3b82f6;
+        --accent-deep: #1e40af;
+        --accent-darker: #1e3a8a;
+        --accent-foreground: #ffffff;
+        --accent-soft: rgba(59, 130, 246, 0.15);
+        --link: #60a5fa;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #1a1a1a;
+        min-height: 100vh;
+        color: var(--foreground);
+        -webkit-font-smoothing: antialiased;
+      }
+      body { padding: 40px 24px; }
+      .page-header {
+        max-width: 1400px;
+        margin: 0 auto 32px;
+        color: #e2e8f0;
+      }
+      .page-header h1 {
+        font-size: 26px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        letter-spacing: -0.01em;
+      }
+      .page-header p {
+        font-size: 14px;
+        color: #cbd5e1;
+        line-height: 1.6;
+        max-width: 820px;
+      }
+      .page-header .change-list {
+        margin-top: 16px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .change-list .pill {
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+      }
+      .row {
+        display: flex;
+        gap: 40px;
+        justify-content: center;
+        flex-wrap: wrap;
+        max-width: 1600px;
+        margin: 0 auto;
+        align-items: flex-start;
+      }
+      .phone-wrap { display: flex; flex-direction: column; gap: 12px; }
+      .phone-wrap .caption {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        text-align: center;
+      }
+      .caption.before { color: #94a3b8; }
+      .caption.after { color: #fbbf24; }
+      .phone-wrap .caption .sub {
+        display: block;
+        color: #94a3b8;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: 0;
+        font-size: 12px;
+        margin-top: 4px;
+      }
+      .phone {
+        width: 393px;
+        height: 852px;
+        background: var(--bg);
+        border-radius: 48px;
+        overflow: hidden;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.4),
+          0 0 0 8px #0f172a,
+          0 0 0 11px #1a1a1a;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+      .status-bar {
+        height: 47px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 28px;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--foreground);
+        background: var(--bg);
+        flex-shrink: 0;
+        position: relative;
+      }
+      .status-bar .island {
+        width: 120px; height: 36px; background: #000; border-radius: 18px;
+        position: absolute; left: 50%; top: 11px; transform: translateX(-50%);
+      }
+      .status-bar .right { display: flex; gap: 6px; align-items: center; font-size: 14px; }
+
+      .content {
+        flex: 1; overflow-y: auto;
+        display: flex; flex-direction: column; gap: 20px;
+        padding: 0 10px 80px;
+      }
+      .content::-webkit-scrollbar { width: 0; }
+
+      .tabs-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 14px;
+        background: var(--bg);
+      }
+      .avatar {
+        width: 44px; height: 44px; border-radius: 22px;
+        background: linear-gradient(135deg, #f97316, #fb923c);
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-weight: 700; font-size: 14px;
+      }
+      .greeting { flex: 1; }
+      .greeting .sub { font-size: 12px; color: var(--muted); }
+      .greeting .name { font-size: 20px; font-weight: 800; color: var(--foreground); }
+      .sync-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
+      .sync-icon svg { color: #22c55e; }
+
+      .section-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--foreground);
+        padding: 0 0 0 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .section-title .icon {
+        width: 24px; height: 24px;
+        border-radius: 6px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+      }
+      .section-title .icon.cal { background: var(--accent-soft); color: var(--accent); }
+      .section-title .icon.news { background: rgba(168, 85, 247, 0.18); color: #c084fc; }
+      .section-title .icon.bell { background: rgba(34, 197, 94, 0.18); color: #4ade80; }
+
+      .section-title .action {
+        margin-left: auto;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--link);
+      }
+
+      .schedule-row { display: flex; gap: 12px; align-items: stretch; }
+
+      /* BEFORE — empty schedule card */
+      .sched-card.empty {
+        flex: 1;
+        border-radius: 16px;
+        border: 2px solid var(--border);
+        padding: 16px;
+        min-height: 150px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        justify-content: center;
+      }
+      .sched-card.empty .label {
+        font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .sched-card.empty .title {
+        font-size: 15px; font-weight: 700; line-height: 1.3;
+      }
+
+      /* AFTER — improved empty schedule */
+      .sched-card.empty-pro {
+        flex: 1;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.10), rgba(59, 130, 246, 0.08));
+        border: 1px solid rgba(168, 85, 247, 0.25);
+        padding: 16px;
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+      }
+      .sched-card.empty-pro .blob {
+        position: absolute;
+        right: -30px; top: -30px;
+        width: 130px; height: 130px;
+        background: radial-gradient(circle, rgba(168, 85, 247, 0.3), transparent 70%);
+      }
+      .sched-card.empty-pro .label {
+        font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.1em;
+        color: #c084fc;
+        display: flex; align-items: center; gap: 6px;
+        position: relative;
+      }
+      .sched-card.empty-pro .icon-emoji {
+        font-size: 28px;
+        position: relative;
+      }
+      .sched-card.empty-pro .title {
+        font-size: 15px; font-weight: 700; line-height: 1.3;
+        position: relative;
+      }
+      .sched-card.empty-pro .cta {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: rgba(59, 130, 246, 0.15);
+        color: var(--link);
+        font-size: 12px;
+        font-weight: 700;
+        align-self: flex-start;
+        position: relative;
+      }
+
+      /* AFTER — Up Next: thinner, neutral, less mass */
+      .sched-card.up-next-pro {
+        flex: 1;
+        border-radius: 16px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 16px;
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+      }
+      .sched-card.up-next-pro .tag {
+        display: inline-flex; align-items: center; gap: 6px;
+      }
+      .sched-card.up-next-pro .day-chip {
+        background: var(--accent);
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .sched-card.up-next-pro .up-next-label {
+        font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.1em;
+        color: var(--accent);
+      }
+      .sched-card.up-next-pro .title {
+        font-size: 15px; font-weight: 700; line-height: 1.3;
+      }
+      .sched-card.up-next-pro .time-row {
+        display: flex; align-items: center; gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      /* BEFORE — Up Next card heavier */
+      .sched-card.up-next {
+        flex: 1;
+        border-radius: 16px;
+        background: var(--accent-soft);
+        border: 1px solid var(--border);
+        padding: 20px;
+        min-height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .sched-card.up-next .tag {
+        display: inline-flex; align-items: center; gap: 6px;
+      }
+      .sched-card.up-next .day-chip {
+        background: var(--accent);
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .sched-card.up-next .up-next-label {
+        font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.1em;
+        color: var(--accent);
+      }
+      .sched-card.up-next .title {
+        font-size: 15px; font-weight: 700; line-height: 1.3;
+      }
+      .sched-card.up-next .time-chip {
+        background: var(--bg);
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--accent);
+        padding: 6px 10px;
+        border-radius: 10px;
+        align-self: flex-start;
+      }
+
+      /* Campus News banner */
+      .banner {
+        height: 220px;
+        margin: 0 -10px;
+        padding: 0 10px;
+      }
+      .banner-inner {
+        height: 100%;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #1e3a8a, #312e81);
+        position: relative;
+        overflow: hidden;
+      }
+      .banner-inner::before {
+        content: "ADVISORY!";
+        position: absolute;
+        left: 14%;
+        top: 50%;
+        transform: translateY(-50%) rotate(-90deg);
+        font-size: 60px;
+        font-weight: 900;
+        color: rgba(255,255,255,0.10);
+        letter-spacing: -0.04em;
+      }
+      .banner-inner::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.7), transparent 60%);
+      }
+      .banner-inner .caption-row {
+        position: absolute;
+        left: 14px; right: 14px; bottom: 14px;
+        z-index: 2;
+        display: flex; flex-direction: column; gap: 4px;
+      }
+      .banner-inner .caption-row .h {
+        font-size: 18px; font-weight: 800; color: #fff; line-height: 1.15;
+        display: flex; align-items: center; gap: 6px;
+      }
+      .banner-inner .caption-row .time {
+        font-size: 12px; color: rgba(255,255,255,0.7);
+      }
+      .banner-inner .ext {
+        position: absolute;
+        right: 12px; top: 12px;
+        width: 32px; height: 32px;
+        background: rgba(0,0,0,0.3);
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff;
+        z-index: 2;
+      }
+      .dots {
+        display: flex; justify-content: center; gap: 6px;
+        margin-top: 8px;
+      }
+      .dots .dot { width: 6px; height: 6px; border-radius: 3px; background: var(--muted); }
+      .dots .dot.active { background: var(--accent); }
+
+      /* BEFORE — single announcement */
+      .announce-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex; flex-direction: column; gap: 8px;
+      }
+      .announce-row { display: flex; align-items: center; gap: 10px; }
+      .announce-avatar {
+        width: 36px; height: 36px; border-radius: 18px;
+        background: linear-gradient(135deg, #14b8a6, #06b6d4);
+      }
+      .announce-row .meta { flex: 1; }
+      .announce-row .meta .name { font-size: 14px; font-weight: 700; color: var(--foreground); }
+      .announce-row .meta .time { font-size: 12px; color: var(--muted); }
+      .announce-row .chev { color: var(--muted); font-size: 22px; }
+      .announce-title {
+        font-size: 16px; font-weight: 800; line-height: 1.3;
+      }
+      .announce-snippet {
+        font-size: 13px; color: var(--muted); line-height: 1.5;
+      }
+
+      /* Bottom tab bar */
+      .tab-bar {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: var(--bg);
+        border-top: 1px solid var(--border);
+        display: flex; padding: 12px 24px 24px;
+      }
+      .tab-bar .tab {
+        flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+        font-size: 11px; font-weight: 600; color: var(--muted);
+      }
+      .tab-bar .tab.active { color: var(--accent); }
+      .tab-bar .tab .ic { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+
+      /* Annotation callouts */
+      .callout {
+        max-width: 1400px;
+        margin: 32px auto 0;
+        background: rgba(251, 191, 36, 0.08);
+        border: 1px solid rgba(251, 191, 36, 0.25);
+        border-radius: 12px;
+        padding: 18px 22px;
+        color: #fef3c7;
+      }
+      .callout h3 {
+        font-size: 14px;
+        font-weight: 700;
+        color: #fbbf24;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 12px;
+      }
+      .callout ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; }
+      .callout li { font-size: 13px; line-height: 1.5; padding-left: 18px; position: relative; color: #fde68a; }
+      .callout li::before {
+        content: "→";
+        position: absolute; left: 0; top: 0;
+        color: #fbbf24; font-weight: 700;
+      }
+      .callout li b { color: #fff; font-weight: 700; }
+
+      @media (max-width: 900px) {
+        .callout ul { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-header">
+      <h1>Home Screen — Polish Proposal</h1>
+      <p>
+        Targets the "looks boring" feedback when the schedule is empty / sparse.
+        Focuses on the empty schedule card (biggest visible blank slot), Up Next differentiation,
+        section icons, and a denser announcement card. Dark mode shown; light mode mirrors.
+      </p>
+      <div class="change-list">
+        <span class="pill">Empty schedule → illustrated CTA</span>
+        <span class="pill">Up Next → thinner outline (less echo)</span>
+        <span class="pill">Section icons</span>
+        <span class="pill">Announcement → snippet + avatar</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- BEFORE -->
+      <div class="phone-wrap">
+        <div class="caption before">Before<span class="sub">current home screen</span></div>
+        <div class="phone">
+          <div class="status-bar">
+            <span>3:13</span>
+            <div class="island"></div>
+            <div class="right"><span>📶</span><span>79%</span></div>
+          </div>
+          <div class="content">
+            <div class="tabs-header">
+              <div class="avatar">S</div>
+              <div class="greeting">
+                <div class="sub">Good morning</div>
+                <div class="name">Student</div>
+              </div>
+              <div class="sync-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1A5 5 0 1 0 7 14"/><polyline points="16 16 18 14 20 16"/><line x1="18" y1="14" x2="18" y2="22"/></svg>
+              </div>
+            </div>
+
+            <div class="section-title">My Schedule</div>
+            <div class="schedule-row">
+              <div class="sched-card empty">
+                <div class="label">Free Day</div>
+                <div class="title">No classes today</div>
+              </div>
+              <div class="sched-card up-next">
+                <div class="tag">
+                  <span class="day-chip">MON</span>
+                  <span class="up-next-label">Up Next</span>
+                </div>
+                <div class="title">The Contemporary ...</div>
+                <div class="time-chip">4:51 PM</div>
+              </div>
+            </div>
+
+            <div class="section-title">Campus News</div>
+            <div class="banner">
+              <div class="banner-inner">
+                <div class="ext">↗</div>
+                <div class="caption-row">
+                  <div class="h">📣 COLLEGE DEPARTMENT ADVISORY</div>
+                  <div class="time">3 days ago</div>
+                </div>
+              </div>
+            </div>
+            <div class="dots">
+              <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot active"></div>
+            </div>
+
+            <div class="section-title">
+              Announcements
+              <span class="action">See all</span>
+            </div>
+            <div class="announce-card">
+              <div class="announce-row">
+                <div class="announce-avatar"></div>
+                <div class="meta">
+                  <div class="name">Teacher Acct</div>
+                  <div class="time">15 hours ago</div>
+                </div>
+                <div class="chev">›</div>
+              </div>
+              <div class="announce-title">Wala si ponce diri libakon ta sya</div>
+            </div>
+          </div>
+          <div class="tab-bar">
+            <div class="tab active"><div class="ic">🏠</div>Home</div>
+            <div class="tab"><div class="ic">📖</div>Courses</div>
+            <div class="tab"><div class="ic">📅</div>Calendar</div>
+            <div class="tab"><div class="ic">💬</div>Chat</div>
+            <div class="tab"><div class="ic">🔔</div>Notifications</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AFTER -->
+      <div class="phone-wrap">
+        <div class="caption after">After<span class="sub">proposed polish</span></div>
+        <div class="phone">
+          <div class="status-bar">
+            <span>3:13</span>
+            <div class="island"></div>
+            <div class="right"><span>📶</span><span>79%</span></div>
+          </div>
+          <div class="content">
+            <div class="tabs-header">
+              <div class="avatar">S</div>
+              <div class="greeting">
+                <div class="sub">Good morning</div>
+                <div class="name">Student</div>
+              </div>
+              <div class="sync-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1A5 5 0 1 0 7 14"/><polyline points="16 16 18 14 20 16"/><line x1="18" y1="14" x2="18" y2="22"/></svg>
+              </div>
+            </div>
+
+            <div class="section-title">
+              <div class="icon cal">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              My Schedule
+            </div>
+            <div class="schedule-row">
+              <!-- Reimagined empty -->
+              <div class="sched-card empty-pro">
+                <div class="blob"></div>
+                <div>
+                  <div class="label">
+                    <span class="icon-emoji">🌴</span>
+                    Free Day
+                  </div>
+                </div>
+                <div class="title">No classes today — catch up at your pace.</div>
+                <div class="cta">Browse courses →</div>
+              </div>
+              <!-- Toned-down Up Next -->
+              <div class="sched-card up-next-pro">
+                <div class="tag">
+                  <span class="day-chip">MON</span>
+                  <span class="up-next-label">Up Next</span>
+                </div>
+                <div class="title">The Contemporary World</div>
+                <div class="time-row">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                  4:51 PM · Room 204
+                </div>
+              </div>
+            </div>
+
+            <div class="section-title">
+              <div class="icon news">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h12a2 2 0 0 1 2 2v14H6a2 2 0 0 1-2-2V4z"/><path d="M18 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2"/><line x1="8" y1="8" x2="14" y2="8"/><line x1="8" y1="12" x2="14" y2="12"/></svg>
+              </div>
+              Campus News
+            </div>
+            <div class="banner">
+              <div class="banner-inner">
+                <div class="ext">↗</div>
+                <div class="caption-row">
+                  <div class="h">📣 COLLEGE DEPARTMENT ADVISORY</div>
+                  <div class="time">3 days ago</div>
+                </div>
+              </div>
+            </div>
+            <div class="dots">
+              <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot active"></div>
+            </div>
+
+            <div class="section-title">
+              <div class="icon bell">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+              </div>
+              Announcements
+              <span class="action">See all</span>
+            </div>
+
+            <!-- Denser announcement with snippet -->
+            <div class="announce-card">
+              <div class="announce-row">
+                <div class="announce-avatar"></div>
+                <div class="meta">
+                  <div class="name">Teacher Acct</div>
+                  <div class="time">15 hours ago</div>
+                </div>
+                <div class="chev">›</div>
+              </div>
+              <div class="announce-title">Wala si ponce diri libakon ta sya</div>
+              <div class="announce-snippet">Naa pa ta'y dugang detalye sa next meeting natu sa Lunes. Pakitan-aw na lang sa LMS module section…</div>
+            </div>
+
+            <!-- Second card for density -->
+            <div class="announce-card">
+              <div class="announce-row">
+                <div class="announce-avatar" style="background: linear-gradient(135deg, #a855f7, #ec4899);"></div>
+                <div class="meta">
+                  <div class="name">Dean's Office</div>
+                  <div class="time">Yesterday</div>
+                </div>
+                <div class="chev">›</div>
+              </div>
+              <div class="announce-title">Midterm schedule released</div>
+              <div class="announce-snippet">Midterm examinations will run from June 24–28. Please coordinate with your subject teachers for the…</div>
+            </div>
+          </div>
+          <div class="tab-bar">
+            <div class="tab active"><div class="ic">🏠</div>Home</div>
+            <div class="tab"><div class="ic">📖</div>Courses</div>
+            <div class="tab"><div class="ic">📅</div>Calendar</div>
+            <div class="tab"><div class="ic">💬</div>Chat</div>
+            <div class="tab"><div class="ic">🔔</div>Notifications</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h3>What changed & why</h3>
+      <ul>
+        <li><b>Empty schedule card</b> — gradient bg, tropical emoji, and a "Browse courses →" CTA. Turns the biggest dead pixel into a soft conversion point.</li>
+        <li><b>Up Next card</b> — drops accent-soft fill in favor of a thinner outline. Stops echoing the (now reactivated) gradient card and steps back as supporting info.</li>
+        <li><b>Section icons</b> — small color-coded icon next to each title (calendar / newspaper / bell) gives the screen rhythm without competing with content.</li>
+        <li><b>Announcement preview</b> — adds a body snippet under the title and shows 2 entries so the section reads at glance, not as a stub.</li>
+        <li><b>Times include room</b> — "4:51 PM · Room 204" is more useful than just the time and fills the card without padding.</li>
+        <li><b>No global color injection</b> — accent stays blue; differentiation comes from layout and density, not from adding hues.</li>
+      </ul>
+    </div>
+  </body>
+</html>

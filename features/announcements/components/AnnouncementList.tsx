@@ -85,7 +85,7 @@ const AnnouncementList = ({
         );
         const timeLabel = formatRelativeOrDate(item.createdAt);
         return (
-          <View className="mb-1 max-w-3xl mx-auto w-full px-2.5">
+          <View className="mb-3 max-w-3xl mx-auto w-full px-2.5">
             <Pressable
               onPress={() => router.push(`/announcement/${item.id}`)}
               accessibilityRole="button"
@@ -228,7 +228,7 @@ const AnnouncementSkeleton = () => {
       scrollEnabled={false}
       data={[1, 2, 3]}
       renderItem={() => (
-        <View className="mb-1 max-w-3xl mx-auto w-full px-2.5">
+        <View className="mb-3 max-w-3xl mx-auto w-full px-2.5">
           <Card className="shadow-none rounded-xl border border-border">
             <Card.Header>
               <View className="flex-row items-center gap-2">

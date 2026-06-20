@@ -23,7 +23,7 @@ export default function CampusNewsSection() {
   if (isError) {
     return (
       <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
-        <SectionHeader title="Campus News" />
+        <SectionHeader title="Campus News" iconName="NewspaperIcon" />
         <ErrorComponent
           message={getApiErrorMessage(error)}
           onRetry={() => refetch()}
@@ -35,7 +35,7 @@ export default function CampusNewsSection() {
   if (status.phase === "loading") {
     return (
       <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
-        <SectionHeader title="Campus News" />
+        <SectionHeader title="Campus News" iconName="NewspaperIcon" />
         <CampusNewsBannerSkeleton />
       </View>
     );
@@ -44,7 +44,7 @@ export default function CampusNewsSection() {
   if (status.phase === "offline-empty") {
     return (
       <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
-        <SectionHeader title="Campus News" />
+        <SectionHeader title="Campus News" iconName="NewspaperIcon" />
         <OfflineEmpty section="campus-news" />
       </View>
     );
@@ -53,12 +53,10 @@ export default function CampusNewsSection() {
   if (status.phase === "empty") {
     return (
       <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
-        <SectionHeader title="Campus News" />
+        <SectionHeader title="Campus News" iconName="NewspaperIcon" />
         <View className="items-center justify-center py-8 gap-2 rounded-2xl border border-border bg-surface-secondary">
           <Icon name="NewspaperIcon" size={28} className="text-muted" />
-          <AppText className="text-sm text-muted">
-            No campus news yet
-          </AppText>
+          <AppText className="text-sm text-muted">No campus news yet</AppText>
         </View>
       </View>
     );
@@ -66,7 +64,7 @@ export default function CampusNewsSection() {
 
   return (
     <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
-      <SectionHeader title="Campus News" />
+      <SectionHeader title="Campus News" iconName="NewspaperIcon" />
       <CampusNewsBanner posts={posts} />
     </View>
   );

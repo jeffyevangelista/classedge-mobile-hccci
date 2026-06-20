@@ -1,5 +1,5 @@
 import { View, Pressable } from "react-native";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useClock } from "@/hooks/useClock";
 import { useClassSchedule } from "@/features/profile/profile.hooks";
 import { useSectionStatus } from "@/features/sync/useSectionStatus";
@@ -11,7 +11,7 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { MotiView } from "moti";
-import { Icon } from "@/components/Icon";
+import { Icon, type IconName } from "@/components/Icon";
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -60,9 +60,20 @@ const buildDaySchedules = (
       }),
   );
 
+const ROW_GAP = 12;
+
 const ScheduleComponent = () => {
   const now = useClock();
   const router = useRouter();
+  const [rowWidth, setRowWidth] = useState(0);
+  // Yoga's `flex: 1` split isn't reliable here — minWidth: auto on each
+  // Pressable plus uneven content widths produced a 325/411 asymmetry. Once
+  // we know the row width, divide it equally and pass the same `width` to
+  // both cards.
+  const cardStyle =
+    rowWidth > 0
+      ? { width: (rowWidth - ROW_GAP) / 2 }
+      : { flex: 1, flexBasis: 0, minWidth: 0 };
 
   const currentDay = now.getDay();
 
@@ -166,22 +177,34 @@ const ScheduleComponent = () => {
       ? formatCountdown(nextClass.start, now)
       : null;
 
-  const emptyLeft = (() => {
+  const emptyLeft: { label: string; title: string; iconName: IconName } = (() => {
     if (nextClass && !nextClassDayLabel) {
       return {
         label: "Free Now",
         title: `${formatCountdown(nextClass.start, now)} until next class`,
+        iconName: "CoffeeIcon",
       };
     }
     if (todayHasClasses) {
-      return { label: "All Done", title: "No more classes today" };
+      return {
+        label: "All Done",
+        title: "No more classes today",
+        iconName: "CheckCircleIcon",
+      };
     }
-    return { label: "Free Day", title: "No classes today" };
+    return {
+      label: "Free Day",
+      title: "No classes today",
+      iconName: "SunIcon",
+    };
   })();
 
   return (
     <View>
-      <View className="flex-row gap-3 items-stretch">
+      <View
+        className="flex-row gap-3 items-stretch"
+        onLayout={(e) => setRowWidth(e.nativeEvent.layout.width)}
+      >
         {/* Left Card */}
         {currentClass ? (
           <Pressable
@@ -191,7 +214,8 @@ const ScheduleComponent = () => {
               color: "rgba(255,255,255,0.12)",
               borderless: false,
             }}
-            className="flex-1 active:opacity-90"
+            className="active:opacity-90"
+            style={cardStyle}
             onPress={() => router.push(`/course/${currentClass.subject.id}`)}
           >
             <LinearGradient
@@ -252,8 +276,8 @@ const ScheduleComponent = () => {
               <View className="flex-1 justify-center">
                 <AppText
                   weight="bold"
-                  className="text-[15px] leading-5 text-accent-foreground"
-                  numberOfLines={2}
+                  className="text-[14px] leading-[18px] text-accent-foreground"
+                  numberOfLines={3}
                 >
                   {currentClass.subject.subjectId.subjectName}
                 </AppText>
@@ -286,25 +310,62 @@ const ScheduleComponent = () => {
             accessibilityRole="button"
             accessibilityLabel={emptyLeft.label}
             android_ripple={{
-              color: "rgba(0,0,0,0.05)",
+              color: "rgba(59, 130, 246, 0.12)",
               borderless: false,
             }}
-            className="flex-1 rounded-2xl border-2 border-border p-4 justify-center min-h-[150px] active:opacity-70 gap-1.5"
-            onPress={() => router.push("/(main)/profile/class-schedule")}
+            className="active:opacity-80"
+            style={cardStyle}
+            onPress={() => router.push("/(main)/(drawer)/(tabs)/courses")}
           >
-            <AppText
-              weight="bold"
-              className="uppercase text-[11px] tracking-widest text-muted"
+            <LinearGradient
+              colors={[
+                "rgba(59, 130, 246, 0.18)",
+                "rgba(59, 130, 246, 0.10)",
+              ]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                flex: 1,
+                minHeight: 180,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: "rgba(59, 130, 246, 0.4)",
+                overflow: "hidden",
+                padding: 16,
+                justifyContent: "space-between",
+              }}
             >
-              {emptyLeft.label}
-            </AppText>
-            <AppText
-              weight="bold"
-              className="text-[15px] leading-5 text-foreground"
-              numberOfLines={2}
-            >
-              {emptyLeft.title}
-            </AppText>
+              <View className="flex-row items-center gap-1.5">
+                <Icon
+                  name={emptyLeft.iconName}
+                  size={16}
+                  weight="fill"
+                  className="text-accent"
+                />
+                <AppText
+                  weight="bold"
+                  className="uppercase text-[11px] tracking-widest text-accent"
+                >
+                  {emptyLeft.label}
+                </AppText>
+              </View>
+
+              <View className="flex-1 justify-center">
+                <AppText
+                  weight="bold"
+                  className="text-[15px] leading-5 text-foreground"
+                  numberOfLines={3}
+                >
+                  {emptyLeft.title}
+                </AppText>
+              </View>
+
+              <View className="self-start rounded-xl px-3 py-2 bg-surface">
+                <AppText weight="bold" className="text-xs text-accent">
+                  Browse courses →
+                </AppText>
+              </View>
+            </LinearGradient>
           </Pressable>
         )}
 
@@ -320,9 +381,10 @@ const ScheduleComponent = () => {
             color: "rgba(0,0,0,0.05)",
             borderless: false,
           }}
-          className={`flex-1 rounded-2xl p-5 justify-between border border-border active:opacity-80 overflow-hidden ${
-            currentClass ? "min-h-[180px]" : "min-h-[150px]"
-          } ${nextClass ? "bg-accent-soft" : "bg-surface-secondary"}`}
+          style={cardStyle}
+          className={`rounded-2xl p-5 justify-between border border-border active:opacity-80 overflow-hidden min-h-[180px] ${
+            nextClass ? "bg-surface" : "bg-surface-secondary"
+          }`}
           onPress={() =>
             nextClass
               ? router.push(`/course/${nextClass.subject.id}`)
@@ -373,10 +435,10 @@ const ScheduleComponent = () => {
           <View className="flex-1 justify-center">
             <AppText
               weight="bold"
-              className={`text-[15px] leading-5 ${
+              className={`text-[14px] leading-[18px] ${
                 nextClass ? "text-foreground" : "text-muted"
               }`}
-              numberOfLines={2}
+              numberOfLines={3}
             >
               {nextClass
                 ? nextClass.subject.subjectId.subjectName
@@ -388,7 +450,7 @@ const ScheduleComponent = () => {
 
           <View
             className={`rounded-xl px-3 py-2 self-start ${
-              nextClass ? "bg-surface" : "bg-default"
+              nextClass ? "bg-accent-soft" : "bg-default"
             }`}
           >
             <AppText
