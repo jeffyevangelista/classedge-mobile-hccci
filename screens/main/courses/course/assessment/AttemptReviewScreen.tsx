@@ -61,28 +61,32 @@ const AttemptReviewScreen = () => {
 
   // Compute auto-graded correct count for the summary line. Manually
   // graded types (essay/upload) are excluded from this count since we
-  // can't decide their outcome client-side.
+  // can't decide their outcome client-side. `manualPending` tracks how
+  // many manually-graded answers still have no recorded score so the
+  // banner reflects current grading state, not just question types.
   const summary = useMemo(() => {
     if (!data?.activity || !data.questions.length || !types) {
-      return { correct: 0, autoTotal: 0, manualTotal: 0 };
+      return { correct: 0, autoTotal: 0, manualTotal: 0, manualPending: 0 };
     }
     let correct = 0;
     let autoTotal = 0;
     let manualTotal = 0;
+    let manualPending = 0;
     data.questions.forEach((q) => {
       const typeRow = types.find((t) => Number(t.id) === Number(q.quizTypeId));
       const typeKey = typeRow ? normalize(typeRow.name) : null;
+      const ans = answerByQuestion.get(String(q.id));
       if (!isAutoGraded(typeKey)) {
         manualTotal += 1;
+        if (ans?.score == null) manualPending += 1;
         return;
       }
       autoTotal += 1;
-      const ans = answerByQuestion.get(String(q.id));
       const studentAnswer = ans?.studentAnswer ?? "";
       if (isAnswerCorrect(typeKey, q, studentAnswer, data.choices) === true)
         correct += 1;
     });
-    return { correct, autoTotal, manualTotal };
+    return { correct, autoTotal, manualTotal, manualPending };
   }, [data?.activity, data?.questions, answerByQuestion, types]);
 
   if (isLoading) return <AttemptReviewSkeleton />;
@@ -233,16 +237,16 @@ const AttemptReviewScreen = () => {
             </View>
           ) : null}
 
-          {summary.manualTotal > 0 && canRevealCorrect ? (
+          {summary.manualPending > 0 ? (
             <View className="flex-row items-start gap-2 px-3 py-2.5 rounded-xl bg-accent-soft border border-accent/30">
               <View style={{ marginTop: 2 }}>
                 <Icon name="ClockIcon" size={14} color={successColor} />
               </View>
               <View className="flex-1">
                 <AppText weight="semibold" className="text-xs text-accent">
-                  {summary.manualTotal}{" "}
-                  {summary.manualTotal === 1 ? "question" : "questions"} pending
-                  teacher review
+                  {summary.manualPending}{" "}
+                  {summary.manualPending === 1 ? "question" : "questions"}{" "}
+                  pending teacher review
                 </AppText>
                 <AppText className="text-[11px] text-muted mt-0.5">
                   Final score may change after grading.

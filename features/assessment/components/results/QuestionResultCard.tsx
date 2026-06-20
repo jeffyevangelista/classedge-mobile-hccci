@@ -80,7 +80,6 @@ export const QuestionResultCard = ({
             className={`text-[11px] ${cls}`}
             style={{ fontVariant: ["tabular-nums"] }}
           >
-            {full ? "+" : ""}
             {answerScore} / {question.score}
           </AppText>
         );
@@ -115,7 +114,6 @@ export const QuestionResultCard = ({
         className={`text-[11px] ${cls}`}
         style={{ fontVariant: ["tabular-nums"] }}
       >
-        {earned === question.score ? "+" : ""}
         {earned} / {question.score}
       </AppText>
     );
