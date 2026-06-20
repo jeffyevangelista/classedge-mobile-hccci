@@ -1,7 +1,8 @@
 import { Pressable, View } from "react-native";
 import { router } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, Separator, Skeleton } from "heroui-native";
+import type { FlashListRef } from "@shopify/flash-list";
 import { useClassSchedule } from "../profile.hooks";
 import { useClock } from "@/hooks/useClock";
 import { useSectionStatus } from "@/features/sync/useSectionStatus";
@@ -72,6 +73,15 @@ const ClassScheduleList = () => {
   // independent: seeded to today on mount and only changes on user tap.
   const todayShort = DAY_NAMES[useClock().getDay()];
   const [selectedDay, setSelectedDay] = useState<DayShort>(todayDayShort);
+  const listRef = useRef<FlashListRef<DayItem>>(null);
+
+  // FlashList preserves its scroll offset across `data` changes, so switching
+  // from a busy day (scrolled down) to a quieter one would leave the few
+  // remaining items pushed below the viewport top. Reset the offset on day
+  // change so each day's schedule starts at the top.
+  useEffect(() => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: false });
+  }, [selectedDay]);
 
   const { dayItems, daysWithClasses } = useMemo(() => {
     const enrollments = data ?? [];
@@ -169,6 +179,7 @@ const ClassScheduleList = () => {
         summary={summary}
       />
       <ScreenList
+        ref={listRef}
         className="mx-auto w-full max-w-3xl"
         style={{ marginBottom: 0 }}
         refreshControl={
