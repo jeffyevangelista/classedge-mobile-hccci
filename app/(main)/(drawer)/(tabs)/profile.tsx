@@ -1,7 +1,7 @@
 import ProfileScreen from "@/screens/profile/ProfileScreen";
 
-const ProfileRoute = () => {
+const ProfileTab = () => {
   return <ProfileScreen />;
 };
 
-export default ProfileRoute;
+export default ProfileTab;

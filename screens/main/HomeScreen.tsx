@@ -4,7 +4,8 @@ import { router } from "expo-router";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
 import Screen from "@/components/screen";
-import TabsHeader from "@/components/TabsHeader";
+import HomeTabHeader from "@/components/HomeTabHeader";
+import GreetingBand from "@/features/home/components/GreetingBand";
 import { SectionHeader } from "@/components/SectionHeader";
 import AnnouncementList from "@/features/announcements/components/AnnouncementList";
 import { useAnnouncementsWithEvents } from "@/features/announcements/announcements.hooks";
@@ -31,7 +32,7 @@ const HomeScreen = () => {
 
   return (
     <Screen>
-      <TabsHeader />
+      <HomeTabHeader />
       <ScreenScrollView
         showsVerticalScrollIndicator={false}
         className="w-full"
@@ -40,6 +41,8 @@ const HomeScreen = () => {
           <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        <GreetingBand />
+
         {isStudent && (
           <View className="w-full max-w-3xl mx-auto px-2.5 mt-5">
             <SectionHeader title="My Schedule" iconName="CalendarIcon" />

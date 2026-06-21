@@ -221,6 +221,21 @@ const TabsLayout = () => {
               tabBarLabel: "Notifications",
             }}
           />
+
+          <Tabs.Screen
+            name="profile"
+            options={{
+              headerShown: false,
+              tabBarIcon: ({ focused, color }) => (
+                <TabIcon
+                  focused={focused}
+                  color={color}
+                  IconElement="UserIcon"
+                />
+              ),
+              tabBarLabel: "Profile",
+            }}
+          />
         </Tabs>
       </View>
     </Animated.View>
