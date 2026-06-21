@@ -7,18 +7,19 @@ import { Text, View } from "react-native";
  *
  * Supports:
  *  - Paragraphs separated by blank lines
- *  - `\d+. Title` as a section heading (rest of paragraph becomes body)
+ *  - ATX headings (`#`, `##`, `###`) with size scaled per level
  *  - `- ` or `* ` bullet lists (mixed within a paragraph)
  *  - Inline `**bold**` spans
  *  - Multi-line paragraphs preserve their line breaks
  */
+type HeadingLevel = 1 | 2 | 3;
 type InlineSpan = { text: string; bold?: boolean };
 type ContentBlock =
-  | { kind: "heading"; spans: InlineSpan[] }
+  | { kind: "heading"; level: HeadingLevel; spans: InlineSpan[] }
   | { kind: "paragraph"; spans: InlineSpan[] }
   | { kind: "list"; items: InlineSpan[][] };
 
-const HEADING_RE = /^(\d+)\.\s+(.+)$/;
+const ATX_HEADING_RE = /^(#{1,6})\s+(.+)$/;
 const BULLET_RE = /^[-*]\s+(.+)$/;
 const BOLD_RE = /\*\*(.+?)\*\*/g;
 
@@ -85,17 +86,37 @@ function parseContent(raw: string): ContentBlock[] {
       .filter(Boolean);
     if (lines.length === 0) continue;
 
-    const headingMatch = lines[0].match(HEADING_RE);
+    const headingMatch = lines[0].match(ATX_HEADING_RE);
     if (headingMatch) {
-      blocks.push({ kind: "heading", spans: parseInline(headingMatch[2]) });
+      const level = Math.min(headingMatch[1].length, 3) as HeadingLevel;
+      blocks.push({
+        kind: "heading",
+        level,
+        spans: parseInline(headingMatch[2]),
+      });
       if (lines.length > 1) pushMixedLines(blocks, lines.slice(1));
       continue;
     }
 
     pushMixedLines(blocks, lines);
   }
+
+  if (blocks[0]?.kind === "heading" && blocks[0].level === 1) {
+    blocks.shift();
+  }
   return blocks;
 }
+
+const HEADING_STYLES: Record<HeadingLevel, { size: string; top: string }> = {
+  1: { size: "text-xl", top: "mt-6" },
+  2: { size: "text-base", top: "mt-5" },
+  3: { size: "text-sm", top: "mt-4" },
+};
+
+const headingClassName = (level: HeadingLevel, isFirst: boolean) => {
+  const { size, top } = HEADING_STYLES[level];
+  return `${size} text-foreground mb-2 ${isFirst ? "" : top}`;
+};
 
 const renderSpans = (spans: InlineSpan[]) =>
   spans.map((s, i) =>
@@ -119,7 +140,7 @@ export const LegalContent = ({ content }: { content: string }) => {
             <AppText
               key={i}
               weight="bold"
-              className={`text-base text-foreground mb-2 ${i === 0 ? "" : "mt-5"}`}
+              className={headingClassName(block.level, i === 0)}
             >
               {renderSpans(block.spans)}
             </AppText>

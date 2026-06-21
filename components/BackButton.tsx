@@ -1,5 +1,5 @@
-import { RelativePathString, useRouter } from "expo-router";
-import { ColorValue, Platform, Pressable } from "react-native";
+import { type RelativePathString, useRouter } from "expo-router";
+import { type ColorValue, Platform, Pressable } from "react-native";
 import { Icon } from "./Icon";
 
 interface BackButtonProps {

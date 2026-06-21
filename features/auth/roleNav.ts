@@ -24,7 +24,9 @@ export const getDrawerItems = (role: string | undefined): DrawerItem[] => {
   if (role === "Student")
     return [
       { label: "My Courses", view: "current", icon: "BookOpenIcon" },
-      { label: "Archived Courses", view: "archived", icon: "ArchiveIcon" },
+      ...(__DEV__
+        ? [{ label: "Archived Courses", view: "archived", icon: "ArchiveIcon" } as DrawerItem]
+        : []),
       { label: "COIL", view: "coil", section: "Orbit Program", icon: "GlobeIcon" },
       { label: "HALI", view: "hali", section: "Orbit Program", icon: "HandshakeIcon" },
       { label: "CTE", view: "cte", section: "Orbit Program", icon: "WrenchIcon" },
@@ -32,12 +34,19 @@ export const getDrawerItems = (role: string | undefined): DrawerItem[] => {
   if (role === "Teacher")
     return [
       { label: "Teaching", view: "current", icon: "BookOpenIcon" },
-      { label: "Archived Courses", view: "archived", icon: "ArchiveIcon" },
+      ...(__DEV__
+        ? [{ label: "Archived Courses", view: "archived", icon: "ArchiveIcon" } as DrawerItem]
+        : []),
+      { label: "COIL", view: "coil", section: "Orbit Program", icon: "GlobeIcon" },
+      { label: "HALI", view: "hali", section: "Orbit Program", icon: "HandshakeIcon" },
+      { label: "CTE", view: "cte", section: "Orbit Program", icon: "WrenchIcon" },
     ];
   if (role === "Program Head" || role === "Academic Director")
     return [
       { label: "Courses", view: "current", icon: "BookOpenIcon" },
-      { label: "Archived Courses", view: "archived", icon: "ArchiveIcon" },
+      ...(__DEV__
+        ? [{ label: "Archived Courses", view: "archived", icon: "ArchiveIcon" } as DrawerItem]
+        : []),
     ];
   return [];
 };

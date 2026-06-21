@@ -24,10 +24,11 @@ type TextProps = VariantProps<typeof textVariants> &
     className?: string;
   };
 
-export function AppText({ weight, italic, className, ...props }: TextProps) {
+export function AppText({ weight, italic, className, style, ...props }: TextProps) {
   return (
     <RNText
       className={textVariants({ weight, italic, className })}
+      style={[{ includeFontPadding: false }, style]}
       {...props}
     />
   );
