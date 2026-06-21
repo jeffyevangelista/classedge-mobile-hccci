@@ -65,20 +65,13 @@ const CourseScreen = () => {
   );
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
+    transformOrigin: "top",
     transform: [
-      {
-        translateY: interpolate(
-          scrollOffset.value,
-          [-IMAGE_HEIGHT, 0],
-          [-IMAGE_HEIGHT / 2, 0],
-          Extrapolation.CLAMP,
-        ),
-      },
       {
         scale: interpolate(
           scrollOffset.value,
           [-IMAGE_HEIGHT, 0],
-          [2, 1],
+          [1.5, 1],
           Extrapolation.CLAMP,
         ),
       },

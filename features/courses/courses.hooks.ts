@@ -8,6 +8,7 @@ import {
   getCourseDetails,
   getCourseMaterial,
   getStudentCourses,
+  getTeacherSubjectDetails,
 } from "./courses.service";
 import { getCourseStudentsApi, getPendingAssessments } from "./courses.apis";
 import {
@@ -27,7 +28,14 @@ export const useStudentCourses = () => {
   );
 
   const data = useMemo(
-    () => (rows ?? []).filter((e) => e.subjectId !== null),
+    () =>
+      (rows ?? []).filter(
+        (e) =>
+          e.subjectId !== null &&
+          !e.subjectId.isCte &&
+          !e.subjectId.isHali &&
+          !e.subjectId.isCoil,
+      ),
     [rows],
   );
 
@@ -131,6 +139,38 @@ export const useCourseDetails = (courseId: string) => {
   );
 
   const data = useMemo(() => rows?.[0] ?? null, [rows]);
+
+  return {
+    data,
+    isLoading,
+    isFetching,
+    isError: !!error,
+    error,
+    refetch: refresh ?? (async () => {}),
+    isRefetching: isFetching && !isLoading,
+  };
+};
+
+// Teacher-side analogue of useCourseDetails. The URL `classroomId` here is
+// a subject id (TeachingCourseList links straight to /classroom/<subject.id>),
+// so we look it up against the subjects table and reshape the row to match
+// the `{ subjectId, schedules }` shape the student hook returns. This lets
+// CourseDetails render the same UI without role-specific branching below
+// the data layer.
+export const useTeacherCourseDetails = (subjectId: string) => {
+  const { data: rows, isLoading, isFetching, error, refresh } = usePowerSyncQuery(
+    toCompilableQuery(getTeacherSubjectDetails(subjectId)),
+  );
+
+  const data = useMemo(() => {
+    const subject = rows?.[0];
+    if (!subject) return null;
+    const { schedules, ...subjectFields } = subject;
+    return {
+      subjectId: subjectFields,
+      schedules: schedules ?? [],
+    };
+  }, [rows]);
 
   return {
     data,

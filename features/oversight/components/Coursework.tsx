@@ -42,7 +42,7 @@ const CourseworkItem = ({
           label ? `Open ${label}: ${activityName}` : `Open ${activityName}`
         }
         android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
-        className="w-full max-w-3xl mx-auto mb-1 px-3 active:opacity-80"
+        className="w-full max-w-3xl mx-auto mb-1 px-2.5 active:opacity-80"
       >
         <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
           <View className="w-10 h-10 rounded-full items-center justify-center bg-accent-soft">

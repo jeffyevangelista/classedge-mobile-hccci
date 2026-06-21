@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo } from "react";
-import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
+import React, { ComponentType, useCallback, useMemo } from "react";
+import { ActivityIndicator, FlatList, type FlatListProps, Pressable, View } from "react-native";
 import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 import { Lesson } from "@/features/oversight/oversight.type";
 import { formatDate } from "@/utils/formatDate";
@@ -22,7 +22,11 @@ const labelForLessonType = (lessonType: string): string | null => {
   return null;
 };
 
-const LessonList = () => {
+type LessonListProps = {
+  ListComponent?: ComponentType<FlatListProps<Lesson>>;
+};
+
+const LessonList = ({ ListComponent = FlatList }: LessonListProps) => {
   const safeBottom = useScrollBottomInset();
   const { classroomId } = useGlobalSearchParams();
 
@@ -60,38 +64,45 @@ const LessonList = () => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Render the skeleton any time a fetch is in flight and we have
-  // nothing to show — that covers the initial mount AND retries from
-  // the error state. We key off `isFetching` rather than
-  // `isRefetching` because `keepPreviousData` makes `isRefetching` /
-  // `data === undefined` unreliable in the post-error retry path.
-  // `isFetchingNextPage` is excluded so paginating an already-rendered
-  // list doesn't wipe the screen.
-  if (
-    materials.length === 0 &&
-    (isLoading || (isFetching && !isFetchingNextPage))
-  )
-    return <MaterialsSkeleton />;
   if (isError)
     return (
       <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
     );
 
-  if (!isLoading && materials.length === 0)
-    return (
-      <NoDataFallback
-        icon="SmileySad"
-        title="No Materials found"
-        onRefetch={refetch}
-      />
-    );
+  // Skeleton + empty fallback are rendered INSIDE the FlatList (via
+  // ListHeaderComponent / ListEmptyComponent) so they sit inside the
+  // scroll content the collapsible-tab-view library offsets for the tab
+  // bar. Returning them early bypasses that offset and overlaps the tabs.
+  // `isFetching` (not `isRefetching`) so post-error retries also show the
+  // skeleton; `isFetchingNextPage` excluded so pagination doesn't wipe.
+  const showSkeleton =
+    materials.length === 0 &&
+    (isLoading || (isFetching && !isFetchingNextPage));
+  const showEmpty =
+    !isLoading && !isFetching && materials.length === 0;
 
   return (
-    <View className="flex-1">
-      <FlatList
+    <View className="flex-1 bg-background">
+      <ListComponent
         data={materials}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
+        ListHeaderComponent={
+          showSkeleton ? (
+            <MaterialsSkeleton />
+          ) : (
+            <View style={{ height: 10 }} />
+          )
+        }
+        ListEmptyComponent={
+          showEmpty ? (
+            <NoDataFallback
+              icon="SmileySad"
+              title="No Materials found"
+              onRefetch={refetch}
+            />
+          ) : null
+        }
         ListFooterComponent={isFetchingNextPage ? <ActivityIndicator /> : null}
         refreshing={isRefetching}
         onRefresh={refetch}
@@ -99,13 +110,7 @@ const LessonList = () => {
         onEndReachedThreshold={0.5}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
-        // Padding lives on the scroll content (not on a static wrapper)
-        // so the top gap scrolls away with the first card — the tab bar
-        // ends up flush against the list edge on scroll for a cleaner
-        // read. `paddingBottom` includes the safe-area inset so the last
-        // card clears the home indicator while remaining scrollable.
         contentContainerStyle={{
-          paddingTop: 10,
           paddingBottom: safeBottom + 8,
         }}
       />
@@ -126,7 +131,7 @@ const MaterialItem = React.memo(
             label ? `Open ${label}: ${lessonName}` : `Open ${lessonName}`
           }
           android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
-          className="w-full max-w-3xl mx-auto mb-1 px-3 active:opacity-80"
+          className="w-full max-w-3xl mx-auto mb-1 px-2.5 active:opacity-80"
         >
           <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
             <View className="w-10 h-10 rounded-full items-center justify-center bg-surface-secondary">
@@ -165,7 +170,7 @@ const MaterialsSkeleton = () => {
   return (
     <View style={{ paddingTop: 10 }}>
       {widths.map((titleWidth, index) => (
-        <View key={index} className="w-full max-w-3xl mx-auto px-3 mb-1">
+        <View key={index} className="w-full max-w-3xl mx-auto px-2.5 mb-1">
           <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
             <Skeleton className="w-10 h-10 rounded-full" />
             <View className="flex-1">

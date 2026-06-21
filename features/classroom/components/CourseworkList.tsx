@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { ComponentType, useCallback, useMemo, useState } from "react";
 import { useGlobalSearchParams } from "expo-router";
-import { ActivityIndicator, FlatList, View } from "react-native";
+import { ActivityIndicator, FlatList, type FlatListProps, View } from "react-native";
 import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 import { useAssessments } from "@/features/oversight/oversight.hooks";
 import { Skeleton } from "heroui-native";
@@ -11,7 +11,11 @@ import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 
-const CourseworkList = () => {
+type CourseworkListProps = {
+  ListComponent?: ComponentType<FlatListProps<Assessment>>;
+};
+
+const CourseworkList = ({ ListComponent = FlatList }: CourseworkListProps) => {
   const safeBottom = useScrollBottomInset();
   const { classroomId } = useGlobalSearchParams();
 
@@ -66,11 +70,6 @@ const CourseworkList = () => {
     }
   }, [refetch]);
 
-  if (
-    assessments.length === 0 &&
-    (isLoading || retrying || (isFetching && !isFetchingNextPage))
-  )
-    return <AssessmentSkeleton />;
   if (isError)
     return (
       <ErrorFallback
@@ -79,21 +78,36 @@ const CourseworkList = () => {
       />
     );
 
-  if (!isLoading && assessments.length === 0)
-    return (
-      <NoDataFallback
-        icon="SmileySad"
-        title="No coursework found"
-        onRefetch={refetch}
-      />
-    );
+  // Skeleton + empty fallback live inside the FlatList so they receive
+  // the collapsible-tab-view library's auto-injected tab-bar offset.
+  const showSkeleton =
+    assessments.length === 0 &&
+    (isLoading || retrying || (isFetching && !isFetchingNextPage));
+  const showEmpty =
+    !isLoading && !isFetching && !retrying && assessments.length === 0;
 
   return (
-    <View className="flex-1">
-      <FlatList
+    <View className="flex-1 bg-background">
+      <ListComponent
         data={assessments}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
+        ListHeaderComponent={
+          showSkeleton ? (
+            <AssessmentSkeleton />
+          ) : (
+            <View style={{ height: 10 }} />
+          )
+        }
+        ListEmptyComponent={
+          showEmpty ? (
+            <NoDataFallback
+              icon="SmileySad"
+              title="No coursework found"
+              onRefetch={refetch}
+            />
+          ) : null
+        }
         ListFooterComponent={isFetchingNextPage ? <ActivityIndicator /> : null}
         refreshControl={
           <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
@@ -102,13 +116,7 @@ const CourseworkList = () => {
         onEndReachedThreshold={0.5}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
-        // Padding lives on the scroll content (not on a static wrapper)
-        // so the top gap scrolls away with the first card — the tab bar
-        // ends up flush against the list edge on scroll for a cleaner
-        // read. `paddingBottom` includes the safe-area inset so the last
-        // card clears the home indicator while remaining scrollable.
         contentContainerStyle={{
-          paddingTop: 10,
           paddingBottom: safeBottom + 8,
         }}
       />
@@ -124,7 +132,7 @@ const AssessmentSkeleton = () => {
   return (
     <View style={{ paddingTop: 10 }}>
       {widths.map((titleWidth, index) => (
-        <View key={index} className="w-full max-w-3xl mx-auto px-3 mb-1">
+        <View key={index} className="w-full max-w-3xl mx-auto px-2.5 mb-1">
           <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
             <Skeleton className="w-10 h-10 rounded-full" />
             <View className="flex-1">

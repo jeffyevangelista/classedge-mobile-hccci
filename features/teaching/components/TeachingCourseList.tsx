@@ -32,11 +32,16 @@ import { getApiErrorMessage } from "@/lib/api-error";
 
 const MIN_CARD_WIDTH = 280;
 
-const TeachingCourseList = () => {
+type TeachingCourseListProps = {
+  query?: ReturnType<typeof useTeachingCourses>;
+};
+
+const TeachingCourseList = ({ query }: TeachingCourseListProps = {}) => {
   const { width } = useWindowDimensions();
   const numColumns = Math.max(1, Math.floor(width / MIN_CARD_WIDTH));
+  const fallbackQuery = useTeachingCourses();
   const { isLoading, isError, error, data, refetch, isRefetching } =
-    useTeachingCourses();
+    query ?? fallbackQuery;
   const navigation = useNavigation();
   const accentColor = useThemeColor("accent");
   const foregroundColor = useThemeColor("foreground");

@@ -1,5 +1,6 @@
 import { Pressable, View } from "react-native";
-import React from "react";
+import React, { ComponentType } from "react";
+import type { FlashListProps } from "@shopify/flash-list";
 import { useClassroomActivities } from "../classroom.hooks";
 import { Link, useGlobalSearchParams } from "expo-router";
 import { AppText } from "@/components/AppText";
@@ -20,38 +21,30 @@ type ClassroomActivity = {
   attempts?: unknown[];
 };
 
-const ClassroomActivitiyList = () => {
+type ClassroomActivitiyListProps = {
+  ListComponent?: ComponentType<FlashListProps<ClassroomActivity>>;
+};
+
+const ClassroomActivitiyList = ({
+  ListComponent = ScreenList,
+}: ClassroomActivitiyListProps) => {
   const { classroomId } = useGlobalSearchParams();
   const { data, isLoading, isError, error, refetch, isRefetching, isFetching } =
     useClassroomActivities(classroomId as string);
 
-  // Skeleton during the initial fetch AND during a retry from the
-  // error state — see features/classroom/components/LessonList for the
-  // full rationale.
-  if (isLoading || (isFetching && !data?.length))
-    return (
-      <View className="flex-1">
-        <ActivityListSkeleton />
-      </View>
-    );
   if (isError)
     return (
       <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
     );
-  if (data.length === 0)
-    return (
-      <View className="flex-1">
-        <NoDataFallback
-          icon="SmileySad"
-          title="No activities found"
-          onRefetch={refetch}
-        />
-      </View>
-    );
+
+  // Skeleton + empty fallback are rendered inside the FlatList so they
+  // pick up the collapsible-tab-view library's tab-bar offset.
+  const showSkeleton = isLoading || (isFetching && !data?.length);
+  const showEmpty = !isLoading && !isFetching && data.length === 0;
 
   return (
-    <View className="flex-1">
-      <ScreenList
+    <View className="flex-1 bg-background">
+      <ListComponent
         renderItem={({ item }) => (
           <ActivityItem
             activity={item}
@@ -61,12 +54,18 @@ const ClassroomActivitiyList = () => {
         data={data}
         refreshing={isRefetching}
         onRefresh={refetch}
-        // `SyncingPill` rides inside the scroll content so its top gap
-        // scrolls away with the rest of the list — same behavior as
-        // the Materials / Courseworks tabs. `ScreenList` already trims
-        // the bottom via `useScrollBottomInset`; the extra 8pt keeps
-        // the last card off the home indicator.
-        ListHeaderComponent={<SyncingPillRow />}
+        ListHeaderComponent={
+          showSkeleton ? <ActivityListSkeleton /> : <SyncingPillRow />
+        }
+        ListEmptyComponent={
+          showEmpty ? (
+            <NoDataFallback
+              icon="SmileySad"
+              title="No activities found"
+              onRefetch={refetch}
+            />
+          ) : null
+        }
         contentContainerStyle={{ paddingBottom: 8 }}
       />
     </View>
@@ -97,7 +96,7 @@ const ActivityItem = ({ activity, href }: ActivityItemProps) => {
         accessibilityRole="button"
         accessibilityLabel={`Grade ${activity.activityName}`}
         android_ripple={{ color: "rgba(0,0,0,0.05)", borderless: false }}
-        className="w-full max-w-3xl mx-auto mb-1 px-3 active:opacity-80"
+        className="w-full max-w-3xl mx-auto mb-1 px-2.5 active:opacity-80"
       >
         <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
           <View className="w-10 h-10 rounded-full items-center justify-center bg-accent-soft">
@@ -153,7 +152,7 @@ const ActivityListSkeleton = () => {
   return (
     <View>
       {widths.map((titleWidth, i) => (
-        <View key={i} className="w-full max-w-3xl mx-auto px-3 mb-1">
+        <View key={i} className="w-full max-w-3xl mx-auto px-2.5 mb-1">
           <View className="bg-surface border border-border rounded-2xl flex-row items-center gap-3 p-3">
             <Skeleton className="w-10 h-10 rounded-full" />
             <View className="flex-1">

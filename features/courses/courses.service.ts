@@ -15,9 +15,6 @@ export const getStudentCourses = (studentId: number) => {
     with: {
       subjectId: {
         columns: {
-          isHali: false,
-          isCoil: false,
-          isCte: false,
           subjectDescription: false,
           duration: false,
         },
@@ -76,6 +73,32 @@ export const getCourseDetails = (courseId: string) => {
               lastName: true,
             },
           },
+        },
+      },
+      schedules: true,
+    },
+  });
+};
+
+// Teacher-side analogue of getCourseDetails. Teachers reach the
+// course-details screen with a subject id (not an enrollment id), so we
+// query the subject directly and load its teacher + schedules. The hook
+// reshapes the result to match the student CourseDetailsData shape.
+export const getTeacherSubjectDetails = (subjectId: string) => {
+  return db.query.coursesTable.findFirst({
+    where: (subject, { eq }) => eq(subject.id, Number(subjectId)),
+    columns: {
+      isHali: false,
+      isCoil: false,
+      isCte: false,
+      subjectDescription: false,
+      duration: false,
+    },
+    with: {
+      assignTeacherId: {
+        columns: {
+          firstName: true,
+          lastName: true,
         },
       },
       schedules: true,

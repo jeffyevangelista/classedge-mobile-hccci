@@ -2,7 +2,12 @@ import { Pressable, View } from "react-native";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import React, { useCallback, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { useCourseDetails, useCourseStudents } from "../courses.hooks";
+import useStore from "@/lib/store";
+import {
+  useCourseDetails,
+  useCourseStudents,
+  useTeacherCourseDetails,
+} from "../courses.hooks";
 import { ScreenList } from "@/components/ScreenList";
 import Image from "@/components/Image";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
@@ -46,15 +51,22 @@ type CourseDetailsData = {
 
 const CourseDetails = () => {
   const { classroomId, courseId } = useLocalSearchParams();
-  const enrollmentId = (classroomId ?? courseId) as string;
+  const idFromUrl = (classroomId ?? courseId) as string;
+  const role = useStore((s) => s.authUser?.role);
+  const isTeacher = role === "Teacher";
 
+  // For teachers the URL id is a subject id (TeachingCourseList links
+  // directly to /classroom/<subject.id>); for students it's an enrollment
+  // id. Both hooks return the same `{ subjectId, schedules }` shape.
+  const studentResult = useCourseDetails(isTeacher ? "" : idFromUrl);
+  const teacherResult = useTeacherCourseDetails(isTeacher ? idFromUrl : "");
   const {
     data: courseDetails,
     isLoading: isLoadingDetails,
     isError: isErrorDetails,
     error: detailsError,
     refetch: refetchDetails,
-  } = useCourseDetails(enrollmentId);
+  } = isTeacher ? teacherResult : studentResult;
   const {
     data: students,
     isLoading: isLoadingStudents,
