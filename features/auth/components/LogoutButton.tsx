@@ -1,6 +1,6 @@
 import { powersync } from "@/powersync/system";
 import { signOut } from "@/features/auth/signOut";
-import { Button, Dialog, useThemeColor, useToast } from "heroui-native";
+import { Button, Dialog, Spinner, useThemeColor, useToast } from "heroui-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { AppText } from "@/components/AppText";
@@ -28,11 +28,14 @@ const LogoutButton = () => {
   const { toast } = useToast();
   const handleLogout = async () => {
     setIsPending(true);
-    setIsOpen(false);
     try {
       await signOut();
+      // Success path: the auth gate unmounts this screen on cleared
+      // credentials, so we don't need to flip isOpen — the dialog
+      // disappears with the screen.
     } catch (err: unknown) {
       setIsPending(false);
+      setIsOpen(false);
       const message =
         err instanceof Error ? err.message : "Something went wrong.";
       toast.show({
@@ -42,8 +45,16 @@ const LogoutButton = () => {
       });
     }
   };
+
+  // Block all dismissal paths (overlay tap, back press) while signOut runs;
+  // otherwise users can land in a half-signed-out state.
+  const onOpenChange = (next: boolean) => {
+    if (isPending) return;
+    setIsOpen(next);
+  };
+
   return (
-    <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange}>
       <Dialog.Trigger asChild>
         <ProfileRow
           icon="SignOutIcon"
@@ -58,8 +69,8 @@ const LogoutButton = () => {
           <View className="mb-5 gap-3">
             <Dialog.Title>Confirm Logout</Dialog.Title>
             <Dialog.Description>
-              Are you sure you want to log out? All local data will be cleared
-              and this action cannot be undone.
+              Are you sure you want to log out? All local data will be
+              cleared and this action cannot be undone.
             </Dialog.Description>
             {unsyncedCount > 0 && (
               <AppText weight="semibold" className="text-sm text-danger">
@@ -71,12 +82,20 @@ const LogoutButton = () => {
           <View className="gap-2">
             <Button
               variant="danger"
-              isDisabled={isPending}
               onPress={handleLogout}
+              isDisabled={isPending}
             >
-              Yes, Log me out
+              {isPending ? (
+                <Spinner size="sm" />
+              ) : (
+                <Button.Label>Yes, Log me out</Button.Label>
+              )}
             </Button>
-            <Button variant="ghost" onPress={() => setIsOpen(false)}>
+            <Button
+              variant="ghost"
+              onPress={() => setIsOpen(false)}
+              isDisabled={isPending}
+            >
               No, Cancel
             </Button>
           </View>
