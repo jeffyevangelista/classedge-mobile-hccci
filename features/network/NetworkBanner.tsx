@@ -20,9 +20,21 @@ const bannerConfig: Record<
   Exclude<NetworkBannerState, "hidden">,
   { bg: string; text: string; icon: string; iconColor: string }
 > = {
-  offline: {
+  deviceOffline: {
     bg: "#1F1F1F",
-    text: "Offline",
+    text: "No internet connection",
+    icon: "WifiSlashIcon",
+    iconColor: "#FFFFFF",
+  },
+  serverUnreachable: {
+    bg: "#1F1F1F",
+    text: "Server unreachable",
+    icon: "WifiSlashIcon",
+    iconColor: "#FFFFFF",
+  },
+  syncUnavailable: {
+    bg: "#1F1F1F",
+    text: "Live sync unavailable",
     icon: "WifiSlashIcon",
     iconColor: "#FFFFFF",
   },
@@ -39,6 +51,12 @@ const bannerConfig: Record<
     iconColor: "#FFFFFF",
   },
 };
+
+const FAULTED_STATES: NetworkBannerState[] = [
+  "deviceOffline",
+  "serverUnreachable",
+  "syncUnavailable",
+];
 
 const NetworkBanner = () => {
   const { bannerState, isVisible, lastSyncedLabel } = useNetworkBanner();
@@ -96,7 +114,7 @@ const NetworkBanner = () => {
 
   const config = bannerState !== "hidden" ? bannerConfig[bannerState] : null;
   const displayText =
-    config && bannerState === "offline" && lastSyncedLabel
+    config && FAULTED_STATES.includes(bannerState) && lastSyncedLabel
       ? `${config.text} · ${lastSyncedLabel}`
       : config?.text;
 
