@@ -52,11 +52,12 @@ export const coursesTable = sqliteTable("subject_subject", {
   subjectType: text("subject_type").notNull(),
 });
 
-export const subjectRelations = relations(coursesTable, ({ one }) => ({
+export const subjectRelations = relations(coursesTable, ({ one, many }) => ({
   assignTeacherId: one(accountDetailsTable, {
     fields: [coursesTable.assignTeacherId],
     references: [accountDetailsTable.userId],
   }),
+  schedules: many(courseScheduleTable),
 }));
 
 export const academicTermsTable = sqliteTable("course_semester", {
