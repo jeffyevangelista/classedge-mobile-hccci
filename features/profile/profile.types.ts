@@ -93,13 +93,6 @@ export type FinancialRecord = {
   discountSummary: DiscountSummary;
 };
 
-export type FinancialRecordResponse = {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: FinancialRecord[];
-};
-
 export type AcademicSubject = {
   subjectName: string;
   transmutedGrade: number | null;

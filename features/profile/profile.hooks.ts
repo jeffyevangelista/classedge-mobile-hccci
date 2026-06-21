@@ -44,10 +44,10 @@ export const useClassSchedule = () => {
   };
 };
 
-export const useFinancialInformation = () => {
+export const useFinancialInformation = (academicTermId?: number) => {
   return useQuery({
-    queryKey: ["financial-information"],
-    queryFn: () => getFinancialInformation(),
+    queryKey: ["financial-information", academicTermId ?? null],
+    queryFn: () => getFinancialInformation(academicTermId),
   });
 };
 

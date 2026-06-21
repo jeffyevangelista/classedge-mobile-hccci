@@ -22,7 +22,7 @@ import { Card, Select, Separator, Skeleton, useThemeColor } from "heroui-native"
 import { Pressable, View } from "react-native";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import { getApiErrorMessage } from "@/lib/api-error";
 
@@ -32,14 +32,6 @@ const formatCurrency = (value: string | number) => {
 };
 
 const FinancialRecordsScreen = () => {
-  const {
-    data,
-    isLoading: isLoadingFinancials,
-    isRefetching,
-    isError: isErrorFinancials,
-    error: financialsError,
-    refetch,
-  } = useFinancialInformation();
   const {
     data: terms,
     isLoading: isLoadingTerms,
@@ -59,27 +51,30 @@ const FinancialRecordsScreen = () => {
     }
   }, [terms, selectedTermId]);
 
-  const selectedRecord: FinancialRecord | undefined = useMemo(() => {
-    const results = data?.results ?? [];
-    if (!selectedTermId) return results[0];
-    return results.find(
-      (r) => String(r.academicTerm.id) === selectedTermId,
-    );
-  }, [data, selectedTermId]);
+  const {
+    data,
+    isLoading: isLoadingFinancials,
+    isRefetching,
+    isError: isErrorFinancials,
+    error: financialsError,
+    refetch,
+  } = useFinancialInformation(
+    selectedTermId ? Number(selectedTermId) : undefined,
+  );
 
   // Skeleton during the initial fetch AND during a retry from the
   // error state — `isLoading` only flips on first mount, so we also
   // arm on `isRefetching && !data` to avoid a blank flash between
   // tapping "Try again" and the error reappearing.
   if (
-    isLoadingFinancials ||
     isLoadingTerms ||
-    (isRefetching && !data?.results?.length)
+    isLoadingFinancials ||
+    (isRefetching && !data)
   ) {
     return <FinancialRecordsSkeleton />;
   }
 
-  if (isErrorFinancials || isErrorTerms) {
+  if (isErrorTerms || isErrorFinancials) {
     return (
       <ErrorComponent
         message={getApiErrorMessage(financialsError ?? termsError)}
@@ -117,18 +112,16 @@ const FinancialRecordsScreen = () => {
           onChange={setSelectedTermId}
         />
 
-        {selectedRecord ? (
+        {data ? (
           <>
-            <TuitionSummaryCard record={selectedRecord} />
-            <SubjectFeesCard fees={selectedRecord.subjectFees} />
-            <MiscellaneousFeesCard fees={selectedRecord.miscellaneousFees} />
-            <OtherFeesCard fees={selectedRecord.otherFees} />
-            <ScholarshipsCard
-              scholarships={selectedRecord.grantedScholarships}
-            />
-            <DiscountSummaryCard summary={selectedRecord.discountSummary} />
-            <PaymentReceiptsCard receipts={selectedRecord.paymentReceipts} />
-            <PromissoryNotesCard notes={selectedRecord.promissoryNotes} />
+            <TuitionSummaryCard record={data} />
+            <SubjectFeesCard fees={data.subjectFees} />
+            <MiscellaneousFeesCard fees={data.miscellaneousFees} />
+            <OtherFeesCard fees={data.otherFees} />
+            <ScholarshipsCard scholarships={data.grantedScholarships} />
+            <DiscountSummaryCard summary={data.discountSummary} />
+            <PaymentReceiptsCard receipts={data.paymentReceipts} />
+            <PromissoryNotesCard notes={data.promissoryNotes} />
           </>
         ) : (
           <EmptyState
@@ -417,9 +410,9 @@ const PaymentReceiptsCard = ({ receipts }: { receipts: PaymentReceipt[] }) => {
         </AppText>
       </Card.Header>
       <Card.Body className="gap-3">
-        {receipts.map((r) => (
+        {receipts.map((r, i) => (
           <View
-            key={r.receiptNumber}
+            key={`${r.receiptNumber}-${i}`}
             className="flex-row justify-between items-start"
           >
             <View className="flex-1 pr-2">
