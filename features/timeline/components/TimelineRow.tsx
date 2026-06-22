@@ -1,5 +1,5 @@
-import { Pressable, View } from "react-native";
 import { Card, useThemeColor } from "heroui-native";
+import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import type { TimelineItem, TimelineRowHighlight } from "../types";

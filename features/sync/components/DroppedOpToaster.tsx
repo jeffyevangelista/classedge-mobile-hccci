@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
 import { useQuery } from "@powersync/react-native";
 import { useToast } from "heroui-native";
+import { useEffect, useRef } from "react";
 import { featureLabelFromTarget } from "../syncLabels";
 
 type DroppedEvent = {
@@ -45,7 +45,7 @@ export function DroppedOpToaster() {
       const description =
         row.http_status != null
           ? `${row.message ?? "Upload failed"} (HTTP ${row.http_status})`
-          : row.message ?? "Upload failed";
+          : (row.message ?? "Upload failed");
       toastRef.current.show({
         label: featureLabelFromTarget(row.target),
         description,

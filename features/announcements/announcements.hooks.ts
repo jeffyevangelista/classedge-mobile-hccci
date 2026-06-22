@@ -1,6 +1,9 @@
 import { toCompilableQuery } from "@powersync/drizzle-driver";
 import { useQuery } from "@powersync/react";
-import { getAnnouncement, getAnnouncementsWithEvents } from "./announcements.service";
+import {
+  getAnnouncement,
+  getAnnouncementsWithEvents,
+} from "./announcements.service";
 
 export const useAnnouncementsWithEvents = () => {
   return useQuery(toCompilableQuery(getAnnouncementsWithEvents()));

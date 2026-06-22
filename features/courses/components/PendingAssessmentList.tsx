@@ -1,14 +1,14 @@
-import { View, StyleSheet, ScrollView } from "react-native";
-import React, { memo } from "react";
 import { useStatus } from "@powersync/react-native";
-import { usePendingAssessments } from "../courses.hooks";
+import { Card, Skeleton } from "heroui-native";
+import { memo } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
-import { Card, Skeleton } from "heroui-native";
 import { Icon } from "@/components/Icon";
-import { Assessment } from "../courses.types";
-import { getApiErrorMessage } from "@/lib/api-error";
 import SyncingPill from "@/features/sync/components/SyncingPill";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { usePendingAssessments } from "../courses.hooks";
+import type { Assessment } from "../courses.types";
 
 const PendingAssessmentList = ({
   subjectId,
@@ -109,7 +109,7 @@ const LoadingSkeleton = () => (
   <Skeleton className="h-19 rounded-3xl w-72 md:w-80 lg:w-96 mr-3 shadow-none"></Skeleton>
 );
 
-const styles = StyleSheet.create({
+const _styles = StyleSheet.create({
   center: {
     flex: 1,
     justifyContent: "center",

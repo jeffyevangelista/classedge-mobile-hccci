@@ -1,20 +1,20 @@
-import React, { useCallback, useMemo, useState } from "react";
 import { useGlobalSearchParams } from "expo-router";
-import { useStudents } from "../oversight.hooks";
-import { ActivityIndicator, Pressable, View, FlatList } from "react-native";
-import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
-import { AppText } from "@/components/AppText";
 import { Avatar, Card, Skeleton } from "heroui-native";
-import { Student } from "../oversight.type";
-import ErrorFallback from "@/components/ErrorFallback";
-import NoDataFallback from "@/components/NoDataFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import React, { useCallback, useMemo, useState } from "react";
+import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
+import { AppText } from "@/components/AppText";
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
-import { StudentSearchBar } from "@/features/classroom/components/StudentSearchBar";
+import ErrorFallback from "@/components/ErrorFallback";
 import { Icon } from "@/components/Icon";
+import NoDataFallback from "@/components/NoDataFallback";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import { StudentSearchBar } from "@/features/classroom/components/StudentSearchBar";
+import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { toTitleCase } from "@/utils/toTitleCase";
+import { useStudents } from "../oversight.hooks";
+import type { Student } from "../oversight.type";
 
 const StudentList = () => {
   const params = useGlobalSearchParams<{ subjectId?: string | string[] }>();

@@ -62,7 +62,8 @@ export const MCResult = ({
     .sort((a, b) => Number(a.id) - Number(b.id));
   const studentChoiceId = studentAnswer.trim();
   const correctChoiceId = resolveMcCorrectChoiceId(question, choices);
-  const isCorrect = correctChoiceId != null && studentChoiceId === correctChoiceId;
+  const isCorrect =
+    correctChoiceId != null && studentChoiceId === correctChoiceId;
 
   return (
     <View className="gap-1.5">
@@ -100,10 +101,7 @@ export const MCResult = ({
             className={`px-3 py-3 rounded-xl ${styles.container}`}
           >
             <View className="flex-row items-center gap-2">
-              <AppText
-                weight="bold"
-                className={`text-xs w-5 ${styles.letter}`}
-              >
+              <AppText weight="bold" className={`text-xs w-5 ${styles.letter}`}>
                 {letter}.
               </AppText>
               {typeof choice.choiceText === "string" &&
@@ -115,9 +113,7 @@ export const MCResult = ({
                 <View className="flex-1" />
               )}
               {badge ? (
-                <View
-                  className={`px-2 py-0.5 rounded-md ${badgeBg}`}
-                >
+                <View className={`px-2 py-0.5 rounded-md ${badgeBg}`}>
                   <AppText
                     weight="bold"
                     className="text-[10px] text-accent-foreground"

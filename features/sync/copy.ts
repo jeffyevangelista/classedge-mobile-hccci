@@ -48,7 +48,8 @@ export const SYNC_COPY = {
     showDetails: "Show details",
     hideDetails: "Hide details",
     dismiss: "Dismiss",
-    httpLabel: (status: number | null) => (status != null ? `HTTP ${status}` : "no response"),
+    httpLabel: (status: number | null) =>
+      status != null ? `HTTP ${status}` : "no response",
     droppedAt: (relative: string) => `Dropped ${relative}`,
   },
 

@@ -85,7 +85,9 @@ export const AUTO_RETRY_CAP = 3;
  *   ""                   -> null
  *   null                 -> null
  */
-export function extractAttachmentId(value: string | null | undefined): string | null {
+export function extractAttachmentId(
+  value: string | null | undefined,
+): string | null {
   if (!value) return null;
   if (value.startsWith("file://")) return null;
   const segments = value.split("/").filter(Boolean);

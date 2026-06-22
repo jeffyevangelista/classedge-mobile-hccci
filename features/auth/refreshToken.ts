@@ -1,7 +1,7 @@
-import type { AuthResponse } from "./auth.types";
-import { env } from "@/utils/env";
 import axios from "axios";
 import { snakeToCamel } from "@/lib/case-transform";
+import { env } from "@/utils/env";
+import type { AuthResponse } from "./auth.types";
 
 // Separated refresh endpoint from authApi.ts because of the warning below:
 // Require cycle: api/authApi.ts -> api/index.ts -> api/authApi.ts

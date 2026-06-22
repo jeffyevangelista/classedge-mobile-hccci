@@ -1,8 +1,8 @@
-import { type ImageProps } from "expo-image";
-import Image from "@/components/Image";
+import type { ImageProps } from "expo-image";
 import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
+import Image from "@/components/Image";
 import { useAttachment } from "../hooks/useAttachment";
 
 type Props = Omit<ImageProps, "source"> & {

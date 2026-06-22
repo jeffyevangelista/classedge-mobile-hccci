@@ -1,5 +1,5 @@
-import { Pressable, TextInput, useWindowDimensions, View } from "react-native";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useFocusEffect, useRouter } from "expo-router";
 import {
   Button,
   FieldError,
@@ -8,20 +8,25 @@ import {
   useThemeColor,
   useToast,
 } from "heroui-native";
-import AppInput from "@/components/AppInput";
-import { useFocusEffect, useRouter } from "expo-router";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
-import { useResetPassword } from "../auth.hooks";
-import useStore from "@/lib/store";
-import {
-  ConfirmPasswordFormValues,
-  confirmPasswordSchema,
-} from "../auth.schemas";
 import { MotiView } from "moti";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import {
+  Pressable,
+  type TextInput,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import AppInput from "@/components/AppInput";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import { getApiErrorMessage } from "@/lib/api-error";
+import useStore from "@/lib/store";
+import { useResetPassword } from "../auth.hooks";
+import {
+  type ConfirmPasswordFormValues,
+  confirmPasswordSchema,
+} from "../auth.schemas";
 
 const PasswordResetForm = () => {
   const themeColorAccentForeground = useThemeColor("accent-foreground");

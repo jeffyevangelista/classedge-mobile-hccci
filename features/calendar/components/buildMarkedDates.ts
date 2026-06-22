@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { CalendarItem } from "../calendar.types";
+import type { CalendarItem } from "../calendar.types";
 
 type Marking = {
   marked?: boolean;
@@ -28,8 +28,8 @@ export function buildMarkedDates(data: CalendarItem[]): MarkedDates {
   const addRange = (startStr: string, endStr: string, color: string) => {
     if (!startStr || !endStr) return;
 
-    let start = dayjs(startStr);
-    let end = dayjs(endStr);
+    const start = dayjs(startStr);
+    const end = dayjs(endStr);
 
     let cursor = start;
 
@@ -74,8 +74,8 @@ export function buildMarkedDates(data: CalendarItem[]): MarkedDates {
     if (item.type === "activity") {
       if (!item.start || !item.end) return;
 
-      let start = dayjs(item.start);
-      let end = dayjs(item.end);
+      const start = dayjs(item.start);
+      const end = dayjs(item.end);
 
       let cursor = start;
 

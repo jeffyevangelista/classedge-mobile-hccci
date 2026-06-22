@@ -1,15 +1,15 @@
-import { Pressable, View } from "react-native";
-import { useMemo } from "react";
+import type { InferSelectModel } from "drizzle-orm";
 import { useRouter } from "expo-router";
 import { Skeleton } from "heroui-native";
+import { useMemo } from "react";
+import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { Icon, type IconName } from "@/components/Icon";
 import { formatShortDate } from "@/features/assessment/formatters";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useExpiry } from "@/hooks/useExpiry";
-import type { InferSelectModel } from "drizzle-orm";
-import { attemptsTable } from "@/powersync/schema";
+import type { attemptsTable } from "@/powersync/schema";
 import { useAttemptRecords } from "../assessment.hooks";
 import { submitAttempt } from "../assessment.service";
 
@@ -270,13 +270,14 @@ const AttemptCard = ({
             >
               Pending
             </AppText>
-            <AppText className="text-[11px] text-muted mt-0.5">
-              Grading
-            </AppText>
+            <AppText className="text-[11px] text-muted mt-0.5">Grading</AppText>
           </>
         ) : showScore ? (
           <>
-            <AppText weight="bold" className={`text-base ${SCORE_TEXT_CLASS[status]}`}>
+            <AppText
+              weight="bold"
+              className={`text-base ${SCORE_TEXT_CLASS[status]}`}
+            >
               {item.score} / {maxScore}
             </AppText>
             <AppText className="text-[11px] text-muted mt-0.5">

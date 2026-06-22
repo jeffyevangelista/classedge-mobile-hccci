@@ -42,10 +42,16 @@ async function doFlush(): Promise<void> {
     nextEligibleAt = 0;
   } catch (error) {
     consecutiveFailures += 1;
-    const delay = BACKOFF_MS[Math.min(consecutiveFailures - 1, BACKOFF_MS.length - 1)];
+    const delay =
+      BACKOFF_MS[Math.min(consecutiveFailures - 1, BACKOFF_MS.length - 1)];
     nextEligibleAt = Date.now() + delay;
     if (__DEV__) {
-      console.warn("[activity-tracker] flush failed; retry in", delay, "ms", error);
+      console.warn(
+        "[activity-tracker] flush failed; retry in",
+        delay,
+        "ms",
+        error,
+      );
     }
   }
 }

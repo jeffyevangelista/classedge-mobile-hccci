@@ -1,12 +1,12 @@
-import { Pressable, View } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import { useThemeColor } from "heroui-native";
+import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
-import * as WebBrowser from "expo-web-browser";
 import { getFileType } from "@/features/attachments/file-type";
 import { AttachmentImageCard } from "./AttachmentImageCard";
-import { AttachmentVideoCard } from "./AttachmentVideoCard";
 import { AttachmentPdfCard } from "./AttachmentPdfCard";
+import { AttachmentVideoCard } from "./AttachmentVideoCard";
 
 interface Props {
   /** Direct remote URL — bypasses the PowerSync attachment pipeline. */

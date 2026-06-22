@@ -1,9 +1,9 @@
-import { formatDate } from "@/utils/formatDate";
-import { Assessment } from "../oversight.type";
 import { Link } from "expo-router";
 import { Pressable, View } from "react-native";
-import { Icon } from "@/components/Icon";
 import { AppText } from "@/components/AppText";
+import { Icon } from "@/components/Icon";
+import { formatDate } from "@/utils/formatDate";
+import type { Assessment } from "../oversight.type";
 
 // All coursework rows render with a single pencil icon, mirroring the
 // CourseTimeline assessment convention. Only the meta label differs

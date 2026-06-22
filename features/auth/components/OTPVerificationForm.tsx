@@ -1,4 +1,4 @@
-import { Keyboard, TextInput, useWindowDimensions, View } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
 import {
   Button,
   InputOTP,
@@ -6,12 +6,17 @@ import {
   useThemeColor,
   useToast,
 } from "heroui-native";
-import { AppText } from "@/components/AppText";
-import { useFocusEffect, useRouter } from "expo-router";
-import useStore from "@/lib/store";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { useForgotPassword, useVerifyOtp } from "../auth.hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Keyboard,
+  type TextInput,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import { AppText } from "@/components/AppText";
+import { getApiErrorMessage } from "@/lib/api-error";
+import useStore from "@/lib/store";
+import { useForgotPassword, useVerifyOtp } from "../auth.hooks";
 
 const OTP_LENGTH = 6;
 const INITIAL_RESEND_COOLDOWN = 60;
@@ -39,8 +44,7 @@ const OTPVerificationForm = () => {
   const { mutateAsync: forgotPassword, isPending: forgotPasswordPending } =
     useForgotPassword();
 
-  const isOtpComplete =
-    value.length === OTP_LENGTH && /^\d+$/.test(value);
+  const isOtpComplete = value.length === OTP_LENGTH && /^\d+$/.test(value);
   const isCoolingDown = resendCooldown > 0;
   const isExpired = otpExpiresAt !== null && expirySeconds <= 0;
 
@@ -96,7 +100,8 @@ const OTPVerificationForm = () => {
     if (!email || isCoolingDown) return;
     try {
       const data = await forgotPassword({ email });
-      const resendIn = (data?.resendIn as number | undefined) ?? INITIAL_RESEND_COOLDOWN;
+      const resendIn =
+        (data?.resendIn as number | undefined) ?? INITIAL_RESEND_COOLDOWN;
       setResendCooldown(resendIn);
       // New OTP invalidates the old one — clear the field, allow auto-verify
       // on the new code, and refocus so the user can type immediately.

@@ -1,8 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  Persister,
-  PersistQueryClientOptions,
-} from "@tanstack/react-query-persist-client";
+import type { Persister } from "@tanstack/react-query-persist-client";
 
 export const createAsyncStoragePersister = (): Persister => {
   return {

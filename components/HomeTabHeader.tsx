@@ -2,8 +2,8 @@ import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppText } from "@/components/AppText";
 import Image from "@/components/Image";
-import SyncCenter from "@/features/sync/components/SyncCenter";
 import HeaderDecor from "@/features/home/components/HeaderDecor";
+import SyncCenter from "@/features/sync/components/SyncCenter";
 
 const HomeTabHeader = () => {
   const insets = useSafeAreaInsets();

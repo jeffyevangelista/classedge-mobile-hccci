@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from "react";
-import { Pressable, View, useWindowDimensions } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomSheet, useThemeColor } from "heroui-native";
+import { useCallback, useMemo } from "react";
+import { Pressable, useWindowDimensions, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
 
@@ -25,11 +25,7 @@ type Props = {
 // flow available in this classroom. Mirrors the chrome / row layout of
 // ImageSourceSheet + ImageActionSheet so the sheet vocabulary stays
 // uniform across the app.
-export const CreateActionSheet = ({
-  isOpen,
-  onOpenChange,
-  actions,
-}: Props) => {
+export const CreateActionSheet = ({ isOpen, onOpenChange, actions }: Props) => {
   const { width: screenWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const accentColor = useThemeColor("accent");

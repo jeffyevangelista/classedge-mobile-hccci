@@ -64,12 +64,14 @@ export const CollapsibleDescription = ({
   const resolveIfReady = () => {
     const c = clampedHeight.current;
     const u = unclampedHeight.current;
-    console.log("[CollapsibleDescription] resolveIfReady", {
-      noun,
-      clamped: c,
-      unclamped: u,
-      collapsedLines,
-    });
+    if (__DEV__) {
+      console.log("[CollapsibleDescription] resolveIfReady", {
+        noun,
+        clamped: c,
+        unclamped: u,
+        collapsedLines,
+      });
+    }
     if (c == null || u == null) return;
     // Skip the mount-time "both heights are 0" race: RN can fire onLayout
     // once with zero before the real layout pass. Without this guard,
@@ -77,18 +79,21 @@ export const CollapsibleDescription = ({
     // toggle never appears.
     if (c <= 0 || u <= 0) return;
     const next = u > c + 1 ? "overflows" : "fits";
-    console.log("[CollapsibleDescription] resolved →", next, { c, u });
+    if (__DEV__)
+      console.log("[CollapsibleDescription] resolved →", next, { c, u });
     // 1px slack — RN sometimes reports sub-pixel diffs even when content
     // fits within the clamp.
     setMeasurement(next);
   };
 
-  console.log("[CollapsibleDescription] render", {
-    noun,
-    measurement,
-    expanded,
-    textLength: text?.length,
-  });
+  if (__DEV__) {
+    console.log("[CollapsibleDescription] render", {
+      noun,
+      measurement,
+      expanded,
+      textLength: text?.length,
+    });
+  }
 
   if (measurement === "fits") {
     return <AppText className={textClassName}>{text}</AppText>;

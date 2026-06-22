@@ -1,10 +1,12 @@
-import BackButton from "@/components/BackButton";
 import { Stack } from "expo-router";
+import BackButton from "@/components/BackButton";
 import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 
 const AuthLayout = () => {
   const headerOptions = useThemedHeaderOptions();
-  const transparentHeaderOptions = useThemedHeaderOptions({ transparent: true });
+  const transparentHeaderOptions = useThemedHeaderOptions({
+    transparent: true,
+  });
   return (
     <Stack screenOptions={headerOptions}>
       <Stack.Screen name="login" options={{ headerShown: false }} />

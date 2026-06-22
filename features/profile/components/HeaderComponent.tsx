@@ -1,14 +1,14 @@
-import { Pressable, View } from "react-native";
-import { useUserDetails } from "@/features/profile/profile.hooks";
+import { router } from "expo-router";
 import { Avatar, Skeleton } from "heroui-native";
+import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { Icon } from "@/components/Icon";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
-import { toTitleCase } from "@/utils/toTitleCase";
-import { router } from "expo-router";
+import { useUserDetails } from "@/features/profile/profile.hooks";
+import { getApiErrorMessage } from "@/lib/api-error";
 import useStore from "@/lib/store";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 const HeaderComponent = () => {
   const { data, isLoading, error } = useUserDetails();

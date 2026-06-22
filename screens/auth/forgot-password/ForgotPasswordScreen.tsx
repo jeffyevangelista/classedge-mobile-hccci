@@ -1,8 +1,8 @@
-import AuthIllustrationLayout from "@/components/AuthIllustrationLayout";
-import ForgotPasswordForm from "@/features/auth/components/ForgotPasswordForm";
 import { useRouter } from "expo-router";
 import { Button } from "heroui-native";
 import ForgotPassword from "@/assets/illustrations/forgot-password/forgot-password.svg";
+import AuthIllustrationLayout from "@/components/AuthIllustrationLayout";
+import ForgotPasswordForm from "@/features/auth/components/ForgotPasswordForm";
 
 const ForgotPasswordScreen = () => {
   const router = useRouter();

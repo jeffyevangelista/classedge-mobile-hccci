@@ -1,17 +1,17 @@
-import React, { useCallback, useMemo } from "react";
 import { useGlobalSearchParams } from "expo-router";
-import { useStudents } from "@/features/oversight/oversight.hooks";
-import { ActivityIndicator, View, FlatList } from "react-native";
-import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
-import { AppText } from "@/components/AppText";
 import { Avatar, Card, Skeleton } from "heroui-native";
-import { Student } from "@/features/oversight/oversight.type";
+import React, { useCallback, useMemo } from "react";
+import { ActivityIndicator, FlatList, View } from "react-native";
+import { AppText } from "@/components/AppText";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
-import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import { useStudents } from "@/features/oversight/oversight.hooks";
+import type { Student } from "@/features/oversight/oversight.type";
+import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { toTitleCase } from "@/utils/toTitleCase";
 
 const CONTENT_CONTAINER_STYLE = { paddingTop: 16 } as const;

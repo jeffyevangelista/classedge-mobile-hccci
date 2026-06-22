@@ -1,7 +1,7 @@
-import AuthIllustrationLayout from "@/components/AuthIllustrationLayout";
-import { Button } from "heroui-native";
 import { useRouter } from "expo-router";
+import { Button } from "heroui-native";
 import Success from "@/assets/illustrations/forgot-password/success.svg";
+import AuthIllustrationLayout from "@/components/AuthIllustrationLayout";
 
 const ResetSuccessScreen = () => {
   const router = useRouter();

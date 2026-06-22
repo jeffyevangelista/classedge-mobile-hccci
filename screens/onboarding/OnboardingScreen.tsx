@@ -1,16 +1,3 @@
-import { AppText } from "@/components/AppText";
-import Image from "@/components/Image";
-import { LegalContent } from "@/features/auth/components/LegalContent";
-import {
-  useActiveLegalDocuments,
-  useCompleteOnboarding,
-  useLogout,
-} from "@/features/auth/auth.hooks";
-import { getApiErrorMessage } from "@/lib/api-error";
-import type { LegalDocument } from "@/features/auth/auth.types";
-import { useEffect, useMemo, useState } from "react";
-import { BackHandler, ScrollView, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Button,
   ControlField,
@@ -18,6 +5,19 @@ import {
   Skeleton,
   Spinner,
 } from "heroui-native";
+import { useEffect, useMemo, useState } from "react";
+import { BackHandler, ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AppText } from "@/components/AppText";
+import Image from "@/components/Image";
+import {
+  useActiveLegalDocuments,
+  useCompleteOnboarding,
+  useLogout,
+} from "@/features/auth/auth.hooks";
+import type { LegalDocument } from "@/features/auth/auth.types";
+import { LegalContent } from "@/features/auth/components/LegalContent";
+import { getApiErrorMessage } from "@/lib/api-error";
 import useStore from "@/lib/store";
 
 const DOC_LABELS: Record<string, string> = {

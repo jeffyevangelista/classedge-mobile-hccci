@@ -1,24 +1,24 @@
-import { Pressable, View } from "react-native";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
-import React, { useCallback, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
+import { Skeleton, useThemeColor } from "heroui-native";
+import { useCallback, useMemo, useState } from "react";
+import { Pressable, View } from "react-native";
+import { AppText } from "@/components/AppText";
+import EmptyState from "@/components/EmptyState";
+import { ErrorComponent } from "@/components/ErrorComponent";
+import { Icon, type IconName } from "@/components/Icon";
+import Image from "@/components/Image";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { ScreenList } from "@/components/ScreenList";
+import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
+import { formatTime } from "@/features/calendar/components/date-formatter";
+import { getApiErrorMessage } from "@/lib/api-error";
 import useStore from "@/lib/store";
+import { toTitleCase } from "@/utils/toTitleCase";
 import {
   useCourseDetails,
   useCourseStudents,
   useTeacherCourseDetails,
 } from "../courses.hooks";
-import { ScreenList } from "@/components/ScreenList";
-import Image from "@/components/Image";
-import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
-import { AppText } from "@/components/AppText";
-import { ErrorComponent } from "@/components/ErrorComponent";
-import { Icon, type IconName } from "@/components/Icon";
-import EmptyState from "@/components/EmptyState";
-import { Skeleton, useThemeColor } from "heroui-native";
-import { formatTime } from "@/features/calendar/components/date-formatter";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { toTitleCase } from "@/utils/toTitleCase";
 
 type Schedule = {
   id: number;

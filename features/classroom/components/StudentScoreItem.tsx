@@ -1,13 +1,13 @@
+import { Avatar, useThemeColor } from "heroui-native";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, type TextInput, View } from "react-native";
-import { Avatar, useThemeColor } from "heroui-native";
 import AppInput from "@/components/AppInput";
 import { AppText } from "@/components/AppText";
-import Image from "@/components/Image";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { Icon } from "@/components/Icon";
+import Image from "@/components/Image";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import { AttachmentThumbnailImage } from "@/features/attachments/components/AttachmentThumbnailImage";
-import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { useAttachment } from "@/features/attachments/hooks/useAttachment";
 import { toTitleCase } from "@/utils/toTitleCase";
 import { ImageActionSheet } from "./ImageActionSheet";
@@ -102,6 +102,7 @@ const StudentScoreItemBase = ({
     image?.uri && !isLocal ? image.uri : null,
   );
   const fullscreenUri = isLocal ? image?.uri : resolvedUri;
+  const hasImage = !!image?.uri;
 
   const handleThumbnailTap = useCallback(() => {
     if (!fullscreenUri) return;
@@ -122,7 +123,6 @@ const StudentScoreItemBase = ({
   }, [onRequestAttach, student.studentId]);
 
   const isOverMax = score !== "" && parseInt(score, 10) > maxScore;
-  const hasImage = !!image?.uri;
   const mutedColor = useThemeColor("muted");
 
   return (

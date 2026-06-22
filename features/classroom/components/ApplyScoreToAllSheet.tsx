@@ -1,6 +1,6 @@
+import { Button, Dialog, useThemeColor } from "heroui-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Keyboard, Pressable, type TextInput, View } from "react-native";
-import { Button, Dialog, useThemeColor } from "heroui-native";
 import AppInput from "@/components/AppInput";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
@@ -47,7 +47,7 @@ export const ApplyScoreToAllSheet = ({
   const isValid =
     defaultScore !== "" &&
     !isOverMax &&
-    !isNaN(parseInt(defaultScore, 10)) &&
+    !Number.isNaN(parseInt(defaultScore, 10)) &&
     parseInt(defaultScore, 10) >= 0;
 
   const impactCount = skipGraded ? ungradedCount : totalStudents;
@@ -83,8 +83,8 @@ export const ApplyScoreToAllSheet = ({
                   <Icon name="WarningIcon" size={14} color={warningColor} />
                 </View>
                 <AppText className="flex-1 text-xs text-warning">
-                  Existing scores will be replaced. Untoggle "Apply only
-                  to ungraded" only if that's what you want.
+                  Existing scores will be replaced. Untoggle "Apply only to
+                  ungraded" only if that's what you want.
                 </AppText>
               </View>
             ) : null}
@@ -149,11 +149,7 @@ export const ApplyScoreToAllSheet = ({
             </View>
 
             <View className="flex-row gap-2 mt-1">
-              <Button
-                variant="ghost"
-                className="flex-1"
-                onPress={handleCancel}
-              >
+              <Button variant="ghost" className="flex-1" onPress={handleCancel}>
                 Cancel
               </Button>
               <Button

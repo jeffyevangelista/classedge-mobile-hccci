@@ -1,6 +1,6 @@
-import { AppText } from "@/components/AppText";
 import { useMemo } from "react";
 import { Text, View } from "react-native";
+import { AppText } from "@/components/AppText";
 
 /**
  * Lightweight markdown renderer for legal-doc content.
@@ -163,10 +163,7 @@ export const LegalContent = ({ content }: { content: string }) => {
           );
         }
         return (
-          <AppText
-            key={i}
-            className="text-sm text-foreground leading-6 mb-3"
-          >
+          <AppText key={i} className="text-sm text-foreground leading-6 mb-3">
             {renderSpans(block.spans)}
           </AppText>
         );

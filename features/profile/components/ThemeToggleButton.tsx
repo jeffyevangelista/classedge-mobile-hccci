@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Uniwind } from "uniwind";
 import { AppText } from "@/components/AppText";
-import { type IconName } from "@/components/Icon";
+import type { IconName } from "@/components/Icon";
 import { getASItem, setASItem } from "@/lib/storage/async-storage";
 import { ASYNC_STORAGE_KEYS } from "@/utils/storage-keys";
 import ProfileRow from "./ProfileRow";

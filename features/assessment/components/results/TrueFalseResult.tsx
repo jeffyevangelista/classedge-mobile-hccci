@@ -1,5 +1,5 @@
-import { View } from "react-native";
 import { useThemeColor } from "heroui-native";
+import { View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
 import type { ResultProps } from "./types";
@@ -16,9 +16,9 @@ export const TrueFalseResult = ({
 }: ResultProps) => {
   const accentColor = useThemeColor("accent");
   const accentForegroundColor = useThemeColor("accent-foreground");
-  const successColor = useThemeColor("success");
+  const _successColor = useThemeColor("success");
   const successForeground = useThemeColor("success-foreground");
-  const warningColor = useThemeColor("warning");
+  const _warningColor = useThemeColor("warning");
   const warningForeground = useThemeColor("warning-foreground");
   const mutedColor = useThemeColor("muted");
   const correct = (question.correctAnswer ?? "").trim();
@@ -43,9 +43,7 @@ export const TrueFalseResult = ({
           containerClass = isStudent
             ? "border-2 border-accent bg-accent/10"
             : "border border-border bg-surface";
-          iconBg = isStudent
-            ? "bg-accent"
-            : "bg-default border border-border";
+          iconBg = isStudent ? "bg-accent" : "bg-default border border-border";
           iconColor = isStudent ? accentForegroundColor : mutedColor;
           badge = isStudent ? "Your pick" : null;
         } else if (isAnswer) {

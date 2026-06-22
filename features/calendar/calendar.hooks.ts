@@ -1,6 +1,6 @@
+import { toCompilableQuery } from "@powersync/drizzle-driver";
 import { useQuery } from "@powersync/react-native";
 import { getEvent, getEvents } from "./calendar.service";
-import { toCompilableQuery } from "@powersync/drizzle-driver";
 
 export const useEvents = () => {
   const { data, isLoading, isFetching, error, refresh } = useQuery(

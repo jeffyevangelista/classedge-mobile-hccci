@@ -47,7 +47,7 @@ export async function fetchAttachment(
   await ensureDir();
 
   const metaUrl = `${env.EXPO_PUBLIC_API_URL}/mobile_attachment/${id}/`;
-  console.log("metaUrl", metaUrl);
+  if (__DEV__) console.log("metaUrl", metaUrl);
   const metaRes = await fetch(metaUrl, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -92,10 +92,7 @@ export async function fetchAttachment(
         onProgress
           ? (data) => {
               const total = data.totalBytesExpectedToWrite;
-              onProgress(
-                data.totalBytesWritten,
-                total > 0 ? total : -1,
-              );
+              onProgress(data.totalBytesWritten, total > 0 ? total : -1);
             }
           : undefined,
       );

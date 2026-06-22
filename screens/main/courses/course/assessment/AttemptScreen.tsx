@@ -1,29 +1,35 @@
-import { Animated, View, BackHandler } from "react-native";
-import Screen from "@/components/screen";
-import { useEffect, useCallback, useState, useRef } from "react";
 import {
   router,
   useFocusEffect,
   useLocalSearchParams,
   useNavigation,
 } from "expo-router";
+import {
+  Button,
+  Dialog,
+  Skeleton,
+  useThemeColor,
+  useToast,
+} from "heroui-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Animated, BackHandler, View } from "react-native";
+import { AppText } from "@/components/AppText";
+import BackButton from "@/components/BackButton";
+import ErrorFallback from "@/components/ErrorFallback";
+import { Icon, type IconName } from "@/components/Icon";
+import NoDataFallback from "@/components/NoDataFallback";
+import Screen from "@/components/screen";
 import { useGetAssessmentAttempt } from "@/features/assessment/assessment.hooks";
 import {
   submitAttempt,
   updateLastIndex,
 } from "@/features/assessment/assessment.service";
+import QuestionList from "@/features/assessment/components/QuestionList";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useExpiry } from "@/hooks/useExpiry";
 import { useHeartbeat } from "@/hooks/useHeartbeat";
-import QuestionList from "@/features/assessment/components/QuestionList";
-import useStore from "@/lib/store";
-import { Skeleton, Dialog, Button, useToast, useThemeColor } from "heroui-native";
-import { AppText } from "@/components/AppText";
-import { Icon, type IconName } from "@/components/Icon";
-import BackButton from "@/components/BackButton";
-import ErrorFallback from "@/components/ErrorFallback";
-import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
+import useStore from "@/lib/store";
 
 const AttemptScreen = () => {
   const { attemptId } = useLocalSearchParams();
@@ -70,7 +76,9 @@ const AttemptScreen = () => {
   const onAutoSubmit = useCallback(() => {
     submit()
       .then(routeBack)
-      .catch((err) => console.error("[AttemptScreen] auto-submit failed:", err));
+      .catch((err) =>
+        console.error("[AttemptScreen] auto-submit failed:", err),
+      );
   }, [submit, routeBack]);
 
   const isTimeUp = useExpiry(attempt?.willEndAt, onAutoSubmit);
@@ -110,10 +118,7 @@ const AttemptScreen = () => {
       headerTitle: () => <HeaderTimer willEndAt={attempt.willEndAt} />,
       headerTitleAlign: "center",
       headerLeft: ({ tintColor }: { tintColor?: string }) => (
-        <BackButton
-          tintColor={tintColor}
-          onPress={() => setExitOpen(true)}
-        />
+        <BackButton tintColor={tintColor} onPress={() => setExitOpen(true)} />
       ),
     });
   }, [navigation, attempt, isLoading]);
@@ -304,8 +309,7 @@ const HeaderTimer = ({ willEndAt }: { willEndAt: string }) => {
           ? warningColor
           : foregroundColor;
 
-  const iconName: IconName =
-    state === "time-up" ? "XCircleIcon" : "ClockIcon";
+  const iconName: IconName = state === "time-up" ? "XCircleIcon" : "ClockIcon";
 
   return (
     <Animated.View

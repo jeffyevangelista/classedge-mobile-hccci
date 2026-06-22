@@ -1,4 +1,4 @@
-import axios, { type AxiosError } from "axios";
+import axios from "axios";
 
 // ---------------------------------------------------------------------------
 // drf-standardized-errors response shape
@@ -25,7 +25,7 @@ export class ApiError extends Error {
   type: ErrorType;
   errors: StandardizedErrorItem[];
 
-  constructor(body: StandardizedErrorResponse, status?: number) {
+  constructor(body: StandardizedErrorResponse, _status?: number) {
     const message = summarizeErrors(body);
     super(message);
     this.name = "ApiError";

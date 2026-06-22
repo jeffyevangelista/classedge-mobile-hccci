@@ -1,25 +1,25 @@
+import { Button, Dialog, Skeleton, useThemeColor } from "heroui-native";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Pressable,
-  View,
-  StyleSheet,
-  ScrollView,
   AppState,
   type AppStateStatus,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { AppText } from "@/components/AppText";
+import EmptyState from "@/components/EmptyState";
+import ErrorFallback from "@/components/ErrorFallback";
+import { Icon } from "@/components/Icon";
+import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
+import { track } from "@/lib/activity-tracker";
 import {
-  useGetOrderedQuestions,
-  useGetAnswersForAttempt,
   useChoicesForActivity,
+  useGetAnswersForAttempt,
+  useGetOrderedQuestions,
 } from "../assessment.hooks";
 import { saveAnswer } from "../assessment.service";
-import { AppText } from "@/components/AppText";
-import ErrorFallback from "@/components/ErrorFallback";
-import EmptyState from "@/components/EmptyState";
-import { track } from "@/lib/activity-tracker";
-import { Skeleton, Button, Dialog, useThemeColor } from "heroui-native";
-import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
-import { Icon } from "@/components/Icon";
 import { QuestionRenderer } from "./questions";
 import { questionStyles } from "./questions/styles";
 
@@ -77,18 +77,20 @@ const QuestionList = ({
 
   // Populate answers from existing records on load / re-entry
   useEffect(() => {
-    console.log(
-      "[QuestionList] existingAnswers effect — attemptId:",
-      attemptId,
-      "existingAnswers:",
-      existingAnswers
-        ? existingAnswers.map((a) => ({
-            qid: a.activityQuestionId,
-            answer: a.studentAnswer,
-            upload: a.uploadedFile,
-          }))
-        : existingAnswers,
-    );
+    if (__DEV__) {
+      console.log(
+        "[QuestionList] existingAnswers effect — attemptId:",
+        attemptId,
+        "existingAnswers:",
+        existingAnswers
+          ? existingAnswers.map((a) => ({
+              qid: a.activityQuestionId,
+              answer: a.studentAnswer,
+              upload: a.uploadedFile,
+            }))
+          : existingAnswers,
+      );
+    }
     if (!existingAnswers) return;
     const restoredAnswers: Record<number, string> = {};
     const restoredUploads: Record<number, string> = {};

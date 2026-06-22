@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
 import { usePathname } from "expo-router";
+import { useEffect, useRef } from "react";
 import { track } from "./index";
 import { matchPath } from "./registry";
 

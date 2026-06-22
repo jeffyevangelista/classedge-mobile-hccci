@@ -1,7 +1,7 @@
-import AuthIllustrationLayout from "@/components/AuthIllustrationLayout";
-import { AppText } from "@/components/AppText";
-import OTPVerificationForm from "@/features/auth/components/OTPVerificationForm";
 import MailSent from "@/assets/illustrations/forgot-password/mail-sent.svg";
+import { AppText } from "@/components/AppText";
+import AuthIllustrationLayout from "@/components/AuthIllustrationLayout";
+import OTPVerificationForm from "@/features/auth/components/OTPVerificationForm";
 import useStore from "@/lib/store";
 
 const OTPVerificationScreen = () => {

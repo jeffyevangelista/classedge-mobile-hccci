@@ -30,7 +30,7 @@ export const useSyncData = () => {
           recordId: body.id,
           fields: body.data,
         };
-      } catch (e) {
+      } catch (_e) {
         return null;
       }
     });

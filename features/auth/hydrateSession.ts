@@ -1,9 +1,9 @@
-import useStore from "@/lib/store";
 import { jwtDecode } from "jwt-decode";
-import { captureAuthMessage } from "@/lib/telemetry";
 import { track } from "@/lib/activity-tracker";
-import { signOut } from "./signOut";
+import useStore from "@/lib/store";
+import { captureAuthMessage } from "@/lib/telemetry";
 import type { AuthResponse } from "./auth.types";
+import { signOut } from "./signOut";
 
 /**
  * Write an `AuthResponse` into the store, but first detect account switches.

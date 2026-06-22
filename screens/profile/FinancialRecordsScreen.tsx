@@ -1,13 +1,25 @@
+import * as WebBrowser from "expo-web-browser";
+import {
+  Card,
+  Select,
+  Separator,
+  Skeleton,
+  useThemeColor,
+} from "heroui-native";
+import { useEffect, useState } from "react";
+import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import EmptyState from "@/components/EmptyState";
 import { ErrorComponent } from "@/components/ErrorComponent";
-import Screen from "@/components/screen";
 import { Icon } from "@/components/Icon";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
+import Screen from "@/components/screen";
 import {
   useAcademicTerms,
   useFinancialInformation,
 } from "@/features/profile/profile.hooks";
-import {
+import type {
   AcademicTermItem,
   DiscountSummary,
   FinancialRecord,
@@ -18,12 +30,6 @@ import {
   PromissoryNote,
   SubjectFee,
 } from "@/features/profile/profile.types";
-import { Card, Select, Separator, Skeleton, useThemeColor } from "heroui-native";
-import { Pressable, View } from "react-native";
-import { ScreenScrollView } from "@/components/ScreenScrollView";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
-import { useEffect, useState } from "react";
-import * as WebBrowser from "expo-web-browser";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 const formatCurrency = (value: string | number) => {
@@ -66,11 +72,7 @@ const FinancialRecordsScreen = () => {
   // error state — `isLoading` only flips on first mount, so we also
   // arm on `isRefetching && !data` to avoid a blank flash between
   // tapping "Try again" and the error reappearing.
-  if (
-    isLoadingTerms ||
-    isLoadingFinancials ||
-    (isRefetching && !data)
-  ) {
+  if (isLoadingTerms || isLoadingFinancials || (isRefetching && !data)) {
     return <FinancialRecordsSkeleton />;
   }
 

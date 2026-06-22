@@ -1,9 +1,6 @@
 import { View } from "react-native";
 import { AppText } from "@/components/AppText";
-import {
-  isAnswerCorrect,
-  resolveMatchingCorrectPairings,
-} from "./correctness";
+import { isAnswerCorrect, resolveMatchingCorrectPairings } from "./correctness";
 import type { ResultProps } from "./types";
 
 const letterFor = (i: number) => String.fromCharCode(65 + i);
@@ -91,7 +88,8 @@ export const MatchingResult = ({
       leftId: l.id,
       leftLabel: leftLabelById[l.id],
       leftText: l.choiceText,
-      rightLabel: studentRight != null ? (rightLabelById[studentRight] ?? "?") : null,
+      rightLabel:
+        studentRight != null ? (rightLabelById[studentRight] ?? "?") : null,
       rightText:
         studentRight != null ? (rightTextById[studentRight] ?? "—") : null,
       state,

@@ -1,3 +1,6 @@
+import { useEvent } from "expo";
+import { useVideoPlayer, VideoView } from "expo-video";
+import { useThemeColor } from "heroui-native";
 import React from "react";
 import {
   ActivityIndicator,
@@ -6,9 +9,6 @@ import {
   StatusBar,
   View,
 } from "react-native";
-import { useEvent } from "expo";
-import { VideoView, useVideoPlayer } from "expo-video";
-import { useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 
@@ -38,11 +38,7 @@ export const AttachmentVideoCard = ({ uri, fileName }: Props) => {
           <Icon name="FilmSlateIcon" size={20} color={VIDEO_ICON_COLOR} />
         </View>
         <View className="flex-1">
-          <AppText
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            className="text-sm"
-          >
+          <AppText numberOfLines={1} ellipsizeMode="tail" className="text-sm">
             {fileName}
           </AppText>
           <AppText className="text-xs text-muted mt-0.5">Tap to play</AppText>
@@ -57,10 +53,7 @@ export const AttachmentVideoCard = ({ uri, fileName }: Props) => {
         onRequestClose={() => setFullscreen(false)}
       >
         {fullscreen ? (
-          <FullscreenVideoView
-            uri={uri}
-            onClose={() => setFullscreen(false)}
-          />
+          <FullscreenVideoView uri={uri} onClose={() => setFullscreen(false)} />
         ) : null}
       </Modal>
     </>

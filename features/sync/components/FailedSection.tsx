@@ -1,14 +1,14 @@
+import { Button, useThemeColor, useToast } from "heroui-native";
 import { useCallback, useState } from "react";
 import { Pressable, View } from "react-native";
-import { Button, useThemeColor, useToast } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
-import { useFailedCrudOps, type FailedCrudOp } from "../useFailedCrudOps";
+import { formatRelative } from "@/utils/getRelativeTime";
+import { SYNC_COPY } from "../copy";
 import { dismissFailedOp } from "../crudMeta";
 import { humanizeSyncError } from "../humanizeSyncError";
 import { featureLabelFromTarget } from "../syncLabels";
-import { SYNC_COPY } from "../copy";
-import { formatRelative } from "@/utils/getRelativeTime";
+import { type FailedCrudOp, useFailedCrudOps } from "../useFailedCrudOps";
 
 const FailedRow = ({ row }: { row: FailedCrudOp }) => {
   const [showDetails, setShowDetails] = useState(false);
@@ -57,11 +57,15 @@ const FailedRow = ({ row }: { row: FailedCrudOp }) => {
         className="mt-2"
         accessibilityRole="button"
         accessibilityLabel={
-          showDetails ? SYNC_COPY.failed.hideDetails : SYNC_COPY.failed.showDetails
+          showDetails
+            ? SYNC_COPY.failed.hideDetails
+            : SYNC_COPY.failed.showDetails
         }
       >
         <AppText className="text-xs text-danger underline">
-          {showDetails ? SYNC_COPY.failed.hideDetails : SYNC_COPY.failed.showDetails}
+          {showDetails
+            ? SYNC_COPY.failed.hideDetails
+            : SYNC_COPY.failed.showDetails}
         </AppText>
       </Pressable>
 

@@ -1,11 +1,12 @@
 // 1. Import the Drizzle wrapper and your schema
+
+import { open } from "@op-engineering/op-sqlite";
 import { wrapPowerSyncWithDrizzle } from "@powersync/drizzle-driver";
 import { OPSqliteOpenFactory } from "@powersync/op-sqlite";
 import {
   PowerSyncDatabase,
   SyncClientImplementation,
 } from "@powersync/react-native";
-import { open } from "@op-engineering/op-sqlite";
 import useStore from "@/lib/store";
 import { AppSchema } from "./AppSchema"; // Your PowerSync Schema
 import { Connector } from "./Connector";

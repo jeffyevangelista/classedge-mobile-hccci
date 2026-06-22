@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Alert, Modal, Platform } from "react-native";
 import * as FileSystem from "expo-file-system/legacy";
 import * as IntentLauncher from "expo-intent-launcher";
+import { useState } from "react";
+import { Alert, Modal, Platform } from "react-native";
 import { FullscreenPdfView } from "../components/FullscreenPdfView";
 
 interface PdfPreview {
@@ -29,14 +29,11 @@ export const usePdfPreview = (): PdfPreview => {
       setOpening(true);
       try {
         const contentUri = await FileSystem.getContentUriAsync(uri);
-        await IntentLauncher.startActivityAsync(
-          "android.intent.action.VIEW",
-          {
-            data: contentUri,
-            type: "application/pdf",
-            flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
-          },
-        );
+        await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
+          data: contentUri,
+          type: "application/pdf",
+          flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
+        });
       } catch (err) {
         console.warn("[usePdfPreview] Android intent failed:", err);
         Alert.alert(

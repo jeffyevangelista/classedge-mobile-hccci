@@ -1,16 +1,13 @@
-import { attemptsTable, attemptAnswerTable } from "@/powersync/schema";
-import { db } from "@/powersync/system";
-import { eq, inArray } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
+import { eq, inArray } from "drizzle-orm";
+import { attemptAnswerTable, attemptsTable } from "@/powersync/schema";
+import { db } from "@/powersync/system";
 import { queryClient } from "@/providers/QueryProvider";
 
 // Returns the drizzle query builder (not awaited) so the hook can wrap it
 // with `toCompilableQuery` for PowerSync's watch. The hook flattens the
 // `findMany` result to `rows[0] ?? null` for the consumer.
-export const getAssessmentDetails = (
-  assessmentId: string,
-  userId: number,
-) => {
+export const getAssessmentDetails = (assessmentId: string, userId: number) => {
   return db.query.studentAssessment.findMany({
     where: (studentAssessment, { and, eq }) =>
       and(
@@ -99,7 +96,6 @@ export const getQuestionCount = (activityId: string) => {
   });
 };
 
-
 export const saveAnswer = async (
   retakeRecordId: string,
   activityQuestionId: number,
@@ -143,7 +139,6 @@ export const saveAnswer = async (
     .returning();
 };
 
-
 export const updateHeartbeat = (attemptLocalId: string) => {
   return db
     .update(attemptsTable)
@@ -161,7 +156,6 @@ export const updateLastIndex = (attemptLocalId: string, lastIndex: number) => {
 export const getQuestionTypes = () => {
   return db.query.questionType.findMany();
 };
-
 
 export const getOngoingAttempt = (
   studentActivityId: string,
@@ -273,7 +267,7 @@ export const createAttempt = async (params: {
   duration: number;
   questionOrder: number[];
 }) => {
-  console.log("[createAttempt] params:", params);
+  if (__DEV__) console.log("[createAttempt] params:", params);
   const localId = createId();
   const now = new Date().toISOString();
   const willEndAt = new Date(Date.now() + params.duration * 1000).toISOString();
@@ -296,7 +290,7 @@ export const createAttempt = async (params: {
         lastIndex: 0,
       })
       .returning();
-    console.log("[createAttempt] inserted row:", inserted[0]);
+    if (__DEV__) console.log("[createAttempt] inserted row:", inserted[0]);
     return inserted[0];
   } catch (err) {
     console.error("[createAttempt] insert failed:", err);

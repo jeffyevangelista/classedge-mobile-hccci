@@ -1,6 +1,6 @@
-import { Stack, useRouter, useLocalSearchParams } from "expo-router";
-import BackButton from "@/components/BackButton";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Platform, Pressable } from "react-native";
+import BackButton from "@/components/BackButton";
 import { Icon } from "@/components/Icon";
 import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 

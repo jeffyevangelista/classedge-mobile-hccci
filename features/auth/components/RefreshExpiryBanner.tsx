@@ -1,9 +1,9 @@
-import { AppText } from "@/components/AppText";
-import { useRefreshExpiry } from "@/features/auth/refreshExpiry";
-import { captureAuthMessage } from "@/lib/telemetry";
 import { useEffect, useRef } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AppText } from "@/components/AppText";
+import { useRefreshExpiry } from "@/features/auth/refreshExpiry";
+import { captureAuthMessage } from "@/lib/telemetry";
 
 const RefreshExpiryBanner = () => {
   const { shouldShowBanner, state, daysRemaining } = useRefreshExpiry();

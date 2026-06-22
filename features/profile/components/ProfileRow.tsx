@@ -1,6 +1,6 @@
+import { useThemeColor } from "heroui-native";
 import { forwardRef, type ReactNode } from "react";
 import { Pressable, View } from "react-native";
-import { useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
 

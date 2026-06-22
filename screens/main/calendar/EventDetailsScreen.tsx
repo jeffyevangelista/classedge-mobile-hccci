@@ -139,10 +139,7 @@ const EventDetailsScreen = () => {
         </View>
 
         {/* Title + description */}
-        <AppText
-          weight="bold"
-          className="text-2xl text-foreground mb-4"
-        >
+        <AppText weight="bold" className="text-2xl text-foreground mb-4">
           {event.title}
         </AppText>
         {event.description ? (

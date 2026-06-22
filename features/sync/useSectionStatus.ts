@@ -1,8 +1,8 @@
 // features/sync/useSectionStatus.ts
 
 import { useStatus } from "@powersync/react-native";
-import useStore from "@/lib/store";
 import { useEffect } from "react";
+import useStore from "@/lib/store";
 import { markPostLoginReady } from "@/lib/telemetry";
 
 export type SectionPhase = "loading" | "ready" | "empty" | "offline-empty";

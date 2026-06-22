@@ -1,31 +1,31 @@
-import {
-  Keyboard,
-  TextInput,
-  View,
-  ActivityIndicator,
-  Pressable,
-} from "react-native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { FlashListRef } from "@shopify/flash-list";
 import { useGlobalSearchParams, useNavigation } from "expo-router";
+import { Skeleton } from "heroui-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Keyboard,
+  Pressable,
+  type TextInput,
+  View,
+} from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { AppText } from "@/components/AppText";
+import ErrorFallback from "@/components/ErrorFallback";
+import Fallback from "@/components/Fallback";
+import { ScreenList } from "@/components/ScreenList";
 import {
   useClassroomStudents,
   useStudentScoresForActivity,
 } from "@/features/classroom/classroom.hooks";
-import { upsertStudentScore } from "@/features/classroom/ classroom.service";
-import type { FlashListRef } from "@shopify/flash-list";
-import { ScreenList } from "@/components/ScreenList";
-import { AppText } from "@/components/AppText";
-import { Skeleton } from "heroui-native";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import ErrorFallback from "@/components/ErrorFallback";
-import Fallback from "@/components/Fallback";
+import { upsertStudentScore } from "@/features/classroom/classroom.service";
 import { useImage } from "@/providers/ImageProvider";
-import { StudentScoreItem, type RowImage } from "./StudentScoreItem";
-import { ApplyScoreToAllSheet } from "./ApplyScoreToAllSheet";
-import { GradingProgressBar } from "./GradingProgressBar";
-import { StudentSearchBar } from "./StudentSearchBar";
 import { useDirtyScores } from "../useDirtyScores";
 import { useImageStaging } from "../useImageStaging";
+import { ApplyScoreToAllSheet } from "./ApplyScoreToAllSheet";
+import { GradingProgressBar } from "./GradingProgressBar";
+import { type RowImage, StudentScoreItem } from "./StudentScoreItem";
+import { StudentSearchBar } from "./StudentSearchBar";
 
 type ActivityDetail = {
   localId: string;

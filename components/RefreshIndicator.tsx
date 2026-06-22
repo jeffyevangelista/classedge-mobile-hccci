@@ -1,8 +1,5 @@
-import {
-  RefreshControl,
-  type RefreshControlProps,
-} from "react-native";
 import { useThemeColor } from "heroui-native";
+import { RefreshControl, type RefreshControlProps } from "react-native";
 
 type Props = Omit<
   RefreshControlProps,

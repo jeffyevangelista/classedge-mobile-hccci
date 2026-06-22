@@ -1,7 +1,7 @@
 // features/sync/components/OfflineEmpty.tsx
 
 import Fallback from "@/components/Fallback";
-import { offlineCopy, type OfflineSection } from "../offlineCopy";
+import { type OfflineSection, offlineCopy } from "../offlineCopy";
 
 type Props = {
   section: OfflineSection;

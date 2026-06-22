@@ -1,8 +1,8 @@
-import useStore from "@/lib/store";
-import { useEffect } from "react";
-import { OneSignal, LogLevel } from "react-native-onesignal";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { LogLevel, OneSignal } from "react-native-onesignal";
+import { enqueuePushAttachments } from "@/features/attachments/attachments.api";
 import {
   getNotificationHref,
   readNotification,
@@ -11,7 +11,7 @@ import {
   makeEntityKey,
   setPushPayload,
 } from "@/features/notifications/pushPayloadCache";
-import { enqueuePushAttachments } from "@/features/attachments/attachments.api";
+import useStore from "@/lib/store";
 
 const OneSignalProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -31,14 +31,15 @@ const OneSignalProvider = ({ children }: { children: React.ReactNode }) => {
     const clickHandler = (event: any) => {
       const data = event.notification.additionalData;
 
-      if (data && data.entityType && data.entityId) {
+      if (data?.entityType && data.entityId) {
         const { entityType, entityId, notificationId, payload } = data;
 
         // Mark notification as read if notificationId is available
         if (notificationId) {
-          readNotification(String(notificationId)).catch((err: any) =>
-            console.log("Failed to mark notification as read:", err.message),
-          );
+          readNotification(String(notificationId)).catch((err: any) => {
+            if (__DEV__)
+              console.log("Failed to mark notification as read:", err.message);
+          });
         }
 
         // Stash the per-entity payload so the target detail screen can
@@ -64,17 +65,14 @@ const OneSignalProvider = ({ children }: { children: React.ReactNode }) => {
             for (const link of payload.events) {
               const nested = link?.event;
               if (nested?.id != null) {
-                setPushPayload(
-                  makeEntityKey("event", nested.id),
-                  nested,
-                );
+                setPushPayload(makeEntityKey("event", nested.id), nested);
               }
             }
           }
         }
 
         const href = getNotificationHref(entityType, entityId);
-        console.log("Redirecting to:", href);
+        if (__DEV__) console.log("Redirecting to:", href);
         router.push(href);
       }
     };

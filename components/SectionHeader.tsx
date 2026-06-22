@@ -19,7 +19,12 @@ export const SectionHeader = ({
     <View className="flex-row items-center gap-2">
       {iconName ? (
         <View className="w-6 h-6 rounded-md bg-accent-soft items-center justify-center">
-          <Icon name={iconName} size={14} weight="fill" className="text-accent" />
+          <Icon
+            name={iconName}
+            size={14}
+            weight="fill"
+            className="text-accent"
+          />
         </View>
       ) : null}
       <AppText weight="semibold" className="text-lg">

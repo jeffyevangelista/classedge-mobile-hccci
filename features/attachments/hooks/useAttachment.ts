@@ -1,15 +1,12 @@
 import { useQuery } from "@powersync/react-native";
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import { extractAttachmentId } from "../attachments.config";
 import { bumpAttachmentPriority, retryAttachment } from "../attachments.api";
-import {
-  ATTACHMENT_STATES,
-  type AttachmentState,
-} from "../attachments.schema";
+import { extractAttachmentId } from "../attachments.config";
 import {
   getAttachmentProgress,
   subscribeAttachmentProgress,
 } from "../attachments.progress";
+import { ATTACHMENT_STATES, type AttachmentState } from "../attachments.schema";
 
 type Row = {
   state: AttachmentState;
@@ -63,8 +60,7 @@ export function useAttachment(
   // identities (memoized on id) keep React from churning subscriptions
   // every render.
   const subscribe = useCallback(
-    (cb: () => void) =>
-      id ? subscribeAttachmentProgress(id, cb) : () => {},
+    (cb: () => void) => (id ? subscribeAttachmentProgress(id, cb) : () => {}),
     [id],
   );
   const getSnapshot = useCallback(

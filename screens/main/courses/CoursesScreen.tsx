@@ -1,10 +1,10 @@
-import { useEffect } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useEffect } from "react";
 import Screen from "@/components/screen";
-import CourseList from "@/features/courses/components/CourseList";
-import ArchivedCourseList from "@/features/courses/components/ArchivedCourseList";
-import { useOrbitCourses } from "@/features/courses/orbit.hooks";
 import type { ViewKey } from "@/features/auth/roleNav";
+import ArchivedCourseList from "@/features/courses/components/ArchivedCourseList";
+import CourseList from "@/features/courses/components/CourseList";
+import { useOrbitCourses } from "@/features/courses/orbit.hooks";
 
 const TITLE_BY_VIEW: Record<ViewKey, string> = {
   current: "My Courses",

@@ -1,10 +1,10 @@
-import { useEffect } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useEffect } from "react";
 import Screen from "@/components/screen";
-import OversighCourseList from "@/features/oversight/components/OversighCourseList";
-import ArchivedCourseList from "@/features/courses/components/ArchivedCourseList";
-import useStore from "@/lib/store";
 import type { ViewKey } from "@/features/auth/roleNav";
+import ArchivedCourseList from "@/features/courses/components/ArchivedCourseList";
+import OversighCourseList from "@/features/oversight/components/OversighCourseList";
+import useStore from "@/lib/store";
 
 const OversightScreen = () => {
   const { view = "current" } = useLocalSearchParams<{ view?: ViewKey }>();

@@ -74,11 +74,7 @@ const MaterialDetailsScreen = () => {
   // the material's content (no file/iframe/link) stay fully expanded.
   // The component itself measures the rendered line count and only shows
   // the toggle when the text actually overflows.
-  const canCollapseDescription = !!(
-    data.file ||
-    data.iframeCode ||
-    data.url
-  );
+  const canCollapseDescription = !!(data.file || data.iframeCode || data.url);
 
   return (
     <Screen>
@@ -259,7 +255,10 @@ const IFrameViewer = ({ html }: { html: string }) => {
               onPress={() => setFullscreen(false)}
               accessibilityRole="button"
               accessibilityLabel="Close fullscreen"
-              android_ripple={{ color: "rgba(255,255,255,0.15)", borderless: true }}
+              android_ripple={{
+                color: "rgba(255,255,255,0.15)",
+                borderless: true,
+              }}
               hitSlop={8}
               className="active:opacity-70"
               style={{

@@ -2,8 +2,8 @@ import { useCallback, useState } from "react";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
 import Screen from "@/components/screen";
-import AnnouncementList from "@/features/announcements/components/AnnouncementList";
 import { useAnnouncementsWithEvents } from "@/features/announcements/announcements.hooks";
+import AnnouncementList from "@/features/announcements/components/AnnouncementList";
 
 const AnnouncementsRoute = () => {
   const announcements = useAnnouncementsWithEvents();

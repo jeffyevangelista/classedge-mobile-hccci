@@ -1,13 +1,13 @@
-import { AppState, View } from "react-native";
 import { Avatar, Skeleton } from "heroui-native";
 import { useEffect, useState } from "react";
+import { AppState, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import HeaderDecor from "@/features/home/components/HeaderDecor";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import { getGreeting } from "@/utils/getGreeting";
 import { toTitleCase } from "@/utils/toTitleCase";
-import HeaderDecor from "@/features/home/components/HeaderDecor";
 
 const GreetingBand = () => {
   const { data, isLoading, error } = useUserDetails();

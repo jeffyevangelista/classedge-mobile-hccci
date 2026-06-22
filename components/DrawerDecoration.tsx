@@ -1,6 +1,6 @@
+import { useThemeColor } from "heroui-native";
 import { View } from "react-native";
 import Svg, { G, Path } from "react-native-svg";
-import { useThemeColor } from "heroui-native";
 
 const DrawerDecoration = () => {
   const muted = useThemeColor("muted");

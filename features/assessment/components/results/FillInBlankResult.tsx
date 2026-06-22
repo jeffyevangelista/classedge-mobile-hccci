@@ -61,9 +61,7 @@ export const FillInBlankResult = ({
             {studentAnswer}
           </AppText>
         ) : (
-          <AppText className="text-sm text-muted italic">
-            No answer
-          </AppText>
+          <AppText className="text-sm text-muted italic">No answer</AppText>
         )}
       </View>
 

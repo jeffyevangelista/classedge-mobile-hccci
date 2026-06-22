@@ -1,12 +1,12 @@
+import { Spinner, useThemeColor } from "heroui-native";
 import { useMemo } from "react";
 import { View } from "react-native";
-import { Spinner, useThemeColor } from "heroui-native";
-import { formatRelative } from "@/utils/getRelativeTime";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
-import { useSyncData } from "../useSyncData";
 import { useAttachmentStatus } from "@/features/attachments/hooks/useAttachmentStatus";
+import { formatRelative } from "@/utils/getRelativeTime";
 import { SYNC_COPY } from "../copy";
+import { useSyncData } from "../useSyncData";
 import ForceSyncButton from "./ForceSyncButton";
 
 const StatusRow = ({
@@ -82,16 +82,40 @@ const StatusSection = () => {
   const connectionConfig = connecting
     ? { value: "Connecting…", color: warningColor, icon: undefined }
     : connected
-      ? { value: "Connected", color: successColor, icon: "CloudCheckIcon" as IconName }
-      : { value: "Offline", color: dangerColor, icon: "CloudSlashIcon" as IconName };
+      ? {
+          value: "Connected",
+          color: successColor,
+          icon: "CloudCheckIcon" as IconName,
+        }
+      : {
+          value: "Offline",
+          color: dangerColor,
+          icon: "CloudSlashIcon" as IconName,
+        };
 
   const activityConfig = uploading
-    ? { value: "Uploading…", color: accentColor, icon: "CloudArrowUpIcon" as IconName }
+    ? {
+        value: "Uploading…",
+        color: accentColor,
+        icon: "CloudArrowUpIcon" as IconName,
+      }
     : downloading
-      ? { value: "Downloading…", color: accentColor, icon: "CloudArrowDownIcon" as IconName }
+      ? {
+          value: "Downloading…",
+          color: accentColor,
+          icon: "CloudArrowDownIcon" as IconName,
+        }
       : unsyncedCount > 0
-        ? { value: `${unsyncedCount} pending`, color: warningColor, icon: "WarningCircleIcon" as IconName }
-        : { value: "All synced", color: successColor, icon: "CheckCircleIcon" as IconName };
+        ? {
+            value: `${unsyncedCount} pending`,
+            color: warningColor,
+            icon: "WarningCircleIcon" as IconName,
+          }
+        : {
+            value: "All synced",
+            color: successColor,
+            icon: "CheckCircleIcon" as IconName,
+          };
 
   return (
     <View className="px-4 py-4">
@@ -116,10 +140,7 @@ const StatusSection = () => {
           iconColor={activityConfig.color}
           showSpinner={!!uploading || !!downloading}
         />
-        <StatusRow
-          label="Pending uploads"
-          value={String(unsyncedCount)}
-        />
+        <StatusRow label="Pending uploads" value={String(unsyncedCount)} />
         <StatusRow
           label="Attachments"
           value={
@@ -144,7 +165,11 @@ const StatusSection = () => {
         />
         <StatusRow
           label="Last sync"
-          value={lastSyncedAt ? formatRelative(lastSyncedAt) : SYNC_COPY.lastSyncedNever}
+          value={
+            lastSyncedAt
+              ? formatRelative(lastSyncedAt)
+              : SYNC_COPY.lastSyncedNever
+          }
           iconColor={mutedColor}
         />
       </View>

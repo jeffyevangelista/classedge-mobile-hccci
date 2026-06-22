@@ -1,6 +1,6 @@
-import { Pressable, View } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import { useThemeColor } from "heroui-native";
+import { Pressable, View } from "react-native";
 import { AppText } from "./AppText";
 import { Icon } from "./Icon";
 

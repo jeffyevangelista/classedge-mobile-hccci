@@ -27,8 +27,7 @@ export const bucketize = (
     else buckets.earlier.push(item);
   }
   buckets.upcoming.sort(
-    (a, b) =>
-      new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
   );
   for (const k of ["today", "thisWeek", "earlier"] as const) {
     buckets[k].sort(

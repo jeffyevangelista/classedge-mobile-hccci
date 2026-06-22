@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Pressable, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Skeleton, useThemeColor } from "heroui-native";
+import { useState } from "react";
+import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import Fallback from "@/components/Fallback";
 import { Icon } from "@/components/Icon";
@@ -76,7 +76,8 @@ export const AssessmentMaterials = ({
 
   const total = data.length;
   const canCollapse = total > DEFAULT_VISIBLE;
-  const visible = expanded || !canCollapse ? data : data.slice(0, DEFAULT_VISIBLE);
+  const visible =
+    expanded || !canCollapse ? data : data.slice(0, DEFAULT_VISIBLE);
   const hiddenCount = total - DEFAULT_VISIBLE;
 
   return (

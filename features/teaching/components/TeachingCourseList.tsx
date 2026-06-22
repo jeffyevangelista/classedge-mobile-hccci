@@ -1,34 +1,24 @@
-import {
-  Pressable,
-  useWindowDimensions,
-  View,
-} from "react-native";
-import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
-import { ScreenScrollView } from "@/components/ScreenScrollView";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useTeachingCourses } from "@/features/teaching/teaching.hooks";
-import { useSectionStatus } from "@/features/sync/useSectionStatus";
-import { SectionView } from "@/features/sync/components/SectionView";
-import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
-import SyncCenter from "@/features/sync/components/SyncCenter";
-import { AppText } from "@/components/AppText";
 import { FlashList } from "@shopify/flash-list";
-import {
-  Card,
-  InputGroup,
-  Skeleton,
-  useThemeColor,
-} from "heroui-native";
 import { Link, useNavigation } from "expo-router";
-import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
-import Image from "@/components/Image";
-import { Icon } from "@/components/Icon";
-
+import { Card, InputGroup, Skeleton, useThemeColor } from "heroui-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Pressable, useWindowDimensions, View } from "react-native";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
+import { AppText } from "@/components/AppText";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
-import { Subject } from "@/powersync/schema";
+import { Icon } from "@/components/Icon";
+import Image from "@/components/Image";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
+import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
+import { SectionView } from "@/features/sync/components/SectionView";
+import SyncCenter from "@/features/sync/components/SyncCenter";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { useTeachingCourses } from "@/features/teaching/teaching.hooks";
 import { getApiErrorMessage } from "@/lib/api-error";
+import type { Subject } from "@/powersync/schema";
 
 const MIN_CARD_WIDTH = 280;
 
@@ -89,9 +79,7 @@ const TeachingCourseList = ({ query }: TeachingCourseListProps = {}) => {
     const list = data ?? [];
     const q = search.trim().toLowerCase();
     if (!q) return list;
-    return list.filter((c) =>
-      (c.subjectName ?? "").toLowerCase().includes(q),
-    );
+    return list.filter((c) => (c.subjectName ?? "").toLowerCase().includes(q));
   }, [data, search]);
 
   const status = useSectionStatus({
@@ -138,10 +126,7 @@ const TeachingCourseList = ({ query }: TeachingCourseListProps = {}) => {
           />
           <FlashList
             refreshControl={
-              <RefreshIndicator
-                refreshing={isRefetching}
-                onRefresh={refetch}
-              />
+              <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
             }
             ListEmptyComponent={
               <EmptyState
@@ -201,7 +186,9 @@ const CollapsibleSearch = ({
           <Pressable
             onPress={onClose}
             accessibilityRole="button"
-            accessibilityLabel={search ? "Clear and close search" : "Close search"}
+            accessibilityLabel={
+              search ? "Clear and close search" : "Close search"
+            }
             hitSlop={6}
           >
             <Icon name="XIcon" size={18} color={mutedColor} />

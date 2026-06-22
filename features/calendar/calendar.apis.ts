@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { CalendarItem } from "./calendar.types";
+import type { CalendarItem } from "./calendar.types";
 
 export const getCalendarItems = async (): Promise<CalendarItem[]> => {
   return (await api.get("/calendar/")).data;

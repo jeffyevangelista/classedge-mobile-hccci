@@ -1,9 +1,9 @@
-import { powersync, resetPowerSync } from "@/powersync/system";
 import { Button, Dialog, useToast } from "heroui-native";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { AppText } from "@/components/AppText";
 import ProfileRow from "@/features/profile/components/ProfileRow";
+import { powersync, resetPowerSync } from "@/powersync/system";
 
 const ResyncButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -49,10 +49,7 @@ const ResyncButton = () => {
   return (
     <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
-        <ProfileRow
-          icon="ArrowsClockwiseIcon"
-          label="Force Resync"
-        />
+        <ProfileRow icon="ArrowsClockwiseIcon" label="Force Resync" />
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay />
@@ -60,9 +57,8 @@ const ResyncButton = () => {
           <View className="mb-5 gap-3">
             <Dialog.Title>Force a fresh sync?</Dialog.Title>
             <Dialog.Description>
-              This will clear all locally synced data and re-download
-              everything from the server. Use this after sync-rule changes are
-              deployed.
+              This will clear all locally synced data and re-download everything
+              from the server. Use this after sync-rule changes are deployed.
             </Dialog.Description>
             {unsyncedCount > 0 && (
               <AppText weight="semibold" className="text-sm text-danger">

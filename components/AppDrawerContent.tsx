@@ -1,13 +1,24 @@
-import { DrawerContentScrollView, type DrawerContentComponentProps } from "@react-navigation/drawer";
-import { Pressable, View } from "react-native";
-import { router, useGlobalSearchParams, type RelativePathString } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  type DrawerContentComponentProps,
+  DrawerContentScrollView,
+} from "@react-navigation/drawer";
+import {
+  type RelativePathString,
+  router,
+  useGlobalSearchParams,
+} from "expo-router";
 import { useThemeColor } from "heroui-native";
+import { Pressable, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppText } from "@/components/AppText";
-import { Icon } from "@/components/Icon";
 import DrawerDecoration from "@/components/DrawerDecoration";
+import { Icon } from "@/components/Icon";
+import {
+  getDrawerItems,
+  getRoleTabPath,
+  type ViewKey,
+} from "@/features/auth/roleNav";
 import useStore from "@/lib/store";
-import { getDrawerItems, getRoleTabPath, type ViewKey } from "@/features/auth/roleNav";
 
 const HEADER_HEIGHT = 56;
 
@@ -19,11 +30,16 @@ const AppDrawerContent = (props: DrawerContentComponentProps) => {
 
   const items = getDrawerItems(authUser?.role);
   const roleTabPath = getRoleTabPath(authUser?.role);
-  const { view: activeView = "current" } = useGlobalSearchParams<{ view?: ViewKey }>();
+  const { view: activeView = "current" } = useGlobalSearchParams<{
+    view?: ViewKey;
+  }>();
 
   const onItemPress = (view: ViewKey) => {
     if (!roleTabPath) return;
-    router.replace({ pathname: roleTabPath as RelativePathString, params: { view } });
+    router.replace({
+      pathname: roleTabPath as RelativePathString,
+      params: { view },
+    });
     props.navigation.closeDrawer();
   };
 
@@ -71,7 +87,9 @@ const AppDrawerContent = (props: DrawerContentComponentProps) => {
                 />
                 <AppText
                   style={{
-                    fontFamily: isActive ? "Poppins-SemiBold" : "Poppins-Medium",
+                    fontFamily: isActive
+                      ? "Poppins-SemiBold"
+                      : "Poppins-Medium",
                   }}
                   className={`text-base ${
                     isActive ? "text-accent-foreground" : "text-foreground"

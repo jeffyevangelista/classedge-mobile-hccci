@@ -1,7 +1,7 @@
-import BackButton from "@/components/BackButton";
 import { Stack } from "expo-router";
-import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
+import BackButton from "@/components/BackButton";
 import { DroppedOpToaster } from "@/features/sync/components/DroppedOpToaster";
+import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 
 const MainLayout = () => {
   const headerOptions = useThemedHeaderOptions();

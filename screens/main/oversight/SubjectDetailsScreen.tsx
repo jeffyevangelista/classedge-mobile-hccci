@@ -1,18 +1,22 @@
+import { useLocalSearchParams, useNavigation } from "expo-router";
+import { Avatar, Skeleton, useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
-import { ScreenScrollView } from "@/components/ScreenScrollView";
-import { useLocalSearchParams, useNavigation } from "expo-router";
-import { Avatar, Card, Skeleton, useThemeColor } from "heroui-native";
-import Screen from "@/components/screen";
-import Image from "@/components/Image";
 import { AppText } from "@/components/AppText";
-import { Icon, type IconName } from "@/components/Icon";
-import { useGetSubject, useStudents, useSubjectSchedules } from "@/features/oversight/oversight.hooks";
-import ErrorFallback from "@/components/ErrorFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
-import { toTitleCase } from "@/utils/toTitleCase";
+import ErrorFallback from "@/components/ErrorFallback";
+import { Icon, type IconName } from "@/components/Icon";
+import Image from "@/components/Image";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
+import Screen from "@/components/screen";
+import {
+  useGetSubject,
+  useStudents,
+  useSubjectSchedules,
+} from "@/features/oversight/oversight.hooks";
 import type { Schedule, Student } from "@/features/oversight/oversight.type";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { toTitleCase } from "@/utils/toTitleCase";
 
 const SubjectDetailsScreen = () => {
   const { subjectId } = useLocalSearchParams<{ subjectId: string }>();
@@ -303,9 +307,7 @@ const StudentsRosterSection = ({ subjectId }: { subjectId: string }) => {
               onPress={() => setExpanded((v) => !v)}
               accessibilityRole="button"
               accessibilityLabel={
-                expanded
-                  ? "Show fewer students"
-                  : `Show all ${total} students`
+                expanded ? "Show fewer students" : `Show all ${total} students`
               }
               hitSlop={6}
               className="py-3 active:opacity-70 flex-row items-center gap-1 self-start"
@@ -320,9 +322,7 @@ const StudentsRosterSection = ({ subjectId }: { subjectId: string }) => {
                 size={14}
               />
               {expanded && isFetchingNextPage ? (
-                <AppText className="text-xs text-muted ml-2">
-                  Loading…
-                </AppText>
+                <AppText className="text-xs text-muted ml-2">Loading…</AppText>
               ) : null}
             </Pressable>
           ) : null}
@@ -349,9 +349,8 @@ const formatScheduleTime = (value: string | undefined | null): string => {
 
 const ClassScheduleSection = ({ subjectId }: { subjectId: string }) => {
   const accentColor = useThemeColor("accent");
-  const { data, isLoading, isError, error, refetch } = useSubjectSchedules(
-    subjectId,
-  );
+  const { data, isLoading, isError, error, refetch } =
+    useSubjectSchedules(subjectId);
 
   const activeSchedules = (data?.results ?? []).filter(
     (s) => s.isActiveSemester === 1,
@@ -373,7 +372,10 @@ const ClassScheduleSection = ({ subjectId }: { subjectId: string }) => {
   if (isError) {
     return (
       <View className="mb-5 bg-surface-secondary rounded-2xl p-4">
-        <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+        <ErrorFallback
+          message={getApiErrorMessage(error)}
+          onRefetch={refetch}
+        />
       </View>
     );
   }
@@ -403,9 +405,7 @@ const ClassScheduleSection = ({ subjectId }: { subjectId: string }) => {
           .split(",")
           .map((d) => d.trim())
           .filter(Boolean)
-          .sort(
-            (a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b),
-          );
+          .sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
         return (
           <View key={schedule.id}>
             {idx > 0 ? <View className="h-px bg-border mx-4" /> : null}

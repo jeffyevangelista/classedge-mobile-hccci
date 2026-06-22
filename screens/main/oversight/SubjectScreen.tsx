@@ -1,12 +1,3 @@
-import { AppText } from "@/components/AppText";
-import BackButton from "@/components/BackButton";
-import { ErrorComponent } from "@/components/ErrorComponent";
-import { Icon } from "@/components/Icon";
-import Image from "@/components/Image";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
-import { useGetSubject, useSubjectTimeline } from "@/features/oversight/oversight.hooks";
-import SubjectTimeline from "@/features/oversight/components/SubjectTimeline";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Skeleton, useThemeColor } from "heroui-native";
 import { useCallback, useMemo, useState } from "react";
@@ -25,6 +16,18 @@ import Animated, {
   useScrollViewOffset,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AppText } from "@/components/AppText";
+import BackButton from "@/components/BackButton";
+import { ErrorComponent } from "@/components/ErrorComponent";
+import { Icon } from "@/components/Icon";
+import Image from "@/components/Image";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import SubjectTimeline from "@/features/oversight/components/SubjectTimeline";
+import {
+  useGetSubject,
+  useSubjectTimeline,
+} from "@/features/oversight/oversight.hooks";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const NAV_HEIGHT = 56;
 

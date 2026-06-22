@@ -1,9 +1,9 @@
-import AuthIllustrationLayout from "@/components/AuthIllustrationLayout";
-import { AppText } from "@/components/AppText";
-import PasswordResetForm from "@/features/auth/components/PasswordResetForm";
-import EnterPassword from "@/assets/illustrations/forgot-password/enter-password.svg";
-import { Button } from "heroui-native";
 import { useRouter } from "expo-router";
+import { Button } from "heroui-native";
+import EnterPassword from "@/assets/illustrations/forgot-password/enter-password.svg";
+import { AppText } from "@/components/AppText";
+import AuthIllustrationLayout from "@/components/AuthIllustrationLayout";
+import PasswordResetForm from "@/features/auth/components/PasswordResetForm";
 import useStore from "@/lib/store";
 
 const PasswordResetScreen = () => {

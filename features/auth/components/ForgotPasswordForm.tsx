@@ -1,5 +1,5 @@
-import { View, useWindowDimensions, TextInput } from "react-native";
-import { useCallback, useRef } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useFocusEffect, useRouter } from "expo-router";
 import {
   Button,
   FieldError,
@@ -8,14 +8,14 @@ import {
   useThemeColor,
   useToast,
 } from "heroui-native";
+import { useCallback, useRef } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { type TextInput, useWindowDimensions, View } from "react-native";
 import AppInput from "@/components/AppInput";
-import { useFocusEffect, useRouter } from "expo-router";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useForgotPassword } from "../auth.hooks";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  ForgotPasswordFormvalues,
+  type ForgotPasswordFormvalues,
   forgotPasswordSchema,
 } from "../auth.schemas";
 

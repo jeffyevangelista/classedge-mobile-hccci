@@ -1,4 +1,4 @@
-import { CameraView, useCameraPermissions } from "expo-camera";
+import { type CameraView, useCameraPermissions } from "expo-camera";
 import { useRef, useState } from "react";
 import { Alert, Linking } from "react-native";
 

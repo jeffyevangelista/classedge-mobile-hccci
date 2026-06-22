@@ -1,10 +1,16 @@
-import { powersync } from "@/powersync/system";
-import { signOut } from "@/features/auth/signOut";
-import { Button, Dialog, Spinner, useThemeColor, useToast } from "heroui-native";
-import React, { useCallback, useEffect, useState } from "react";
+import {
+  Button,
+  Dialog,
+  Spinner,
+  useThemeColor,
+  useToast,
+} from "heroui-native";
+import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { AppText } from "@/components/AppText";
+import { signOut } from "@/features/auth/signOut";
 import ProfileRow from "@/features/profile/components/ProfileRow";
+import { powersync } from "@/powersync/system";
 
 const LogoutButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -69,8 +75,8 @@ const LogoutButton = () => {
           <View className="mb-5 gap-3">
             <Dialog.Title>Confirm Logout</Dialog.Title>
             <Dialog.Description>
-              Are you sure you want to log out? All local data will be
-              cleared and this action cannot be undone.
+              Are you sure you want to log out? All local data will be cleared
+              and this action cannot be undone.
             </Dialog.Description>
             {unsyncedCount > 0 && (
               <AppText weight="semibold" className="text-sm text-danger">

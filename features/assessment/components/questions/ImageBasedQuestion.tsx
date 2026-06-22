@@ -1,10 +1,10 @@
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { Alert } from "react-native";
 import type { QuestionComponentProps } from "./types";
-import * as ImagePicker from "expo-image-picker";
-import * as DocumentPicker from "expo-document-picker";
-import { UploadCard } from "./upload/UploadCard";
 import type { UploadSource } from "./upload/SourcePickerSheet";
+import { UploadCard } from "./upload/UploadCard";
 
 // Server-side limit; keep client cap aligned with what the upload
 // endpoint will accept so users don't burn a slow upload before being
@@ -55,7 +55,10 @@ const ImageBasedQuestion = ({
       } else if (source === "library") {
         const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!perm.granted) {
-          Alert.alert("Permission required", "Photo library access was denied.");
+          Alert.alert(
+            "Permission required",
+            "Photo library access was denied.",
+          );
           return;
         }
         const result = await ImagePicker.launchImageLibraryAsync({

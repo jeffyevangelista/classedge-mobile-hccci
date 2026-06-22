@@ -3,10 +3,10 @@ import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { Icon } from "@/components/Icon";
 import { SectionHeader } from "@/components/SectionHeader";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useFacebookPosts } from "../campus-news.hooks";
-import { useSectionStatus } from "@/features/sync/useSectionStatus";
-import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
 import { CampusNewsBanner } from "./CampusNewsBanner";
 import { CampusNewsBannerSkeleton } from "./CampusNewsBannerSkeleton";
 

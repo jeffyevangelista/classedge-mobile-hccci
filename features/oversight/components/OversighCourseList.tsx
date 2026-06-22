@@ -1,7 +1,3 @@
-import { AppText } from "@/components/AppText";
-import Image from "@/components/Image";
-import { Icon } from "@/components/Icon";
-import { ScreenList } from "@/components/ScreenList";
 import { Link, useNavigation } from "expo-router";
 import {
   Avatar,
@@ -11,25 +7,25 @@ import {
   useThemeColor,
 } from "heroui-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Pressable,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Pressable, useWindowDimensions, View } from "react-native";
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
-import { ScreenScrollView } from "@/components/ScreenScrollView";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { AppText } from "@/components/AppText";
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
-import { toTitleCase } from "@/utils/toTitleCase";
-import { useGetSubjects } from "../oversight.hooks";
-import { SubjectType } from "../oversight.type";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { useSectionStatus } from "@/features/sync/useSectionStatus";
-import { SectionView } from "@/features/sync/components/SectionView";
+import { Icon } from "@/components/Icon";
+import Image from "@/components/Image";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { ScreenList } from "@/components/ScreenList";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
+import { SectionView } from "@/features/sync/components/SectionView";
 import SyncCenter from "@/features/sync/components/SyncCenter";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { toTitleCase } from "@/utils/toTitleCase";
+import { useGetSubjects } from "../oversight.hooks";
+import type { SubjectType } from "../oversight.type";
 
 const MIN_CARD_WIDTH = 280;
 
@@ -138,10 +134,7 @@ const SubjectsList = () => {
           />
           <ScreenList
             refreshControl={
-              <RefreshIndicator
-                refreshing={isRefetching}
-                onRefresh={refetch}
-              />
+              <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
             }
             ListEmptyComponent={
               <EmptyState
@@ -200,7 +193,9 @@ const CollapsibleSearch = ({
           <Pressable
             onPress={onClose}
             accessibilityRole="button"
-            accessibilityLabel={search ? "Clear and close search" : "Close search"}
+            accessibilityLabel={
+              search ? "Clear and close search" : "Close search"
+            }
             hitSlop={6}
           >
             <Icon name="XIcon" size={18} color={mutedColor} />

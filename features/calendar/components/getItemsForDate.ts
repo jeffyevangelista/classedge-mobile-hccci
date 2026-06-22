@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { CalendarItem } from "../calendar.types";
+import type { CalendarItem } from "../calendar.types";
 
 export function getItemsForDate(
   data: CalendarItem[],
@@ -15,8 +15,8 @@ export function getItemsForDate(
     }
 
     if (item.type === "activity") {
-      let start = dayjs(item.start);
-      let end = dayjs(item.end);
+      const start = dayjs(item.start);
+      const end = dayjs(item.end);
 
       let cursor = start;
 

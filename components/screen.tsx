@@ -1,4 +1,3 @@
-import { colors } from "@/utils/colors";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { twMerge } from "tailwind-merge";

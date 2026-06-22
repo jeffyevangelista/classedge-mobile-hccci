@@ -1,19 +1,19 @@
+import { Avatar, Card, Skeleton } from "heroui-native";
 import React, { useCallback, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
-import { Avatar, Card, Skeleton } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
 import { ErrorComponent } from "@/components/ErrorComponent";
+import { Icon } from "@/components/Icon";
 import NoDataFallback from "@/components/NoDataFallback";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
-import { Icon } from "@/components/Icon";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import { formatDate } from "@/features/calendar/components/date-formatter";
+import { useProfilePhotoActionSheet } from "@/features/profile/useProfilePhotoActionSheet";
 import useStore from "@/lib/store";
 import { toTitleCase } from "@/utils/toTitleCase";
 import { useUserDetails } from "../profile.hooks";
-import { useProfilePhotoActionSheet } from "@/features/profile/useProfilePhotoActionSheet";
 
 type FieldKey =
   | "fullName"

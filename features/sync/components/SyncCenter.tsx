@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useThemeColor } from "heroui-native";
 import { useEffect, useMemo } from "react";
 import { Pressable, View } from "react-native";
@@ -8,12 +9,11 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
-import { useRouter } from "expo-router";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
 import { useAttachmentStatus } from "@/features/attachments/hooks/useAttachmentStatus";
-import { useSyncData } from "../useSyncData";
 import { SYNC_COPY } from "../copy";
+import { useSyncData } from "../useSyncData";
 
 const SyncBadge = ({ count }: { count: number }) => (
   <View className="absolute -top-2 -right-2 min-w-4 h-4 bg-danger rounded-full items-center justify-center px-1 border-2 border-surface">

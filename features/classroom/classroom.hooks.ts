@@ -1,14 +1,17 @@
 import { toCompilableQuery } from "@powersync/drizzle-driver";
 import { useQuery } from "@powersync/react-native";
+import type { InferSelectModel } from "drizzle-orm";
+import { snakeToCamel } from "@/lib/case-transform";
+import type {
+  Assessment,
+  coursesTable,
+  studentAssessment,
+} from "@/powersync/schema";
 import {
   getActivityTypes,
   getClassroomStudents,
   getGradingPeriods,
-} from "./ classroom.service";
-import { snakeToCamel } from "@/lib/case-transform";
-import type { Assessment } from "@/powersync/schema";
-import { studentAssessment, coursesTable } from "@/powersync/schema";
-import type { InferSelectModel } from "drizzle-orm";
+} from "./classroom.service";
 
 type StudentAssessment = InferSelectModel<typeof studentAssessment>;
 type Course = InferSelectModel<typeof coursesTable>;
@@ -29,7 +32,7 @@ const wrap = <T>(result: {
 export const useClassroomActivities = (subjectId: string) => {
   const result = useQuery(
     "SELECT * FROM activity_activity WHERE subject_id = ? AND classroom_mode = 1 ORDER BY start_time DESC",
-    [parseInt(subjectId)],
+    [parseInt(subjectId, 10)],
   );
 
   return { ...wrap(result), data: snakeToCamel<Assessment[]>(result.data) };
@@ -71,7 +74,7 @@ export const useStudentScoresForActivity = (activityLocalId: string) => {
 export const useClassroom = (classroomId: string) => {
   const result = useQuery(
     "SELECT * FROM subject_subject WHERE id = ? LIMIT 1",
-    [parseInt(classroomId)],
+    [parseInt(classroomId, 10)],
   );
 
   return { ...wrap(result), data: snakeToCamel<Course[]>(result.data) };

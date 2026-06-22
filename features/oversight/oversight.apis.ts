@@ -1,5 +1,12 @@
 import api from "@/lib/axios";
-import { Assessment, Lesson, SchedulesApiResponse, Student, SubjectType, TimelineApiResponse } from "./oversight.type";
+import type {
+  Assessment,
+  Lesson,
+  SchedulesApiResponse,
+  Student,
+  SubjectType,
+  TimelineApiResponse,
+} from "./oversight.type";
 
 export const getSubjects = async ({
   pageParam = 1,

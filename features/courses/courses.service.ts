@@ -1,5 +1,5 @@
+import { or } from "drizzle-orm";
 import { db } from "@/powersync/system";
-import { and, or } from "drizzle-orm";
 
 // Returns the drizzle query builder (not awaited) so it can be wrapped
 // with `toCompilableQuery` and fed to PowerSync's watch hook. The

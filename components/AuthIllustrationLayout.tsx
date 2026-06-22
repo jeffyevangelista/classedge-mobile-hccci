@@ -1,7 +1,7 @@
+import { MotiView } from "moti";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { SvgProps } from "react-native-svg";
-import { MotiView } from "moti";
+import type { SvgProps } from "react-native-svg";
 import { AppText } from "@/components/AppText";
 
 type Step = { current: number; total: number };
@@ -76,9 +76,7 @@ export default function AuthIllustrationLayout({
         {title}
       </AppText>
       {description !== undefined && (
-        <AppText className="text-center text-muted mb-8">
-          {description}
-        </AppText>
+        <AppText className="text-center text-muted mb-8">{description}</AppText>
       )}
       {children}
     </KeyboardAwareScrollView>

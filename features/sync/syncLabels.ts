@@ -17,7 +17,9 @@ const TABLE_LABELS: Record<string, string> = {
   activity_retakerecorddetail: "Retake upload",
 };
 
-export function featureLabelFromTarget(target: string | null | undefined): string {
+export function featureLabelFromTarget(
+  target: string | null | undefined,
+): string {
   if (!target) return "Sync";
   const table = target.split("/")[0];
   return TABLE_LABELS[table] ?? table;

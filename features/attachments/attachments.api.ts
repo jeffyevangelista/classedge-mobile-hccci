@@ -1,8 +1,8 @@
 import * as FileSystem from "expo-file-system/legacy";
 import { powersync } from "@/powersync/system";
+import { ATTACHMENT_COLUMNS, AUTO_RETRY_CAP } from "./attachments.config";
 import { attachmentQueue } from "./attachments.queue";
 import { ATTACHMENT_STATES } from "./attachments.schema";
-import { ATTACHMENT_COLUMNS, AUTO_RETRY_CAP } from "./attachments.config";
 
 const ATTACHMENTS_DIR = `${FileSystem.documentDirectory}attachments/`;
 
@@ -89,8 +89,11 @@ export async function enqueuePushAttachments(
        WHERE id = ? AND state <> ?`,
       [
         priority,
-        ATTACHMENT_STATES.QUEUED, ATTACHMENT_STATES.QUEUED,
-        ATTACHMENT_STATES.FAILED, AUTO_RETRY_CAP, ATTACHMENT_STATES.QUEUED,
+        ATTACHMENT_STATES.QUEUED,
+        ATTACHMENT_STATES.QUEUED,
+        ATTACHMENT_STATES.FAILED,
+        AUTO_RETRY_CAP,
+        ATTACHMENT_STATES.QUEUED,
         ATTACHMENT_STATES.FAILED,
         now,
         ref.id,
@@ -127,12 +130,7 @@ export async function bumpAttachmentPriority(
     `UPDATE attachments_local
      SET priority = MIN(priority, ?), updated_at = ?
      WHERE id IN (${placeholders}) AND state <> ?`,
-    [
-      priority,
-      new Date().toISOString(),
-      ...ids,
-      ATTACHMENT_STATES.SYNCED,
-    ],
+    [priority, new Date().toISOString(), ...ids, ATTACHMENT_STATES.SYNCED],
   );
   attachmentQueue.poke();
 }

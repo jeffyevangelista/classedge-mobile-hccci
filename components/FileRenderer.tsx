@@ -1,7 +1,7 @@
 import { useVideoPlayer, VideoView } from "expo-video";
 import * as WebBrowser from "expo-web-browser";
 import { Card } from "heroui-native";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Dimensions,
   Pressable,
@@ -9,9 +9,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Icon } from "./Icon";
-import { AppText } from "./AppText";
 import { useImage } from "@/providers/ImageProvider";
+import { AppText } from "./AppText";
+import { Icon } from "./Icon";
 
 const FileRenderer = ({ url }: { url: any }) => {
   const { lessonFile, lessonUrl } = url;

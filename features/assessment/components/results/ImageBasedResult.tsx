@@ -34,9 +34,6 @@ export const ImageBasedResult = ({ uploadedFile }: ResultProps) => {
   }
 
   return (
-    <AttachmentFile
-      file={cleanedPath}
-      fileName={getFilename(cleanedPath)}
-    />
+    <AttachmentFile file={cleanedPath} fileName={getFilename(cleanedPath)} />
   );
 };

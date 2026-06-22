@@ -4,7 +4,7 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import { HeroUINativeConfig, HeroUINativeProvider } from "heroui-native";
+import { type HeroUINativeConfig, HeroUINativeProvider } from "heroui-native";
 import { useUniwind } from "uniwind";
 
 const config: HeroUINativeConfig = {

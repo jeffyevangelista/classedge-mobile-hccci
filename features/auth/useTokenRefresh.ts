@@ -80,7 +80,7 @@ export async function silentRefresh(opts?: {
         }
         setPowersyncToken(data.powersyncToken);
         await setRefreshToken(data.refreshToken);
-        console.log("[TokenRefresh] Tokens refreshed silently");
+        if (__DEV__) console.log("[TokenRefresh] Tokens refreshed silently");
         await appendSyncEvent({
           kind: "auth",
           status: "ok",
@@ -139,7 +139,7 @@ async function registerBackgroundTask() {
     await BackgroundTask.registerTaskAsync(BACKGROUND_TOKEN_REFRESH, {
       minimumInterval: 15 * 60, // 15 minutes (OS minimum)
     });
-    console.log("[TokenRefresh] Background task registered");
+    if (__DEV__) console.log("[TokenRefresh] Background task registered");
   } catch (error) {
     console.warn("[TokenRefresh] Background task registration failed:", error);
   }

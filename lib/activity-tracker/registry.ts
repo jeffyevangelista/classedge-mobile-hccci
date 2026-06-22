@@ -77,9 +77,11 @@ export const screenRegistry: Record<string, RegistryEntry> = {
  * segments as params (independent of `useLocalSearchParams`, which only
  * works inside the route component). Returns `null` if no match.
  */
-export function matchPath(
-  pathname: string,
-): { entry: RegistryEntry; templatedPath: string; params: Record<string, string> } | null {
+export function matchPath(pathname: string): {
+  entry: RegistryEntry;
+  templatedPath: string;
+  params: Record<string, string>;
+} | null {
   for (const key of Object.keys(screenRegistry)) {
     const params = paramsForTemplate(pathname, key);
     if (params !== null) {

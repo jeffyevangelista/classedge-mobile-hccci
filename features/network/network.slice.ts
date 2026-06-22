@@ -18,7 +18,8 @@ const initialState: NetworkState = {
 
 const createNetworkSlice: StateCreator<NetworkSlice> = (set) => ({
   ...initialState,
-  setNetworkState: (networkState) => set((prev) => ({ ...prev, ...networkState })),
+  setNetworkState: (networkState) =>
+    set((prev) => ({ ...prev, ...networkState })),
 });
 
 export default createNetworkSlice;

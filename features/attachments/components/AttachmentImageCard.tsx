@@ -1,5 +1,5 @@
-import { Pressable, View } from "react-native";
 import { useThemeColor } from "heroui-native";
+import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import { useImage } from "@/providers/ImageProvider";
@@ -29,11 +29,7 @@ export const AttachmentImageCard = ({ uri, fileName }: Props) => {
         <Icon name="ImageIcon" size={20} color={IMAGE_ICON_COLOR} />
       </View>
       <View className="flex-1">
-        <AppText
-          numberOfLines={1}
-          ellipsizeMode="tail"
-          className="text-sm"
-        >
+        <AppText numberOfLines={1} ellipsizeMode="tail" className="text-sm">
           {fileName}
         </AppText>
         <AppText className="text-xs text-muted mt-0.5">Tap to view</AppText>

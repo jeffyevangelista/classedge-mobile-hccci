@@ -1,5 +1,5 @@
-import MsLogo from "@/assets/ms-logo.svg";
 import { Button, Spinner, useThemeColor, useToast } from "heroui-native";
+import MsLogo from "@/assets/ms-logo.svg";
 import { getApiErrorMessage } from "@/lib/api-error";
 import useStore from "@/lib/store";
 import { startMicrosoftLogin } from "../authService";

@@ -1,9 +1,9 @@
+import axios from "axios";
 import { silentRefresh } from "@/features/auth/useTokenRefresh";
 import { env } from "@/utils/env";
-import axios from "axios";
-import useStore from "./store";
 import { ApiError, isStandardizedError } from "./api-error";
 import { snakeToCamel } from "./case-transform";
+import useStore from "./store";
 
 const api = axios.create({
   baseURL: env.EXPO_PUBLIC_API_URL,
@@ -89,16 +89,16 @@ api.interceptors.response.use(
         case 500:
           /* Server crash */ break;
         default:
-          console.log(`Server Error: ${status}`);
+          if (__DEV__) console.log(`Server Error: ${status}`);
       }
     }
     // 2. Request Errors (Request sent but no response - Network/CORS/Timeout)
     else if (error.request) {
-      console.log("Network Error: No response from server.");
+      if (__DEV__) console.log("Network Error: No response from server.");
     }
     // 3. Setup Errors (Something went wrong in your code before sending)
     else {
-      console.log("Request Setup Error:", error.message);
+      if (__DEV__) console.log("Request Setup Error:", error.message);
     }
 
     return Promise.reject(error); // Keep the error chain alive

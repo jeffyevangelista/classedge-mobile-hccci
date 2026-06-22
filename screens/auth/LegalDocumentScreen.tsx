@@ -1,15 +1,15 @@
+import { useLocalSearchParams, useNavigation } from "expo-router";
+import { Button, Skeleton } from "heroui-native";
+import { useEffect, useMemo } from "react";
+import { View } from "react-native";
 import { AppText } from "@/components/AppText";
-import Screen from "@/components/screen";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
+import Screen from "@/components/screen";
 import { usePublicLegalDocuments } from "@/features/auth/auth.hooks";
 import type { LegalDocument } from "@/features/auth/auth.types";
 import { LegalContent } from "@/features/auth/components/LegalContent";
 import { getApiErrorMessage } from "@/lib/api-error";
 import useStore from "@/lib/store";
-import { useLocalSearchParams, useNavigation } from "expo-router";
-import { Button, Skeleton } from "heroui-native";
-import { useEffect, useMemo } from "react";
-import { View } from "react-native";
 
 export type LegalDocType = "EULA" | "PRIVACY" | "NDA";
 

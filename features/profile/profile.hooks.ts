@@ -1,14 +1,14 @@
-import useStore from "@/lib/store";
-import { getStudentCourseSchedules, getUserDetails } from "./user.service";
 import { toCompilableQuery } from "@powersync/drizzle-driver";
+import { useQuery as usePowersyncReactQuery } from "@powersync/react";
+import { useQuery as usePowerSyncQuery } from "@powersync/react-native";
+import { useQuery } from "@tanstack/react-query";
+import useStore from "@/lib/store";
 import {
   getAcademicRecords,
   getAcademicTerms,
   getFinancialInformation,
 } from "./profile.apis";
-import { useQuery } from "@tanstack/react-query";
-import { useQuery as usePowersyncReactQuery } from "@powersync/react";
-import { useQuery as usePowerSyncQuery } from "@powersync/react-native";
+import { getStudentCourseSchedules, getUserDetails } from "./user.service";
 
 export const useUserDetails = () => {
   const authUser = useStore((state) => state.authUser);

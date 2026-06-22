@@ -12,9 +12,7 @@ const ErrorFallback = ({ message, onRefetch }: ErrorFallbackProps) => (
   <Fallback
     variant="error"
     description={message}
-    action={
-      onRefetch ? { label: "Try again", onPress: onRefetch } : undefined
-    }
+    action={onRefetch ? { label: "Try again", onPress: onRefetch } : undefined}
   />
 );
 

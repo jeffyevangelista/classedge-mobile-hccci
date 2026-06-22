@@ -1,7 +1,4 @@
-import {
-  Persister,
-  PersistQueryClientOptions,
-} from "@tanstack/react-query-persist-client";
+import type { Persister } from "@tanstack/react-query-persist-client";
 import { createMMKV } from "react-native-mmkv";
 
 // Initialize MMKV

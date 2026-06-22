@@ -1,15 +1,15 @@
+import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useEffect } from "react";
 import { View } from "react-native";
-import Screen from "@/components/screen";
 import { AppText } from "@/components/AppText";
+import ErrorFallback from "@/components/ErrorFallback";
+import NoDataFallback from "@/components/NoDataFallback";
+import Screen from "@/components/screen";
 import { useClassroomActivity } from "@/features/classroom/classroom.hooks";
 import StudentScoringList, {
   StudentScoringSkeleton,
 } from "@/features/classroom/components/StudentScoringList";
-import ErrorFallback from "@/components/ErrorFallback";
-import NoDataFallback from "@/components/NoDataFallback";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { useLocalSearchParams, useNavigation } from "expo-router";
-import { useEffect } from "react";
 
 const InputGradeScreen = () => {
   const { activityId } = useLocalSearchParams<{ activityId: string }>();

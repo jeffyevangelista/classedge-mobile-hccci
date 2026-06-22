@@ -1,17 +1,17 @@
-import { Pressable, View } from "react-native";
-import React, { ComponentType } from "react";
 import type { FlashListProps } from "@shopify/flash-list";
-import { useClassroomActivities } from "../classroom.hooks";
 import { Link, useGlobalSearchParams } from "expo-router";
-import { AppText } from "@/components/AppText";
-import { ScreenList } from "@/components/ScreenList";
 import { Skeleton } from "heroui-native";
-import { Icon } from "@/components/Icon";
+import type { ComponentType } from "react";
+import { Pressable, View } from "react-native";
+import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
+import { Icon } from "@/components/Icon";
 import NoDataFallback from "@/components/NoDataFallback";
+import { ScreenList } from "@/components/ScreenList";
+import SyncingPill from "@/features/sync/components/SyncingPill";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { formatDate } from "@/utils/formatDate";
-import SyncingPill from "@/features/sync/components/SyncingPill";
+import { useClassroomActivities } from "../classroom.hooks";
 
 type ClassroomActivity = {
   localId: string;

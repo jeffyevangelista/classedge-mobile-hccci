@@ -1,16 +1,22 @@
-import React, { ComponentType, useCallback, useMemo } from "react";
-import { ActivityIndicator, FlatList, type FlatListProps, Pressable, View } from "react-native";
-import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
-import { Lesson } from "@/features/oversight/oversight.type";
-import { formatDate } from "@/utils/formatDate";
 import { Link, useGlobalSearchParams } from "expo-router";
-import { useLessons } from "@/features/oversight/oversight.hooks";
 import { Skeleton } from "heroui-native";
-import { Icon } from "@/components/Icon";
+import React, { type ComponentType, useCallback, useMemo } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  type FlatListProps,
+  Pressable,
+  View,
+} from "react-native";
 import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
+import { Icon } from "@/components/Icon";
 import NoDataFallback from "@/components/NoDataFallback";
+import { useLessons } from "@/features/oversight/oversight.hooks";
+import type { Lesson } from "@/features/oversight/oversight.type";
+import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { formatDate } from "@/utils/formatDate";
 
 // All material rows render with a single book icon (matches the
 // CourseTimeline materials convention). The meta line only prefixes
@@ -78,8 +84,7 @@ const LessonList = ({ ListComponent = FlatList }: LessonListProps) => {
   const showSkeleton =
     materials.length === 0 &&
     (isLoading || (isFetching && !isFetchingNextPage));
-  const showEmpty =
-    !isLoading && !isFetching && materials.length === 0;
+  const showEmpty = !isLoading && !isFetching && materials.length === 0;
 
   return (
     <View className="flex-1 bg-background">
@@ -88,11 +93,7 @@ const LessonList = ({ ListComponent = FlatList }: LessonListProps) => {
         keyExtractor={keyExtractor}
         renderItem={renderItem}
         ListHeaderComponent={
-          showSkeleton ? (
-            <MaterialsSkeleton />
-          ) : (
-            <View style={{ height: 10 }} />
-          )
+          showSkeleton ? <MaterialsSkeleton /> : <View style={{ height: 10 }} />
         }
         ListEmptyComponent={
           showEmpty ? (

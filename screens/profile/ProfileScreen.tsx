@@ -1,3 +1,17 @@
+import { LinearGradient } from "expo-linear-gradient";
+import { type Href, Link } from "expo-router";
+import { Card, useThemeColor } from "heroui-native";
+import React, { useCallback, useMemo, useState } from "react";
+import { StyleSheet, useWindowDimensions, View } from "react-native";
+import Animated, {
+  useAnimatedRef,
+  useAnimatedStyle,
+  useScrollViewOffset,
+} from "react-native-reanimated";
+import { AppText } from "@/components/AppText";
+import { Icon, type IconName } from "@/components/Icon";
+import Image from "@/components/Image";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
 import LogoutButton from "@/features/auth/components/LogoutButton";
 import ResyncButton from "@/features/auth/components/ResyncButton";
 import HeaderComponent from "@/features/profile/components/HeaderComponent";
@@ -5,23 +19,7 @@ import ProfileRow from "@/features/profile/components/ProfileRow";
 import ThemeToggleButton from "@/features/profile/components/ThemeToggleButton";
 import { useUserDetails } from "@/features/profile/profile.hooks";
 import useStore from "@/lib/store";
-import { Href, Link } from "expo-router";
-import { Card, useThemeColor } from "heroui-native";
-import React, { useCallback, useMemo, useState } from "react";
-import { StyleSheet, useWindowDimensions, View } from "react-native";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
-import { AppText } from "@/components/AppText";
-import Image from "@/components/Image";
-import { Icon, type IconName } from "@/components/Icon";
 import { queryClient } from "@/providers/QueryProvider";
-import { LinearGradient } from "expo-linear-gradient";
-import Animated, {
-  Extrapolation,
-  interpolate,
-  useAnimatedRef,
-  useAnimatedStyle,
-  useScrollViewOffset,
-} from "react-native-reanimated";
 
 type ProfileNavProps = {
   title: string;
@@ -100,8 +98,7 @@ const ProfileScreen = () => {
   });
 
   const visibleNav = profileNav.filter(
-    (item) =>
-      (!item.studentOnly || isStudent) && (!item.devOnly || __DEV__),
+    (item) => (!item.studentOnly || isStudent) && (!item.devOnly || __DEV__),
   );
 
   const settingsRows: React.ReactNode[] = [

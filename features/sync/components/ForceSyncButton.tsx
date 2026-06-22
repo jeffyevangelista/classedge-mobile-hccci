@@ -1,11 +1,11 @@
-import { useState, useCallback } from "react";
 import { Button, Spinner, useThemeColor, useToast } from "heroui-native";
+import { useCallback, useState } from "react";
 import { Icon } from "@/components/Icon";
-import { powersync } from "@/powersync/system";
-import { Connector } from "@/powersync/Connector";
-import useStore from "@/lib/store";
-import { humanizeSyncError } from "@/features/sync/humanizeSyncError";
 import { SYNC_COPY } from "@/features/sync/copy";
+import { humanizeSyncError } from "@/features/sync/humanizeSyncError";
+import useStore from "@/lib/store";
+import { Connector } from "@/powersync/Connector";
+import { powersync } from "@/powersync/system";
 
 const ForceSyncButton = () => {
   const [isSyncing, setIsSyncing] = useState(false);

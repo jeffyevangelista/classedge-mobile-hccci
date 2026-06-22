@@ -1,7 +1,7 @@
 import { createId } from "@paralleldrive/cuid2";
 import { AppState, type AppStateStatus } from "react-native";
-import { enqueue, size } from "./queue";
 import { flush } from "./flush";
+import { enqueue, size } from "./queue";
 import type { ActivityAction, EmitIds, PendingEvent } from "./types";
 
 const FLUSH_INTERVAL_MS = 10_000;
@@ -10,7 +10,11 @@ const FLUSH_THRESHOLD = 20;
 let intervalHandle: ReturnType<typeof setInterval> | null = null;
 let appStateSub: { remove: () => void } | null = null;
 
-export function track(action: ActivityAction, ids?: EmitIds, description?: string): void {
+export function track(
+  action: ActivityAction,
+  ids?: EmitIds,
+  description?: string,
+): void {
   const event: PendingEvent = {
     client_event_id: createId(),
     action,

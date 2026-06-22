@@ -1,5 +1,5 @@
-import BackButton from "@/components/BackButton";
 import { Stack } from "expo-router";
+import BackButton from "@/components/BackButton";
 import { useThemedHeaderOptions } from "@/hooks/useThemedHeaderOptions";
 
 const ProfileLayout = () => {

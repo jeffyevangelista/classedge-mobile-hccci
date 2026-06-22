@@ -1,26 +1,26 @@
-import { Pressable, ScrollView, View } from "react-native";
-import { ScreenList } from "@/components/ScreenList";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { router } from "expo-router";
 import { Avatar, Card, Separator, Skeleton, Surface } from "heroui-native";
-import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
-import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
+import React from "react";
+import { Pressable, ScrollView, View } from "react-native";
 import { AppText } from "@/components/AppText";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
+import EmptyState from "@/components/EmptyState";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { Icon } from "@/components/Icon";
-import EmptyState from "@/components/EmptyState";
+import { ScreenList } from "@/components/ScreenList";
+import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
 import {
   formatDate,
   formatTime,
 } from "@/features/calendar/components/date-formatter";
-import { useAnnouncementsWithEvents } from "../announcements.hooks";
-import { useSectionStatus } from "@/features/sync/useSectionStatus";
 import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { Event } from "@/powersync/schema";
-import { router } from "expo-router";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import React from "react";
+import type { Event } from "@/powersync/schema";
 import { toTitleCase } from "@/utils/toTitleCase";
+import type { useAnnouncementsWithEvents } from "../announcements.hooks";
 
 dayjs.extend(relativeTime);
 

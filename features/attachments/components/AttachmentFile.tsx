@@ -1,12 +1,12 @@
-import { ActivityIndicator, Pressable, View } from "react-native";
 import { useThemeColor } from "heroui-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
-import { useAttachment } from "@/features/attachments/hooks/useAttachment";
 import { getFileType } from "@/features/attachments/file-type";
+import { useAttachment } from "@/features/attachments/hooks/useAttachment";
 import { AttachmentImageCard } from "./AttachmentImageCard";
-import { AttachmentVideoCard } from "./AttachmentVideoCard";
 import { AttachmentPdfCard } from "./AttachmentPdfCard";
+import { AttachmentVideoCard } from "./AttachmentVideoCard";
 
 interface Props {
   file: string;
@@ -62,7 +62,10 @@ export const AttachmentFile = ({ file, fileName }: Props) => {
           onPress={retry}
           accessibilityRole="button"
           accessibilityLabel="Retry"
-          android_ripple={{ color: "rgba(255,255,255,0.15)", borderless: false }}
+          android_ripple={{
+            color: "rgba(255,255,255,0.15)",
+            borderless: false,
+          }}
           className="flex-row items-center gap-1 bg-danger px-3 py-1.5 rounded-lg active:opacity-80"
         >
           <Icon name="ArrowsClockwiseIcon" size={13} color="#fff" />

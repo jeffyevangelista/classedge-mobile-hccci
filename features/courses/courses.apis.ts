@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { Assessment } from "./courses.types";
+import type { Assessment } from "./courses.types";
 
 export const getCourseStudentsApi = async (subjectId: number) => {
   return (await api.get(`/subject/${subjectId}/students/`)).data;

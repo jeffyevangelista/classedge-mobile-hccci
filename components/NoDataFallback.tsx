@@ -22,9 +22,7 @@ const NoDataFallback = ({
     icon={icon}
     title={title}
     description={description}
-    action={
-      onRefetch ? { label: "Refresh", onPress: onRefetch } : undefined
-    }
+    action={onRefetch ? { label: "Refresh", onPress: onRefetch } : undefined}
   />
 );
 

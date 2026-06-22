@@ -27,15 +27,8 @@ import { formatDate } from "@/utils/formatDate";
 
 const LessonScreen = () => {
   const { lessonId } = useLocalSearchParams();
-  const {
-    isLoading,
-    isError,
-    error,
-    data,
-    isRefetching,
-    isFetching,
-    refetch,
-  } = useLesson(lessonId as string);
+  const { isLoading, isError, error, data, isRefetching, isFetching, refetch } =
+    useLesson(lessonId as string);
 
   // Render the skeleton any time a fetch is in flight and we have
   // nothing to show — see features/classroom/components/LessonList for
@@ -43,10 +36,7 @@ const LessonScreen = () => {
   if ((isLoading || isFetching) && !data) return <LessonScreenSkeleton />;
   if (isError)
     return (
-      <ErrorFallback
-        message={getApiErrorMessage(error)}
-        onRefetch={refetch}
-      />
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
     );
 
   if (!data)
@@ -59,7 +49,7 @@ const LessonScreen = () => {
     );
 
   const fileName = data.lessonFile
-    ? data.lessonFile.split("/").pop() ?? data.lessonName
+    ? (data.lessonFile.split("/").pop() ?? data.lessonName)
     : data.lessonName;
   const isEmbedded = data.lessonType === "embedded_content";
 
@@ -105,10 +95,7 @@ const LessonScreen = () => {
           {data.lessonFile && (
             <View>
               <SectionLabel>Attached File</SectionLabel>
-              <RemoteAttachmentFile
-                url={data.lessonFile}
-                fileName={fileName}
-              />
+              <RemoteAttachmentFile url={data.lessonFile} fileName={fileName} />
             </View>
           )}
 
@@ -243,7 +230,10 @@ const IFrameViewer = ({ url }: { url: string }) => {
               onPress={() => setFullscreen(false)}
               accessibilityRole="button"
               accessibilityLabel="Close fullscreen"
-              android_ripple={{ color: "rgba(255,255,255,0.15)", borderless: true }}
+              android_ripple={{
+                color: "rgba(255,255,255,0.15)",
+                borderless: true,
+              }}
               hitSlop={8}
               className="active:opacity-70"
               style={{

@@ -1,8 +1,7 @@
-import { View, Text } from "react-native";
-import React from "react";
-import AssessmentAttempts from "./AssessmentAttempts";
-import { AppText } from "@/components/AppText";
 import { Skeleton } from "heroui-native";
+import { View } from "react-native";
+import { AppText } from "@/components/AppText";
+import AssessmentAttempts from "./AssessmentAttempts";
 
 type AssessmentResultProps = {
   assessmentData: any;

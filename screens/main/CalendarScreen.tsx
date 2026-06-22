@@ -1,5 +1,5 @@
-import CalendarComponent from "@/features/calendar/components/CalendarComponent";
 import Screen from "@/components/screen";
+import CalendarComponent from "@/features/calendar/components/CalendarComponent";
 
 const CalendarScreen = () => {
   return (

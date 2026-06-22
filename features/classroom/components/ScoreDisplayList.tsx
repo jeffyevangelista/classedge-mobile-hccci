@@ -1,16 +1,16 @@
-import { View } from "react-native";
-import React, { useMemo } from "react";
 import { useGlobalSearchParams } from "expo-router";
+import { Avatar, Card, Skeleton } from "heroui-native";
+import { useMemo } from "react";
+import { View } from "react-native";
+import { AppText } from "@/components/AppText";
+import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
+import ErrorFallback from "@/components/ErrorFallback";
+import { Icon } from "@/components/Icon";
+import { ScreenList } from "@/components/ScreenList";
 import {
   useClassroomStudents,
   useStudentScoresForActivity,
 } from "@/features/classroom/classroom.hooks";
-import { ScreenList } from "@/components/ScreenList";
-import { AppText } from "@/components/AppText";
-import { Avatar, Card, Skeleton } from "heroui-native";
-import { AvatarFallbackImage } from "@/components/AvatarFallbackImage";
-import { Icon } from "@/components/Icon";
-import ErrorFallback from "@/components/ErrorFallback";
 
 type ActivityDetail = {
   localId: string;

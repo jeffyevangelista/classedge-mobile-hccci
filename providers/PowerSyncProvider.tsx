@@ -1,13 +1,13 @@
+import { PowerSyncContext } from "@powersync/react-native";
+import { useEffect, useRef, useState } from "react";
+import { attachmentQueue } from "@/features/attachments/attachments.queue";
+import { startAttachmentWatcher } from "@/features/attachments/attachments.watcher";
 import useStore from "@/lib/store";
-import { logDbPath, powersync, setupPowerSync } from "@/powersync/system";
 import {
   syncRoleStreams,
   unsubscribeAllRoleStreams,
 } from "@/powersync/streamSubscriptions";
-import { PowerSyncContext } from "@powersync/react-native";
-import { useEffect, useRef, useState } from "react";
-import { startAttachmentWatcher } from "@/features/attachments/attachments.watcher";
-import { attachmentQueue } from "@/features/attachments/attachments.queue";
+import { logDbPath, powersync, setupPowerSync } from "@/powersync/system";
 
 const PowerSyncProvider = ({ children }: { children: React.ReactNode }) => {
   const [isReady, setIsReady] = useState(false);

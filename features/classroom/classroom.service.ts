@@ -1,8 +1,8 @@
+import { createId } from "@paralleldrive/cuid2";
+import { sql } from "drizzle-orm";
+import * as FileSystem from "expo-file-system/legacy";
 import { assessmentTable, studentAssessment } from "@/powersync/schema";
 import { db, powersync } from "@/powersync/system";
-import { sql } from "drizzle-orm";
-import { createId } from "@paralleldrive/cuid2";
-import * as FileSystem from "expo-file-system/legacy";
 
 export const saveAttachment = async (imageUri: string): Promise<string> => {
   const id = createId();
@@ -14,7 +14,7 @@ export const saveAttachment = async (imageUri: string): Promise<string> => {
   const permanentUri = `${dir}${filename}`;
   await FileSystem.copyAsync({ from: imageUri, to: permanentUri });
 
-  console.log("[saveAttachment] copied to:", permanentUri);
+  if (__DEV__) console.log("[saveAttachment] copied to:", permanentUri);
   return permanentUri;
 };
 
@@ -36,27 +36,31 @@ export const createActivity = async (
   const id = data.id ?? localId;
 
   const payload = { ...data, id, localId };
-  console.log("[createActivity] inserting:", JSON.stringify(payload));
+  if (__DEV__)
+    console.log("[createActivity] inserting:", JSON.stringify(payload));
 
   const result = await db.insert(assessmentTable).values(payload);
-  console.log("[createActivity] insert result:", JSON.stringify(result));
+  if (__DEV__)
+    console.log("[createActivity] insert result:", JSON.stringify(result));
 
   // Verify the row actually landed in the local DB by reading it back directly.
   const verify = await powersync.execute(
     "SELECT id, local_id, activity_name FROM activity_activity WHERE local_id = ?",
     [localId],
   );
-  console.log(
-    "[createActivity] verify after insert:",
-    JSON.stringify(verify.rows?._array),
-  );
+  if (__DEV__)
+    console.log(
+      "[createActivity] verify after insert:",
+      JSON.stringify(verify.rows?._array),
+    );
 
   return { result, id, localId };
 };
 
 export const getClassroomStudents = (classroomId: string) => {
   return db.query.studentEnrolledCoursesTable.findMany({
-    where: (student, { eq }) => eq(student.subjectId, parseInt(classroomId)),
+    where: (student, { eq }) =>
+      eq(student.subjectId, parseInt(classroomId, 10)),
     with: {
       profile: true,
     },
@@ -126,4 +130,3 @@ export const upsertStudentScore = async (data: {
     throw err;
   }
 };
-

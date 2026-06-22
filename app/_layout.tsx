@@ -1,14 +1,4 @@
 import "@/global.css";
-import * as Sentry from "@sentry/react-native";
-import { initTelemetry, armPostLoginReady, captureAuthMessage } from "@/lib/telemetry";
-import * as Linking from "expo-linking";
-import {
-  cancelOAuth,
-  handleCallbackUrl,
-} from "@/features/auth/authService";
-import { useTokenRefresh } from "@/features/auth/useTokenRefresh";
-import useStore from "@/lib/store";
-import RootProvider from "@/providers/RootProvider";
 import {
   Poppins_400Regular,
   Poppins_500Medium,
@@ -16,13 +6,24 @@ import {
   Poppins_700Bold,
   useFonts,
 } from "@expo-google-fonts/poppins";
+import * as Sentry from "@sentry/react-native";
+import * as Linking from "expo-linking";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import NetworkBanner from "@/features/network/NetworkBanner";
+import { cancelOAuth, handleCallbackUrl } from "@/features/auth/authService";
 import RefreshExpiryBanner from "@/features/auth/components/RefreshExpiryBanner";
 import RefreshExpiryModal from "@/features/auth/components/RefreshExpiryModal";
+import { useTokenRefresh } from "@/features/auth/useTokenRefresh";
+import NetworkBanner from "@/features/network/NetworkBanner";
+import useStore from "@/lib/store";
+import {
+  armPostLoginReady,
+  captureAuthMessage,
+  initTelemetry,
+} from "@/lib/telemetry";
+import RootProvider from "@/providers/RootProvider";
 import "@azure/core-asynciterator-polyfill";
 
 SplashScreen.preventAutoHideAsync();
@@ -48,7 +49,7 @@ function RootLayout() {
   const loadSession = async () => {
     try {
       await restoreSession();
-      console.log("session restored");
+      if (__DEV__) console.log("session restored");
     } catch (error) {
       console.warn("Session restore failed:", error);
       await clearCredentials();

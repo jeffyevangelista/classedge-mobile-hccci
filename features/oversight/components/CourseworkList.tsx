@@ -1,16 +1,15 @@
-import React, { useCallback, useMemo } from "react";
 import { useGlobalSearchParams } from "expo-router";
-import { ActivityIndicator, FlatList, View } from "react-native";
-import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
-import { useAssessments } from "../oversight.hooks";
-import { AppText } from "@/components/AppText";
 import { Card, Skeleton } from "heroui-native";
-import { Assessment } from "../oversight.type";
-import CourseworkItem from "./Coursework";
+import { useCallback, useMemo } from "react";
+import { ActivityIndicator, FlatList, View } from "react-native";
 import ErrorFallback from "@/components/ErrorFallback";
 import NoDataFallback from "@/components/NoDataFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { useAssessments } from "../oversight.hooks";
+import type { Assessment } from "../oversight.type";
+import CourseworkItem from "./Coursework";
 
 const CourseworkList = () => {
   const safeBottom = useScrollBottomInset();

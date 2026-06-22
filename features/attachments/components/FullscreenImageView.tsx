@@ -1,3 +1,4 @@
+import { Zoomable } from "@likashefqet/react-native-image-zoom";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -9,7 +10,6 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-import { Zoomable } from "@likashefqet/react-native-image-zoom";
 import { Icon } from "@/components/Icon";
 
 interface Props {
@@ -37,11 +37,7 @@ export const FullscreenImageView = ({ uri, onClose }: Props) => {
         hidden={false}
         barStyle={isDark ? "light-content" : "light-content"}
       />
-      <Zoomable
-        isDoubleTapEnabled
-        isSingleTapEnabled
-        onSingleTap={onClose}
-      >
+      <Zoomable isDoubleTapEnabled isSingleTapEnabled onSingleTap={onClose}>
         <Image
           source={{ uri }}
           style={{ width, height }}

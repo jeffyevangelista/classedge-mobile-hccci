@@ -1,24 +1,21 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { AppText } from "@/components/AppText";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { formatDate } from "@/utils/formatDate";
-import { useSubjectTimeline } from "../oversight.hooks";
-import {
-  BUCKET_ORDER,
-  bucketize,
-} from "@/features/timeline/bucketize";
+import { BUCKET_ORDER, bucketize } from "@/features/timeline/bucketize";
+import { TimelineFilterChips } from "@/features/timeline/components/TimelineFilterChips";
+import { TimelineRow } from "@/features/timeline/components/TimelineRow";
+import { TimelineSkeleton } from "@/features/timeline/components/TimelineSkeleton";
 import type {
   Filter,
   TimelineItem,
   TimelineRowHighlight,
 } from "@/features/timeline/types";
-import { TimelineFilterChips } from "@/features/timeline/components/TimelineFilterChips";
-import { TimelineRow } from "@/features/timeline/components/TimelineRow";
-import { TimelineSkeleton } from "@/features/timeline/components/TimelineSkeleton";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { formatDate } from "@/utils/formatDate";
+import { useSubjectTimeline } from "../oversight.hooks";
 
 const SubjectTimeline = () => {
   const { subjectId } = useLocalSearchParams<{ subjectId: string }>();
@@ -31,8 +28,7 @@ const SubjectTimeline = () => {
   const items = data?.results ?? [];
 
   const filtered = useMemo(
-    () =>
-      filter === "all" ? items : items.filter((i) => i.type === filter),
+    () => (filter === "all" ? items : items.filter((i) => i.type === filter)),
     [items, filter],
   );
 
@@ -66,7 +62,11 @@ const SubjectTimeline = () => {
 
   return (
     <View className="mt-5">
-      <TimelineFilterChips value={filter} onChange={setFilter} counts={counts} />
+      <TimelineFilterChips
+        value={filter}
+        onChange={setFilter}
+        counts={counts}
+      />
 
       {visibleBuckets.length === 0 ? (
         <View className="items-center">
@@ -142,9 +142,7 @@ const TeacherRow = ({
   ) : null;
 
   const handlePress = () => {
-    router.push(
-      isAssessment ? `/activity/${item.id}` : `/lesson/${item.id}`,
-    );
+    router.push(isAssessment ? `/activity/${item.id}` : `/lesson/${item.id}`);
   };
 
   return (

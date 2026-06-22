@@ -1,10 +1,9 @@
-import { Icon } from "@/components/Icon";
 import { Zoomable } from "@likashefqet/react-native-image-zoom";
 import { Image } from "expo-image";
-import React, {
+import {
   createContext,
   forwardRef,
-  ReactNode,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -20,6 +19,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Icon } from "@/components/Icon";
 
 // Types
 interface ImageContextType {
@@ -52,7 +52,7 @@ export default function ImageProvider({ children }: ImageProviderProps) {
   );
 }
 
-const ImageView = forwardRef<ImageViewRef>((props, ref) => {
+const ImageView = forwardRef<ImageViewRef>((_props, ref) => {
   const [show, setShow] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const imageUriRef = useRef("");
@@ -100,11 +100,7 @@ const ImageView = forwardRef<ImageViewRef>((props, ref) => {
         <TouchableOpacity style={styles.closeButton} onPress={hide}>
           <Icon size={24} color="#ffffff" name="XIcon" />
         </TouchableOpacity>
-        <Zoomable
-          isDoubleTapEnabled
-          isSingleTapEnabled
-          onSingleTap={hide}
-        >
+        <Zoomable isDoubleTapEnabled isSingleTapEnabled onSingleTap={hide}>
           <Image
             source={{ uri: imageUriRef.current }}
             contentFit="contain"

@@ -1,26 +1,23 @@
+import dayjs from "dayjs";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import dayjs from "dayjs";
 import { AppText } from "@/components/AppText";
-import { useCourseTimeline } from "../courses.hooks";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { formatDate } from "@/utils/formatDate";
-import {
-  BUCKET_ORDER,
-  bucketize,
-} from "@/features/timeline/bucketize";
+import { BUCKET_ORDER, bucketize } from "@/features/timeline/bucketize";
+import { TimelineFilterChips } from "@/features/timeline/components/TimelineFilterChips";
+import { TimelineRow } from "@/features/timeline/components/TimelineRow";
+import { TimelineSkeleton } from "@/features/timeline/components/TimelineSkeleton";
 import type {
   BucketKey,
   Filter,
   TimelineItem,
   TimelineRowHighlight,
 } from "@/features/timeline/types";
-import { TimelineFilterChips } from "@/features/timeline/components/TimelineFilterChips";
-import { TimelineRow } from "@/features/timeline/components/TimelineRow";
-import { TimelineSkeleton } from "@/features/timeline/components/TimelineSkeleton";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { formatDate } from "@/utils/formatDate";
+import { useCourseTimeline } from "../courses.hooks";
 
 const CourseTimeline = () => {
   const { courseId } = useLocalSearchParams();
@@ -68,7 +65,11 @@ const CourseTimeline = () => {
 
   return (
     <View className="mt-5">
-      <TimelineFilterChips value={filter} onChange={setFilter} counts={counts} />
+      <TimelineFilterChips
+        value={filter}
+        onChange={setFilter}
+        counts={counts}
+      />
 
       {visibleBuckets.length === 0 ? (
         <View className="items-center">
@@ -100,7 +101,11 @@ const CourseTimeline = () => {
               </AppText>
             </View>
             {buckets[key].map((item) => (
-              <StudentRow key={`${item.id}-${item.type}`} item={item} bucket={key} />
+              <StudentRow
+                key={`${item.id}-${item.type}`}
+                item={item}
+                bucket={key}
+              />
             ))}
           </View>
         ))

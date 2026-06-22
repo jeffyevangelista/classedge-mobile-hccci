@@ -1,5 +1,5 @@
-import { View } from "react-native";
 import { useStatus } from "@powersync/react-native";
+import { View } from "react-native";
 import { AppText } from "@/components/AppText";
 
 const StreamList = () => {
@@ -20,10 +20,7 @@ const StreamList = () => {
   return (
     <View className="mt-3 gap-1.5">
       <View className="flex-row items-center justify-between">
-        <AppText
-          weight="semibold"
-          className="text-xs uppercase text-gray-500"
-        >
+        <AppText weight="semibold" className="text-xs uppercase text-gray-500">
           Sync streams
         </AppText>
         <AppText className="text-xs text-gray-500">

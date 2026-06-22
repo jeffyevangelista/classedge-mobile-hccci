@@ -1,21 +1,19 @@
 import {
   type AbstractPowerSyncDatabase,
-  createBaseLogger,
-  LogLevel,
   type PowerSyncBackendConnector,
   UpdateType,
 } from "@powersync/react-native";
 import * as FileSystem from "expo-file-system/legacy";
 import { silentRefresh } from "@/features/auth/useTokenRefresh";
-import { appendSyncEvent } from "@/features/sync/syncEvents";
 import {
-  STUCK_ATTEMPT_CAP,
   clearCrudMeta,
   markCrudOpDropped,
   readCrudMeta,
   recordCrudAttempt,
+  STUCK_ATTEMPT_CAP,
 } from "@/features/sync/crudMeta";
 import { isPermanentStatus } from "@/features/sync/permanentStatuses";
+import { appendSyncEvent } from "@/features/sync/syncEvents";
 import useStore from "@/lib/store";
 import { env } from "@/utils/env";
 
@@ -84,14 +82,16 @@ async function fetchAndLog(
     } catch {
       body = "<could not read body>";
     }
-    console.log("[Connector] response:", {
-      label,
-      url,
-      status: res.status,
-      ok: res.ok,
-      ms: Date.now() - started,
-      body,
-    });
+    if (__DEV__) {
+      console.log("[Connector] response:", {
+        label,
+        url,
+        status: res.status,
+        ok: res.ok,
+        ms: Date.now() - started,
+        body,
+      });
+    }
     // Throw on any non-2xx so the outer transaction.complete() is skipped
     // and PowerSync keeps the op queued for retry. Previously the fetch
     // succeeded and the op was silently marked done even on 4xx/5xx,
@@ -102,12 +102,14 @@ async function fetchAndLog(
     }
     return res;
   } catch (err) {
-    console.log("[Connector] fetch threw:", {
-      label,
-      url,
-      ms: Date.now() - started,
-      error: err instanceof Error ? err.message : String(err),
-    });
+    if (__DEV__) {
+      console.log("[Connector] fetch threw:", {
+        label,
+        url,
+        ms: Date.now() - started,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
     throw err;
   }
 }
@@ -221,14 +223,16 @@ export class Connector implements PowerSyncBackendConnector {
           const fileFields = Object.entries(record)
             .filter(([, v]) => isLocalFileUri(v))
             .map(([k, v]) => ({ field: k, uri: v }));
-          console.log("[Connector] op:", {
-            op: op.op,
-            table: op.table,
-            id: op.id,
-            hasFile,
-            fileFields,
-            url: instanceUrl,
-          });
+          if (__DEV__) {
+            console.log("[Connector] op:", {
+              op: op.op,
+              table: op.table,
+              id: op.id,
+              hasFile,
+              fileFields,
+              url: instanceUrl,
+            });
+          }
 
           switch (op.op) {
             case UpdateType.PUT:

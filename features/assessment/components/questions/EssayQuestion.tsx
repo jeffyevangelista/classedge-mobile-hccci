@@ -1,6 +1,6 @@
-import { TextInput, View } from "react-native";
-import { useState, useEffect, useMemo, useRef } from "react";
 import { useThemeColor } from "heroui-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { TextInput, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { SaveIndicator, type SaveState } from "./SaveIndicator";
 import type { QuestionComponentProps } from "./types";

@@ -1,24 +1,26 @@
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
+
 dayjs.extend(isBetween);
+
 import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import { Card, Skeleton, Surface, useThemeColor } from "heroui-native";
+import { useCallback, useMemo, useState } from "react";
 import { Pressable, useWindowDimensions, View } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
-import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { Calendar } from "react-native-calendars";
-import { useEvents } from "../calendar.hooks";
-import { useSectionStatus } from "@/features/sync/useSectionStatus";
-import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
-import { formatDate } from "./date-formatter";
+import Animated, { FadeIn } from "react-native-reanimated";
+import { useUniwind } from "uniwind";
 import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { Card, Skeleton, Surface, useThemeColor } from "heroui-native";
 import { Icon } from "@/components/Icon";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { toTitleCase } from "@/utils/toTitleCase";
-import { useUniwind } from "uniwind";
+import { useEvents } from "../calendar.hooks";
+import { formatDate } from "./date-formatter";
 
 type CustomMarkedDate = {
   marked?: boolean;

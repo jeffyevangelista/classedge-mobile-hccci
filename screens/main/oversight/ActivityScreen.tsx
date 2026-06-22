@@ -1,20 +1,20 @@
 import { useLocalSearchParams } from "expo-router";
 import { Skeleton, useThemeColor } from "heroui-native";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Pressable, useWindowDimensions, View } from "react-native";
 import { AppText } from "@/components/AppText";
+import { CollapsibleDescription } from "@/components/CollapsibleDescription";
 import ErrorFallback from "@/components/ErrorFallback";
 import { Icon } from "@/components/Icon";
 import { LinkCard } from "@/components/LinkCard";
 import NoDataFallback from "@/components/NoDataFallback";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
-import Screen from "@/components/screen";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
+import Screen from "@/components/screen";
 import { RemoteAttachmentFile } from "@/features/attachments/components/RemoteAttachmentFile";
 import { useAssessment } from "@/features/oversight/oversight.hooks";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { AssessmentHeroCard } from "@/screens/main/courses/course/assessment/details/AssessmentHeroCard";
-import { CollapsibleDescription } from "@/components/CollapsibleDescription";
 
 // Cap visible materials so a long attachment list doesn't dominate the
 // screen; expand-to-see-all matches the AssessmentMaterials behavior.
@@ -180,7 +180,9 @@ const ActivityMaterialsSection = ({
 
   const canCollapse = total > DEFAULT_VISIBLE_MATERIALS;
   const visible =
-    expanded || !canCollapse ? lessonUrls : lessonUrls.slice(0, DEFAULT_VISIBLE_MATERIALS);
+    expanded || !canCollapse
+      ? lessonUrls
+      : lessonUrls.slice(0, DEFAULT_VISIBLE_MATERIALS);
   const hiddenCount = total - DEFAULT_VISIBLE_MATERIALS;
 
   return (
@@ -232,9 +234,7 @@ const ActivityMaterialsSection = ({
 const ActivityMaterialTile = ({ material }: { material: ActivityMaterial }) => {
   if (material.lessonFile) {
     const fileName =
-      material.lessonName ||
-      material.lessonFile.split("/").pop() ||
-      "File";
+      material.lessonName || material.lessonFile.split("/").pop() || "File";
     return (
       <RemoteAttachmentFile url={material.lessonFile} fileName={fileName} />
     );

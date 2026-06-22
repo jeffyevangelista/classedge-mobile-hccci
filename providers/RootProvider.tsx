@@ -4,12 +4,12 @@ import { NetworkBannerProvider } from "@/features/network/NetworkBannerContext";
 import { startActivityTracker } from "@/lib/activity-tracker";
 import { NavListener } from "@/lib/activity-tracker/NavListener";
 import HeroUIProvider from "./HeroUIProvider";
+import ImageProvider from "./ImageProvider";
 import KeyboardProvider from "./KeyboardProvider";
 import NetworkProvider from "./NetworkProvider";
-import PowerSyncProvider from "./PowerSyncProvider";
 import OneSignalProvider from "./OneSignalProvider";
+import PowerSyncProvider from "./PowerSyncProvider";
 import QueryProvider from "./QueryProvider";
-import ImageProvider from "./ImageProvider";
 
 const RootProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {

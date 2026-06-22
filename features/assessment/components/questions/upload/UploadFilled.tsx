@@ -1,11 +1,11 @@
-import { Image, Pressable, View } from "react-native";
 import { useThemeColor } from "heroui-native";
+import { Image, Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
 import { useAttachment } from "@/features/attachments/hooks/useAttachment";
 import { useImagePreview } from "@/features/attachments/hooks/useImagePreview";
 import { usePdfPreview } from "@/features/attachments/hooks/usePdfPreview";
-import { formatSize, typeLabel, type FileMeta } from "./fileMeta";
+import { type FileMeta, formatSize, typeLabel } from "./fileMeta";
 
 interface Props {
   uri: string;
@@ -190,11 +190,7 @@ export const UploadFilled = ({
           android_ripple={{ color: "rgba(0,0,0,0.05)" }}
           className="flex-row items-center justify-center gap-1.5 py-2.5 bg-default border-t border-border active:opacity-80"
         >
-          <Icon
-            name="ArrowsClockwiseIcon"
-            size={13}
-            color={foregroundColor}
-          />
+          <Icon name="ArrowsClockwiseIcon" size={13} color={foregroundColor} />
           <AppText weight="semibold" className="text-xs text-foreground">
             Replace attachment
           </AppText>

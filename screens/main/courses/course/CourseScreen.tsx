@@ -1,14 +1,5 @@
-import { AppText } from "@/components/AppText";
-import BackButton from "@/components/BackButton";
-import { Icon } from "@/components/Icon";
-import Image from "@/components/Image";
-import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
-import CourseTimeline from "@/features/courses/components/CourseTimeline";
-import { useCourseDetails } from "@/features/courses/courses.hooks";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Skeleton, useThemeColor } from "heroui-native";
-import { ErrorComponent } from "@/components/ErrorComponent";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { useCallback, useMemo, useState } from "react";
 import {
   Platform,
@@ -17,7 +8,6 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -26,7 +16,17 @@ import Animated, {
   useScrollViewOffset,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AppText } from "@/components/AppText";
+import BackButton from "@/components/BackButton";
+import { ErrorComponent } from "@/components/ErrorComponent";
+import { Icon } from "@/components/Icon";
+import Image from "@/components/Image";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
+import CourseTimeline from "@/features/courses/components/CourseTimeline";
+import { useCourseDetails } from "@/features/courses/courses.hooks";
 import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const NAV_HEIGHT = 56;
 

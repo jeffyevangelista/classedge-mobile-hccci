@@ -1,7 +1,8 @@
-import useStore from "@/lib/store";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useToast } from "heroui-native";
 import { Alert } from "react-native";
+import { getApiErrorMessage } from "@/lib/api-error";
+import useStore from "@/lib/store";
 import {
   completeOnboarding,
   forgotPassword,
@@ -11,11 +12,9 @@ import {
   resetPassword,
   verifyOtp,
 } from "./auth.apis";
-import { refresh } from "./refreshToken";
-import { hydrateSession } from "./hydrateSession";
 import type { AuthResponse, LoginCredentials } from "./auth.types";
-import { useToast } from "heroui-native";
-import { useRouter } from "expo-router";
+import { hydrateSession } from "./hydrateSession";
+import { refresh } from "./refreshToken";
 
 export const useLogin = () => {
   return useMutation({

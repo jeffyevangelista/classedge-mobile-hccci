@@ -5,7 +5,8 @@ export const getMMKVItem = <T>(key: string): T | null => {
     const value = storage.getString(key);
     return value ? JSON.parse(value) : null;
   } catch (error) {
-    console.log(`Error getting item with key ${key} from MMKV`, error);
+    if (__DEV__)
+      console.log(`Error getting item with key ${key} from MMKV`, error);
     return null;
   }
 };
@@ -14,7 +15,8 @@ export const setMMKVItem = (key: string, value: unknown): void => {
   try {
     storage.set(key, JSON.stringify(value));
   } catch (error) {
-    console.log(`Error setting item with key ${key} in MMKV`, error);
+    if (__DEV__)
+      console.log(`Error setting item with key ${key} in MMKV`, error);
   }
 };
 
@@ -22,7 +24,8 @@ export const deleteMMKVItem = (key: string): void => {
   try {
     storage.remove(key);
   } catch (error) {
-    console.log(`Error deleting item with key ${key} from MMKV`, error);
+    if (__DEV__)
+      console.log(`Error deleting item with key ${key} from MMKV`, error);
   }
 };
 
@@ -30,7 +33,7 @@ export const getAllMMKVKeys = (): string[] => {
   try {
     return storage.getAllKeys();
   } catch (error) {
-    console.log("Error getting all MMKV keys", error);
+    if (__DEV__) console.log("Error getting all MMKV keys", error);
     return [];
   }
 };

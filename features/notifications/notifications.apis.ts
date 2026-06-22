@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { Notification } from "./notifications.types";
+import type { Notification } from "./notifications.types";
 
 export const getNotifications = async ({
   pageParam = 1,

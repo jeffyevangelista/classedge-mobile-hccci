@@ -42,14 +42,26 @@ export function CampusNewsCard({ post }: Props) {
             contentFit="cover"
             blurRadius={24}
             accessible={false}
-            style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+            }}
           />
           <Image
             source={{ uri: resolved }}
             placeholder={placeholder}
             contentFit="contain"
             transition={200}
-            style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+            }}
           />
         </>
       ) : (

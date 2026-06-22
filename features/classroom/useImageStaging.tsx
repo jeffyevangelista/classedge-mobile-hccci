@@ -1,15 +1,15 @@
+import { CameraView } from "expo-camera";
+import { useToast } from "heroui-native";
 import { useCallback, useState } from "react";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
-import { CameraView } from "expo-camera";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Image from "@/components/Image";
-import { Icon } from "@/components/Icon";
 import { AppText } from "@/components/AppText";
-import { useCamera, type CapturedPhoto } from "@/features/camera/useCamera";
-import { useImagePicker } from "@/features/classroom/useImagePicker";
-import { saveAttachment } from "@/features/classroom/ classroom.service";
+import { Icon } from "@/components/Icon";
+import Image from "@/components/Image";
+import { type CapturedPhoto, useCamera } from "@/features/camera/useCamera";
+import { saveAttachment } from "@/features/classroom/classroom.service";
 import { ImageSourceSheet } from "@/features/classroom/components/ImageSourceSheet";
-import { useToast } from "heroui-native";
+import { useImagePicker } from "@/features/classroom/useImagePicker";
 
 type Args = {
   /**
@@ -167,7 +167,11 @@ export function useImageStaging({ onAttach }: Args) {
                     accessibilityRole="button"
                     accessibilityLabel="Retake photo"
                   >
-                    <Icon name="ArrowCounterClockwiseIcon" size={20} color="#fff" />
+                    <Icon
+                      name="ArrowCounterClockwiseIcon"
+                      size={20}
+                      color="#fff"
+                    />
                     <AppText weight="semibold" className="text-sm text-white">
                       Retake
                     </AppText>
@@ -244,7 +248,11 @@ export function useImageStaging({ onAttach }: Args) {
                       }
                     >
                       <Icon
-                        name={flash === "on" ? "LightningIcon" : "LightningSlashIcon"}
+                        name={
+                          flash === "on"
+                            ? "LightningIcon"
+                            : "LightningSlashIcon"
+                        }
                         size={24}
                         color="#fff"
                       />

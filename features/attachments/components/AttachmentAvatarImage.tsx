@@ -1,6 +1,6 @@
-import { useRef } from "react";
-import { Avatar } from "heroui-native";
 import type { AvatarImageProps } from "heroui-native";
+import { Avatar } from "heroui-native";
+import { useRef } from "react";
 import { useAttachment } from "../hooks/useAttachment";
 
 type Props = Omit<AvatarImageProps, "source"> & {
@@ -37,11 +37,18 @@ export const AttachmentAvatarImage = ({ path, ...rest }: Props) => {
 
   if (isLocalFile && path) {
     lastLocalRef.current = path;
-    return <Avatar.Image source={{ uri: path }} {...(rest as AvatarImageProps)} />;
+    return (
+      <Avatar.Image source={{ uri: path }} {...(rest as AvatarImageProps)} />
+    );
   }
 
   if (state === "synced" && cachedUri) {
-    return <Avatar.Image source={{ uri: cachedUri }} {...(rest as AvatarImageProps)} />;
+    return (
+      <Avatar.Image
+        source={{ uri: cachedUri }}
+        {...(rest as AvatarImageProps)}
+      />
+    );
   }
 
   if (lastLocalRef.current) {

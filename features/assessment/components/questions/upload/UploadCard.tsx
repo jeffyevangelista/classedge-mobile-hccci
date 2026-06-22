@@ -1,12 +1,12 @@
+import { Spinner, useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-import { Spinner, useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
+import { type FileMeta, getFileMeta } from "./fileMeta";
+import { SourcePickerSheet, type UploadSource } from "./SourcePickerSheet";
 import { UploadEmpty } from "./UploadEmpty";
 import { UploadFilled } from "./UploadFilled";
-import { SourcePickerSheet, type UploadSource } from "./SourcePickerSheet";
-import { getFileMeta, type FileMeta } from "./fileMeta";
 
 interface Props {
   uri?: string | null;

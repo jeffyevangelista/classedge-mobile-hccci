@@ -1,5 +1,5 @@
-import { Pressable, View } from "react-native";
 import { useThemeColor } from "heroui-native";
+import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
 import type { QuestionComponentProps } from "./types";

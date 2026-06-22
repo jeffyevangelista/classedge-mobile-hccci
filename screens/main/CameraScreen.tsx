@@ -1,12 +1,12 @@
-import CameraViewScreen from "@/features/camera/components/CameraViewScreen";
 import { useRouter } from "expo-router";
+import CameraViewScreen from "@/features/camera/components/CameraViewScreen";
 import type { CapturedPhoto } from "@/features/camera/useCamera";
 
 const CameraScreen = () => {
-  const router = useRouter();
+  const _router = useRouter();
 
   const handleCapture = (photo: CapturedPhoto) => {
-    console.log("Photo captured:", photo.uri);
+    if (__DEV__) console.log("Photo captured:", photo.uri);
   };
 
   return <CameraViewScreen onCapture={handleCapture} />;

@@ -1,8 +1,6 @@
-import { drizzleSchema } from "@/powersync/schema";
-import {
-  type BuildQueryResult,
-  type ExtractTablesWithRelations,
-} from "drizzle-orm";
+import type { BuildQueryResult, ExtractTablesWithRelations } from "drizzle-orm";
+import type { drizzleSchema } from "@/powersync/schema";
+
 type Schema = typeof drizzleSchema;
 type TTables = ExtractTablesWithRelations<Schema>;
 

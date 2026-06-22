@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { Skeleton } from "heroui-native";
+import { Pressable, StyleSheet } from "react-native";
 import { Icon } from "@/components/Icon";
 import { useAttachment } from "../hooks/useAttachment";
 
@@ -37,11 +37,7 @@ export const AttachmentThumbnailImage = ({ path, size = 40 }: Props) => {
     );
   }
 
-  return (
-    <Skeleton
-      style={{ width: size, height: size, borderRadius: 8 }}
-    />
-  );
+  return <Skeleton style={{ width: size, height: size, borderRadius: 8 }} />;
 };
 
 const styles = StyleSheet.create({

@@ -1,7 +1,7 @@
-import api from "@/lib/axios";
 import axios from "axios";
-import { env } from "@/utils/env";
+import api from "@/lib/axios";
 import { snakeToCamel } from "@/lib/case-transform";
+import { env } from "@/utils/env";
 import type {
   ActiveLegalDocuments,
   AuthResponse,

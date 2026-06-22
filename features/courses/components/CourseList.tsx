@@ -1,39 +1,30 @@
-import { AppText } from "@/components/AppText";
-import Image from "@/components/Image";
-import { Icon } from "@/components/Icon";
-import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
-import { ScreenList } from "@/components/ScreenList";
 import { router, useNavigation } from "expo-router";
-import {
-  Card,
-  InputGroup,
-  Skeleton,
-  useThemeColor,
-} from "heroui-native";
+import { Card, InputGroup, Skeleton, useThemeColor } from "heroui-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Pressable,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Pressable, useWindowDimensions, View } from "react-native";
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
-import { ScreenScrollView } from "@/components/ScreenScrollView";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
-import {
-  useCoursePendingCounts,
-  useStudentCourses,
-  type CoursePendingCount,
-} from "../courses.hooks";
-import { StudentEnrolledCourses } from "../courses.types";
-import { useSectionStatus } from "@/features/sync/useSectionStatus";
-import { SectionView } from "@/features/sync/components/SectionView";
-import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
-import SyncCenter from "@/features/sync/components/SyncCenter";
+import { AppText } from "@/components/AppText";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
+import { Icon } from "@/components/Icon";
+import Image from "@/components/Image";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { ScreenList } from "@/components/ScreenList";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
+import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
+import { SectionView } from "@/features/sync/components/SectionView";
+import SyncCenter from "@/features/sync/components/SyncCenter";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
 import { getApiErrorMessage } from "@/lib/api-error";
 import useStore from "@/lib/store";
 import { toTitleCase } from "@/utils/toTitleCase";
+import {
+  type CoursePendingCount,
+  useCoursePendingCounts,
+  useStudentCourses,
+} from "../courses.hooks";
+import type { StudentEnrolledCourses } from "../courses.types";
 
 const MIN_CARD_WIDTH = 280;
 
@@ -48,7 +39,8 @@ const CourseList = ({ query }: CourseListProps = {}) => {
   const numColumns = Math.max(1, Math.floor(width / MIN_CARD_WIDTH));
   const { authUser } = useStore();
   const fallbackQuery = useStudentCourses();
-  const { data, isLoading, isError, error, refetch, isRefetching } = query ?? fallbackQuery;
+  const { data, isLoading, isError, error, refetch, isRefetching } =
+    query ?? fallbackQuery;
   const pendingCounts = useCoursePendingCounts(authUser?.id);
   const navigation = useNavigation();
   const accentColor = useThemeColor("accent");
@@ -88,7 +80,9 @@ const CourseList = ({ query }: CourseListProps = {}) => {
             className="w-10 h-10 rounded-full items-center justify-center active:opacity-70"
           >
             <Icon
-              name={sortMode === "asc" ? "SortAscendingIcon" : "SortDescendingIcon"}
+              name={
+                sortMode === "asc" ? "SortAscendingIcon" : "SortDescendingIcon"
+              }
               size={22}
               color={foregroundColor}
             />
@@ -182,10 +176,7 @@ const CourseList = ({ query }: CourseListProps = {}) => {
           />
           <ScreenList
             refreshControl={
-              <RefreshIndicator
-                refreshing={isRefetching}
-                onRefresh={refetch}
-              />
+              <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
             }
             ListEmptyComponent={
               <EmptyState
@@ -249,7 +240,9 @@ const CollapsibleSearch = ({
           <Pressable
             onPress={onClose}
             accessibilityRole="button"
-            accessibilityLabel={search ? "Clear and close search" : "Close search"}
+            accessibilityLabel={
+              search ? "Clear and close search" : "Close search"
+            }
             hitSlop={6}
           >
             <Icon name="XIcon" size={18} color={mutedColor} />
@@ -275,10 +268,7 @@ const PendingBadge = ({ counts }: { counts?: CoursePendingCount }) => {
   if (due > 0) {
     return (
       <View className="absolute top-2 right-2 bg-accent px-2 py-0.5 rounded-full">
-        <AppText
-          className="text-xs text-accent-foreground"
-          weight="semibold"
-        >
+        <AppText className="text-xs text-accent-foreground" weight="semibold">
           {due} due
         </AppText>
       </View>

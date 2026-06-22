@@ -1,10 +1,10 @@
+import { toCompilableQuery } from "@powersync/drizzle-driver";
 import { useQuery } from "@powersync/react-native";
 import useStore from "@/lib/store";
 import {
   getNotificationCount,
   getNotifications,
 } from "./notifications.service";
-import { toCompilableQuery } from "@powersync/drizzle-driver";
 
 export const useNotifications = () => {
   const { authUser } = useStore.getState();

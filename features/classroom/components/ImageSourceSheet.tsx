@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from "react";
-import { Pressable, View, useWindowDimensions } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomSheet, useThemeColor } from "heroui-native";
+import { useCallback, useMemo } from "react";
+import { Pressable, useWindowDimensions, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
 
@@ -65,8 +65,7 @@ export const ImageSourceSheet = ({
               Attach an image
             </AppText>
             <AppText className="text-xs text-muted mb-3">
-              Add a photo of the score sheet or graded work for this
-              student.
+              Add a photo of the score sheet or graded work for this student.
             </AppText>
 
             <SourceOption

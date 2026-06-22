@@ -1,5 +1,5 @@
-import Screen from "@/components/screen";
 import { AppText } from "@/components/AppText";
+import Screen from "@/components/screen";
 
 const MessagesScreen = () => {
   return (

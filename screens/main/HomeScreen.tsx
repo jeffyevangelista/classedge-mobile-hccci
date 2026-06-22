@@ -1,3 +1,5 @@
+import { router } from "expo-router";
+import { useThemeColor } from "heroui-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -5,7 +7,6 @@ import {
   type NativeSyntheticEvent,
   View,
 } from "react-native";
-import { router } from "expo-router";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -15,15 +16,14 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { useThemeColor } from "heroui-native";
-import Screen from "@/components/screen";
 import HomeTabHeader from "@/components/HomeTabHeader";
-import GreetingBand from "@/features/home/components/GreetingBand";
 import { SectionHeader } from "@/components/SectionHeader";
-import AnnouncementList from "@/features/announcements/components/AnnouncementList";
+import Screen from "@/components/screen";
 import { useAnnouncementsWithEvents } from "@/features/announcements/announcements.hooks";
+import AnnouncementList from "@/features/announcements/components/AnnouncementList";
 import ScheduleComponent from "@/features/announcements/components/ScheduleComponent";
 import CampusNewsSection from "@/features/campus-news/components/CampusNewsSection";
+import GreetingBand from "@/features/home/components/GreetingBand";
 import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 import useStore from "@/lib/store";
 import { queryClient } from "@/providers/QueryProvider";

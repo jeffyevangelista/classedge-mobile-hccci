@@ -1,5 +1,5 @@
-import useStore from "@/lib/store";
 import { getMMKVItem } from "@/lib/storage/mmkv-storage";
+import useStore from "@/lib/store";
 import { MMKV_KEYS } from "@/utils/storage-keys";
 
 export type RefreshExpiryState = "safe" | "warn" | "critical" | "expired";

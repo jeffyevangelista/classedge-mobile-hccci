@@ -1,7 +1,7 @@
+import { toCompilableQuery } from "@powersync/drizzle-driver";
+import { useQuery } from "@powersync/react-native";
 import { useMemo } from "react";
 import useStore from "@/lib/store";
-import { useQuery } from "@powersync/react-native";
-import { toCompilableQuery } from "@powersync/drizzle-driver";
 import { getTeachingCourses } from "./teaching.services";
 
 type OrbitFlag = "coil" | "hali" | "cte";

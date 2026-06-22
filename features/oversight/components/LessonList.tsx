@@ -1,17 +1,17 @@
+import { Link, useGlobalSearchParams } from "expo-router";
+import { Card, Skeleton } from "heroui-native";
 import React, { useCallback, useMemo } from "react";
 import { ActivityIndicator, FlatList, View } from "react-native";
-import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
-import { Lesson } from "../oversight.type";
-import { formatDate } from "@/utils/formatDate";
-import { Link, useGlobalSearchParams } from "expo-router";
-import { useLessons } from "../oversight.hooks";
-import { Card, Skeleton } from "heroui-native";
-import { Icon } from "@/components/Icon";
 import { AppText } from "@/components/AppText";
 import ErrorFallback from "@/components/ErrorFallback";
+import { Icon } from "@/components/Icon";
 import NoDataFallback from "@/components/NoDataFallback";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { formatDate } from "@/utils/formatDate";
+import { useLessons } from "../oversight.hooks";
+import type { Lesson } from "../oversight.type";
 
 const LESSON_ICON_MAP = {
   document: { label: "Material" },

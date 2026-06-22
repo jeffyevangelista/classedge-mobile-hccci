@@ -1,6 +1,5 @@
-import { db } from "@/powersync/system";
 import { sql } from "drizzle-orm";
-import { Event } from "@/powersync/schema";
+import { db } from "@/powersync/system";
 
 export const getEvents = () => {
   return db.query.eventsTable.findMany({

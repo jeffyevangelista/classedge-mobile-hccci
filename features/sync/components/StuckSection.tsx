@@ -1,13 +1,13 @@
+import { Button, useThemeColor, useToast } from "heroui-native";
 import { useCallback, useState } from "react";
 import { Pressable, View } from "react-native";
-import { Button, useThemeColor, useToast } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
-import { useStuckCrudOps, type StuckCrudOp } from "../useStuckCrudOps";
+import { formatRelative } from "@/utils/getRelativeTime";
+import { SYNC_COPY } from "../copy";
 import { resetCrudMeta } from "../crudMeta";
 import { humanizeSyncError } from "../humanizeSyncError";
-import { SYNC_COPY } from "../copy";
-import { formatRelative } from "@/utils/getRelativeTime";
+import { type StuckCrudOp, useStuckCrudOps } from "../useStuckCrudOps";
 
 const StuckRow = ({ row }: { row: StuckCrudOp }) => {
   const [showDetails, setShowDetails] = useState(false);
@@ -57,11 +57,15 @@ const StuckRow = ({ row }: { row: StuckCrudOp }) => {
         className="mt-2"
         accessibilityRole="button"
         accessibilityLabel={
-          showDetails ? SYNC_COPY.stuck.hideDetails : SYNC_COPY.stuck.showDetails
+          showDetails
+            ? SYNC_COPY.stuck.hideDetails
+            : SYNC_COPY.stuck.showDetails
         }
       >
         <AppText className="text-xs text-danger underline">
-          {showDetails ? SYNC_COPY.stuck.hideDetails : SYNC_COPY.stuck.showDetails}
+          {showDetails
+            ? SYNC_COPY.stuck.hideDetails
+            : SYNC_COPY.stuck.showDetails}
         </AppText>
       </Pressable>
 

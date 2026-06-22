@@ -1,9 +1,5 @@
-import {
-  ActivityIndicator,
-  Pressable,
-  View,
-} from "react-native";
 import { useThemeColor } from "heroui-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import { usePdfPreview } from "@/features/attachments/hooks/usePdfPreview";
@@ -40,11 +36,7 @@ export const AttachmentPdfCard = ({ uri, fileName }: Props) => {
           )}
         </View>
         <View className="flex-1">
-          <AppText
-            numberOfLines={1}
-            ellipsizeMode="middle"
-            className="text-sm"
-          >
+          <AppText numberOfLines={1} ellipsizeMode="middle" className="text-sm">
             {fileName}
           </AppText>
           <AppText className="text-xs text-muted mt-0.5">Tap to view</AppText>

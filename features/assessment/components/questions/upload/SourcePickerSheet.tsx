@@ -1,5 +1,5 @@
-import { Pressable, View } from "react-native";
 import { BottomSheet, useThemeColor } from "heroui-native";
+import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
 
@@ -62,10 +62,7 @@ export const SourcePickerSheet = ({ isOpen, onOpenChange, onPick }: Props) => {
     <BottomSheet isOpen={isOpen} onOpenChange={onOpenChange}>
       <BottomSheet.Portal>
         <BottomSheet.Overlay />
-        <BottomSheet.Content
-          snapPoints={["35%"]}
-          enableDynamicSizing={false}
-        >
+        <BottomSheet.Content snapPoints={["35%"]} enableDynamicSizing={false}>
           <View className="px-4 pt-2 pb-6">
             <AppText
               weight="semibold"

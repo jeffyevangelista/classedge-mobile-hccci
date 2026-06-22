@@ -1,4 +1,4 @@
-import { getAnnouncementsWithEvents } from "./announcements.service";
+import type { getAnnouncementsWithEvents } from "./announcements.service";
 
 export type AnnouncementWithEvents = Awaited<
   ReturnType<typeof getAnnouncementsWithEvents>

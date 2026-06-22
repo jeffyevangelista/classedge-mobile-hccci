@@ -1,5 +1,5 @@
-import { Pressable, View } from "react-native";
 import { useThemeColor } from "heroui-native";
+import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
@@ -15,7 +15,7 @@ const MultipleChoiceQuestion = ({
   disabled,
   choices,
 }: MultipleChoiceProps) => {
-  const accentColor = useThemeColor("accent");
+  const _accentColor = useThemeColor("accent");
   const accentForegroundColor = useThemeColor("accent-foreground");
   // A valid choice has either text OR an image — image-only choices are
   // intentional. Skip rows that have neither so teacher data-entry blanks
@@ -88,9 +88,7 @@ const MultipleChoiceQuestion = ({
             <View className="flex-row items-center gap-3">
               <View
                 className={`w-8 h-8 rounded-xl items-center justify-center ${
-                  selected
-                    ? "bg-accent"
-                    : "bg-default border border-border"
+                  selected ? "bg-accent" : "bg-default border border-border"
                 }`}
               >
                 <AppText
@@ -115,9 +113,7 @@ const MultipleChoiceQuestion = ({
                 <View className="flex-1" />
               )}
               {selected ? (
-                <View
-                  className="w-6 h-6 rounded-full bg-accent items-center justify-center"
-                >
+                <View className="w-6 h-6 rounded-full bg-accent items-center justify-center">
                   <Icon
                     name="CheckIcon"
                     size={14}

@@ -1,7 +1,7 @@
-import { AppText } from "@/components/AppText";
-import LoginForm from "@/features/auth/components/LoginForm";
 import { useWindowDimensions, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { AppText } from "@/components/AppText";
+import LoginForm from "@/features/auth/components/LoginForm";
 
 const LoginEmailScreen = () => {
   const { height } = useWindowDimensions();

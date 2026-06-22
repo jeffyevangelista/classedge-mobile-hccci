@@ -11,8 +11,8 @@ import {
   getStudents,
   getSubject,
   getSubjectSchedules,
-  getSubjectTimeline,
   getSubjects,
+  getSubjectTimeline,
 } from "./oversight.apis";
 
 export const useGetSubjects = () => {

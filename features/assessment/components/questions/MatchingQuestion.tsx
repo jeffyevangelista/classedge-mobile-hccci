@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useRef } from "react";
-import { Animated, Pressable, TextInput, View } from "react-native";
 import { useThemeColor } from "heroui-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Animated, Pressable, TextInput, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import { questionStyles as styles } from "./styles";
@@ -311,13 +311,13 @@ const MatchingQuestion = ({
                 }}
                 android_ripple={{ color: "rgba(37, 99, 235, 0.12)" }}
                 className={`rounded-xl ${
-                  disabled || isLocked
-                    ? "opacity-40"
-                    : "active:opacity-80"
+                  disabled || isLocked ? "opacity-40" : "active:opacity-80"
                 }`}
               >
                 {isSelected ? (
-                  <Animated.View style={{ opacity: pulse }}>{card}</Animated.View>
+                  <Animated.View style={{ opacity: pulse }}>
+                    {card}
+                  </Animated.View>
                 ) : (
                   card
                 )}
@@ -347,9 +347,7 @@ const MatchingQuestion = ({
                 accessibilityState={{ disabled: disabled || isLocked }}
                 android_ripple={{ color: "rgba(37, 99, 235, 0.12)" }}
                 className={`rounded-xl ${
-                  disabled || isLocked
-                    ? "opacity-40"
-                    : "active:opacity-80"
+                  disabled || isLocked ? "opacity-40" : "active:opacity-80"
                 }`}
               >
                 <View
@@ -375,9 +373,7 @@ const MatchingQuestion = ({
                   ) : null}
                   <View
                     className={`w-7 h-7 rounded-xl items-center justify-center ${
-                      isPaired
-                        ? "bg-accent"
-                        : "bg-default border border-border"
+                      isPaired ? "bg-accent" : "bg-default border border-border"
                     }`}
                   >
                     <AppText

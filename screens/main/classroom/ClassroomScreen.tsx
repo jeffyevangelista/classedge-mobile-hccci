@@ -1,3 +1,7 @@
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Skeleton, useThemeColor } from "heroui-native";
 import { useMemo, useState } from "react";
 import {
   Pressable,
@@ -6,7 +10,6 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   MaterialTabBar,
   type MaterialTabBarProps,
@@ -21,18 +24,18 @@ import Animated, {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
-import { Skeleton, useThemeColor } from "heroui-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
 import Image from "@/components/Image";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import { useClassroom } from "@/features/classroom/classroom.hooks";
-import LessonList from "@/features/classroom/components/LessonList";
-import CourseworkList from "@/features/classroom/components/CourseworkList";
 import ClassroomActivitiyList from "@/features/classroom/components/ClassroomActivitiyList";
-import { CreateActionSheet, type CreateAction } from "@/features/classroom/components/CreateActionSheet";
+import CourseworkList from "@/features/classroom/components/CourseworkList";
+import {
+  type CreateAction,
+  CreateActionSheet,
+} from "@/features/classroom/components/CreateActionSheet";
+import LessonList from "@/features/classroom/components/LessonList";
 import { useSafeBottomInset } from "@/hooks/useSafeBottomInset";
 
 const HERO_RATIO = 0.28; // matches student CourseScreen.tsx:38
@@ -225,9 +228,17 @@ const Hero = ({
 
       {/* Expanded title — anchored above the eventual collapsed nav band. */}
       <Animated.View
-        style={[styles.heroText, { bottom: navBandHeight + 14 }, expandedTitleStyle]}
+        style={[
+          styles.heroText,
+          { bottom: navBandHeight + 14 },
+          expandedTitleStyle,
+        ]}
       >
-        <AppText weight="semibold" className="text-2xl text-white" numberOfLines={2}>
+        <AppText
+          weight="semibold"
+          className="text-2xl text-white"
+          numberOfLines={2}
+        >
           {subjectName}
         </AppText>
         {subtitle ? (
@@ -252,7 +263,10 @@ const Hero = ({
       />
 
       {/* Centered collapsed title — pinned below the status bar. */}
-      <Animated.View style={[styles.collapsedTitleWrap, collapsedTitleStyle]} pointerEvents="none">
+      <Animated.View
+        style={[styles.collapsedTitleWrap, collapsedTitleStyle]}
+        pointerEvents="none"
+      >
         <AppText
           weight="semibold"
           className="text-base text-foreground"
@@ -272,27 +286,45 @@ const Hero = ({
           style={styles.navButton}
         >
           <Animated.View
-            style={[styles.navButtonBgGlass, { backgroundColor: glassBg }, glassBgStyle]}
+            style={[
+              styles.navButtonBgGlass,
+              { backgroundColor: glassBg },
+              glassBgStyle,
+            ]}
             pointerEvents="none"
           />
           <Animated.View
-            style={[styles.navButtonBgSolid, { backgroundColor: solidBg }, solidBgStyle]}
+            style={[
+              styles.navButtonBgSolid,
+              { backgroundColor: solidBg },
+              solidBgStyle,
+            ]}
             pointerEvents="none"
           />
           <Icon name="ArrowLeftIcon" size={22} color={foregroundColor} />
         </Pressable>
         <Pressable
-          onPress={() => router.push(`/(main)/classroom/${classroomId}/course-details`)}
+          onPress={() =>
+            router.push(`/(main)/classroom/${classroomId}/course-details`)
+          }
           accessibilityRole="button"
           accessibilityLabel="Open course details"
           style={styles.navButton}
         >
           <Animated.View
-            style={[styles.navButtonBgGlass, { backgroundColor: glassBg }, glassBgStyle]}
+            style={[
+              styles.navButtonBgGlass,
+              { backgroundColor: glassBg },
+              glassBgStyle,
+            ]}
             pointerEvents="none"
           />
           <Animated.View
-            style={[styles.navButtonBgSolid, { backgroundColor: solidBg }, solidBgStyle]}
+            style={[
+              styles.navButtonBgSolid,
+              { backgroundColor: solidBg },
+              solidBgStyle,
+            ]}
             pointerEvents="none"
           />
           <Icon name="InfoIcon" size={22} color={foregroundColor} />
@@ -331,7 +363,10 @@ const ClassroomScreen = () => {
   const roomNumber = course?.roomNumber ?? "";
   const subjectPhoto = course?.subjectPhoto ?? undefined;
 
-  const subtitleParts = [subjectType, roomNumber ? `Room ${roomNumber}` : ""].filter(Boolean);
+  const subtitleParts = [
+    subjectType,
+    roomNumber ? `Room ${roomNumber}` : "",
+  ].filter(Boolean);
   const subtitle = subtitleParts.join(" · ");
 
   const [createSheetOpen, setCreateSheetOpen] = useState(false);
@@ -347,7 +382,9 @@ const ClassroomScreen = () => {
         label: "In-class assessment",
         description: "You'll grade students manually after class.",
         onPress: () =>
-          router.push(`/(main)/classroom/${classroomId as string}/create-activity`),
+          router.push(
+            `/(main)/classroom/${classroomId as string}/create-activity`,
+          ),
       },
     ],
     [classroomId, router],

@@ -1,29 +1,27 @@
+import { Card, Select, Separator, Skeleton } from "heroui-native";
+import { useEffect, useMemo, useState } from "react";
+import { View } from "react-native";
 import { AppText } from "@/components/AppText";
 import EmptyState from "@/components/EmptyState";
 import { ErrorComponent } from "@/components/ErrorComponent";
+import { RefreshIndicator } from "@/components/RefreshIndicator";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import Screen from "@/components/screen";
 import {
   useAcademicRecords,
   useAcademicTerms,
 } from "@/features/profile/profile.hooks";
-import {
+import type {
   AcademicRecordTerm,
   AcademicSubject,
   AcademicTermItem,
 } from "@/features/profile/profile.types";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { Card, Select, Separator, Skeleton } from "heroui-native";
-import { useEffect, useMemo, useState } from "react";
-import { View } from "react-native";
-import { ScreenScrollView } from "@/components/ScreenScrollView";
-import { RefreshIndicator } from "@/components/RefreshIndicator";
 
 const PASSING_GRADE = 75;
 const TERM_ORDER = ["Prelim", "Midterm", "Pre-final", "Final"];
 
-const sortTerms = (
-  entries: [string, number][],
-): [string, number][] =>
+const sortTerms = (entries: [string, number][]): [string, number][] =>
   [...entries].sort(([a], [b]) => {
     const ai = TERM_ORDER.indexOf(a);
     const bi = TERM_ORDER.indexOf(b);
@@ -87,10 +85,7 @@ const AcademicRecordsScreen = () => {
   // when `keepPreviousData` is in play), so the second arm prevents a
   // blank flash between tapping "Try again" and the error reappearing.
   const isRecordsFetching = isLoadingRecords || isRefetching;
-  if (
-    isLoadingTerms ||
-    (isRecordsFetching && !records)
-  )
+  if (isLoadingTerms || (isRecordsFetching && !records))
     return <AcademicRecordsSkeleton />;
   if (isErrorRecords || isErrorTerms) {
     return (
@@ -226,9 +221,7 @@ const TermSection = ({ term }: { term: AcademicRecordTerm }) => {
 const SubjectRow = ({ subject }: { subject: AcademicSubject }) => {
   const final = subject.breakdown?.final ?? 0;
   const isFailing = final < PASSING_GRADE;
-  const termEntries = sortTerms(
-    Object.entries(subject.breakdown?.terms ?? {}),
-  );
+  const termEntries = sortTerms(Object.entries(subject.breakdown?.terms ?? {}));
 
   return (
     <View className="gap-1.5">

@@ -1,5 +1,5 @@
-import { View } from "react-native";
 import { useThemeColor } from "heroui-native";
+import { View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon, type IconName } from "@/components/Icon";
 import {

@@ -1,11 +1,11 @@
+import { Button, Dialog } from "heroui-native";
+import { useEffect, useState } from "react";
+import { View } from "react-native";
 import { AppText } from "@/components/AppText";
 import {
   consumeForcedLogoutNotice,
   type ForcedLogoutNotice,
 } from "@/features/auth/forcedLogoutNotice";
-import { Button, Dialog } from "heroui-native";
-import { useEffect, useState } from "react";
-import { View } from "react-native";
 
 const ForcedLogoutNoticeDialog = () => {
   const [notice, setNotice] = useState<ForcedLogoutNotice | null>(null);
@@ -33,8 +33,7 @@ const ForcedLogoutNoticeDialog = () => {
           <View className="mb-5 gap-3">
             <Dialog.Title>Session Expired</Dialog.Title>
             <Dialog.Description>
-              Your previous session has ended. Please sign in again to
-              continue.
+              Your previous session has ended. Please sign in again to continue.
             </Dialog.Description>
             {hasUnsynced && (
               <AppText weight="semibold" className="text-sm text-danger">

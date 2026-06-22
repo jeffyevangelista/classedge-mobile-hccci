@@ -1,11 +1,7 @@
-import {
-  ActivityIndicator,
-  View,
-  Pressable,
-  Platform,
-  Alert,
-} from "react-native";
-import React, { useState } from "react";
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Button,
   FieldError,
@@ -18,18 +14,22 @@ import {
   useThemeColor,
   useToast,
 } from "heroui-native";
-import AppInput from "@/components/AppInput";
-import { Icon } from "@/components/Icon";
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
-import { AppText } from "@/components/AppText";
+import React, { useState } from "react";
 import {
-  useClassroomGradingPeriods,
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  View,
+} from "react-native";
+import AppInput from "@/components/AppInput";
+import { AppText } from "@/components/AppText";
+import { Icon } from "@/components/Icon";
+import {
   useActivityTypes,
+  useClassroomGradingPeriods,
 } from "../classroom.hooks";
-import { createActivity } from "../ classroom.service";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { createActivity } from "../classroom.service";
 
 type SelectOption = {
   value: string;
@@ -71,7 +71,7 @@ const CreateClassroomActivityForm = () => {
     setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
 
   const onStartDateChange = (
-    event: DateTimePickerEvent,
+    _event: DateTimePickerEvent,
     selectedDate?: Date,
   ) => {
     setShowStartDatePicker(Platform.OS === "ios");
@@ -83,7 +83,7 @@ const CreateClassroomActivityForm = () => {
   };
 
   const onStartTimeChange = (
-    event: DateTimePickerEvent,
+    _event: DateTimePickerEvent,
     selectedTime?: Date,
   ) => {
     setShowStartTimePicker(Platform.OS === "ios");
@@ -91,13 +91,19 @@ const CreateClassroomActivityForm = () => {
     clearError("schedule");
   };
 
-  const onEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+  const onEndDateChange = (
+    _event: DateTimePickerEvent,
+    selectedDate?: Date,
+  ) => {
     setShowEndDatePicker(Platform.OS === "ios");
     if (selectedDate) setEndDate(selectedDate);
     clearError("schedule");
   };
 
-  const onEndTimeChange = (event: DateTimePickerEvent, selectedTime?: Date) => {
+  const onEndTimeChange = (
+    _event: DateTimePickerEvent,
+    selectedTime?: Date,
+  ) => {
     setShowEndTimePicker(Platform.OS === "ios");
     if (selectedTime) setEndTime(selectedTime);
     clearError("schedule");

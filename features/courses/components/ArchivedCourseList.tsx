@@ -1,12 +1,12 @@
-import { ActivityIndicator, Pressable, SectionList, View } from "react-native";
 import { router } from "expo-router";
 import { Card, useThemeColor } from "heroui-native";
+import { ActivityIndicator, Pressable, SectionList, View } from "react-native";
 import { AppText } from "@/components/AppText";
-import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
-import Image from "@/components/Image";
-import { Icon } from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
 import ErrorFallback from "@/components/ErrorFallback";
+import { Icon } from "@/components/Icon";
+import Image from "@/components/Image";
+import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
 import { getApiErrorMessage } from "@/lib/api-error";
 import useStore from "@/lib/store";
@@ -30,7 +30,9 @@ const ArchivedCourseList = () => {
   const mutedColor = useThemeColor("muted");
 
   if (isError) {
-    return <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />;
+    return (
+      <ErrorFallback message={getApiErrorMessage(error)} onRefetch={refetch} />
+    );
   }
   if (isLoading) {
     return (
@@ -77,7 +79,9 @@ const ArchivedCourseList = () => {
           </AppText>
         </View>
       )}
-      renderItem={({ item }) => <ArchivedRow item={item} mutedColor={mutedColor} />}
+      renderItem={({ item }) => (
+        <ArchivedRow item={item} mutedColor={mutedColor} />
+      )}
     />
   );
 };
@@ -92,7 +96,13 @@ const useArchivedRoute = () => {
   };
 };
 
-const ArchivedRow = ({ item, mutedColor }: { item: ArchivedCourse; mutedColor: string }) => {
+const ArchivedRow = ({
+  item,
+  mutedColor,
+}: {
+  item: ArchivedCourse;
+  mutedColor: string;
+}) => {
   const resolveRoute = useArchivedRoute();
   return (
     <View className="px-2 py-1">
@@ -116,18 +126,32 @@ const ArchivedRow = ({ item, mutedColor }: { item: ArchivedCourse; mutedColor: s
               cachePolicy="disk"
             />
             <View className="px-4 pb-4 gap-1">
-              <AppText weight="semibold" className="text-base leading-6" numberOfLines={2}>
+              <AppText
+                weight="semibold"
+                className="text-base leading-6"
+                numberOfLines={2}
+              >
                 {item.subjectName}
               </AppText>
               <View className="flex-row items-center gap-1.5">
                 <Icon name="MapPinIcon" size={14} color={mutedColor} />
-                <AppText numberOfLines={1} className="text-xs text-muted flex-1">
+                <AppText
+                  numberOfLines={1}
+                  className="text-xs text-muted flex-1"
+                >
                   {item.roomNumber || "TBA"}
                 </AppText>
               </View>
               <View className="flex-row items-center gap-1.5">
-                <Icon name="ChalkboardTeacherIcon" size={14} color={mutedColor} />
-                <AppText numberOfLines={1} className="text-xs text-muted flex-1">
+                <Icon
+                  name="ChalkboardTeacherIcon"
+                  size={14}
+                  color={mutedColor}
+                />
+                <AppText
+                  numberOfLines={1}
+                  className="text-xs text-muted flex-1"
+                >
                   {item.teacherName || "Unassigned"}
                 </AppText>
               </View>

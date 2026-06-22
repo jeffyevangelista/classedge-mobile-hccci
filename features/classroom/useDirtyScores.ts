@@ -40,7 +40,11 @@ export function useDirtyScores<T extends StudentLike>({
       }
 
       const numericScore = parseInt(local, 10);
-      if (isNaN(numericScore) || numericScore < 0 || numericScore > maxScore) {
+      if (
+        Number.isNaN(numericScore) ||
+        numericScore < 0 ||
+        numericScore > maxScore
+      ) {
         continue;
       }
 

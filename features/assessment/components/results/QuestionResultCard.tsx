@@ -5,12 +5,12 @@ import { AttachmentFile } from "@/features/attachments/components/AttachmentFile
 import { useQuestionTypes } from "../../assessment.hooks";
 import type { Choice, Question } from "../questions/types";
 import { isAnswerCorrect, isAutoGraded } from "./correctness";
+import { EssayResult } from "./EssayResult";
+import { FillInBlankResult } from "./FillInBlankResult";
+import { ImageBasedResult } from "./ImageBasedResult";
+import { MatchingResult } from "./MatchingResult";
 import { MCResult } from "./MCResult";
 import { TrueFalseResult } from "./TrueFalseResult";
-import { FillInBlankResult } from "./FillInBlankResult";
-import { MatchingResult } from "./MatchingResult";
-import { EssayResult } from "./EssayResult";
-import { ImageBasedResult } from "./ImageBasedResult";
 
 interface Props {
   index: number; // 1-based question position for the header

@@ -1,6 +1,6 @@
-import { useQuery } from "@powersync/tanstack-react-query";
-import { useQuery as usePowerSyncQuery } from "@powersync/react-native";
 import { toCompilableQuery } from "@powersync/drizzle-driver";
+import { useQuery as usePowerSyncQuery } from "@powersync/react-native";
+import { useQuery } from "@powersync/tanstack-react-query";
 import { useMemo } from "react";
 import {
   getActivityById,
@@ -12,8 +12,8 @@ import {
   getChoicesForQuestionIds,
   getOngoingAttempt,
   getQuestionCount,
-  getQuestionTypes,
   getQuestions,
+  getQuestionTypes,
 } from "./assessment.service";
 
 // Watch-backed: re-runs whenever the `activity_studentactivity` row for
@@ -30,14 +30,19 @@ export const useAssessmentDetails = ({
   assessmentId: string;
 }) => {
   const enabled = !!assessmentId && assessmentId !== "undefined" && !!userId;
-  const { data: rows, isLoading, isFetching, error, refresh } =
-    usePowerSyncQuery(
-      toCompilableQuery(
-        getAssessmentDetails(enabled ? assessmentId : "", enabled ? userId : 0),
-      ),
-    );
+  const {
+    data: rows,
+    isLoading,
+    isFetching,
+    error,
+    refresh,
+  } = usePowerSyncQuery(
+    toCompilableQuery(
+      getAssessmentDetails(enabled ? assessmentId : "", enabled ? userId : 0),
+    ),
+  );
   const data = useMemo(
-    () => (enabled ? rows?.[0] ?? null : null),
+    () => (enabled ? (rows?.[0] ?? null) : null),
     [rows, enabled],
   );
   return {
@@ -58,10 +63,15 @@ export const useAttemptRecords = (
   studentActivityId: string,
   studentId: number,
 ) => {
-  const { data: rows, isLoading, isFetching, error, refresh } =
-    usePowerSyncQuery(
-      toCompilableQuery(getAttemptRecords(studentActivityId, studentId)),
-    );
+  const {
+    data: rows,
+    isLoading,
+    isFetching,
+    error,
+    refresh,
+  } = usePowerSyncQuery(
+    toCompilableQuery(getAttemptRecords(studentActivityId, studentId)),
+  );
   const data = useMemo(() => rows ?? [], [rows]);
   return {
     data,
@@ -78,8 +88,13 @@ export const useAttemptRecords = (
 // mutations (heartbeat, lastIndex) and on server-side syncs (status,
 // score, graded_at).
 export const useGetAssessmentAttempt = (localId: string) => {
-  const { data: rows, isLoading, isFetching, error, refresh } =
-    usePowerSyncQuery(toCompilableQuery(getAssessmentAttempt(localId)));
+  const {
+    data: rows,
+    isLoading,
+    isFetching,
+    error,
+    refresh,
+  } = usePowerSyncQuery(toCompilableQuery(getAssessmentAttempt(localId)));
   const data = useMemo(() => rows?.[0] ?? null, [rows]);
   return {
     data,
@@ -95,8 +110,13 @@ export const useGetAssessmentAttempt = (localId: string) => {
 // Watch-backed unordered question list. Kept for parity — the ordered
 // variant below is what consumers actually use.
 export const useGetQuestions = (activityId: string) => {
-  const { data: rows, isLoading, isFetching, error, refresh } =
-    usePowerSyncQuery(toCompilableQuery(getQuestions(activityId)));
+  const {
+    data: rows,
+    isLoading,
+    isFetching,
+    error,
+    refresh,
+  } = usePowerSyncQuery(toCompilableQuery(getQuestions(activityId)));
   const data = useMemo(() => rows ?? [], [rows]);
   return {
     data,
@@ -117,8 +137,13 @@ export const useGetOrderedQuestions = (
   activityId: string,
   questionOrder: number[],
 ) => {
-  const { data: rows, isLoading, isFetching, error, refresh } =
-    usePowerSyncQuery(toCompilableQuery(getQuestions(activityId)));
+  const {
+    data: rows,
+    isLoading,
+    isFetching,
+    error,
+    refresh,
+  } = usePowerSyncQuery(toCompilableQuery(getQuestions(activityId)));
   const data = useMemo(() => {
     if (!activityId) return undefined;
     if (rows === undefined) return undefined;
@@ -265,10 +290,7 @@ export const useAttemptReview = (attemptLocalId: string | undefined) => {
   // Memoize the question id list so the choices watch only resubscribes
   // when the underlying set actually changes (not on every render).
   const questionIds = useMemo(
-    () =>
-      questions
-        .map((q) => Number(q.id))
-        .filter((n) => Number.isFinite(n)),
+    () => questions.map((q) => Number(q.id)).filter((n) => Number.isFinite(n)),
     [questions],
   );
   const choicesW = usePowerSyncQuery(
@@ -354,8 +376,13 @@ export const useAttemptReview = (attemptLocalId: string | undefined) => {
 // the UI doesn't flash empty cards while modules are still arriving.
 export const useAssessmentMaterials = (activityId: string | undefined) => {
   const safeId = activityId ?? "";
-  const { data: rows, isLoading, isFetching, error, refresh } =
-    usePowerSyncQuery(toCompilableQuery(getAssessmentMaterials(safeId)));
+  const {
+    data: rows,
+    isLoading,
+    isFetching,
+    error,
+    refresh,
+  } = usePowerSyncQuery(toCompilableQuery(getAssessmentMaterials(safeId)));
   const data = useMemo(() => {
     if (!activityId || rows === undefined) return undefined;
     return rows.filter((r) => r.module != null).map((r) => r.module!);
@@ -378,8 +405,13 @@ export const useAssessmentMaterials = (activityId: string | undefined) => {
 // callers can render a "—" placeholder instead of a misleading 0.
 export const useQuestionCount = (activityId: string | undefined) => {
   const safeId = activityId ?? "";
-  const { data: rows, isLoading, isFetching, error, refresh } =
-    usePowerSyncQuery(toCompilableQuery(getQuestionCount(safeId)));
+  const {
+    data: rows,
+    isLoading,
+    isFetching,
+    error,
+    refresh,
+  } = usePowerSyncQuery(toCompilableQuery(getQuestionCount(safeId)));
   const data = useMemo(
     () => (activityId && rows !== undefined ? rows.length : undefined),
     [rows, activityId],

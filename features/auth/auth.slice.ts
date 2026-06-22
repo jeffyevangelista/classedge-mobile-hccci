@@ -1,3 +1,5 @@
+import { jwtDecode } from "jwt-decode";
+import type { StateCreator } from "zustand";
 import {
   deleteMMKVItem,
   getMMKVItem,
@@ -10,8 +12,6 @@ import {
 } from "@/lib/storage/secure-storage";
 import { env } from "@/utils/env";
 import { MMKV_KEYS } from "@/utils/storage-keys";
-import { jwtDecode } from "jwt-decode";
-import type { StateCreator } from "zustand";
 import type { AuthUser } from "./auth.types";
 
 export type OAuthPhase =
@@ -46,7 +46,10 @@ type AuthAction = {
   setResetToken: (resetToken: string | null) => void;
   setOtpExpiresAt: (otpExpiresAt: number | null) => void;
   setLegalUpdateRequired: (legalUpdateRequired: boolean) => void;
-  setOAuthPhase: (next: { phase: OAuthPhase; startedAt: number | null }) => void;
+  setOAuthPhase: (next: {
+    phase: OAuthPhase;
+    startedAt: number | null;
+  }) => void;
 };
 
 export type AuthSlice = AuthState & AuthAction;

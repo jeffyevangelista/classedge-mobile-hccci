@@ -1,17 +1,17 @@
-import { View, Pressable } from "react-native";
-import React, { useMemo, useState } from "react";
-import { useClock } from "@/hooks/useClock";
-import { useClassSchedule } from "@/features/profile/profile.hooks";
-import { useSectionStatus } from "@/features/sync/useSectionStatus";
-import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import { Skeleton } from "heroui-native";
+import { MotiView } from "moti";
+import { useMemo, useState } from "react";
+import { Pressable, View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { ErrorComponent } from "@/components/ErrorComponent";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import { MotiView } from "moti";
 import { Icon, type IconName } from "@/components/Icon";
+import { useClassSchedule } from "@/features/profile/profile.hooks";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
+import { useClock } from "@/hooks/useClock";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -177,27 +177,28 @@ const ScheduleComponent = () => {
       ? formatCountdown(nextClass.start, now)
       : null;
 
-  const emptyLeft: { label: string; title: string; iconName: IconName } = (() => {
-    if (nextClass && !nextClassDayLabel) {
+  const emptyLeft: { label: string; title: string; iconName: IconName } =
+    (() => {
+      if (nextClass && !nextClassDayLabel) {
+        return {
+          label: "Free Now",
+          title: `${formatCountdown(nextClass.start, now)} until next class`,
+          iconName: "CoffeeIcon",
+        };
+      }
+      if (todayHasClasses) {
+        return {
+          label: "All Done",
+          title: "No more classes today",
+          iconName: "CheckCircleIcon",
+        };
+      }
       return {
-        label: "Free Now",
-        title: `${formatCountdown(nextClass.start, now)} until next class`,
-        iconName: "CoffeeIcon",
+        label: "Free Day",
+        title: "No classes today",
+        iconName: "SunIcon",
       };
-    }
-    if (todayHasClasses) {
-      return {
-        label: "All Done",
-        title: "No more classes today",
-        iconName: "CheckCircleIcon",
-      };
-    }
-    return {
-      label: "Free Day",
-      title: "No classes today",
-      iconName: "SunIcon",
-    };
-  })();
+    })();
 
   return (
     <View>
@@ -318,10 +319,7 @@ const ScheduleComponent = () => {
             onPress={() => router.push("/(main)/(drawer)/(tabs)/courses")}
           >
             <LinearGradient
-              colors={[
-                "rgba(59, 130, 246, 0.18)",
-                "rgba(59, 130, 246, 0.10)",
-              ]}
+              colors={["rgba(59, 130, 246, 0.18)", "rgba(59, 130, 246, 0.10)"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={{

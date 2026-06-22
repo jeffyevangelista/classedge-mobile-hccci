@@ -15,8 +15,8 @@ import * as AuthSession from "expo-auth-session";
 import * as Crypto from "expo-crypto";
 import * as Linking from "expo-linking";
 import useStore from "@/lib/store";
-import { env } from "@/utils/env";
 import { captureAuthError, captureAuthMessage } from "@/lib/telemetry";
+import { env } from "@/utils/env";
 import { msLogin } from "./auth.apis";
 import { hydrateSession } from "./hydrateSession";
 import {

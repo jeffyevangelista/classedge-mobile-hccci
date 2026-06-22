@@ -1,3 +1,5 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "expo-router";
 import {
   Button,
   FieldError,
@@ -8,15 +10,13 @@ import {
   useToast,
 } from "heroui-native";
 import { useRef, useState } from "react";
-import { Pressable, TextInput, View } from "react-native";
 import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useLogin } from "../auth.hooks";
+import { Pressable, type TextInput, View } from "react-native";
 import AppInput from "@/components/AppInput";
 import { Icon } from "@/components/Icon";
-import { useRouter } from "expo-router";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { LoginFormValues, loginSchema } from "../auth.schemas";
+import { useLogin } from "../auth.hooks";
+import { type LoginFormValues, loginSchema } from "../auth.schemas";
 
 const LoginForm = () => {
   const router = useRouter();

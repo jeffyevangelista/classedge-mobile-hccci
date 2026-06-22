@@ -1,7 +1,7 @@
+import { useThemeColor } from "heroui-native";
 import { View } from "react-native";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
-import { useThemeColor } from "heroui-native";
 
 export const AssessmentClassroomBanner = () => {
   const accentColor = useThemeColor("accent");
