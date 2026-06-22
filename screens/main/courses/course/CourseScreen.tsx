@@ -26,6 +26,7 @@ import Animated, {
   useScrollViewOffset,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 
 const NAV_HEIGHT = 56;
 
@@ -38,6 +39,7 @@ const CourseScreen = () => {
   const IMAGE_HEIGHT = Math.round(screenHeight * 0.28);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
+  const bottomInset = useScrollBottomInset();
   const { data, isLoading, isError, error, refetch } = useCourseDetails(
     courseId as string,
   );
@@ -198,6 +200,7 @@ const CourseScreen = () => {
         ref={scrollRef}
         scrollEventThrottle={1}
         refreshControl={refreshControl}
+        style={{ marginBottom: bottomInset }}
       >
         <Animated.View
           style={[
