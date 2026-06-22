@@ -229,7 +229,7 @@ const CollapsibleSearch = ({
     <Animated.View
       entering={FadeInDown.duration(180)}
       exiting={FadeOutUp.duration(140)}
-      className="flex-row items-center gap-2 px-2 pt-2 pb-1"
+      className="flex-row items-center gap-2 px-2 pt-2"
     >
       <InputGroup className="flex-1 shadow-none">
         <InputGroup.Prefix>
@@ -306,7 +306,7 @@ const Course = ({
       : "Unassigned";
 
   return (
-    <View style={{ flex: 1 / numColumns, padding: 5 }}>
+    <View style={{ flex: 1 / numColumns, padding: 4 }}>
       <Pressable
         onPress={() => router.push(`/course/${item.id}`)}
         accessibilityRole="button"
@@ -378,7 +378,7 @@ const CourseListSkeleton = ({ numColumns }: { numColumns: number }) => {
   return (
     <View className="w-full max-w-6xl mx-auto flex-1 px-1">
       <ScreenScrollView>
-        <View className="px-2 pt-2 pb-1">
+        <View className="px-2 pt-2">
           <Skeleton className="h-10 w-full rounded-xl" />
         </View>
         <View className="flex-row flex-wrap">
@@ -387,7 +387,7 @@ const CourseListSkeleton = ({ numColumns }: { numColumns: number }) => {
             .map((_, index) => (
               <View
                 key={index}
-                style={{ width: `${100 / numColumns}%`, padding: 10 / 2 }}
+                style={{ width: `${100 / numColumns}%`, padding: 4 }}
               >
                 <Card className="p-0 shadow-none rounded-xl border border-border">
                   <Card.Body className="gap-2.5">
