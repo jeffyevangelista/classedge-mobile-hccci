@@ -88,8 +88,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       "expo-camera",
       {
-        cameraPermission: "Allow Classedge to access your camera",
-        microphonePermission: "Allow Classedge to access your microphone",
+        cameraPermission: "Allow HCCCI to access your camera",
+        microphonePermission: "Allow HCCCI to access your microphone",
         barcodeScannerEnabled: true,
       },
     ],
@@ -97,9 +97,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "expo-image-picker",
       {
         photosPermission:
-          "Allow Classedge to access your photos so you can change your profile photo.",
+          "Allow HCCCI to access your photos so you can change your profile photo.",
         cameraPermission:
-          "Allow Classedge to use your camera so you can take a new profile photo.",
+          "Allow HCCCI to use your camera so you can take a new profile photo.",
       },
     ],
     "expo-router",

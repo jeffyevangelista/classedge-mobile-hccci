@@ -105,7 +105,7 @@ const OnboardingScreen = () => {
             Almost there!
           </AppText>
           <AppText className="text-sm text-muted text-center mt-2 px-8">
-            Please review and accept our terms to continue using Classedge.
+            Please review and accept our terms to continue using HCCCI.
           </AppText>
         </View>
 

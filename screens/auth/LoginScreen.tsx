@@ -54,7 +54,7 @@ const LoginScreen = () => {
               weight="semibold"
               className={`${isTablet ? "text-3xl mt-5" : "text-2xl mt-4"} text-foreground`}
             >
-              Welcome to Classedge
+              Welcome to HCCCI
             </AppText>
             <AppText className="text-sm text-muted text-center mt-1">
               Login to manage your classes and learning
