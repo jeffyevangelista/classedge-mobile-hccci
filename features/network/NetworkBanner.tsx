@@ -1,17 +1,17 @@
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
+  Easing,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-  runOnJS,
-  Easing,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppText } from "@/components/AppText";
 import { Icon } from "@/components/Icon";
-import { useNetworkBanner, type NetworkBannerState } from "./useNetworkBanner";
 import { useNetworkBannerHeight } from "./NetworkBannerContext";
+import { type NetworkBannerState, useNetworkBanner } from "./useNetworkBanner";
 
 const BANNER_HEIGHT = 36;
 const ANIMATION_DURATION = 300;
@@ -102,7 +102,19 @@ const NetworkBanner = () => {
         },
       );
     }
-  }, [isVisible, insets.bottom]);
+  }, [
+    isVisible,
+    insets.bottom,
+    translateY, // Reserve layout space upfront so scroll consumers
+    // (useScrollBottomInset) immediately push content above the banner
+    // area, even before the slide-in animation finishes. Without this,
+    // scroll viewports can be cut by the banner during the animation
+    // window or if the completion callback fails to fire.
+    setBannerHeight, // Defer clearing the reserved height until the banner has finished
+    // sliding out — otherwise content would snap up before the banner
+    // is gone from view.
+    heightValue,
+  ]);
 
   const animatedContainerStyle = useAnimatedStyle(() => ({
     height: heightValue.value,
@@ -119,12 +131,21 @@ const NetworkBanner = () => {
       : config?.text;
 
   return (
-    <Animated.View style={[styles.container, animatedContainerStyle]}>
+    <Animated.View
+      style={[
+        styles.container,
+        animatedContainerStyle,
+        { backgroundColor: config?.bg ?? "#1F1F1F" },
+      ]}
+    >
       <Animated.View
         style={[
           styles.banner,
           animatedBannerStyle,
-          { paddingBottom: insets.bottom, backgroundColor: config?.bg ?? "#1F1F1F" },
+          {
+            paddingBottom: insets.bottom,
+            backgroundColor: config?.bg ?? "#1F1F1F",
+          },
         ]}
       >
         <View style={styles.content}>
