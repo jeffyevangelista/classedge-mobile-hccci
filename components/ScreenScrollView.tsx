@@ -2,22 +2,29 @@ import { ScrollView, type ScrollViewProps } from "react-native";
 import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 
 /**
- * ScrollView wrapper that shrinks the scroll viewport from the bottom by the
- * combined safe-area inset plus network banner height plus 16px. Mid-scroll
- * content never appears under the system nav bar.
+ * ScrollView wrapper that pads the content container's bottom by the
+ * safe-area inset (home indicator / Android nav). The scroll viewport
+ * extends to the screen edge — the last item rests above the system
+ * gesture area (iOS-native pattern).
  *
  * For `Animated.ScrollView` (parallax screens), don't use this — keep the
- * Animated.ScrollView and apply `style={{ marginBottom: useScrollBottomInset(16) }}`
+ * Animated.ScrollView and apply
+ * `contentContainerStyle={{ paddingBottom: useScrollBottomInset() }}`
  * inline.
  *
- * Caller-provided `style` is merged after the marginBottom (caller wins).
+ * Caller-provided `contentContainerStyle` merges after our paddingBottom
+ * (caller wins). Don't set `pb-*` in `contentContainerClassName` unless
+ * you want to override the safe-area padding entirely.
  */
 export function ScreenScrollView(props: ScrollViewProps) {
-  const marginBottom = useScrollBottomInset();
+  const paddingBottom = useScrollBottomInset();
   return (
     <ScrollView
       {...props}
-      style={[{ marginBottom }, props.style]}
+      contentContainerStyle={[
+        { paddingBottom },
+        props.contentContainerStyle,
+      ]}
     />
   );
 }

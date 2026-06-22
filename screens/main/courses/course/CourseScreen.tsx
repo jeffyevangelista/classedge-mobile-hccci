@@ -200,7 +200,7 @@ const CourseScreen = () => {
         ref={scrollRef}
         scrollEventThrottle={1}
         refreshControl={refreshControl}
-        style={{ marginBottom: bottomInset }}
+        contentContainerStyle={{ paddingBottom: bottomInset }}
       >
         <Animated.View
           style={[

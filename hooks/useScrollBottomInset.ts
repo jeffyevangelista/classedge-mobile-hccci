@@ -7,8 +7,17 @@ import useStore from "@/lib/store";
 /**
  * Bottom inset for scrollable content.
  *
- * Returns the inset to apply (typically as `style.marginBottom`) so scroll
- * content stops above the system nav bar and the network banner.
+ * Returns the inset to apply as `contentContainerStyle.paddingBottom` on
+ * a scroll view, so the last item rests above the system gesture/nav
+ * area while the scroll viewport itself extends to the screen edge
+ * (matches iOS-native behavior).
+ *
+ * Known trade-off: on Android with edge-to-edge enabled (app.config.ts)
+ * AND a translucent 3-button nav bar, mid-scroll content is visible
+ * behind the nav. This is accepted for now in exchange for edge-to-edge
+ * behavior on iOS and gesture-nav devices. Permanent fix is to set the
+ * Android nav bar opaque (via expo-navigation-bar) so the system nav
+ * hides any content drawn behind it.
  *
  * Behavior depends on context:
  * - Inside the (tabs) layout: the tab bar sits between the scroll content

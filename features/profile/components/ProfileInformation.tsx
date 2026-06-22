@@ -109,7 +109,7 @@ const ProfileInformation = () => {
         refreshControl={
           <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />
         }
-        contentContainerClassName="gap-6 pb-8"
+        contentContainerClassName="gap-6"
       >
         <ProfileHero
           fullName={fullName}

@@ -121,7 +121,7 @@ const AcademicRecordsScreen = () => {
     <Screen>
       <ScreenScrollView
         className="flex-1"
-        contentContainerClassName="p-3 pb-8 gap-4 mx-auto w-full max-w-3xl"
+        contentContainerClassName="p-3 gap-4 mx-auto w-full max-w-3xl"
         refreshControl={
           <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
         }
