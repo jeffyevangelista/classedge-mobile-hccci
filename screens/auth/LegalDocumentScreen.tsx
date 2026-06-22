@@ -10,6 +10,7 @@ import type { LegalDocument } from "@/features/auth/auth.types";
 import { LegalContent } from "@/features/auth/components/LegalContent";
 import { getApiErrorMessage } from "@/lib/api-error";
 import useStore from "@/lib/store";
+import { formatDate } from "@/utils/formatDate";
 
 export type LegalDocType = "EULA" | "PRIVACY" | "NDA";
 
@@ -101,7 +102,8 @@ const LegalDocumentScreen = () => {
         {docType && !isLoading && document && (
           <>
             <AppText className="text-xs text-muted mb-4">
-              Version {document.version}
+              Version {document.version} · Effective{" "}
+              {formatDate(document.effectiveDate)}
             </AppText>
             <LegalContent content={document.content} />
           </>

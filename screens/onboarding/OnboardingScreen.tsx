@@ -19,6 +19,7 @@ import type { LegalDocument } from "@/features/auth/auth.types";
 import { LegalContent } from "@/features/auth/components/LegalContent";
 import { getApiErrorMessage } from "@/lib/api-error";
 import useStore from "@/lib/store";
+import { formatDate } from "@/utils/formatDate";
 
 const DOC_LABELS: Record<string, string> = {
   EULA: "End User License Agreement (EULA)",
@@ -235,7 +236,8 @@ const LegalSection = ({
         {index}. {label}
       </AppText>
       <AppText className="text-xs text-muted mb-3">
-        Version {document.version}
+        Version {document.version} · Effective{" "}
+        {formatDate(document.effectiveDate)}
       </AppText>
 
       <View className="pl-3 border-l-2 border-border">
