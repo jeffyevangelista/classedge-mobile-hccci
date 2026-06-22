@@ -182,15 +182,13 @@ const CreateClassroomActivityForm = () => {
       termId: termIdNum,
     };
     try {
-      await createActivity(data);
-      // Land back on the classroom tabs root instead of the empty
-      // grading screen — a brand-new activity has zero scores yet, so
-      // dropping straight into the scoring list felt anticlimactic. The
-      // toast tells the teacher exactly where to find it.
-      router.replace(`/(main)/classroom/${classroomId}`);
+      const { id: activityId } = await createActivity(data);
+      router.replace(
+        `/(main)/classroom/${classroomId}/input-grades/${activityId}`,
+      );
       toast.show({
         label: "Activity created",
-        description: "Find it in the In-class tab to grade students.",
+        description: "Score students below.",
         variant: "success",
       });
     } catch (error) {
