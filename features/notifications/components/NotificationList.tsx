@@ -12,14 +12,14 @@ import { Icon, type IconName } from "@/components/Icon";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { ScreenList } from "@/components/ScreenList";
 import { AttachmentAvatarImage } from "@/features/attachments/components/AttachmentAvatarImage";
+import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
+import { SectionView } from "@/features/sync/components/SectionView";
+import { useSectionStatus } from "@/features/sync/useSectionStatus";
 import { track } from "@/lib/activity-tracker";
 import { getApiErrorMessage } from "@/lib/api-error";
 import useStore from "@/lib/store";
 import type { Notification } from "@/powersync/schema";
 import { toTitleCase } from "@/utils/toTitleCase";
-import { useSectionStatus } from "@/features/sync/useSectionStatus";
-import { SectionView } from "@/features/sync/components/SectionView";
-import { OfflineEmpty } from "@/features/sync/components/OfflineEmpty";
 import { useNotifications } from "../notifications.hooks";
 import {
   getNotificationHref,
@@ -40,36 +40,6 @@ const ENTITY_ICON: Record<string, IconName> = {
 const getEntityIcon = (entityType: string): IconName =>
   ENTITY_ICON[entityType] ?? "InfoIcon";
 
-type NotificationRow =
-  | { type: "header"; label: string }
-  | { type: "item"; notification: Notification };
-
-const buildRows = (items: Notification[]): NotificationRow[] => {
-  const today = dayjs().startOf("day");
-  const yesterday = today.subtract(1, "day");
-  const weekCutoff = today.subtract(6, "day");
-  const buckets: { label: string; items: Notification[] }[] = [
-    { label: "Today", items: [] },
-    { label: "Yesterday", items: [] },
-    { label: "This Week", items: [] },
-    { label: "Earlier", items: [] },
-  ];
-  for (const n of items) {
-    const d = dayjs(n.createdAt).startOf("day");
-    if (d.isSame(today)) buckets[0].items.push(n);
-    else if (d.isSame(yesterday)) buckets[1].items.push(n);
-    else if (!d.isBefore(weekCutoff)) buckets[2].items.push(n);
-    else buckets[3].items.push(n);
-  }
-  const rows: NotificationRow[] = [];
-  for (const bucket of buckets) {
-    if (bucket.items.length === 0) continue;
-    rows.push({ type: "header", label: bucket.label });
-    for (const n of bucket.items) rows.push({ type: "item", notification: n });
-  }
-  return rows;
-};
-
 const NotificationList = () => {
   const { authUser } = useStore();
   const { data, isLoading, isError, error, isRefetching, refetch } =
@@ -81,16 +51,8 @@ const NotificationList = () => {
     isLoading,
   });
 
-  const rows = useMemo(() => buildRows(data ?? []), [data]);
-  const stickyHeaderIndices = useMemo(
-    () =>
-      rows.map((r, i) => (r.type === "header" ? i : -1)).filter((i) => i >= 0),
-    [rows],
-  );
-  const hasUnread = useMemo(
-    () => (data ?? []).some((n) => n.isRead === 0),
-    [data],
-  );
+  const items = data ?? [];
+  const hasUnread = useMemo(() => items.some((n) => n.isRead === 0), [items]);
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
 
   const handleMarkAllRead = async () => {
@@ -153,25 +115,12 @@ const NotificationList = () => {
               </View>
             ) : null
           }
-          data={rows}
-          getItemType={(item) => item.type}
-          stickyHeaderIndices={stickyHeaderIndices}
-          renderItem={({ item }) =>
-            item.type === "header" ? (
-              <View className="bg-surface max-w-3xl w-full mx-auto px-4 py-1">
-                <AppText
-                  weight="semibold"
-                  className="text-xs text-muted uppercase tracking-wider"
-                >
-                  {item.label}
-                </AppText>
-              </View>
-            ) : (
-              <View className="max-w-3xl w-full mx-auto">
-                <NotificationItem {...item.notification} />
-              </View>
-            )
-          }
+          data={items}
+          renderItem={({ item }) => (
+            <View className="max-w-3xl w-full mx-auto">
+              <NotificationItem {...item} />
+            </View>
+          )}
         />
       </SectionView.Ready>
     </SectionView>
@@ -275,9 +224,6 @@ const NotificationListSkeleton = () => {
     <View>
       <View className="bg-surface max-w-3xl w-full mx-auto px-4 py-1.5 flex-row justify-end">
         <Skeleton className="h-4 w-32 rounded" />
-      </View>
-      <View className="bg-surface max-w-3xl w-full mx-auto px-4 pt-2 pb-1">
-        <Skeleton className="h-3 w-16 rounded" />
       </View>
       {Array(8)
         .fill(0)
