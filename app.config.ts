@@ -53,6 +53,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     entitlements: {
       "aps-environment": variantConfig.apsEnvironment,
+      "com.apple.security.application-groups": [
+        `group.${variantConfig.bundleIdentifier}.onesignal`,
+      ],
     },
     icon: {
       dark: "./assets/icons/ios/ios-dark.png",
