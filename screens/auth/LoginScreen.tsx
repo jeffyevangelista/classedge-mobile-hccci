@@ -1,13 +1,13 @@
-import { AppText } from "@/components/AppText";
-import { Icon } from "@/components/Icon";
-import Image from "@/components/Image";
-import ForcedLogoutNoticeDialog from "@/features/auth/components/ForcedLogoutNoticeDialog";
-import MSAuthButton from "@/features/auth/components/MSAuthButton";
 import { useRouter } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
 import { useWindowDimensions, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AppText } from "@/components/AppText";
+import { Icon } from "@/components/Icon";
+import Image from "@/components/Image";
+import ForcedLogoutNoticeDialog from "@/features/auth/components/ForcedLogoutNoticeDialog";
+import MSAuthButton from "@/features/auth/components/MSAuthButton";
 
 const LoginScreen = () => {
   const { height, width } = useWindowDimensions();
@@ -57,7 +57,7 @@ const LoginScreen = () => {
               Welcome to HCCCI
             </AppText>
             <AppText className="text-sm text-muted text-center mt-1">
-              Login to manage your classes and learning
+              Your school day, made easier.
             </AppText>
           </View>
 
