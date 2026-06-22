@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
-import { useWindowDimensions, View } from "react-native";
+import { Pressable, useWindowDimensions, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppText } from "@/components/AppText";
@@ -77,25 +77,30 @@ const LoginScreen = () => {
           </View>
         </View>
 
-        <View className="items-center">
-          <AppText className="text-xs text-muted text-center px-4">
+        <View className="flex-row flex-wrap items-center justify-center px-4">
+          <AppText className="text-xs text-muted">
             By Continuing, you agree to our{" "}
-            <AppText
-              onPress={() => router.push("/(auth)/legal/eula")}
-              style={{ color: accentColor }}
-              className="text-xs"
-            >
+          </AppText>
+          <Pressable
+            onPress={() => router.push("/(auth)/legal/eula")}
+            hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+          >
+            <AppText className="text-xs" style={{ color: accentColor }}>
               EULA
-            </AppText>{" "}
+            </AppText>
+          </Pressable>
+          <AppText className="text-xs text-muted">
+            {" "}
             and acknowledge{" "}
-            <AppText
-              onPress={() => router.push("/(auth)/legal/privacy")}
-              style={{ color: accentColor }}
-              className="text-xs"
-            >
+          </AppText>
+          <Pressable
+            onPress={() => router.push("/(auth)/legal/privacy")}
+            hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+          >
+            <AppText className="text-xs" style={{ color: accentColor }}>
               Privacy Policy
             </AppText>
-          </AppText>
+          </Pressable>
         </View>
       </View>
     </KeyboardAwareScrollView>
