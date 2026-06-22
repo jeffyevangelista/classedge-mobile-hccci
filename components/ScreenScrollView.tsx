@@ -21,10 +21,7 @@ export function ScreenScrollView(props: ScrollViewProps) {
   return (
     <ScrollView
       {...props}
-      contentContainerStyle={[
-        { paddingBottom },
-        props.contentContainerStyle,
-      ]}
+      contentContainerStyle={[{ paddingBottom }, props.contentContainerStyle]}
     />
   );
 }

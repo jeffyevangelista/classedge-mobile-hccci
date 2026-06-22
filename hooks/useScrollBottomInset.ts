@@ -1,6 +1,6 @@
+import { BottomTabBarHeightContext } from "@react-navigation/bottom-tabs";
 import { useContext } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BottomTabBarHeightContext } from "@react-navigation/bottom-tabs";
 import { useNetworkBannerHeight } from "@/features/network/NetworkBannerContext";
 import useStore from "@/lib/store";
 
