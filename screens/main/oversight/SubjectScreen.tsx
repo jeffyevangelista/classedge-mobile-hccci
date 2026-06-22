@@ -62,19 +62,21 @@ const SubjectScreen = () => {
     [refreshing, onRefresh],
   );
 
-  const headerAnimatedStyle = useAnimatedStyle(() => ({
-    transformOrigin: "top",
-    transform: [
-      {
-        scale: interpolate(
-          scrollOffset.value,
-          [-IMAGE_HEIGHT, 0],
-          [1.5, 1],
-          Extrapolation.CLAMP,
-        ),
-      },
-    ],
-  }));
+  // Stretchy header (iOS pull-to-refresh pattern): when the user pulls down,
+  // translateY cancels the scrollview's push-down so the image's top stays
+  // anchored at the viewport top, then scaleY stretches it to fill the
+  // pulled-down area. Without the translateY, scale alone leaves a white
+  // gap above the photo where the spinner sits.
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    const pulled = scrollOffset.value < 0 ? -scrollOffset.value : 0;
+    return {
+      transformOrigin: "top",
+      transform: [
+        { translateY: -pulled },
+        { scaleY: 1 + pulled / IMAGE_HEIGHT },
+      ],
+    };
+  });
 
   const navBgStyle = useAnimatedStyle(() => ({
     opacity: interpolate(

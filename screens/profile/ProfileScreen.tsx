@@ -14,7 +14,6 @@ import { AppText } from "@/components/AppText";
 import Image from "@/components/Image";
 import { Icon, type IconName } from "@/components/Icon";
 import { queryClient } from "@/providers/QueryProvider";
-import { useScrollBottomInset } from "@/hooks/useScrollBottomInset";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   Extrapolation,
@@ -69,7 +68,6 @@ const ProfileScreen = () => {
   const IMAGE_HEIGHT = Math.round(screenHeight * 0.28);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
-  const bottomInset = useScrollBottomInset(16);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -85,19 +83,21 @@ const ProfileScreen = () => {
     [refreshing, onRefresh],
   );
 
-  const headerAnimatedStyle = useAnimatedStyle(() => ({
-    transformOrigin: "top",
-    transform: [
-      {
-        scale: interpolate(
-          scrollOffset.value,
-          [-IMAGE_HEIGHT, 0],
-          [1.5, 1],
-          Extrapolation.CLAMP,
-        ),
-      },
-    ],
-  }));
+  // Stretchy header (iOS pull-to-refresh pattern): when the user pulls down,
+  // translateY cancels the scrollview's push-down so the image's top stays
+  // anchored at the viewport top, then scaleY stretches it to fill the
+  // pulled-down area. Without the translateY, scale alone leaves a white
+  // gap above the photo where the spinner sits.
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    const pulled = scrollOffset.value < 0 ? -scrollOffset.value : 0;
+    return {
+      transformOrigin: "top",
+      transform: [
+        { translateY: -pulled },
+        { scaleY: 1 + pulled / IMAGE_HEIGHT },
+      ],
+    };
+  });
 
   const visibleNav = profileNav.filter(
     (item) =>
@@ -117,7 +117,6 @@ const ProfileScreen = () => {
         scrollEventThrottle={1}
         refreshControl={refreshControl}
         showsVerticalScrollIndicator={false}
-        style={{ marginBottom: bottomInset }}
       >
         <Animated.View
           style={[
