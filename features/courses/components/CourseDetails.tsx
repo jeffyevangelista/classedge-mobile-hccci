@@ -93,7 +93,6 @@ const CourseDetails = () => {
   return (
     <ScreenList
       className="w-full"
-      style={{ marginBottom: 0 }}
       refreshControl={
         <RefreshIndicator refreshing={refreshing} onRefresh={onRefresh} />
       }
@@ -423,22 +422,27 @@ const ScheduleSkeleton = () => (
   </View>
 );
 
-const StudentListSkeleton = () => (
-  <View className="gap-2">
-    <Skeleton className="h-5 w-40 rounded mb-2" />
-    {Array(3)
-      .fill(0)
-      .map((_, index) => (
-        <View
-          key={index}
-          className="flex-row items-center rounded-xl p-3 mb-2 gap-3"
-        >
-          <Skeleton className="w-12 h-12 rounded-full" />
-          <Skeleton className="h-4 w-32 rounded" />
+const StudentListSkeleton = () => {
+  const nameWidths = ["w-40", "w-28", "w-36", "w-32", "w-44"];
+  return (
+    <View>
+      <View className="px-3 mb-2">
+        <Skeleton className="h-3 w-32 rounded" />
+      </View>
+      {nameWidths.map((widthClass, index) => (
+        <View key={index}>
+          <View className="flex-row items-center gap-3 py-2.5">
+            <Skeleton className="w-10 h-10 rounded-full" />
+            <Skeleton className={`h-4 rounded ${widthClass}`} />
+          </View>
+          {index < nameWidths.length - 1 ? (
+            <View className="h-px bg-border ml-[52px]" />
+          ) : null}
         </View>
       ))}
-  </View>
-);
+    </View>
+  );
+};
 
 const CourseDetailsSkeleton = () => (
   <View className="w-full max-w-3xl mx-auto p-2.5">

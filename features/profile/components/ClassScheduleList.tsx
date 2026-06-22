@@ -181,7 +181,6 @@ const ClassScheduleList = () => {
       <ScreenList
         ref={listRef}
         className="mx-auto w-full max-w-3xl"
-        style={{ marginBottom: 0 }}
         refreshControl={
           <RefreshIndicator refreshing={isRefetching} onRefresh={refetch} />
         }
