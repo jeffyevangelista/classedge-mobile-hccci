@@ -21,6 +21,7 @@ import BackButton from "@/components/BackButton";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { Icon } from "@/components/Icon";
 import Image from "@/components/Image";
+import NoDataFallback from "@/components/NoDataFallback";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import SubjectTimeline from "@/features/oversight/components/SubjectTimeline";
 import {
@@ -234,15 +235,21 @@ const SubjectScreen = () => {
             </View>
           ) : subjectQuery.isError ? (
             <ErrorComponent message={getApiErrorMessage(subjectQuery.error)} />
+          ) : !subjectQuery.data ? (
+            <NoDataFallback
+              title="Subject not found"
+              description="We couldn't find this subject. Try refreshing or going back."
+              onRefetch={subjectQuery.refetch}
+            />
           ) : (
             <View className="gap-1">
               <AppText
                 weight="semibold"
                 className="text-lg md:text-xl text-foreground leading-snug"
               >
-                {subjectQuery.data?.subjectName}
+                {subjectQuery.data.subjectName}
               </AppText>
-              {subjectQuery.data?.subjectType && (
+              {subjectQuery.data.subjectType && (
                 <AppText className="text-xs md:text-sm text-muted">
                   {subjectQuery.data.subjectType}
                 </AppText>

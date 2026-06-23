@@ -53,7 +53,12 @@ const MaterialDetailsScreen = () => {
   // payload or REST is already populating `data`, swallow a transient
   // watch error rather than disrupting the user.
   if (!data && (watch.error ?? error)) {
-    return <ErrorFallback message={getApiErrorMessage(watch.error ?? error)} />;
+    return (
+      <ErrorFallback
+        message={getApiErrorMessage(watch.error ?? error)}
+        onRefetch={watch.refetch}
+      />
+    );
   }
 
   if (!data && isMissing) {

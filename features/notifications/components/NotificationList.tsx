@@ -81,7 +81,7 @@ const NotificationList = () => {
         <NotificationListSkeleton />
       </SectionView.Loading>
       <SectionView.Empty>
-        <View className="max-w-3xl w-full mx-auto">
+        <View className="max-w-3xl w-full mx-auto flex-1">
           <EmptyState
             icon="BellSlashIcon"
             title="You have no notifications yet"

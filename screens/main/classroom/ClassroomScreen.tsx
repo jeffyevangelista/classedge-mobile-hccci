@@ -25,6 +25,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppText } from "@/components/AppText";
+import ErrorFallback from "@/components/ErrorFallback";
 import { Icon } from "@/components/Icon";
 import Image from "@/components/Image";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
@@ -37,6 +38,7 @@ import {
 } from "@/features/classroom/components/CreateActionSheet";
 import LessonList from "@/features/classroom/components/LessonList";
 import { useSafeBottomInset } from "@/hooks/useSafeBottomInset";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const HERO_RATIO = 0.28; // matches student CourseScreen.tsx:38
 const NAV_HEIGHT = 56;
@@ -356,7 +358,9 @@ const ClassroomScreen = () => {
   const glassBg = isDark ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.85)";
   const solidBg = "transparent";
 
-  const { data, isLoading } = useClassroom(classroomId as string);
+  const { data, isLoading, isError, error, refetch } = useClassroom(
+    classroomId as string,
+  );
   const course = data?.[0];
   const subjectName = course?.subjectName ?? "";
   const subjectType = course?.subjectType ?? "";
@@ -423,6 +427,32 @@ const ClassroomScreen = () => {
       }}
     />
   );
+
+  if (isError && !course) {
+    return (
+      <View
+        style={{ flex: 1, paddingTop: insets.top }}
+        className="bg-background"
+      >
+        <View style={[styles.navRow, { height: NAV_HEIGHT }]}>
+          <Pressable
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            style={styles.navButton}
+          >
+            <Icon name="ArrowLeftIcon" size={22} color={foregroundColor} />
+          </Pressable>
+        </View>
+        <View style={{ flex: 1 }}>
+          <ErrorFallback
+            message={getApiErrorMessage(error)}
+            onRefetch={refetch}
+          />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>

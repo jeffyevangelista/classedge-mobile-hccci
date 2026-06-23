@@ -21,6 +21,7 @@ import BackButton from "@/components/BackButton";
 import { ErrorComponent } from "@/components/ErrorComponent";
 import { Icon } from "@/components/Icon";
 import Image from "@/components/Image";
+import NoDataFallback from "@/components/NoDataFallback";
 import { RefreshIndicator } from "@/components/RefreshIndicator";
 import { AttachmentImage } from "@/features/attachments/components/AttachmentImage";
 import CourseTimeline from "@/features/courses/components/CourseTimeline";
@@ -256,15 +257,21 @@ const CourseScreen = () => {
             </View>
           ) : isError ? (
             <ErrorComponent message={getApiErrorMessage(error)} />
+          ) : !data ? (
+            <NoDataFallback
+              title="Course not found"
+              description="We couldn't find this course. Try refreshing or going back."
+              onRefetch={refetch}
+            />
           ) : (
             <View className="gap-1">
               <AppText
                 weight="semibold"
                 className="text-lg md:text-xl text-foreground leading-snug"
               >
-                {data?.subjectId.subjectName}
+                {data.subjectId.subjectName}
               </AppText>
-              {data?.subjectId.subjectType && (
+              {data.subjectId.subjectType && (
                 <AppText className="text-xs md:text-sm text-muted">
                   {data.subjectId.subjectType}
                 </AppText>
