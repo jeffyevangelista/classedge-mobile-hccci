@@ -11,7 +11,7 @@ const HomeTabHeader = () => {
   return (
     <View
       style={{ paddingTop: insets.top }}
-      className="bg-surface px-5 pb-3 overflow-hidden flex flex-row justify-between items-center"
+      className="bg-surface px-3 pb-3 overflow-hidden flex flex-row justify-between items-center"
     >
       <HeaderDecor />
       <View className="flex flex-row items-center gap-3">

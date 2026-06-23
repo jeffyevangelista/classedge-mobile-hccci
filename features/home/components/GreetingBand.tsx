@@ -26,7 +26,7 @@ const GreetingBand = () => {
   const firstName = userDetails?.firstName;
 
   return (
-    <View className="bg-surface px-5 pt-2 pb-3 rounded-b-3xl overflow-hidden flex flex-row items-center gap-3">
+    <View className="bg-surface px-3 pt-2 pb-3 rounded-b-3xl overflow-hidden flex flex-row items-center gap-3">
       <HeaderDecor dots />
       {isLoading ? (
         <Skeleton className="w-10 h-10 rounded-full" />

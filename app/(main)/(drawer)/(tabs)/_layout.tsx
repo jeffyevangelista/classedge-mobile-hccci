@@ -7,7 +7,7 @@ import { useNotificationCount } from "@/features/notifications/notifications.hoo
 import useStore from "@/lib/store";
 import { Tabs } from "expo-router";
 import { useEffect, useRef } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -86,6 +86,9 @@ const TabsLayout = () => {
               shadowOpacity: 0,
               backgroundColor: surfaceColor,
             },
+            // headerRightContainerStyle: {
+            //   marginHorizontal: 10,
+            // },
           }}
         >
           <Tabs.Screen
@@ -174,7 +177,11 @@ const TabsLayout = () => {
             name="calendar"
             options={{
               headerTitle: "Calendar",
-              headerRight: () => <SyncCenter />,
+              headerRight: () => (
+                <Pressable className="mr-3">
+                  <SyncCenter />
+                </Pressable>
+              ),
               tabBarIcon: ({ focused, color }) => (
                 <TabIcon
                   focused={focused}
@@ -210,7 +217,11 @@ const TabsLayout = () => {
               tabBarBadge:
                 (data?.[0]?.count ?? 0) > 0 ? data?.[0]?.count : undefined,
               headerTitle: "Notifications",
-              headerRight: () => <SyncCenter />,
+              headerRight: () => (
+                <Pressable className="mr-3">
+                  <SyncCenter />
+                </Pressable>
+              ),
               tabBarIcon: ({ focused, color }) => (
                 <TabIcon
                   focused={focused}
