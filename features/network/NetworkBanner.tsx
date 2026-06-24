@@ -5,6 +5,7 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withRepeat,
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -42,7 +43,7 @@ const bannerConfig: Record<
     bg: "#1F1F1F",
     text: "Reconnecting...",
     icon: "ArrowsClockwiseIcon",
-    iconColor: "#FACC15",
+    iconColor: "#FFFFFF",
   },
   online: {
     bg: "#16A34A",
@@ -124,6 +125,25 @@ const NetworkBanner = () => {
     transform: [{ translateY: translateY.value }],
   }));
 
+  // Spin the icon while reconnecting so the motion (not the color) signals
+  // "in progress" — matches the SyncCenter spinner pattern.
+  const rotation = useSharedValue(0);
+  useEffect(() => {
+    if (bannerState === "reconnecting") {
+      rotation.value = 0;
+      rotation.value = withRepeat(
+        withTiming(360, { duration: 1000, easing: Easing.linear }),
+        -1,
+        false,
+      );
+    } else {
+      rotation.value = 0;
+    }
+  }, [bannerState, rotation]);
+  const spinStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
+
   const config = bannerState !== "hidden" ? bannerConfig[bannerState] : null;
   const displayText =
     config && FAULTED_STATES.includes(bannerState) && lastSyncedLabel
@@ -151,11 +171,13 @@ const NetworkBanner = () => {
         <View style={styles.content}>
           {config && (
             <>
-              <Icon
-                name={config.icon as any}
-                size={16}
-                color={config.iconColor}
-              />
+              <Animated.View style={spinStyle}>
+                <Icon
+                  name={config.icon as any}
+                  size={16}
+                  color={config.iconColor}
+                />
+              </Animated.View>
               <AppText style={styles.text}>{displayText}</AppText>
             </>
           )}
