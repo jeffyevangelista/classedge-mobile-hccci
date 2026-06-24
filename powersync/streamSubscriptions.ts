@@ -1,6 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 import type { SyncStreamSubscription } from "@powersync/react-native";
-import { powersync } from "./system";
+import { powersync } from "./db";
 
 // Role → role-specific streams the client should subscribe to.
 // Shared streams (user_identity, current_term_data, user_notifications,

@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { powersync } from "@/powersync/system";
+import { powersync } from "@/powersync/db";
 
 export const SYNC_EVENT_CAP = 200;
 

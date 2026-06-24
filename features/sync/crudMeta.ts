@@ -1,4 +1,4 @@
-import { powersync } from "@/powersync/system";
+import { powersync } from "@/powersync/db";
 
 export const STUCK_ATTEMPT_CAP = 5;
 export const STUCK_AGE_HOURS = 24;
