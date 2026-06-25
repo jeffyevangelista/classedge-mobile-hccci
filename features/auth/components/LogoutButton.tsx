@@ -92,7 +92,7 @@ const LogoutButton = () => {
               isDisabled={isPending}
             >
               {isPending ? (
-                <Spinner size="sm" />
+                <Spinner size="sm" color="#FFFFFF" />
               ) : (
                 <Button.Label>Yes, Log me out</Button.Label>
               )}
