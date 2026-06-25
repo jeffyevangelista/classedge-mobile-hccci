@@ -71,10 +71,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: variantConfig.androidPackage,
-    permissions: [
-      "android.permission.CAMERA",
-      "android.permission.RECORD_AUDIO",
-    ],
+    permissions: ["android.permission.CAMERA"],
   },
   web: {
     output: "static",
@@ -92,7 +89,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "expo-camera",
       {
         cameraPermission: "Allow HCCCI to access your camera",
-        microphonePermission: "Allow HCCCI to access your microphone",
+        microphonePermission: false,
         barcodeScannerEnabled: true,
       },
     ],
