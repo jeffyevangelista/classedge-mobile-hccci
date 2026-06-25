@@ -29,12 +29,13 @@ type ProfileNavProps = {
   devOnly?: boolean;
 };
 
+const PROFILE_INFO_NAV: ProfileNavProps = {
+  title: "Profile Information",
+  href: "/(main)/profile/profile-info",
+  name: "IdentificationCardIcon",
+};
+
 const profileNav: ProfileNavProps[] = [
-  {
-    title: "Profile Information",
-    href: "/(main)/profile/profile-info",
-    name: "IdentificationCardIcon",
-  },
   {
     title: "Academic Records",
     href: "/(main)/profile/academic-records",
@@ -104,7 +105,6 @@ const ProfileScreen = () => {
   const settingsRows: React.ReactNode[] = [
     <ThemeToggleButton key="theme" />,
     ...(__DEV__ ? [<ResyncButton key="resync" />] : []),
-    <LogoutButton key="logout" />,
   ];
 
   return (
@@ -139,13 +139,21 @@ const ProfileScreen = () => {
             <HeaderComponent />
 
             <View className="w-full gap-6">
-              <ProfileSection title="Records">
-                {visibleNav.map((item) => (
-                  <ProfileNavItem key={item.title} {...item} />
-                ))}
-              </ProfileSection>
+              {visibleNav.length > 0 && (
+                <ProfileSection title="Records">
+                  {visibleNav.map((item) => (
+                    <ProfileNavItem key={item.title} {...item} />
+                  ))}
+                </ProfileSection>
+              )}
 
               <ProfileSection title="Settings">{settingsRows}</ProfileSection>
+
+              <ProfileSection title="Account">
+                <ProfileNavItem {...PROFILE_INFO_NAV} />
+                <LogoutButton />
+                <DeleteAccountRow />
+              </ProfileSection>
             </View>
           </View>
         </View>
@@ -197,6 +205,27 @@ const ProfileNavItem = ({ title, href, name }: ProfileNavProps) => {
         trailing={
           <View>
             <Icon name="CaretRightIcon" size={18} color={mutedColor} />
+          </View>
+        }
+      />
+    </Link>
+  );
+};
+
+const DeleteAccountRow = () => {
+  const dangerColor = useThemeColor("danger");
+
+  return (
+    <Link href="/(main)/profile/delete-account" asChild>
+      <ProfileRow
+        icon="TrashIcon"
+        label="Delete Account"
+        iconColor={dangerColor}
+        labelClassName="text-danger"
+        accessibilityLabel="Delete account"
+        trailing={
+          <View>
+            <Icon name="CaretRightIcon" size={18} color={dangerColor} />
           </View>
         }
       />
