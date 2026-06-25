@@ -80,9 +80,11 @@ const AnnouncementList = ({
       scrollEnabled={false}
       data={items}
       renderItem={({ item }) => {
-        const authorName = toTitleCase(
-          `${item.createdById.firstName} ${item.createdById.lastName}`,
-        );
+        const author = item.createdById;
+        const authorName = author
+          ? toTitleCase(`${author.firstName ?? ""} ${author.lastName ?? ""}`).trim() ||
+            "Deleted user"
+          : "Deleted user";
         const timeLabel = formatRelativeOrDate(item.createdAt);
         return (
           <View className="mb-3 max-w-3xl mx-auto w-full px-2.5">
@@ -102,7 +104,7 @@ const AnnouncementList = ({
                       className="border border-border"
                     >
                       <AttachmentAvatarImage
-                        path={item.createdById.studentPhoto}
+                        path={author?.studentPhoto}
                       />
                       <AvatarFallbackImage />
                     </Avatar>

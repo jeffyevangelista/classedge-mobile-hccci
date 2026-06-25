@@ -27,6 +27,10 @@ const ProfileLayout = () => {
         name="profile-info"
         options={{ title: "Profile Information" }}
       />
+      <Stack.Screen
+        name="delete-account"
+        options={{ title: "Delete Account" }}
+      />
     </Stack>
   );
 };
