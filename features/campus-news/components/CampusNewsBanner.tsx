@@ -101,8 +101,10 @@ export function CampusNewsBanner({ posts }: Props) {
       };
     }
     const abs = Math.abs(clamped);
-    // Smoothstep S-curve — gentler ramp at the endpoints than linear.
-    const smooth = abs * abs * (3 - 2 * abs);
+    // Quintic smootherstep — flatter near the endpoints than cubic
+    // smoothstep, so the fade tails off more gently when a card is just
+    // beginning to leave or just settling in.
+    const smooth = abs * abs * abs * (abs * (abs * 6 - 15) + 10);
     return {
       transform: [{ translateX: 0 }, { scale: 1 - 0.04 * smooth }],
       opacity: 1 - smooth,
