@@ -34,14 +34,17 @@ const LogoutButton = () => {
   const { toast } = useToast();
   const handleLogout = async () => {
     setIsPending(true);
+    // Dismiss the dialog BEFORE signOut runs. Letting the auth gate
+    // unmount the (main) tree with the Portal still mounted races the
+    // reanimated portal teardown with the native view destruction and
+    // crashes Android with a dispatchGetDisplayList NPE. Wait for the
+    // exit animation + unmount to settle before tearing down credentials.
+    setIsOpen(false);
+    await new Promise<void>((resolve) => setTimeout(resolve, 300));
     try {
       await signOut();
-      // Success path: the auth gate unmounts this screen on cleared
-      // credentials, so we don't need to flip isOpen — the dialog
-      // disappears with the screen.
     } catch (err: unknown) {
       setIsPending(false);
-      setIsOpen(false);
       const message =
         err instanceof Error ? err.message : "Something went wrong.";
       toast.show({
