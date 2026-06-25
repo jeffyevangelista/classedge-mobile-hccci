@@ -36,6 +36,7 @@ const variantConfig = {
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
+  owner: "classify-incorporated",
   name: variantConfig.name,
   slug: "classedge",
   version: "1.0.0",
