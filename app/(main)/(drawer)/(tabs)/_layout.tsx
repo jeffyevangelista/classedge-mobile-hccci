@@ -59,6 +59,7 @@ const TabsLayout = () => {
       <View style={{ flex: 1 }}>
         <Tabs
           safeAreaInsets={{ bottom: 0 }}
+          detachInactiveScreens={false}
           screenOptions={{
             headerShown: true,
             headerShadowVisible: false,
@@ -178,7 +179,7 @@ const TabsLayout = () => {
             options={{
               headerTitle: "Calendar",
               headerRight: () => (
-                <Pressable className="mr-3">
+                <Pressable className="mr-2">
                   <SyncCenter />
                 </Pressable>
               ),
@@ -218,7 +219,7 @@ const TabsLayout = () => {
                 (data?.[0]?.count ?? 0) > 0 ? data?.[0]?.count : undefined,
               headerTitle: "Notifications",
               headerRight: () => (
-                <Pressable className="mr-3">
+                <Pressable className="mr-2">
                   <SyncCenter />
                 </Pressable>
               ),

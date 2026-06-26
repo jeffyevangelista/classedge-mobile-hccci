@@ -1,5 +1,4 @@
 import { toCompilableQuery } from "@powersync/drizzle-driver";
-import { useQuery as usePowersyncReactQuery } from "@powersync/react";
 import { useQuery as usePowerSyncQuery } from "@powersync/react-native";
 import { useQuery } from "@tanstack/react-query";
 import useStore from "@/lib/store";
@@ -13,9 +12,8 @@ import { getStudentCourseSchedules, getUserDetails } from "./user.service";
 export const useUserDetails = () => {
   const authUser = useStore((state) => state.authUser);
 
-  return usePowersyncReactQuery(
+  return usePowerSyncQuery(
     toCompilableQuery(getUserDetails(authUser?.id!)),
-    [authUser?.id],
   );
 };
 
