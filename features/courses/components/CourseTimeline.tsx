@@ -51,11 +51,13 @@ const CourseTimeline = () => {
 
   if (items.length === 0) {
     return (
-      <EmptyState
-        icon="FolderOpenIcon"
-        title="No content yet"
-        description="No content found for this course"
-      />
+      <View className="flex-1 items-center justify-center">
+        <EmptyState
+          icon="FolderOpenIcon"
+          title="No content yet"
+          description="No content found for this course"
+        />
+      </View>
     );
   }
 
@@ -63,16 +65,15 @@ const CourseTimeline = () => {
     ({ key }) => buckets[key].length > 0,
   );
 
-  return (
-    <View className="mt-5">
-      <TimelineFilterChips
-        value={filter}
-        onChange={setFilter}
-        counts={counts}
-      />
-
-      {visibleBuckets.length === 0 ? (
-        <View className="items-center">
+  if (visibleBuckets.length === 0) {
+    return (
+      <View className="flex-1 mt-5">
+        <TimelineFilterChips
+          value={filter}
+          onChange={setFilter}
+          counts={counts}
+        />
+        <View className="flex-1 items-center justify-center">
           <EmptyState
             icon="FolderOpenIcon"
             title="No matching content"
@@ -89,27 +90,37 @@ const CourseTimeline = () => {
             </AppText>
           </Pressable>
         </View>
-      ) : (
-        visibleBuckets.map(({ key, label }) => (
-          <View key={key} className="mb-4">
-            <View className="w-full max-w-3xl mx-auto px-3 mb-1">
-              <AppText
-                weight="semibold"
-                className="text-xs uppercase tracking-wider text-muted"
-              >
-                {label} · {buckets[key].length}
-              </AppText>
-            </View>
-            {buckets[key].map((item) => (
-              <StudentRow
-                key={`${item.id}-${item.type}`}
-                item={item}
-                bucket={key}
-              />
-            ))}
+      </View>
+    );
+  }
+
+  return (
+    <View className="mt-5">
+      <TimelineFilterChips
+        value={filter}
+        onChange={setFilter}
+        counts={counts}
+      />
+
+      {visibleBuckets.map(({ key, label }) => (
+        <View key={key} className="mb-4">
+          <View className="w-full max-w-3xl mx-auto px-3 mb-1">
+            <AppText
+              weight="semibold"
+              className="text-xs uppercase tracking-wider text-muted"
+            >
+              {label} · {buckets[key].length}
+            </AppText>
           </View>
-        ))
-      )}
+          {buckets[key].map((item) => (
+            <StudentRow
+              key={`${item.id}-${item.type}`}
+              item={item}
+              bucket={key}
+            />
+          ))}
+        </View>
+      ))}
     </View>
   );
 };

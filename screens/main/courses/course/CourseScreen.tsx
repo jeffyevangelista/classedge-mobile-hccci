@@ -49,6 +49,8 @@ const CourseScreen = () => {
   const foregroundColor = useThemeColor("foreground");
   const borderColor = useThemeColor("border");
 
+  const visibleCardHeight = screenHeight - IMAGE_HEIGHT + 20;
+
   // Both useCourseDetails and useCourseTimeline are watch-backed, so
   // they re-render automatically as PowerSync replicates new rows. Pull-
   // to-refresh just re-executes the local details query for user-visible
@@ -230,7 +232,10 @@ const CourseScreen = () => {
           )}
         </Animated.View>
 
-        <View style={styles.content} className="bg-background">
+        <View
+          style={[styles.content, { minHeight: visibleCardHeight }]}
+          className="bg-background"
+        >
           {isLoading ? (
             <View className="gap-4">
               <View className="gap-2">
@@ -301,7 +306,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     marginTop: -20,
-    minHeight: "100%",
   },
   floatingBtn: {
     position: "absolute",
