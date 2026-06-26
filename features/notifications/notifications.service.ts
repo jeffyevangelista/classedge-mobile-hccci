@@ -65,9 +65,6 @@ export const getNotificationHref = (
         return `/announcement/${entityId}`;
       case "event":
         return `/event/${entityId}`;
-      case "conversation":
-      case "chat_message":
-        return `/chat/${entityId}`;
       default:
         return `/assessment/${entityId}`;
     }
