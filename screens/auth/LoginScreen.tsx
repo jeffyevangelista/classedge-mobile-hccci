@@ -57,7 +57,7 @@ const LoginScreen = () => {
               Welcome to HCCCI
             </AppText>
             <AppText className="text-sm text-muted text-center mt-1">
-              Your school day, made easier.
+              Be a Leader Tomorrow, Grow with Us Today
             </AppText>
           </View>
 
@@ -89,10 +89,7 @@ const LoginScreen = () => {
               EULA
             </AppText>
           </Pressable>
-          <AppText className="text-xs text-muted">
-            {" "}
-            and acknowledge{" "}
-          </AppText>
+          <AppText className="text-xs text-muted"> and acknowledge </AppText>
           <Pressable
             onPress={() => router.push("/(auth)/legal/privacy")}
             hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
