@@ -533,6 +533,205 @@ export const activtyType = sqliteTable("activity_activitytype", {
   name: text("name").notNull(),
 });
 
+// ---------------------------------------------------------------------------
+// Chat tables. Mirrors server `chat/` app (chat_<model> table names).
+// `id` is the PowerSync row key (cuid). `local_id` is the same value, carried
+// in the upload URL — matches the IdempotentLocalIdUpsertMixin pattern used by
+// activity_activity. Connector PUTs to `${API_URL}/${table}/${local_id}/`
+// because the server's lookup_field is "local_id", so client-side we keep
+// both columns in lockstep.
+// ---------------------------------------------------------------------------
+export const chatConversationsTable = sqliteTable(
+  "chat_conversation",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    localId: text("local_id")
+      .notNull()
+      .unique()
+      .$defaultFn(() => createId()),
+    type: text("type").notNull(),
+    subjectId: integer("subject_id"),
+    createdById: integer("created_by_id").notNull(),
+    createdAt: text("created_at").notNull().default(utcNow),
+    lastMessageAt: text("last_message_at"),
+    lastMessagePreview: text("last_message_preview").notNull().default(""),
+  },
+  (t) => [
+    index("idx_chat_conv_subject").on(t.subjectId),
+    index("idx_chat_conv_last_msg").on(t.lastMessageAt),
+  ],
+);
+
+export const chatParticipantsTable = sqliteTable(
+  "chat_conversationparticipant",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    localId: text("local_id")
+      .notNull()
+      .unique()
+      .$defaultFn(() => createId()),
+    conversationId: text("conversation_id").notNull(),
+    userId: integer("user_id").notNull(),
+    joinedAt: text("joined_at").notNull().default(utcNow),
+    lastReadMessageId: text("last_read_message_id"),
+    mutedAt: text("muted_at"),
+    role: text("role").notNull().default("member"),
+    removedAt: text("removed_at"),
+  },
+  (t) => [
+    index("idx_chat_part_conv").on(t.conversationId),
+    index("idx_chat_part_user").on(t.userId),
+  ],
+);
+
+export const chatMessagesTable = sqliteTable(
+  "chat_message",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    localId: text("local_id")
+      .notNull()
+      .unique()
+      .$defaultFn(() => createId()),
+    conversationId: text("conversation_id").notNull(),
+    senderId: integer("sender_id").notNull(),
+    body: text("body").notNull().default(""),
+    replyToId: text("reply_to_id"),
+    editedAt: text("edited_at"),
+    deletedAt: text("deleted_at"),
+    createdAt: text("created_at").notNull().default(utcNow),
+  },
+  (t) => [
+    index("idx_chat_msg_conv_created").on(t.conversationId, t.createdAt),
+    index("idx_chat_msg_sender").on(t.senderId),
+  ],
+);
+
+export const chatMessageVisibilityTable = sqliteTable(
+  "chat_messagevisibility",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    localId: text("local_id")
+      .notNull()
+      .unique()
+      .$defaultFn(() => createId()),
+    messageId: text("message_id").notNull(),
+    userId: integer("user_id").notNull(),
+    hiddenAt: text("hidden_at").notNull().default(utcNow),
+  },
+  (t) => [index("idx_chat_msgvis_message").on(t.messageId)],
+);
+
+export const chatMessageAttachmentsTable = sqliteTable(
+  "chat_messageattachment",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    localId: text("local_id")
+      .notNull()
+      .unique()
+      .$defaultFn(() => createId()),
+    messageId: text("message_id").notNull(),
+    file: text("file"),
+    mimeType: text("mime_type").notNull().default(""),
+    byteSize: integer("byte_size"),
+    originalName: text("original_name").notNull().default(""),
+  },
+  (t) => [index("idx_chat_attach_message").on(t.messageId)],
+);
+
+export const chatReactionsTable = sqliteTable(
+  "chat_reaction",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    localId: text("local_id")
+      .notNull()
+      .unique()
+      .$defaultFn(() => createId()),
+    messageId: text("message_id").notNull(),
+    userId: integer("user_id").notNull(),
+    emoji: text("emoji").notNull(),
+    createdAt: text("created_at").notNull().default(utcNow),
+  },
+  (t) => [index("idx_chat_react_message").on(t.messageId)],
+);
+
+export const chatConversationsRelations = relations(
+  chatConversationsTable,
+  ({ one, many }) => ({
+    subject: one(coursesTable, {
+      fields: [chatConversationsTable.subjectId],
+      references: [coursesTable.id],
+    }),
+    createdBy: one(accountDetailsTable, {
+      fields: [chatConversationsTable.createdById],
+      references: [accountDetailsTable.userId],
+    }),
+    participants: many(chatParticipantsTable),
+    messages: many(chatMessagesTable),
+  }),
+);
+
+export const chatParticipantsRelations = relations(
+  chatParticipantsTable,
+  ({ one }) => ({
+    conversation: one(chatConversationsTable, {
+      fields: [chatParticipantsTable.conversationId],
+      references: [chatConversationsTable.id],
+    }),
+    user: one(accountDetailsTable, {
+      fields: [chatParticipantsTable.userId],
+      references: [accountDetailsTable.userId],
+    }),
+  }),
+);
+
+export const chatMessagesRelations = relations(
+  chatMessagesTable,
+  ({ one, many }) => ({
+    conversation: one(chatConversationsTable, {
+      fields: [chatMessagesTable.conversationId],
+      references: [chatConversationsTable.id],
+    }),
+    sender: one(accountDetailsTable, {
+      fields: [chatMessagesTable.senderId],
+      references: [accountDetailsTable.userId],
+    }),
+    attachments: many(chatMessageAttachmentsTable),
+    reactions: many(chatReactionsTable),
+  }),
+);
+
+export const chatMessageAttachmentsRelations = relations(
+  chatMessageAttachmentsTable,
+  ({ one }) => ({
+    message: one(chatMessagesTable, {
+      fields: [chatMessageAttachmentsTable.messageId],
+      references: [chatMessagesTable.id],
+    }),
+  }),
+);
+
+export const chatReactionsRelations = relations(
+  chatReactionsTable,
+  ({ one }) => ({
+    message: one(chatMessagesTable, {
+      fields: [chatReactionsTable.messageId],
+      references: [chatMessagesTable.id],
+    }),
+  }),
+);
+
 export const drizzleSchema = {
   courseScheduleTable,
   courseScheduleRelations,
@@ -572,6 +771,17 @@ export const drizzleSchema = {
   gradingPeriodRelations,
   attachementsTable,
   activtyType,
+  chatConversationsTable,
+  chatConversationsRelations,
+  chatParticipantsTable,
+  chatParticipantsRelations,
+  chatMessagesTable,
+  chatMessagesRelations,
+  chatMessageVisibilityTable,
+  chatMessageAttachmentsTable,
+  chatMessageAttachmentsRelations,
+  chatReactionsTable,
+  chatReactionsRelations,
 };
 
 export type Subject = InferSelectModel<typeof coursesTable>;
@@ -582,3 +792,10 @@ export type Notification = InferSelectModel<typeof notificationsTable> & {
 };
 
 export type Event = InferSelectModel<typeof eventsTable>;
+export type ChatConversation = InferSelectModel<typeof chatConversationsTable>;
+export type ChatParticipant = InferSelectModel<typeof chatParticipantsTable>;
+export type ChatMessage = InferSelectModel<typeof chatMessagesTable>;
+export type ChatMessageAttachment = InferSelectModel<
+  typeof chatMessageAttachmentsTable
+>;
+export type ChatReaction = InferSelectModel<typeof chatReactionsTable>;

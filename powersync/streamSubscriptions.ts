@@ -1,5 +1,5 @@
-import { jwtDecode } from "jwt-decode";
 import type { SyncStreamSubscription } from "@powersync/react-native";
+import { jwtDecode } from "jwt-decode";
 import { powersync } from "./db";
 
 // Role → role-specific streams the client should subscribe to.
@@ -9,15 +9,25 @@ import { powersync } from "./db";
 //
 // Roles not present in this map (e.g. an unknown future role) receive
 // zero role-specific streams, which matches today's AD/PH treatment.
+const CHAT_STREAMS: readonly string[] = [
+  "user_chat_conversations",
+  "user_chat_messages",
+];
+
 const STREAMS_BY_ROLE: Record<string, readonly string[]> = {
   Student: [
     "student_enrolled_courses",
     "courses_and_schedule",
     "course_materials_and_assessments",
+    ...CHAT_STREAMS,
   ],
-  Teacher: ["assigned_courses_for_teacher", "current_term_courses"],
-  "Academic Director": [],
-  "Program Head": [],
+  Teacher: [
+    "assigned_courses_for_teacher",
+    "current_term_courses",
+    ...CHAT_STREAMS,
+  ],
+  "Academic Director": [...CHAT_STREAMS],
+  "Program Head": [...CHAT_STREAMS],
 };
 
 type PowerSyncJwtPayload = {
@@ -31,7 +41,10 @@ const decodeRole = (token: string | null | undefined): string | undefined => {
   try {
     return jwtDecode<PowerSyncJwtPayload>(token).role;
   } catch (err) {
-    console.warn("[streamSubscriptions] failed to decode powersync token:", err);
+    console.warn(
+      "[streamSubscriptions] failed to decode powersync token:",
+      err,
+    );
     return undefined;
   }
 };

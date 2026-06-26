@@ -9,7 +9,8 @@ export type OfflineSection =
   | "teaching"
   | "announcements"
   | "schedule"
-  | "campus-news";
+  | "campus-news"
+  | "chat";
 
 export const offlineCopy: Record<OfflineSection, string> = {
   home: "Connect to load your dashboard",
@@ -21,4 +22,5 @@ export const offlineCopy: Record<OfflineSection, string> = {
   announcements: "Connect to load announcements",
   schedule: "Connect to load your class schedule",
   "campus-news": "Connect to load campus news",
+  chat: "Connect to load your conversations",
 };
